@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function owns(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read, write: if owns(userId);
+
+      match /transactions/{transactionId} {
+        allow read, delete: if owns(userId);
+        allow create, update: if owns(userId)
+          && request.resource.data.type in ["income", "expense"]
+          && request.resource.data.title is string
+          && request.resource.data.amount is number
+          && request.resource.data.category is string
+          && request.resource.data.date is string
+          && request.resource.data.note is string;
+      }
+    }
+  }
+}
