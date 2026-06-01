@@ -1,6 +1,12 @@
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const AI_PROVIDER = String(process.env.AI_PROVIDER || "").trim().toLowerCase();
+
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || "";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
+const OPENAI_ENDPOINT = "https://api.openai.com/v1/responses";
 
 const RESPONSE_SCHEMA = {
   type: "object",
@@ -31,6 +37,7 @@ const RESPONSE_SCHEMA = {
     warning: { type: "string" },
   },
   required: ["movements"],
+  additionalProperties: false,
 };
 
 exports.handler = async (event) => {
@@ -39,13 +46,7 @@ exports.handler = async (event) => {
   }
 
   if (event.httpMethod !== "POST") {
-    return jsonResponse(405, { error: "Sadece POST isteği desteklenir." });
-  }
-
-  if (!GEMINI_API_KEY) {
-    return jsonResponse(500, {
-      error: "Gemini API anahtarı eksik. Netlify Environment Variables içine GEMINI_API_KEY ekle.",
-    });
+    return jsonResponse(405, { error: "Sadece POST istegi desteklenir." });
   }
 
   let payload;
@@ -53,21 +54,62 @@ exports.handler = async (event) => {
   try {
     payload = JSON.parse(event.body || "{}");
   } catch {
-    return jsonResponse(400, { error: "Geçersiz istek gövdesi." });
+    return jsonResponse(400, { error: "Gecersiz istek govdesi." });
   }
 
   const files = Array.isArray(payload.files) ? payload.files.slice(0, 12) : [];
 
   if (!files.length) {
-    return jsonResponse(400, { error: "AI okuma için dosya veya metin bulunamadı." });
+    return jsonResponse(400, { error: "AI okuma icin dosya veya metin bulunamadi." });
   }
 
-  const parts = buildGeminiParts(files, payload);
+  const provider = resolveProvider();
+
+  if (provider === "openai") {
+    return runOpenAi(files, payload);
+  }
+
+  if (provider === "gemini") {
+    return runGemini(files, payload);
+  }
+
+  return jsonResponse(500, {
+    error: "AI saglayicisi hazir degil. Netlify Environment Variables icine OPENAI_API_KEY veya GEMINI_API_KEY ekle.",
+  });
+};
+
+function resolveProvider() {
+  if (AI_PROVIDER === "openai" || AI_PROVIDER === "chatgpt") {
+    return OPENAI_API_KEY ? "openai" : "missing";
+  }
+
+  if (AI_PROVIDER === "gemini" || AI_PROVIDER === "google") {
+    return GEMINI_API_KEY ? "gemini" : "missing";
+  }
+
+  if (OPENAI_API_KEY) {
+    return "openai";
+  }
+
+  if (GEMINI_API_KEY) {
+    return "gemini";
+  }
+
+  return "missing";
+}
+
+async function runGemini(files, payload) {
+  if (!GEMINI_API_KEY) {
+    return jsonResponse(500, {
+      error: "Gemini API anahtari eksik. Netlify Environment Variables icine GEMINI_API_KEY ekle.",
+    });
+  }
+
   const requestBody = {
     contents: [
       {
         role: "user",
-        parts,
+        parts: buildGeminiParts(files, payload),
       },
     ],
     generationConfig: {
@@ -89,48 +131,109 @@ exports.handler = async (event) => {
 
     if (!response.ok) {
       return jsonResponse(response.status, {
-        error: getGeminiErrorMessage(data) || "Gemini API isteği başarısız oldu.",
+        error: getGeminiErrorMessage(data) || "Gemini API istegi basarisiz oldu.",
       });
     }
 
-    const modelText = extractGeminiText(data);
-    const parsed = parseModelJson(modelText);
-    const movements = normalizeModelMovements(parsed.movements);
-
+    const parsed = parseModelJson(extractGeminiText(data));
     return jsonResponse(200, {
+      provider: "gemini",
       model: GEMINI_MODEL,
-      movements,
+      movements: normalizeModelMovements(parsed.movements),
       warning: parsed.warning || "",
     });
   } catch (error) {
     return jsonResponse(500, {
-      error: error && error.message ? error.message : "AI okuma sırasında hata oluştu.",
+      error: error && error.message ? error.message : "Gemini ile AI okuma sirasinda hata olustu.",
     });
   }
-};
+}
+
+async function runOpenAi(files, payload) {
+  if (!OPENAI_API_KEY) {
+    return jsonResponse(500, {
+      error: "OpenAI API anahtari eksik. Netlify Environment Variables icine OPENAI_API_KEY ekle.",
+    });
+  }
+
+  const requestBody = {
+    model: OPENAI_MODEL,
+    temperature: 0.05,
+    input: [
+      {
+        role: "user",
+        content: buildOpenAiContent(files, payload),
+      },
+    ],
+    text: {
+      format: {
+        type: "json_schema",
+        name: "bank_movements",
+        schema: RESPONSE_SCHEMA,
+        strict: false,
+      },
+    },
+  };
+
+  try {
+    const response = await fetch(OPENAI_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return jsonResponse(response.status, {
+        error: getOpenAiErrorMessage(data) || "OpenAI API istegi basarisiz oldu.",
+      });
+    }
+
+    const parsed = parseModelJson(extractOpenAiText(data));
+    return jsonResponse(200, {
+      provider: "openai",
+      model: OPENAI_MODEL,
+      movements: normalizeModelMovements(parsed.movements),
+      warning: parsed.warning || "",
+    });
+  } catch (error) {
+    return jsonResponse(500, {
+      error: error && error.message ? error.message : "OpenAI ile AI okuma sirasinda hata olustu.",
+    });
+  }
+}
+
+function buildPrompt(files, payload) {
+  return [
+    "Sen bir banka hareketleri ekran goruntusu ve ekstre okuma motorusun.",
+    `Bugunun tarihi: ${payload.today || ""}. Yerel saat dilimi: ${payload.timezone || "Europe/Istanbul"}.`,
+    `Kaynak sayisi: ${files.length}.`,
+    "Gorev: Her kaynakta gorunen gercek islem satirlarini cikar ve yalnizca JSON uret.",
+    "JSON bicimi: {\"movements\":[...],\"warning\":\"\"}.",
+    "Kurallar:",
+    "- Her gercek islem satiri bir hareket olmali. Sayfada 4 hareket gorunuyorsa 4 hareket dondur; fazla veya eksik dondurme.",
+    "- Baslik, filtre, tab bar, kullanilabilir bakiye, kalan bakiye, islem sonu bakiye, toplam, limit, hesap numarasi ve kart numarasini hareket sayma.",
+    "- 'Kalan Bakiye' veya 'Islem Sonu Bakiye' tutarlari hareket tutari degildir.",
+    "- Alt kisimda kesilmis ve tutari/basligi tam gorunmeyen satiri dahil etme.",
+    "- Pozitif tutar, GELEN FAST, alacak, iade, mevduat/faiz gelen hareketleri income yap.",
+    "- Negatif tutar, GIDEN FAST, odeme, para cekme, komisyon, BSMV, ucret, kesinti hareketleri expense yap.",
+    "- Tutar alanini her zaman pozitif sayi yaz; gelir/gider bilgisini type alaninda belirt.",
+    "- Tarihi yyyy-mm-dd formatinda, saati HH:mm formatinda dondur. Yil gorunmuyorsa ekrandaki baglami veya bugunun yilini kullan.",
+    "- sourceName alanina dosya adini yaz.",
+    "- rawText alanina ilgili satirin kisa ham metnini yaz.",
+  ].join("\n");
+}
 
 function buildGeminiParts(files, payload) {
-  const prompt = [
-    "Sen bir banka hareketleri ekran görüntüsü ve ekstre okuma motorusun.",
-    `Bugünün tarihi: ${payload.today || ""}. Yerel saat dilimi: ${payload.timezone || "Europe/Istanbul"}.`,
-    "Görev: Her kaynakta görünen gerçek işlem satırlarını çıkar ve yalnızca JSON üret.",
-    "Kurallar:",
-    "- Her gerçek işlem satırı bir hareket olmalı. Sayfada 4 hareket görünüyorsa 4 hareket döndür; fazla veya eksik döndürme.",
-    "- Başlık, filtre, tab bar, kullanılabilir bakiye, kalan bakiye, işlem sonu bakiye, toplam, limit, hesap numarası ve kart numarasını hareket sayma.",
-    "- 'Kalan Bakiye' veya 'İşlem Sonu Bakiye' tutarları hareket tutarı değildir.",
-    "- Alt kısımda kesilmiş ve tutarı/başlığı tam görünmeyen satırı dahil etme.",
-    "- Pozitif tutar, GELEN FAST, alacak, iade, mevduat/faiz gelen hareketleri income yap.",
-    "- Negatif tutar, GİDEN FAST, ödeme, para çekme, komisyon, BSMV, ücret, kesinti hareketleri expense yap.",
-    "- Tutarı sayı olarak pozitif yaz; gelir/gider bilgisini type alanında belirt.",
-    "- Tarihi yyyy-mm-dd formatında, saati HH:mm formatında döndür. Yıl görünmüyorsa ekrandaki bağlamı veya bugünün yılını kullan.",
-    "- rawText alanına ilgili satırın kısa ham metnini yaz.",
-  ].join("\n");
-  const parts = [{ text: prompt }];
+  const parts = [{ text: buildPrompt(files, payload) }];
 
   files.forEach((file, index) => {
     const sourceName = cleanSourceName(file.name || `Kaynak ${index + 1}`);
     parts.push({
-      text: `Kaynak ${index + 1}: ${sourceName}. Dosya türü: ${file.mimeType || file.kind || "bilinmiyor"}.`,
+      text: `Kaynak ${index + 1}: ${sourceName}. Dosya turu: ${file.mimeType || file.kind || "bilinmiyor"}.`,
     });
 
     if (file.text) {
@@ -148,6 +251,32 @@ function buildGeminiParts(files, payload) {
   });
 
   return parts;
+}
+
+function buildOpenAiContent(files, payload) {
+  const content = [{ type: "input_text", text: buildPrompt(files, payload) }];
+
+  files.forEach((file, index) => {
+    const sourceName = cleanSourceName(file.name || `Kaynak ${index + 1}`);
+    content.push({
+      type: "input_text",
+      text: `Kaynak ${index + 1}: ${sourceName}. Dosya turu: ${file.mimeType || file.kind || "bilinmiyor"}.`,
+    });
+
+    if (file.text) {
+      content.push({ type: "input_text", text: `Kaynak ${index + 1} metni:\n${String(file.text).slice(0, 70000)}` });
+    }
+
+    if (file.data && file.mimeType && String(file.mimeType).startsWith("image/")) {
+      content.push({
+        type: "input_image",
+        image_url: `data:${file.mimeType};base64,${file.data}`,
+        detail: "high",
+      });
+    }
+  });
+
+  return content;
 }
 
 function normalizeModelMovements(items) {
@@ -194,6 +323,29 @@ function extractGeminiText(data) {
   ).trim();
 }
 
+function extractOpenAiText(data) {
+  if (data?.output_text) {
+    return String(data.output_text).trim();
+  }
+
+  const chunks = [];
+  const output = Array.isArray(data?.output) ? data.output : [];
+
+  output.forEach((item) => {
+    const content = Array.isArray(item?.content) ? item.content : [];
+    content.forEach((part) => {
+      if (part?.text) {
+        chunks.push(part.text);
+      }
+      if (part?.type === "output_text" && part?.text) {
+        chunks.push(part.text);
+      }
+    });
+  });
+
+  return chunks.join("").trim();
+}
+
 function parseModelJson(text) {
   const raw = String(text || "").trim();
 
@@ -220,6 +372,10 @@ function parseModelJson(text) {
 }
 
 function getGeminiErrorMessage(data) {
+  return data?.error?.message || data?.message || "";
+}
+
+function getOpenAiErrorMessage(data) {
   return data?.error?.message || data?.message || "";
 }
 
