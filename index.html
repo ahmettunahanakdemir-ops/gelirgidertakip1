@@ -409,7 +409,8 @@
                 multiple
                 hidden
               />
-              <button id="bankImportAddButton" class="success-btn" type="button">AI Önizle / Onaya Hazırla</button>
+              <button id="bankImportAddButton" class="success-btn" type="button">Yapay Zeka ile Önizle</button>
+              <button id="bankImportLocalButton" class="ghost-btn" type="button">Önizle</button>
               <button id="bankImportCancelButton" class="danger-btn" type="button">İptal Et</button>
             </div>
             <p id="bankImportStatus" class="sync-status">Henüz banka hareketi okunmadı.</p>
@@ -1009,9 +1010,9 @@
       <section class="modal-card wide-modal bank-import-preview-modal" role="dialog" aria-modal="true" aria-labelledby="bankImportPreviewModalTitle">
         <div class="panel-heading">
           <div>
-            <p class="panel-kicker">AI Önizleme</p>
+            <p class="panel-kicker">Önizleme</p>
             <h2 id="bankImportPreviewModalTitle">Banka hareketlerini kontrol et</h2>
-            <p id="bankImportPreviewModalSummary" class="panel-note">AI ile bulunan kayıtları eklemeden önce düzenleyebilirsin.</p>
+            <p id="bankImportPreviewModalSummary" class="panel-note">Bulunan kayıtları eklemeden önce düzenleyebilirsin.</p>
           </div>
         </div>
         <div class="bank-import-modal-tools">
@@ -1362,6 +1363,7 @@
           </div>
           <div id="paymentAccountRecordsList" class="transaction-list account-records-list"></div>
           <div class="auth-actions">
+            <button id="refreshPaymentAccountFromRecordsButton" class="success-btn" type="button">Güncelle</button>
             <button id="closePaymentAccountRecordsButton" class="ghost-btn" type="button">Kapat</button>
           </div>
         </div>

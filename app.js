@@ -414,6 +414,7 @@ const syncStatus = document.getElementById("syncStatus");
 const bankImportText = document.getElementById("bankImportText");
 const bankImportFile = document.getElementById("bankImportFile");
 const bankImportAddButton = document.getElementById("bankImportAddButton");
+const bankImportLocalButton = document.getElementById("bankImportLocalButton");
 const bankImportCancelButton = document.getElementById("bankImportCancelButton");
 const bankImportAccountSelect = document.getElementById("bankImportAccount");
 const previewBankImportButton = document.getElementById("previewBankImportButton");
@@ -531,6 +532,7 @@ const paymentAccountRecordsModal = document.getElementById("paymentAccountRecord
 const paymentAccountRecordsTitle = document.getElementById("paymentAccountRecordsTitle");
 const paymentAccountRecordsSummary = document.getElementById("paymentAccountRecordsSummary");
 const paymentAccountRecordsList = document.getElementById("paymentAccountRecordsList");
+const refreshPaymentAccountFromRecordsButton = document.getElementById("refreshPaymentAccountFromRecordsButton");
 const closePaymentAccountRecordsButton = document.getElementById("closePaymentAccountRecordsButton");
 const cloudStatus = document.getElementById("cloudStatus");
 const loginScreen = document.getElementById("loginScreen");
@@ -614,6 +616,7 @@ let editingBesId = "";
 let editingPaymentAccountId = "";
 let payingPaymentAccountId = "";
 let deletingPaymentAccountId = "";
+let viewingPaymentAccountRecordsId = "";
 let pendingDeletePassword = "";
 let pendingGenericConfirmAction = null;
 let uiSettings = loadUiSettings();
@@ -970,6 +973,7 @@ function init() {
   importSyncButton?.addEventListener("click", importSyncCode);
   bankImportFile.addEventListener("change", handleBankImportFile);
   bankImportAddButton.addEventListener("click", addSelectedBankFiles);
+  bankImportLocalButton?.addEventListener("click", () => previewBankImportLocally());
   bankImportAccountSelect?.addEventListener("change", () => {
     syncBankImportAccountSelects(bankImportAccountSelect.value);
     applyBankImportAccountToPending(bankImportAccountSelect.value);
@@ -1039,6 +1043,9 @@ function init() {
     }
   });
   closePaymentAccountRecordsButton?.addEventListener("click", closePaymentAccountRecordsModal);
+  refreshPaymentAccountFromRecordsButton?.addEventListener("click", () => {
+    refreshPaymentAccountFromRecords(viewingPaymentAccountRecordsId);
+  });
   paymentAccountRecordsModal?.addEventListener("click", (event) => {
     if (event.target === paymentAccountRecordsModal) {
       closePaymentAccountRecordsModal();
@@ -1955,11 +1962,12 @@ function renderPaymentAccounts() {
     details.className = "payment-card-details";
 
     if (item.type === "credit_card") {
+      const cardTotals = getCreditCardRecordTotals(item);
       details.classList.add("credit-card-details");
       details.append(
         createPaymentCardDetail("SKT", item.expiry ? formatExpiry(item.expiry) : "--/----"),
         createPaymentCardDetail("Kesim", item.statementDay ? `${item.statementDay}. gün` : "-"),
-        createPaymentCardDetail("Son ödeme", getCreditCardDueDisplay(item))
+        createPaymentCardDetail("Dönem", currency.format(item.currentStatementDebt ?? cardTotals.currentStatementDebt ?? 0))
       );
     } else {
       details.append(
@@ -1975,7 +1983,7 @@ function renderPaymentAccounts() {
     const balanceBox = document.createElement("div");
     const amountLabel = document.createElement("span");
     amountLabel.className = "payment-card-small";
-    amountLabel.textContent = item.type === "credit_card" ? "Güncel borç" : "Güncel bakiye";
+    amountLabel.textContent = item.type === "credit_card" ? "Toplam borç" : "Güncel bakiye";
 
     const amount = document.createElement("strong");
     amount.className = item.type === "credit_card" ? "payment-card-amount expense" : "payment-card-amount income";
@@ -2008,6 +2016,12 @@ function renderPaymentAccounts() {
     recordsButton.textContent = "Kayıtlar";
     recordsButton.addEventListener("click", () => openPaymentAccountRecordsModal(item));
 
+    const refreshButton = document.createElement("button");
+    refreshButton.className = "ghost-btn payment-card-refresh-btn";
+    refreshButton.type = "button";
+    refreshButton.textContent = "Güncelle";
+    refreshButton.addEventListener("click", () => refreshPaymentAccountFromRecords(item.id));
+
     const editButton = document.createElement("button");
     editButton.className = "ghost-btn";
     editButton.type = "button";
@@ -2020,7 +2034,7 @@ function renderPaymentAccounts() {
     removeButton.textContent = "Sil";
     removeButton.addEventListener("click", () => openPaymentAccountDeleteModal(item));
 
-    actions.append(recordsButton, editButton, removeButton);
+    actions.append(recordsButton, refreshButton, editButton, removeButton);
     card.append(shine, top, chipLine, number, details, bottom, actions);
     paymentAccountList.append(card);
   });
@@ -2049,9 +2063,19 @@ function getPaymentAccountCardNumberPlaceholder(type) {
 }
 
 function getPaymentAccountCardNote(item) {
-  if (item.type === "credit_card" && Number(item.limit || 0) > 0) {
+  if (item.type === "credit_card") {
     const available = Math.max(0, Number(item.limit || 0) - Number(item.debt || 0));
-    return `Limit ${currency.format(item.limit)} · Kullanılabilir ${currency.format(available)}`;
+    const totals = getCreditCardRecordTotals(item);
+    const parts = [
+      `Dönem ${currency.format(item.currentStatementDebt ?? totals.currentStatementDebt ?? 0)}`,
+      `Toplam ${currency.format(item.debt || 0)}`,
+    ];
+
+    if (Number(item.limit || 0) > 0) {
+      parts.push(`Kullanılabilir ${currency.format(available)}`);
+    }
+
+    return parts.join(" · ");
   }
 
   return item.note || "";
@@ -2231,6 +2255,10 @@ function addPaymentAccount(event) {
     dueDay: type === "credit_card" ? dueDay : 0,
     limit: type === "credit_card" && Number.isFinite(limit) ? Math.max(0, limit) : 0,
     debt: type === "credit_card" && Number.isFinite(balanceOrDebt) ? Math.max(0, roundMoney(balanceOrDebt)) : 0,
+    currentStatementDebt: type === "credit_card" && Number.isFinite(balanceOrDebt) ? Math.max(0, roundMoney(balanceOrDebt)) : 0,
+    creditPaidTotal: existing?.creditPaidTotal || 0,
+    currentStatementPaidTotal: existing?.currentStatementPaidTotal || 0,
+    creditPaidPeriodKey: existing?.creditPaidPeriodKey || "",
     balance: type !== "credit_card" && Number.isFinite(balanceOrDebt) ? roundMoney(balanceOrDebt) : 0,
     note: String(formData.get("paymentAccountNote") || "").trim(),
     createdAt: existing?.createdAt || now,
@@ -2423,6 +2451,7 @@ function openPaymentAccountRecordsModal(account) {
   }
 
   const accountId = String(account.id || "");
+  viewingPaymentAccountRecordsId = accountId;
   const relatedTransactions = transactions
     .filter((transaction) => String(transaction.paymentAccountId || "") === accountId)
     .sort(compareTransactionsNewestFirst);
@@ -2439,9 +2468,15 @@ function openPaymentAccountRecordsModal(account) {
   }
 
   if (paymentAccountRecordsSummary) {
-    paymentAccountRecordsSummary.textContent = relatedTransactions.length
-      ? `${relatedTransactions.length} kayıt · Gelir ${currency.format(incomeTotal)} · Gider ${currency.format(expenseTotal)}`
-      : "Bu karta veya hesaba bağlı henüz kayıt yok.";
+    if (account.type === "credit_card") {
+      const cardTotals = getCreditCardRecordTotals(account);
+      paymentAccountRecordsSummary.textContent =
+        `${relatedTransactions.length} kayıt · Dönem borcu ${currency.format(cardTotals.currentStatementDebt)} · Toplam borç ${currency.format(cardTotals.totalDebt)} · Ödenen ${currency.format(cardTotals.totalPaid)}`;
+    } else {
+      paymentAccountRecordsSummary.textContent = relatedTransactions.length
+        ? `${relatedTransactions.length} kayıt · Gelir ${currency.format(incomeTotal)} · Gider ${currency.format(expenseTotal)}`
+        : "Bu karta veya hesaba bağlı henüz kayıt yok.";
+    }
   }
 
   if (paymentAccountRecordsList) {
@@ -2477,17 +2512,171 @@ function openPaymentAccountRecordsModal(account) {
     }
   }
 
+  if (refreshPaymentAccountFromRecordsButton) {
+    refreshPaymentAccountFromRecordsButton.disabled = false;
+  }
+
   paymentAccountRecordsModal.hidden = false;
   setTimeout(() => closePaymentAccountRecordsButton?.focus(), 0);
 }
 
 function closePaymentAccountRecordsModal() {
+  viewingPaymentAccountRecordsId = "";
+
   if (paymentAccountRecordsModal) {
     paymentAccountRecordsModal.hidden = true;
   }
 
   if (paymentAccountRecordsList) {
     paymentAccountRecordsList.innerHTML = "";
+  }
+}
+
+function getPaymentAccountRecordTotals(accountId) {
+  const relatedTransactions = transactions.filter(
+    (transaction) => String(transaction.paymentAccountId || "") === String(accountId || "")
+  );
+  const income = relatedTransactions
+    .filter((transaction) => transaction.type === "income")
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+  const expense = relatedTransactions
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+
+  return {
+    count: relatedTransactions.length,
+    income: roundMoney(income),
+    expense: roundMoney(expense),
+    net: roundMoney(income - expense),
+  };
+}
+
+function getCreditCardStatementPeriod(account, referenceDate = getTurkeyTodayISO()) {
+  const statementDay = Number(account?.statementDay || 0);
+  const ref = new Date(`${referenceDate || getTurkeyTodayISO()}T00:00:00`);
+
+  if (!statementDay || Number.isNaN(ref.getTime())) {
+    return { start: "", end: "", key: "all" };
+  }
+
+  const year = ref.getFullYear();
+  const month = ref.getMonth();
+  const day = ref.getDate();
+  const startMonth = day > statementDay ? month : month - 1;
+  const endMonth = day > statementDay ? month + 1 : month;
+  const start = new Date(year, startMonth, clampMonthDay(year, startMonth, statementDay) + 1);
+  const end = new Date(year, endMonth, clampMonthDay(year, endMonth, statementDay));
+
+  return {
+    start: toDateInputValue(start),
+    end: toDateInputValue(end),
+    key: `${toDateInputValue(start)}_${toDateInputValue(end)}`,
+  };
+}
+
+function clampMonthDay(year, monthIndex, day) {
+  return Math.min(Math.max(1, Number(day || 1)), new Date(year, monthIndex + 1, 0).getDate());
+}
+
+function toDateInputValue(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getCreditCardRecordTotals(account) {
+  const all = getPaymentAccountRecordTotals(account.id);
+  const period = getCreditCardStatementPeriod(account);
+  const periodTransactions = transactions.filter((transaction) => {
+    const transactionDate = String(transaction.date || "");
+    return (
+      String(transaction.paymentAccountId || "") === String(account.id || "") &&
+      (!period.start || transactionDate >= period.start) &&
+      (!period.end || transactionDate <= period.end)
+    );
+  });
+  const periodIncome = periodTransactions
+    .filter((transaction) => transaction.type === "income")
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+  const periodExpense = periodTransactions
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+  const totalPaid = Math.max(0, Number(account.creditPaidTotal || 0));
+  const periodPaid = account.creditPaidPeriodKey === period.key ? Math.max(0, Number(account.currentStatementPaidTotal || 0)) : 0;
+  const totalDebt = Math.max(0, roundMoney(all.expense - all.income - totalPaid));
+  const currentStatementDebt = Math.max(0, roundMoney(periodExpense - periodIncome - periodPaid));
+
+  return {
+    all,
+    period,
+    periodIncome: roundMoney(periodIncome),
+    periodExpense: roundMoney(periodExpense),
+    totalPaid: roundMoney(totalPaid),
+    periodPaid: roundMoney(periodPaid),
+    totalDebt,
+    currentStatementDebt,
+  };
+}
+
+function isTransactionInStatementPeriod(transaction, period) {
+  const transactionDate = String(transaction?.date || "");
+  return Boolean(
+    transactionDate &&
+    (!period?.start || transactionDate >= period.start) &&
+    (!period?.end || transactionDate <= period.end)
+  );
+}
+
+function refreshPaymentAccountFromRecords(accountId) {
+  const account = paymentAccounts.find((item) => String(item.id || "") === String(accountId || ""));
+
+  if (!account) {
+    paymentAccountStatus.textContent = "Güncellenecek kart veya hesap bulunamadı.";
+    return;
+  }
+
+  const totals = account.type === "credit_card" ? getCreditCardRecordTotals(account) : getPaymentAccountRecordTotals(account.id);
+  const now = getTurkeyNowDateTime();
+
+  paymentAccounts = paymentAccounts.map((item) => {
+    if (item.id !== account.id) {
+      return item;
+    }
+
+    if (item.type === "credit_card") {
+      return {
+        ...item,
+        debt: totals.totalDebt,
+        currentStatementDebt: totals.currentStatementDebt,
+        creditPaidPeriodKey: totals.period.key,
+        updatedAt: now,
+      };
+    }
+
+    return {
+      ...item,
+      balance: totals.net,
+      updatedAt: now,
+    };
+  });
+
+  persistPaymentAccounts();
+  render();
+
+  const refreshedAccount = paymentAccounts.find((item) => item.id === account.id);
+  const valueText = refreshedAccount?.type === "credit_card"
+    ? `dönem borcu ${currency.format(refreshedAccount.currentStatementDebt || 0)} · toplam borç ${currency.format(refreshedAccount.debt || 0)}`
+    : `bakiye ${currency.format(refreshedAccount?.balance || 0)}`;
+  paymentAccountStatus.textContent =
+    `${formatPaymentAccountName(refreshedAccount || account)} kayıtlardan yeniden hesaplandı: ${valueText}.`;
+
+  if (!paymentAccountRecordsModal?.hidden && viewingPaymentAccountRecordsId === account.id) {
+    openPaymentAccountRecordsModal(refreshedAccount || account);
   }
 }
 
@@ -2692,10 +2881,20 @@ function payCreditCardDebt(event) {
 
   const amount = Math.min(roundMoney(requestedAmount), roundMoney(creditAccount.debt || 0));
   const now = getTurkeyNowDateTime();
+  const period = getCreditCardStatementPeriod(creditAccount);
 
   paymentAccounts = paymentAccounts.map((item) => {
     if (item.id === creditAccount.id) {
-      return { ...item, debt: Math.max(0, roundMoney(Number(item.debt || 0) - amount)), updatedAt: now };
+      const periodPaidBase = item.creditPaidPeriodKey === period.key ? Number(item.currentStatementPaidTotal || 0) : 0;
+      return {
+        ...item,
+        debt: Math.max(0, roundMoney(Number(item.debt || 0) - amount)),
+        currentStatementDebt: Math.max(0, roundMoney(Number(item.currentStatementDebt || 0) - amount)),
+        creditPaidTotal: roundMoney(Number(item.creditPaidTotal || 0) + amount),
+        currentStatementPaidTotal: roundMoney(periodPaidBase + amount),
+        creditPaidPeriodKey: period.key,
+        updatedAt: now,
+      };
     }
 
     if (item.id === sourceAccount.id) {
@@ -2759,11 +2958,31 @@ function applyTransactionPaymentEffect(transaction, direction = 1) {
     }
 
     if (item.type === "credit_card" && transaction.type === "expense") {
-      return { ...item, debt: Math.max(0, roundMoney(Number(item.debt || 0) + amount * factor)), updatedAt: now };
+      const period = getCreditCardStatementPeriod(item);
+      const inPeriod = isTransactionInStatementPeriod(transaction, period);
+      return {
+        ...item,
+        debt: Math.max(0, roundMoney(Number(item.debt || 0) + amount * factor)),
+        currentStatementDebt: inPeriod
+          ? Math.max(0, roundMoney(Number(item.currentStatementDebt || 0) + amount * factor))
+          : Number(item.currentStatementDebt || 0),
+        creditPaidPeriodKey: item.creditPaidPeriodKey || period.key,
+        updatedAt: now,
+      };
     }
 
     if (item.type === "credit_card" && transaction.type === "income") {
-      return { ...item, debt: Math.max(0, roundMoney(Number(item.debt || 0) - amount * factor)), updatedAt: now };
+      const period = getCreditCardStatementPeriod(item);
+      const inPeriod = isTransactionInStatementPeriod(transaction, period);
+      return {
+        ...item,
+        debt: Math.max(0, roundMoney(Number(item.debt || 0) - amount * factor)),
+        currentStatementDebt: inPeriod
+          ? Math.max(0, roundMoney(Number(item.currentStatementDebt || 0) - amount * factor))
+          : Number(item.currentStatementDebt || 0),
+        creditPaidPeriodKey: item.creditPaidPeriodKey || period.key,
+        updatedAt: now,
+      };
     }
 
     if (item.type !== "credit_card" && transaction.type === "expense") {
@@ -5970,9 +6189,20 @@ function normalizePaymentAccount(item) {
   const name = String(item.name || "").trim();
   const balance = Number(item.balance || 0);
   const debt = Number(item.debt || 0);
+  const currentStatementDebt = Number(item.currentStatementDebt ?? debt);
+  const creditPaidTotal = Number(item.creditPaidTotal || 0);
+  const currentStatementPaidTotal = Number(item.currentStatementPaidTotal || 0);
   const limit = Number(item.limit || 0);
 
-  if (!name || !Number.isFinite(balance) || !Number.isFinite(debt) || !Number.isFinite(limit)) {
+  if (
+    !name ||
+    !Number.isFinite(balance) ||
+    !Number.isFinite(debt) ||
+    !Number.isFinite(currentStatementDebt) ||
+    !Number.isFinite(creditPaidTotal) ||
+    !Number.isFinite(currentStatementPaidTotal) ||
+    !Number.isFinite(limit)
+  ) {
     return null;
   }
 
@@ -5988,6 +6218,10 @@ function normalizePaymentAccount(item) {
     dueDay: type === "credit_card" ? clampDay(item.dueDay) : 0,
     limit: type === "credit_card" ? Math.max(0, roundMoney(limit)) : 0,
     debt: type === "credit_card" ? Math.max(0, roundMoney(debt)) : 0,
+    currentStatementDebt: type === "credit_card" ? Math.max(0, roundMoney(currentStatementDebt)) : 0,
+    creditPaidTotal: type === "credit_card" ? Math.max(0, roundMoney(creditPaidTotal)) : 0,
+    currentStatementPaidTotal: type === "credit_card" ? Math.max(0, roundMoney(currentStatementPaidTotal)) : 0,
+    creditPaidPeriodKey: type === "credit_card" ? String(item.creditPaidPeriodKey || "") : "",
     balance: type !== "credit_card" ? roundMoney(balance) : 0,
     note: String(item.note || ""),
     createdAt: String(item.createdAt || ""),
@@ -6078,7 +6312,7 @@ function handleBankImportFile(event) {
   renderBankImportPreview();
 
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "AI Önizle / Onaya Hazırla";
+    bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
   }
 
   if (!pendingBankFiles.length) {
@@ -6088,7 +6322,7 @@ function handleBankImportFile(event) {
 
   const names = pendingBankFiles.map((file) => file.name).join(", ");
   bankImportStatus.textContent =
-    `${pendingBankFiles.length} dosya seçildi: ${names}. AI ile okuyup ayrı önizleme penceresinde göstereceğim.`;
+    `${pendingBankFiles.length} dosya seçildi: ${names}. Yapay zeka ile ya da normal önizleme ile kontrol edebilirsin.`;
 }
 
 function isPdfFile(file) {
@@ -6107,6 +6341,7 @@ function buildPendingBankImportItems(parsedMovements, sourceName = "", existingS
     : getBankImportSelectedAccount();
   const paymentAccountId = selectedAccount ? selectedAccount.id : "";
   const paymentMethod = getPaymentMethodForImportAccount(selectedAccount);
+  const importLabel = String(options.importLabel || "Yapay zeka banka önizleme");
 
   return parsedMovements.map((movement) => {
     const title = cleanBankTitle(movement.title) || "Banka Hareketi";
@@ -6135,7 +6370,7 @@ function buildPendingBankImportItems(parsedMovements, sourceName = "", existingS
       paymentMethod,
       paymentAccountId,
       date,
-      note: sourceName ? `AI banka içe aktarımı · ${sourceName}` : "AI banka içe aktarımı",
+      note: sourceName ? `${importLabel} · ${sourceName}` : importLabel,
       transactionAt: movementTime ? buildTransactionDateTime(date, movementTime) : "",
       createdAt,
     };
@@ -6177,6 +6412,9 @@ async function addSelectedBankFiles() {
   const seenSignatures = new Set();
 
   bankImportAddButton.disabled = true;
+  if (bankImportLocalButton) {
+    bankImportLocalButton.disabled = true;
+  }
   bankImportCancelButton.disabled = true;
   bankImportStatus.textContent = `${pendingBankFiles.length} dosya okunuyor...`;
 
@@ -6207,7 +6445,7 @@ async function addSelectedBankFiles() {
         "Seçilen dosyalardan hareket okunamadı. Görseldeki satırları daha net okumak için banka hareketleri ekranını tam ve parlak şekilde yükle." +
         (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
       if (bankImportAddButton) {
-        bankImportAddButton.textContent = "Önizle / Onaya Hazırla";
+        bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
       }
       return;
     }
@@ -6226,6 +6464,94 @@ async function addSelectedBankFiles() {
   }
 }
 
+
+async function previewBankImportLocally(options = {}) {
+  const { fallbackReason = "", updateStatus = true } = options;
+  const allPendingImports = [];
+  const failedFiles = [];
+  const existingSignatures = new Set(transactions.map(getTransactionSignature));
+  const seenSignatures = new Set();
+
+  bankImportAddButton.disabled = true;
+  if (bankImportLocalButton) {
+    bankImportLocalButton.disabled = true;
+  }
+  bankImportCancelButton.disabled = true;
+  setBankImportLoading(true);
+  bankImportStatus.textContent = fallbackReason
+    ? "Yapay zeka tamamlanamadı; normal önizleme hazırlanıyor..."
+    : "Dosya ve metinler normal önizleme için okunuyor...";
+
+  try {
+    for (let index = 0; index < pendingBankFiles.length; index += 1) {
+      const file = pendingBankFiles[index];
+      bankImportStatus.textContent = `${index + 1}/${pendingBankFiles.length} okunuyor: ${file.name}`;
+
+      try {
+        const text = await readBankImportFile(file);
+        const parsedMovements = parseBankMovements(text);
+        allPendingImports.push(
+          ...buildPendingBankImportItems(parsedMovements, file.name, existingSignatures, seenSignatures, {
+            importLabel: "Normal banka önizleme",
+          })
+        );
+      } catch (error) {
+        failedFiles.push(`${file.name}${error?.message ? ` (${error.message})` : ""}`);
+      }
+    }
+
+    const pastedText = bankImportText.value.trim();
+
+    if (pastedText) {
+      allPendingImports.push(
+        ...buildPendingBankImportItems(parseBankMovements(pastedText), "Yapıştırılan metin", existingSignatures, seenSignatures, {
+          importLabel: "Normal banka önizleme",
+        })
+      );
+    }
+
+    pendingBankImports = allPendingImports;
+    renderBankImportPreview();
+
+    const readyCount = pendingBankImports.filter((item) => item.valid && !item.duplicate).length;
+    const duplicateCount = pendingBankImports.filter((item) => item.duplicate).length;
+    const invalidCount = pendingBankImports.filter((item) => !item.valid).length;
+
+    if (!pendingBankImports.length) {
+      bankImportStatus.textContent =
+        "Önizleme ile hareket bulunamadı. Görsel/PDF sayfasında tarih, açıklama ve tutar tam görünmeli; mümkünse ekranı kırpmadan yükle." +
+        (fallbackReason ? ` Yapay zeka mesajı: ${fallbackReason}` : "") +
+        (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
+      if (bankImportAddButton) {
+        bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
+      }
+      return false;
+    }
+
+    if (updateStatus) {
+      bankImportStatus.textContent =
+        `Önizleme ${readyCount} hareketi hazırladı.` +
+        (fallbackReason ? " Yapay zeka kotası/token bittiğinde bu normal önizleme kullanıldı." : "") +
+        (duplicateCount ? ` ${duplicateCount} tekrar işaretlenmedi.` : "") +
+        (invalidCount ? ` ${invalidCount} satır okunamadı.` : "") +
+        (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
+    }
+
+    if (bankImportAddButton) {
+      bankImportAddButton.textContent = "Önizlemeyi Aç";
+    }
+
+    openBankImportPreviewModal();
+    return true;
+  } finally {
+    setBankImportLoading(false);
+    bankImportAddButton.disabled = false;
+    if (bankImportLocalButton) {
+      bankImportLocalButton.disabled = false;
+    }
+    bankImportCancelButton.disabled = false;
+  }
+}
 
 async function readBankImportFile(file) {
   if (isPdfFile(file)) {
@@ -6258,19 +6584,19 @@ async function readBankImportFile(file) {
 
 async function previewBankImportWithAi() {
   if (!pendingBankFiles.length && !bankImportText.value.trim()) {
-    bankImportStatus.textContent = "AI okuma için önce ekran görüntüsü, PDF, CSV/TXT seç veya metin yapıştır.";
+    bankImportStatus.textContent = "Yapay zeka ile önizleme için önce ekran görüntüsü, PDF, CSV/TXT seç veya metin yapıştır.";
     return;
   }
 
-  const previousAddText = bankImportAddButton?.textContent || "AI Önizle / Onaya Hazırla";
+  const previousAddText = bankImportAddButton?.textContent || "Yapay Zeka ile Önizle";
 
   bankImportAddButton.disabled = true;
   bankImportCancelButton.disabled = true;
   setBankImportLoading(true);
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "AI Okuyor...";
+    bankImportAddButton.textContent = "Yapay Zeka Okuyor...";
   }
-  bankImportStatus.textContent = "AI banka ekranını ve sayfadaki gerçek hareket satırlarını algılıyor...";
+  bankImportStatus.textContent = "Yapay zeka banka ekranını ve sayfadaki gerçek hareket satırlarını algılıyor...";
 
   try {
     const payload = await buildBankAiImportPayload();
@@ -6310,11 +6636,11 @@ async function previewBankImportWithAi() {
     const invalidCount = pendingBankImports.filter((item) => !item.valid).length;
 
     if (bankImportAddButton) {
-      bankImportAddButton.textContent = pendingBankImports.length ? "Önizleme Penceresini Aç" : previousAddText;
+      bankImportAddButton.textContent = pendingBankImports.length ? "Önizlemeyi Aç" : previousAddText;
     }
 
     bankImportStatus.textContent =
-      `AI ${movements.length} hareket algıladı; ${readyCount} hareket onay bekliyor.` +
+      `Yapay zeka ${movements.length} hareket algıladı; ${readyCount} hareket onay bekliyor.` +
       (duplicateCount ? ` ${duplicateCount} tekrar işaretlenmedi.` : "") +
       (invalidCount ? ` ${invalidCount} satır kontrol istiyor.` : "") +
       " Düzenlemek ve eklemek için önizleme penceresini kontrol et.";
@@ -6322,12 +6648,15 @@ async function previewBankImportWithAi() {
   } catch (error) {
     const message = getBankAiImportErrorMessage(error);
 
-    bankImportStatus.textContent = message;
+    bankImportStatus.textContent = `${message} Normal önizleme için "Önizle" butonunu kullanabilirsin.`;
   } finally {
     setBankImportLoading(false);
     bankImportAddButton.disabled = false;
+    if (bankImportLocalButton) {
+      bankImportLocalButton.disabled = false;
+    }
     bankImportCancelButton.disabled = false;
-    bankImportAddButton.textContent = pendingBankImports.length ? "Önizleme Penceresini Aç" : previousAddText;
+    bankImportAddButton.textContent = pendingBankImports.length ? "Önizlemeyi Aç" : previousAddText;
   }
 }
 
@@ -6336,12 +6665,12 @@ function getBankAiImportErrorMessage(error) {
 
   if (/failed to fetch|networkerror|load failed/i.test(message)) {
     return (
-      "AI fonksiyonuna ulaşılamadı. Site Netlify üzerinde deploy edilmiş olmalı, " +
-      "netlify/functions/bank-ai-import.js pakette kalmalı ve Netlify ayarlarında GEMINI_API_KEY tanımlı olmalı."
+      "Yapay zeka fonksiyonuna ulaşılamadı. Site Netlify üzerinde deploy edilmiş olmalı, " +
+      "netlify/functions/bank-ai-import.js pakette kalmalı ve Netlify ayarlarında AI anahtarı tanımlı olmalı."
     );
   }
 
-  return message || "AI okuma tamamlanamadı.";
+  return message || "Yapay zeka okuma tamamlanamadı.";
 }
 
 async function buildBankAiImportPayload() {
@@ -6349,7 +6678,7 @@ async function buildBankAiImportPayload() {
 
   for (let index = 0; index < pendingBankFiles.length; index += 1) {
     const file = pendingBankFiles[index];
-    bankImportStatus.textContent = `${index + 1}/${pendingBankFiles.length} AI için hazırlanıyor: ${file.name}`;
+    bankImportStatus.textContent = `${index + 1}/${pendingBankFiles.length} yapay zeka için hazırlanıyor: ${file.name}`;
     files.push(await readBankAiFilePayload(file));
   }
 
@@ -6980,7 +7309,7 @@ function previewBankImport(options = {}) {
   const invalidCount = pendingBankImports.filter((item) => !item.valid).length;
 
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = pendingBankImports.length ? "Seçilenleri Onayla ve Ekle" : "Önizle / Onaya Hazırla";
+    bankImportAddButton.textContent = pendingBankImports.length ? "Seçilenleri Onayla ve Ekle" : "Yapay Zeka ile Önizle";
   }
 
   if (!updateStatus) {
@@ -7056,7 +7385,7 @@ function confirmBankImport(options = {}) {
   renderBankImportPreview();
   closeBankImportPreviewModal();
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "AI Önizle / Onaya Hazırla";
+    bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
   }
   if (updateStatus) {
     bankImportStatus.textContent = `${selectedTransactions.length} banka hareketi kayıtlara eklendi. Seçilen dosya/görsel alanı temizlendi.`;
@@ -7071,7 +7400,7 @@ function clearBankImport() {
   renderBankImportPreview();
   closeBankImportPreviewModal();
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "AI Önizle / Onaya Hazırla";
+    bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
   }
   bankImportStatus.textContent = "Banka içe aktarma alanı temizlendi.";
 }
@@ -7444,7 +7773,7 @@ function openBankImportPreviewModal() {
   renderBankImportPreview();
 
   if (!pendingBankImports.length) {
-    bankImportStatus.textContent = "Önce AI ile hareketleri önizle.";
+    bankImportStatus.textContent = "Önce yapay zeka ile ya da normal önizleme ile hareketleri hazırla.";
     return;
   }
 
@@ -7471,6 +7800,12 @@ function parseBankMovements(raw) {
 
   if (csvMovements.length) {
     return csvMovements;
+  }
+
+  const templateMovements = dedupeBankMovements(parseBankAppTemplateRows(normalizedRaw));
+
+  if (shouldTrustBankAppTemplateRows(normalizedRaw, templateMovements)) {
+    return templateMovements;
   }
 
   const mobileMovements = dedupeBankMovements(parseMobileBankOcrRows(normalizedRaw));
@@ -7531,6 +7866,309 @@ function shouldTrustStructuredBankRows(raw, movements) {
   }
 
   return false;
+}
+
+function shouldTrustBankAppTemplateRows(raw, movements) {
+  if (!movements.length) {
+    return false;
+  }
+
+  const text = normalizeBankText(raw);
+  const indicators = [
+    "hesap hareketleri",
+    "kart hareketleri",
+    "son 10 hareket",
+    "son 1 ay",
+    "son 7 gun",
+    "kazandiran gunluk hesap",
+    "islem sonu bakiye",
+    "kalan bakiye",
+    "mevduat islemleri",
+    "transfer islemleri",
+  ];
+
+  return indicators.some((indicator) => text.includes(indicator));
+}
+
+function parseBankAppTemplateRows(raw) {
+  const sourceLines = getBankOcrLines(raw);
+  const lines = [];
+
+  for (const line of sourceLines) {
+    if (isBankTemplateHardStopLine(line)) {
+      break;
+    }
+
+    lines.push(line);
+  }
+
+  const starts = [];
+
+  lines.forEach((line, index) => {
+    const start = parseBankTemplateRowStart(lines, index);
+
+    if (start && !starts.some((item) => item.index === start.index)) {
+      starts.push(start);
+    }
+  });
+
+  return starts
+    .map((start, order) => {
+      const nextStart = starts[order + 1]?.index ?? lines.length;
+      const block = lines.slice(start.index, nextStart).filter((line) => !isBankTemplateSoftNoiseLine(line));
+      return parseBankTemplateBlock(block, start);
+    })
+    .filter(Boolean);
+}
+
+function parseBankTemplateRowStart(lines, index) {
+  const line = String(lines[index] || "").trim();
+
+  if (!line || isBankTemplateSoftNoiseLine(line)) {
+    return null;
+  }
+
+  const sameLineDate = parseBankTemplateDateFromLine(line) || parseBankScreenshotDateFromLine(line);
+  const context = lines.slice(index, Math.min(lines.length, index + 8));
+  const normalizedContext = normalizeBankText(context.join(" "));
+
+  if (sameLineDate) {
+    if (!hasBankTemplateRowEvidence(context, normalizedContext)) {
+      return null;
+    }
+
+    return {
+      index,
+      date: sameLineDate.date,
+      day: Number(sameLineDate.day || sameLineDate.date.slice(-2)),
+      time: sameLineDate.time || getTimePart(context.join(" ")),
+    };
+  }
+
+  const dayMatch = line.match(/^(\d{1,2})(?:\s+|$)/);
+
+  if (!dayMatch) {
+    return null;
+  }
+
+  const day = Number(dayMatch[1]);
+
+  if (day < 1 || day > 31) {
+    return null;
+  }
+
+  const monthLineIndex = context.findIndex((candidate) => getBankMonthNumber(candidate));
+  const hasMonthNearby = monthLineIndex >= 0 && monthLineIndex <= 3;
+
+  if (!hasMonthNearby || !hasBankTemplateRowEvidence(context, normalizedContext)) {
+    return null;
+  }
+
+  const monthLine = context[monthLineIndex] || "";
+  const month = getBankMonthNumber(monthLine);
+  const yearMatch = context.join(" ").match(/\b20\d{2}\b/);
+  const year = yearMatch ? Number(yearMatch[0]) : Number(getTurkeyTodayISO().slice(0, 4));
+
+  return {
+    index,
+    date: buildIsoDate(year, month, day),
+    day,
+    time: getTimePart(context.join(" ")),
+  };
+}
+
+function parseBankTemplateDateFromLine(line) {
+  const text = String(line || "");
+  const monthRegex =
+    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|way|mav|haziran|haz|temmuz|tem|agustos|ağustos|agu|eylul|eylül|eyl|ekim|eki|kasim|kasım|kas|aralik|aralık|ara)";
+  const match = text.match(new RegExp(String.raw`^\s*(\d{1,2})\s+${monthRegex}(?:\s+(20\d{2}))?(?:\s+([01]?\d|2[0-3])[:.]([0-5]\d))?`, "i"));
+
+  if (!match) {
+    return null;
+  }
+
+  const day = Number(match[1]);
+  const month = getBankMonthNumber(match[2]);
+  const year = Number(match[3] || getTurkeyTodayISO().slice(0, 4));
+  const date = buildIsoDate(year, month, day);
+
+  if (!date) {
+    return null;
+  }
+
+  return {
+    date,
+    day,
+    time: match[4] ? `${match[4].padStart(2, "0")}:${match[5]}` : "",
+  };
+}
+
+function hasBankTemplateRowEvidence(contextLines, normalizedContext) {
+  const lines = contextLines || [];
+  const hasAmount = lines.some((line) => findUsableMoneyMatchesInLine(line).length);
+  const hasTitle = lines.some((line) => isBankTemplateTitleLine(line));
+  const rowKeywordCount = BANK_OCR_ROW_KEYWORDS.filter((keyword) => normalizedContext.includes(keyword)).length;
+
+  return hasAmount && (hasTitle || rowKeywordCount > 0);
+}
+
+function parseBankTemplateBlock(block, start) {
+  if (!block.length || isBankTemplateNoiseBlock(block)) {
+    return null;
+  }
+
+  const amountDetails = findBankMovementAmount(block);
+
+  if (!amountDetails) {
+    return null;
+  }
+
+  const date = start.date || findDayMonthDateInText(block.join(" ")) || findDayAndMonthAnywhereInText(block.join(" "));
+  const title = extractBankTemplateTitle(block, amountDetails, start) ||
+    extractBankMovementTitle(block, amountDetails) ||
+    "Banka Hareketi";
+
+  if (!date || !title || hasAnyBankKeyword(title, BANK_OCR_BALANCE_KEYWORDS)) {
+    return null;
+  }
+
+  const type = inferBankTemplateTransactionType(title, amountDetails, block);
+
+  return {
+    title,
+    date,
+    amount: amountDetails.amount,
+    type,
+    sign: type === "income" ? 1 : -1,
+    hasExplicitSign: amountDetails.hasExplicitSign,
+    raw: block.join(" "),
+  };
+}
+
+function extractBankTemplateTitle(block, amountDetails, start) {
+  const selected = [];
+
+  block.forEach((line) => {
+    let cleaned = String(line || "");
+    cleaned = cleaned.replace(amountDetails.match || "", " ");
+    cleaned = cleaned.replace(new RegExp(String.raw`^\s*${start.day}\b`), " ");
+    cleaned = cleaned.replace(/\b([01]?\d|2[0-3])[:.][0-5]\d(?::[0-5]\d)?\b/g, " ");
+    cleaned = cleaned.replace(/\b20\d{2}\b/g, " ");
+    cleaned = cleaned.replace(/\b(?:TL|TRY|₺)\b/gi, " ");
+    cleaned = cleanBankTitle(cleaned);
+
+    if (!isBankTemplateTitleLine(cleaned)) {
+      return;
+    }
+
+    selected.push(cleaned);
+  });
+
+  return cleanBankTitle(selected.slice(0, 2).join(" - ")).slice(0, 90);
+}
+
+function inferBankTemplateTransactionType(title, amountDetails, block) {
+  const text = normalizeBankText(`${title} ${block.join(" ")}`);
+
+  if (amountDetails.sign < 0) {
+    return "expense";
+  }
+
+  if (amountDetails.hasExplicitSign && amountDetails.sign > 0) {
+    return "income";
+  }
+
+  if (hasBankIncomeContext(text) && !hasBankExpenseContext(text)) {
+    return "income";
+  }
+
+  if (/\b(gelen|mevduat|faiz|hesaptan gelen|gond|gonderen)\b/.test(text)) {
+    return "income";
+  }
+
+  if (/\b(giden|para cekme|komisyon|bsmv|kesinti|ucret|tahsilat|aidat|odeme|transfer)\b/.test(text)) {
+    return "expense";
+  }
+
+  return inferTransactionType(title, amountDetails.sign, amountDetails.hasExplicitSign);
+}
+
+function isBankTemplateTitleLine(value) {
+  const normalized = normalizeBankText(value);
+
+  if (!normalized || normalized.length < 3 || !/[a-z]/.test(normalized)) {
+    return false;
+  }
+
+  if (isBankTemplateSoftNoiseLine(normalized) || hasAnyBankKeyword(normalized, BANK_OCR_BALANCE_KEYWORDS)) {
+    return false;
+  }
+
+  if (getBankMonthNumber(normalized) && normalized.split(" ").length <= 3) {
+    return false;
+  }
+
+  if (findMoneyMatchesInLine(value).length && normalized.split(" ").length <= 3) {
+    return false;
+  }
+
+  return !/^\d+(?:\s+\d{1,2})?$/.test(normalized);
+}
+
+function isBankTemplateNoiseBlock(block) {
+  const text = normalizeBankText((block || []).join(" "));
+  const noiseOnlyKeywords = [
+    "hesap hareketleri",
+    "kart hareketleri",
+    "kullanilabilir bakiye",
+    "diger bekleyen islemler",
+    "son 10 hareket",
+    "son 1 ay",
+    "son 7 gun",
+    "gecmis",
+    "gelecek",
+  ];
+
+  return noiseOnlyKeywords.some((keyword) => text === keyword || text.startsWith(`${keyword} `)) &&
+    !BANK_OCR_ROW_KEYWORDS.some((keyword) => text.includes(keyword));
+}
+
+function isBankTemplateHardStopLine(value) {
+  const text = normalizeBankText(value);
+  const hardStops = [
+    "tum hareketler",
+    "ana sayfa",
+    "para gonder",
+    "odeme yap",
+    "kampanyalar",
+    "menu",
+    "basvurular",
+    "hesap ve kart",
+    "durumum",
+    "gelirgidertakip",
+  ];
+
+  return hardStops.some((keyword) => text === keyword || text.includes(keyword));
+}
+
+function isBankTemplateSoftNoiseLine(value) {
+  const text = normalizeBankText(value);
+  const softNoise = [
+    "hesap hareketleri",
+    "kart hareketleri",
+    "kullanilabilir bakiye",
+    "vadesiz tl hesabi",
+    "vadesiz",
+    "son 10 hareket",
+    "diger bekleyen islemler",
+    "son 1 ay",
+    "son 7 gun",
+    "filtre",
+    "sessiz",
+    "okunabilir hale getir",
+  ];
+
+  return softNoise.some((keyword) => text === keyword || text.includes(keyword));
 }
 
 function dedupeBankMovements(movements) {
