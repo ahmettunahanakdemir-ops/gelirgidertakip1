@@ -8849,3 +8849,45 @@ body[data-theme="dark"] #bankImportLocalButton {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* v139: açık temada kart aksiyon butonlarının metin kontrastı */
+html[data-theme="light"] .payment-card .payment-card-actions .ghost-btn {
+  border-color: rgba(255, 255, 255, 0.72) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 253, 245, 0.94)),
+    #ffffff !important;
+  color: #12352f !important;
+  text-shadow: none !important;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .payment-card .payment-card-actions .ghost-btn:hover {
+  background:
+    linear-gradient(180deg, #ffffff, #ccfbf1),
+    #ffffff !important;
+  color: #062e25 !important;
+}
+
+html[data-theme="light"] .payment-card .payment-card-actions .danger-lite-btn {
+  border-color: rgba(254, 202, 202, 0.84) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 247, 247, 0.98), rgba(254, 226, 226, 0.94)),
+    #fff7f7 !important;
+  color: #9f1239 !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="light"] .payment-card .payment-card-actions .success-btn {
+  border-color: rgba(4, 120, 87, 0.40) !important;
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 48%, #059669 100%) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.20) !important;
+}
+
+html[data-theme="light"] .payment-card .payment-card-actions .success-btn:disabled {
+  border-color: rgba(255, 255, 255, 0.70) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: #64748b !important;
+  text-shadow: none !important;
+  opacity: 0.72 !important;
+}
