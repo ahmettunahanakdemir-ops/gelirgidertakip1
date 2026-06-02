@@ -353,22 +353,74 @@ function parseModelJson(text) {
     return { movements: [] };
   }
 
-  try {
-    return JSON.parse(raw);
-  } catch {
-    const stripped = raw
-      .replace(/^```(?:json)?/i, "")
-      .replace(/```$/i, "")
-      .trim();
-    const start = stripped.indexOf("{");
-    const end = stripped.lastIndexOf("}");
+  const candidates = [
+    raw,
+    raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim(),
+  ];
 
-    if (start >= 0 && end > start) {
-      return JSON.parse(stripped.slice(start, end + 1));
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      const objectText = extractFirstJsonObject(candidate);
+      if (objectText) {
+        try {
+          return JSON.parse(objectText);
+        } catch {
+          // Try the next candidate.
+        }
+      }
     }
   }
 
   return { movements: [] };
+}
+
+function extractFirstJsonObject(value) {
+  const text = String(value || "");
+  const start = text.indexOf("{");
+
+  if (start < 0) {
+    return "";
+  }
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) {
+      continue;
+    }
+
+    if (char === "{") {
+      depth += 1;
+    } else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return text.slice(start, index + 1);
+      }
+    }
+  }
+
+  return "";
 }
 
 function getGeminiErrorMessage(data) {
