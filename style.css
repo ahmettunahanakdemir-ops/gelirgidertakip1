@@ -5550,6 +5550,38 @@ label,
   width: 100%;
 }
 
+.notification-settings-block {
+  grid-column: 1 / -1;
+}
+
+.notification-settings-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(204, 251, 241, 0.48), rgba(255, 255, 255, 0.80)),
+    rgba(255, 255, 255, 0.70);
+}
+
+.notification-settings-card strong,
+.notification-settings-card small {
+  display: block;
+}
+
+.notification-settings-card small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: var(--app-font-weight, 500);
+}
+
+.notification-settings-card button {
+  min-width: 170px;
+}
+
 #categoryManageModal .modal-actions {
   position: sticky;
   bottom: 0;
@@ -5576,6 +5608,13 @@ html[data-theme="dark"] .category-bar {
 html[data-theme="dark"] .settings-preview-card {
   background: linear-gradient(135deg, rgba(32, 176, 159, 0.12), rgba(18, 26, 34, 0.92));
   border-color: rgba(151, 183, 199, 0.16);
+}
+
+html[data-theme="dark"] .notification-settings-card {
+  border-color: rgba(94, 224, 209, 0.18);
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.13), rgba(15, 23, 32, 0.88)),
+    rgba(17, 24, 34, 0.84);
 }
 
 html[data-theme="dark"] #categoryManageModal .modal-actions {
@@ -5620,6 +5659,14 @@ html[data-theme="dark"] .payment-card-amount.expense {
 
   .font-size-actions {
     grid-template-columns: 1fr;
+  }
+
+  .notification-settings-card {
+    grid-template-columns: 1fr;
+  }
+
+  .notification-settings-card button {
+    width: 100%;
   }
 }
 
@@ -8890,4 +8937,21 @@ html[data-theme="light"] .payment-card .payment-card-actions .success-btn:disabl
   color: #64748b !important;
   text-shadow: none !important;
   opacity: 0.72 !important;
+}
+
+html[data-theme="dark"] .payment-card .payment-card-actions .danger-lite-btn {
+  border-color: rgba(254, 202, 202, 0.34) !important;
+  background:
+    linear-gradient(180deg, rgba(127, 29, 29, 0.40), rgba(69, 10, 10, 0.34)),
+    rgba(254, 226, 226, 0.12) !important;
+  color: #fecdd3 !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="dark"] .payment-card .payment-card-actions .danger-lite-btn:hover {
+  border-color: rgba(252, 165, 165, 0.52) !important;
+  background:
+    linear-gradient(180deg, rgba(153, 27, 27, 0.48), rgba(127, 29, 29, 0.40)),
+    rgba(254, 226, 226, 0.16) !important;
+  color: #ffe4e6 !important;
 }

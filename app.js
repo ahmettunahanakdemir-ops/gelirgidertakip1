@@ -8,6 +8,8 @@ const LAST_USERNAME_KEY = "akis-budget-last-username";
 const THEME_STORAGE_KEY = "akis-budget-theme";
 const UI_SETTINGS_STORAGE_KEY = "akis-budget-ui-settings";
 const HOME_SUMMARY_FILTER_STORAGE_KEY = "akis-budget-home-summary-filter";
+const CARD_REMINDER_SETTINGS_STORAGE_KEY = "akis-budget-card-reminder-settings";
+const CARD_REMINDER_STATE_STORAGE_KEY = "akis-budget-card-reminder-state";
 
 const DEFAULT_CATEGORIES = {
   income: ["Maaş", "Serbest İş", "Yatırım", "Hediye", "Promosyon", "Harçlık", "Borç Ödeme", "Diğer"],
@@ -35,6 +37,12 @@ const DEFAULT_UI_SETTINGS = {
   fontWeight: "regular",
   fontSize: 16,
 };
+const DEFAULT_CARD_REMINDER_SETTINGS = {
+  enabled: false,
+};
+const CARD_REMINDER_START_DAYS = 5;
+const CARD_REMINDER_CHECK_INTERVAL_MS = 10 * 60 * 1000;
+const CARD_REMINDER_SLOTS = ["09:30", "14:30", "19:30"];
 
 const FONT_FAMILY_MAP = {
   manrope: "\"Manrope\", sans-serif",
@@ -465,6 +473,8 @@ const settingsFontSizeValue = document.getElementById("settingsFontSizeValue");
 const increaseFontButton = document.getElementById("increaseFontButton");
 const decreaseFontButton = document.getElementById("decreaseFontButton");
 const resetAppearanceButton = document.getElementById("resetAppearanceButton");
+const cardReminderPermissionButton = document.getElementById("cardReminderPermissionButton");
+const cardReminderStatus = document.getElementById("cardReminderStatus");
 const genericConfirmModal = document.getElementById("genericConfirmModal");
 const genericConfirmTitle = document.getElementById("genericConfirmTitle");
 const genericConfirmText = document.getElementById("genericConfirmText");
@@ -620,6 +630,9 @@ let viewingPaymentAccountRecordsId = "";
 let pendingDeletePassword = "";
 let pendingGenericConfirmAction = null;
 let uiSettings = loadUiSettings();
+let cardReminderSettings = loadCardReminderSettings();
+let cardReminderState = loadCardReminderState();
+let cardReminderTimer = null;
 let homeSummaryFilter = loadHomeSummaryFilter();
 let transactions = loadTransactions();
 let assets = loadAssets();
@@ -812,6 +825,291 @@ function initThemePreference() {
   resetAppearanceButton?.addEventListener("click", resetAppearanceSettings);
 }
 
+function normalizeCardReminderSettings(raw = {}) {
+  return {
+    enabled: Boolean(raw.enabled),
+  };
+}
+
+function loadCardReminderSettings() {
+  try {
+    const saved = localStorage.getItem(getStorageKey(CARD_REMINDER_SETTINGS_STORAGE_KEY));
+    return normalizeCardReminderSettings(saved ? JSON.parse(saved) : DEFAULT_CARD_REMINDER_SETTINGS);
+  } catch {
+    return { ...DEFAULT_CARD_REMINDER_SETTINGS };
+  }
+}
+
+function saveCardReminderSettings() {
+  try {
+    localStorage.setItem(
+      getStorageKey(CARD_REMINDER_SETTINGS_STORAGE_KEY),
+      JSON.stringify(normalizeCardReminderSettings(cardReminderSettings))
+    );
+  } catch {
+    // Bildirim tercihi sadece bu cihazda tutulur.
+  }
+}
+
+function loadCardReminderState() {
+  try {
+    const saved = localStorage.getItem(getStorageKey(CARD_REMINDER_STATE_STORAGE_KEY));
+    const parsed = saved ? JSON.parse(saved) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveCardReminderState() {
+  try {
+    localStorage.setItem(getStorageKey(CARD_REMINDER_STATE_STORAGE_KEY), JSON.stringify(cardReminderState || {}));
+  } catch {
+    // Hatırlatma geçmişi kritik değil.
+  }
+}
+
+function refreshCardReminderSettingsForCurrentUser() {
+  cardReminderSettings = loadCardReminderSettings();
+  cardReminderState = loadCardReminderState();
+  updateCardReminderControls();
+}
+
+function initCardReminderNotifications() {
+  updateCardReminderControls();
+  cardReminderPermissionButton?.addEventListener("click", requestCardReminderPermission);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      checkCardPaymentReminders();
+    }
+  });
+  window.addEventListener("focus", () => checkCardPaymentReminders());
+  window.setTimeout(() => checkCardPaymentReminders(), 1500);
+  cardReminderTimer = window.setInterval(checkCardPaymentReminders, CARD_REMINDER_CHECK_INTERVAL_MS);
+}
+
+function updateCardReminderControls() {
+  const supported = isCardReminderSupported();
+  const permission = supported ? Notification.permission : "unsupported";
+  const enabled = Boolean(cardReminderSettings.enabled && permission === "granted");
+
+  if (cardReminderPermissionButton) {
+    cardReminderPermissionButton.disabled = !supported;
+    cardReminderPermissionButton.textContent = enabled
+      ? "Bildirimler Açık"
+      : permission === "denied"
+        ? "Bildirim İzni Kapalı"
+        : "Bildirimleri Aç";
+  }
+
+  if (!cardReminderStatus) {
+    return;
+  }
+
+  if (!supported) {
+    cardReminderStatus.textContent = "Bu tarayıcı kart bildirimi desteklemiyor.";
+  } else if (permission === "denied") {
+    cardReminderStatus.textContent = "Bildirim izni kapalı. Tarayıcı/telefon ayarlarından izin vermen gerekir.";
+  } else if (enabled) {
+    const dueCards = getDueCardReminderItems();
+    cardReminderStatus.textContent = dueCards.length
+      ? `${dueCards.length} kart için son ödeme hatırlatması aktif.`
+      : "Bildirimler açık. Son ödeme tarihi yaklaşan kart olunca hatırlatacağım.";
+  } else {
+    cardReminderStatus.textContent = "Bildirimler kapalı. Açınca son ödeme tarihine 5 gün kala hatırlatırım.";
+  }
+}
+
+function isCardReminderSupported() {
+  return typeof window !== "undefined" && "Notification" in window;
+}
+
+async function requestCardReminderPermission() {
+  if (!isCardReminderSupported()) {
+    updateCardReminderControls();
+    return;
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    cardReminderSettings.enabled = permission === "granted";
+    saveCardReminderSettings();
+    updateCardReminderControls();
+
+    if (permission === "granted") {
+      checkCardPaymentReminders({ force: true });
+    }
+  } catch (error) {
+    if (cardReminderStatus) {
+      cardReminderStatus.textContent = "Bildirim izni alınamadı. Telefon/tarayıcı ayarlarını kontrol et.";
+    }
+  }
+}
+
+async function checkCardPaymentReminders(options = {}) {
+  const { force = false } = options;
+
+  if (!cardReminderSettings.enabled || !isCardReminderSupported() || Notification.permission !== "granted") {
+    updateCardReminderControls();
+    return;
+  }
+
+  const slot = force ? getCurrentOrNextCardReminderSlot() : getCurrentCardReminderSlot();
+
+  if (!slot) {
+    updateCardReminderControls();
+    return;
+  }
+
+  const dueCards = getDueCardReminderItems();
+
+  for (const item of dueCards) {
+    const key = `${item.account.id}|${item.dueDate}|${getTurkeyTodayISO()}|${slot}`;
+
+    if (cardReminderState[key]) {
+      continue;
+    }
+
+    if (await sendCardPaymentReminder(item, slot)) {
+      cardReminderState[key] = getTurkeyNowDateTime();
+    }
+  }
+
+  saveCardReminderState();
+  updateCardReminderControls();
+}
+
+function getCurrentCardReminderSlot(date = new Date()) {
+  const time = getTurkeyNowTime(date).slice(0, 5);
+  return CARD_REMINDER_SLOTS.filter((slot) => slot <= time).pop() || "";
+}
+
+function getCurrentOrNextCardReminderSlot(date = new Date()) {
+  return getCurrentCardReminderSlot(date) || CARD_REMINDER_SLOTS[0];
+}
+
+function getDueCardReminderItems(referenceDate = getTurkeyTodayISO()) {
+  return paymentAccounts
+    .filter((account) => account.type === "credit_card" && Number(account.debt || 0) > 0 && Number(account.dueDay || 0) > 0)
+    .map((account) => {
+      const dueDate = getCreditCardDueDate(account, referenceDate);
+      const daysUntil = getDateDiffInDays(referenceDate, dueDate);
+      return { account, dueDate, daysUntil };
+    })
+    .filter((item) => item.dueDate && item.daysUntil <= CARD_REMINDER_START_DAYS);
+}
+
+function getCreditCardDueDate(account, referenceDate = getTurkeyTodayISO()) {
+  const dueDay = Number(account?.dueDay || 0);
+
+  if (!dueDay) {
+    return "";
+  }
+
+  const today = parseIsoDate(referenceDate);
+
+  if (!today) {
+    return "";
+  }
+
+  const statementDay = Number(account?.statementDay || 0);
+
+  if (!statementDay) {
+    return toDateInputValue(new Date(today.getFullYear(), today.getMonth(), clampMonthDay(today.getFullYear(), today.getMonth(), dueDay)));
+  }
+
+  const statementCandidates = [];
+
+  for (let offset = -2; offset <= 2; offset += 1) {
+    const statementYear = today.getFullYear();
+    const statementMonth = today.getMonth() + offset;
+    const statementDate = new Date(
+      statementYear,
+      statementMonth,
+      clampMonthDay(statementYear, statementMonth, statementDay)
+    );
+    const dueMonth = dueDay <= statementDay ? statementDate.getMonth() + 1 : statementDate.getMonth();
+    const dueYear = statementDate.getFullYear();
+    const dueDate = new Date(dueYear, dueMonth, clampMonthDay(dueYear, dueMonth, dueDay));
+
+    if (statementDate.getTime() <= today.getTime()) {
+      statementCandidates.push({ statementDate, dueDate });
+    }
+  }
+
+  const latestStatement = statementCandidates.sort((a, b) => b.statementDate.getTime() - a.statementDate.getTime())[0];
+  return latestStatement ? toDateInputValue(latestStatement.dueDate) : "";
+}
+
+function parseIsoDate(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getDateDiffInDays(fromIso, toIso) {
+  const from = parseIsoDate(fromIso);
+  const to = parseIsoDate(toIso);
+
+  if (!from || !to) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return Math.round((to.getTime() - from.getTime()) / 86400000);
+}
+
+function getCardReminderMessage(item) {
+  const account = item.account;
+  const dayText = item.daysUntil > 0
+    ? `${item.daysUntil} gün kaldı`
+    : item.daysUntil === 0
+      ? "son gün bugün"
+      : `${Math.abs(item.daysUntil)} gün geçti`;
+
+  return {
+    title: "Kredi kartı son ödeme hatırlatması",
+    body: `${formatPaymentAccountName(account)}: ${formatDate(item.dueDate)} (${dayText}). Borç: ${currency.format(account.debt || 0)}.`,
+  };
+}
+
+async function sendCardPaymentReminder(item, slot) {
+  const message = getCardReminderMessage(item);
+  const options = {
+    body: message.body,
+    tag: `card-payment-${item.account.id}-${item.dueDate}-${slot}`,
+    renotify: false,
+    requireInteraction: false,
+    icon: "./icon-180.png",
+    badge: "./icon-180.png",
+    data: {
+      url: "./",
+      accountId: item.account.id,
+      dueDate: item.dueDate,
+    },
+  };
+
+  try {
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+
+      if (registration?.showNotification) {
+        await registration.showNotification(message.title, options);
+        return true;
+      }
+    }
+
+    new Notification(message.title, options);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function openGenericConfirmModal(title, text, onConfirm) {
   if (!genericConfirmModal) {
     if (typeof onConfirm === "function") {
@@ -917,6 +1215,7 @@ function init() {
   render();
   initHistoryCustomFilterSelects();
   registerServiceWorker();
+  initCardReminderNotifications();
   if (!window.__akisWealthFitBound) {
     window.addEventListener("resize", fitHomeWealthTotalText);
     window.__akisWealthFitBound = true;
@@ -1391,6 +1690,7 @@ function persistPaymentAccounts(options = {}) {
   const { syncCloud = true } = options;
 
   localStorage.setItem(getStorageKey(PAYMENT_ACCOUNTS_STORAGE_KEY), JSON.stringify(paymentAccounts));
+  window.setTimeout(() => checkCardPaymentReminders(), 0);
 
   if (syncCloud) {
     syncUserProfileToCloud();
@@ -1445,6 +1745,7 @@ function render() {
   renderCategoryBreakdown();
   renderTransactions();
   updateStorageStatus();
+  updateCardReminderControls();
 }
 
 function renderStats() {
@@ -5797,6 +6098,7 @@ async function handleAuthStateChanged(user) {
 
   if (!user) {
     currentUser = null;
+    refreshCardReminderSettingsForCurrentUser();
     transactions = loadTransactions();
     assets = loadAssets();
     besAccounts = loadBesAccounts();
@@ -5814,6 +6116,7 @@ async function handleAuthStateChanged(user) {
   const anonymousLocalBesAccounts = getCloudReadyBesAccounts(besAccounts);
   const anonymousLocalPaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
   currentUser = user;
+  refreshCardReminderSettingsForCurrentUser();
   renderAuthState();
   cloudStatus.textContent = "Bulut kayıtları yükleniyor...";
 
