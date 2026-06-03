@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="manifest" href="manifest.json?v=152" />
+    <link rel="manifest" href="manifest.json?v=154" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
@@ -32,7 +32,7 @@
         }
       } catch (e) {}
     </script>
-    <link rel="stylesheet" href="style.css?v=152" />
+    <link rel="stylesheet" href="style.css?v=154" />
   </head>
   <body>
 
@@ -398,6 +398,8 @@
             <div class="bank-import-account-panel">
               <label for="bankImportAccount">Hareketlerin işleneceği kart / hesap</label>
               <select id="bankImportAccount"></select>
+              <label for="bankImportTransferAccount">Hesaplar arası aktarım karşı hesabı</label>
+              <select id="bankImportTransferAccount"></select>
               <p>Seçim yapmazsan hareketler sadece kayıt listesine eklenir, kart/hesap bakiyesine işlenmez.</p>
             </div>
             <div class="storage-actions">
@@ -1043,6 +1045,10 @@
             Kart / hesap
             <select id="bankImportPreviewAccount"></select>
           </label>
+          <label>
+            Aktarım karşı hesabı
+            <select id="bankImportPreviewTransferAccount"></select>
+          </label>
           <div class="bank-import-preview-actions">
             <button id="bankImportSelectAllButton" class="ghost-btn bank-import-mini-btn" type="button">Tümünü Seç</button>
             <button id="bankImportClearSelectionButton" class="ghost-btn bank-import-mini-btn" type="button">Seçimi Kaldır</button>
@@ -1470,10 +1476,10 @@
       </article>
     </template>
 
-    <script src="firebase-config.js?v=152"></script>
+    <script src="firebase-config.js?v=154"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="app.js?v=152"></script>
+    <script src="app.js?v=154"></script>
   </body>
 </html>

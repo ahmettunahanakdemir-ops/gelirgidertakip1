@@ -1,24 +1,29 @@
-﻿const CACHE_NAME = "akis-butce-v152";
+﻿const CACHE_NAME = "akis-butce-v154";
 const APP_ASSETS = [
   "./",
   "./index.html",
-  "./style.css?v=152",
-  "./app.js?v=152",
-  "./firebase-config.js?v=152",
-  "./manifest.json?v=152",
+  "./style.css?v=154",
+  "./app.js?v=154",
+  "./firebase-config.js?v=154",
+  "./manifest.json?v=154",
   "./icon.svg",
   "./login-pattern.svg",
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_ASSETS)));
+  event.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_ASSETS))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
-    )
+    ).then(() => self.clients.claim())
   );
 });
 
@@ -30,6 +35,25 @@ self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
 
   if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  const isHtmlRequest =
+    event.request.mode === "navigate" ||
+    (event.request.headers.get("accept") || "").includes("text/html");
+
+  if (isHtmlRequest) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put("./index.html", copy);
+          });
+          return response;
+        })
+        .catch(() => caches.match("./index.html").then((cached) => cached || caches.match("./")))
+    );
     return;
   }
 

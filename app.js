@@ -426,6 +426,7 @@ const bankImportAddButton = document.getElementById("bankImportAddButton");
 const bankImportLocalButton = document.getElementById("bankImportLocalButton");
 const bankImportCancelButton = document.getElementById("bankImportCancelButton");
 const bankImportAccountSelect = document.getElementById("bankImportAccount");
+const bankImportTransferAccountSelect = document.getElementById("bankImportTransferAccount");
 const previewBankImportButton = document.getElementById("previewBankImportButton");
 const confirmBankImportButton = document.getElementById("confirmBankImportButton");
 const clearBankImportButton = document.getElementById("clearBankImportButton");
@@ -434,6 +435,7 @@ const bankImportPreview = document.getElementById("bankImportPreview");
 const bankImportPreviewModal = document.getElementById("bankImportPreviewModal");
 const bankImportPreviewModalSummary = document.getElementById("bankImportPreviewModalSummary");
 const bankImportPreviewAccount = document.getElementById("bankImportPreviewAccount");
+const bankImportPreviewTransferAccount = document.getElementById("bankImportPreviewTransferAccount");
 const bankImportPreviewList = document.getElementById("bankImportPreviewList");
 const bankImportPreviewStatus = document.getElementById("bankImportPreviewStatus");
 const bankImportSelectAllButton = document.getElementById("bankImportSelectAllButton");
@@ -1222,29 +1224,119 @@ function hideAllStartupModals() {
 }
 
 function mountSummaryFilterPanel() {
-  const filterPanel = document.querySelector(".home-summary-filter-standalone");
+  const filterPanel = document.querySelector("#entryView .home-summary-filter-standalone");
   const summaryStack = document.querySelector("#summaryView .summary-stack");
   const statsGrid = document.querySelector("#summaryView .stats-grid");
 
-  if (!filterPanel || !summaryStack || !statsGrid || filterPanel.closest("#summaryView")) {
+  if (!filterPanel || !summaryStack || !statsGrid) {
     return;
   }
 
-  filterPanel.setAttribute("aria-label", "Gelir gider ve tasarruf filtresi");
-  filterPanel.classList.add("summary-filter-panel");
-  summaryStack.insertBefore(filterPanel, statsGrid);
+  filterPanel.setAttribute("aria-label", "Gelir gider ekle tarih filtresi");
+  filterPanel.classList.add("entry-filter-panel");
 
-  const kicker = filterPanel.querySelector(".panel-kicker");
-  const title = filterPanel.querySelector("h2");
-  if (kicker) {
-    kicker.textContent = "Filtre";
+  let summaryPanel = document.getElementById("summaryHomeSummaryFilterPanel");
+  if (!summaryPanel) {
+    summaryPanel = filterPanel.cloneNode(true);
+    summaryPanel.id = "summaryHomeSummaryFilterPanel";
+    summaryPanel.setAttribute("aria-label", "Özet ve tasarruf tarih filtresi");
+    summaryPanel.classList.remove("entry-filter-panel");
+    summaryPanel.classList.add("summary-filter-panel");
+
+    const status = summaryPanel.querySelector("#homeSummaryFilterStatus");
+    const start = summaryPanel.querySelector("#homeSummaryStartDate");
+    const end = summaryPanel.querySelector("#homeSummaryEndDate");
+    const apply = summaryPanel.querySelector("#applyHomeSummaryFilterButton");
+    const clear = summaryPanel.querySelector("#clearHomeSummaryFilterButton");
+    if (status) status.id = "summaryHomeSummaryFilterStatus";
+    if (start) start.id = "summaryHomeSummaryStartDate";
+    if (end) end.id = "summaryHomeSummaryEndDate";
+    if (apply) {
+      apply.id = "summaryApplyHomeSummaryFilterButton";
+      apply.textContent = "Özete Uygula";
+    }
+    if (clear) clear.id = "summaryClearHomeSummaryFilterButton";
+    summaryStack.insertBefore(summaryPanel, statsGrid);
   }
-  if (title) {
-    title.textContent = "Gelir / gider tarih filtresi";
+
+  const entryKicker = filterPanel.querySelector(".panel-kicker");
+  const entryNote = filterPanel.querySelector(".panel-note");
+  const entryApply = filterPanel.querySelector("#applyHomeSummaryFilterButton");
+  if (entryKicker) entryKicker.textContent = "Filtre";
+  if (entryNote) entryNote.textContent = "Gelir / gider eklerken de aynı tarih aralığı kullanılır.";
+  if (entryApply) entryApply.textContent = "Filtreyi Uygula";
+
+  const summaryKicker = summaryPanel.querySelector(".panel-kicker");
+  const summaryTitle = summaryPanel.querySelector("h2");
+  const summaryNote = summaryPanel.querySelector(".panel-note");
+  if (summaryKicker) summaryKicker.textContent = "Filtre";
+  if (summaryTitle) summaryTitle.textContent = "Gelir / gider tarih filtresi";
+  if (summaryNote) summaryNote.textContent = "Özet ve tasarruf için tarih aralığı seç.";
+}
+
+function getHomeSummaryStartInputs() {
+  return [homeSummaryStartDate, document.getElementById("summaryHomeSummaryStartDate")].filter(Boolean);
+}
+
+function getHomeSummaryEndInputs() {
+  return [homeSummaryEndDate, document.getElementById("summaryHomeSummaryEndDate")].filter(Boolean);
+}
+
+function getHomeSummaryStatusNodes() {
+  return [homeSummaryFilterStatus, document.getElementById("summaryHomeSummaryFilterStatus")].filter(Boolean);
+}
+
+function getHomeSummaryApplyButtons() {
+  return [applyHomeSummaryFilterButton, document.getElementById("summaryApplyHomeSummaryFilterButton")].filter(Boolean);
+}
+
+function getHomeSummaryClearButtons() {
+  return [clearHomeSummaryFilterButton, document.getElementById("summaryClearHomeSummaryFilterButton")].filter(Boolean);
+}
+
+function syncHomeSummaryFilterDraft(source, inputs) {
+  const value = source?.value || "";
+  inputs.forEach((input) => {
+    if (input !== source) {
+      input.value = value;
+    }
+  });
+}
+
+function bindHomeSummaryFilterControls() {
+  getHomeSummaryStartInputs().forEach((input) => {
+    if (input.dataset.homeSummaryBound === "true") return;
+    input.dataset.homeSummaryBound = "true";
+    input.addEventListener("input", () => syncHomeSummaryFilterDraft(input, getHomeSummaryStartInputs()));
+    input.addEventListener("change", () => syncHomeSummaryFilterDraft(input, getHomeSummaryStartInputs()));
+  });
+
+  getHomeSummaryEndInputs().forEach((input) => {
+    if (input.dataset.homeSummaryBound === "true") return;
+    input.dataset.homeSummaryBound = "true";
+    input.addEventListener("input", () => syncHomeSummaryFilterDraft(input, getHomeSummaryEndInputs()));
+    input.addEventListener("change", () => syncHomeSummaryFilterDraft(input, getHomeSummaryEndInputs()));
+  });
+
+  getHomeSummaryApplyButtons().forEach((button) => {
+    if (button.dataset.homeSummaryBound === "true") return;
+    button.dataset.homeSummaryBound = "true";
+    button.addEventListener("click", applyHomeSummaryFilter);
+  });
+
+  getHomeSummaryClearButtons().forEach((button) => {
+    if (button.dataset.homeSummaryBound === "true") return;
+    button.dataset.homeSummaryBound = "true";
+    button.addEventListener("click", clearHomeSummaryFilter);
+  });
+}
+
+function getFirstHomeSummaryInputValue(inputs) {
+  const filled = inputs.find((input) => input.value);
+  if (filled) {
+    return filled.value;
   }
-  if (applyHomeSummaryFilterButton) {
-    applyHomeSummaryFilterButton.textContent = "Özete Uygula";
-  }
+  return inputs[0]?.value || "";
 }
 
 function init() {
@@ -1259,6 +1351,7 @@ function init() {
   // Böylece tarayıcının "parolayı otomatik doldur" penceresi splash/login geçişinde açılmaz.
   dateInput.value = getTurkeyTodayISO();
   mountSummaryFilterPanel();
+  bindHomeSummaryFilterControls();
   syncHomeSummaryFilterControls();
   updateCategoryOptions(typeInput.value);
   updatePaymentAccountFormVisibility();
@@ -1301,8 +1394,6 @@ function init() {
   historySearchButton?.addEventListener("click", () => {
     applyHistorySearch();
   });
-  applyHomeSummaryFilterButton?.addEventListener("click", applyHomeSummaryFilter);
-  clearHomeSummaryFilterButton?.addEventListener("click", clearHomeSummaryFilter);
   historyStartDate.addEventListener("change", () => {
     currentHistoryPage = 1;
     renderTransactions();
@@ -1329,9 +1420,17 @@ function init() {
     syncBankImportAccountSelects(bankImportAccountSelect.value);
     applyBankImportAccountToPending(bankImportAccountSelect.value);
   });
+  bankImportTransferAccountSelect?.addEventListener("change", () => {
+    syncBankImportTransferAccountSelects(bankImportTransferAccountSelect.value);
+    applyBankImportTransferAccountToPending(bankImportTransferAccountSelect.value);
+  });
   bankImportPreviewAccount?.addEventListener("change", () => {
     syncBankImportAccountSelects(bankImportPreviewAccount.value);
     applyBankImportAccountToPending(bankImportPreviewAccount.value);
+  });
+  bankImportPreviewTransferAccount?.addEventListener("change", () => {
+    syncBankImportTransferAccountSelects(bankImportPreviewTransferAccount.value);
+    applyBankImportTransferAccountToPending(bankImportPreviewTransferAccount.value);
   });
   bankImportSelectAllButton?.addEventListener("click", () => setBankImportPreviewSelection(true));
   bankImportClearSelectionButton?.addEventListener("click", () => setBankImportPreviewSelection(false));
@@ -1891,39 +1990,41 @@ function getHomeSummaryFilterLabel() {
 }
 
 function syncHomeSummaryFilterControls() {
-  if (homeSummaryStartDate) {
-    homeSummaryStartDate.value = homeSummaryFilter.start || "";
-  }
+  getHomeSummaryStartInputs().forEach((input) => {
+    input.value = homeSummaryFilter.start || "";
+  });
 
-  if (homeSummaryEndDate) {
-    homeSummaryEndDate.value = homeSummaryFilter.end || "";
-  }
+  getHomeSummaryEndInputs().forEach((input) => {
+    input.value = homeSummaryFilter.end || "";
+  });
 
   updateHomeSummaryFilterStatus();
 }
 
 function updateHomeSummaryFilterStatus(totals = null, count = null) {
-  if (!homeSummaryFilterStatus) {
+  const statusNodes = getHomeSummaryStatusNodes();
+  if (!statusNodes.length) {
     return;
   }
 
   if (!isHomeSummaryFilterActive()) {
-    homeSummaryFilterStatus.textContent = "Özet ve tasarruf tüm gelir/gider kayıtlarını gösteriyor.";
+    statusNodes.forEach((node) => {
+      node.textContent = "Şu anda tüm kayıtların gelir gider hesabı gösterilmektedir.";
+    });
     return;
   }
 
   const label = getHomeSummaryFilterLabel();
-  if (totals) {
-    homeSummaryFilterStatus.textContent = `${label} aralığı özete uygulanıyor. ${count ?? 0} kayıt · Net ${currency.format(totals.balance)}.`;
-  } else {
-    homeSummaryFilterStatus.textContent = `${label} aralığı özete uygulanıyor.`;
-  }
+  const detail = totals ? ` ${count ?? 0} kayıt · Net ${currency.format(totals.balance)}.` : "";
+  statusNodes.forEach((node) => {
+    node.textContent = `Şu anda ${label} arası gelir gider hesabınız gösterilmektedir.${detail}`;
+  });
 }
 
 function applyHomeSummaryFilter() {
   homeSummaryFilter = normalizeHomeSummaryFilter({
-    start: homeSummaryStartDate?.value || "",
-    end: homeSummaryEndDate?.value || "",
+    start: getFirstHomeSummaryInputValue(getHomeSummaryStartInputs()),
+    end: getFirstHomeSummaryInputValue(getHomeSummaryEndInputs()),
   });
   saveHomeSummaryFilter();
   syncHomeSummaryFilterControls();
@@ -1952,8 +2053,13 @@ function renderHome() {
   const besTotalValue = getBesTotal();
 
   homeBalance.textContent = currency.format(totals.balance);
-  homeInsight.textContent =
-    `${getHomeSummaryFilterLabel()} · ${totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."}`;
+  homeInsight.textContent = isHomeSummaryFilterActive()
+    ? `Şu anda ${getHomeSummaryFilterLabel()} arası gelir gider hesabınız gösterilmektedir. ${
+        totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."
+      }`
+    : `Şu anda tüm kayıtların gelir gider hesabı gösterilmektedir. ${
+        totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."
+      }`;
   homeAssetsTotal.textContent = currency.format(assetTotal);
   homeBesTotal.textContent = currency.format(besTotalValue);
   homeSavingsTotal.textContent = currency.format(totals.balance);
@@ -2514,6 +2620,7 @@ function syncBankImportAccountSelects(selectedValue = "") {
 
   updateBankImportAccountSelect(bankImportAccountSelect, currentValue);
   updateBankImportAccountSelect(bankImportPreviewAccount, currentValue);
+  syncBankImportTransferAccountSelects();
 }
 
 function updateBankImportAccountSelect(selectElement, selectedValue = "") {
@@ -2539,9 +2646,56 @@ function updateBankImportAccountSelect(selectElement, selectedValue = "") {
   selectElement.value = paymentAccounts.some((item) => item.id === currentValue) ? currentValue : "";
 }
 
+function syncBankImportTransferAccountSelects(selectedValue = "") {
+  const currentValue = String(
+    selectedValue ||
+    bankImportPreviewTransferAccount?.value ||
+    bankImportTransferAccountSelect?.value ||
+    ""
+  );
+  const sourceAccountId = String(bankImportPreviewAccount?.value || bankImportAccountSelect?.value || "");
+
+  updateBankImportTransferAccountSelect(bankImportTransferAccountSelect, currentValue, sourceAccountId);
+  updateBankImportTransferAccountSelect(bankImportPreviewTransferAccount, currentValue, sourceAccountId);
+}
+
+function updateBankImportTransferAccountSelect(selectElement, selectedValue = "", sourceAccountId = "") {
+  if (!selectElement) {
+    return;
+  }
+
+  const sourceId = String(sourceAccountId || "");
+  const currentValue = String(selectedValue || selectElement.value || "");
+  const eligibleAccounts = paymentAccounts.filter((item) => item.type !== "credit_card" && item.id !== sourceId);
+  selectElement.innerHTML = "";
+
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = "Aktarım yok / karşı hesap seçilmedi";
+  selectElement.append(emptyOption);
+
+  eligibleAccounts.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = formatPaymentAccountName(item);
+    selectElement.append(option);
+  });
+
+  selectElement.value = eligibleAccounts.some((item) => item.id === currentValue) ? currentValue : "";
+}
+
 function getBankImportSelectedAccount() {
   const accountId = String(bankImportAccountSelect?.value || bankImportPreviewAccount?.value || "");
   return accountId ? paymentAccounts.find((item) => item.id === accountId) || null : null;
+}
+
+function getBankImportSelectedTransferAccount() {
+  const accountId = String(bankImportTransferAccountSelect?.value || bankImportPreviewTransferAccount?.value || "");
+  const sourceId = String(bankImportAccountSelect?.value || bankImportPreviewAccount?.value || "");
+  if (!accountId || accountId === sourceId) {
+    return null;
+  }
+  return paymentAccounts.find((item) => item.id === accountId && item.type !== "credit_card") || null;
 }
 
 function getPaymentMethodForImportAccount(account) {
@@ -2779,7 +2933,13 @@ function deletePaymentAccountAfterConfirmation() {
 
   paymentAccounts = paymentAccounts.filter((account) => account.id !== item.id);
   transactions = transactions.map((transaction) =>
-    transaction.paymentAccountId === item.id ? { ...transaction, paymentAccountId: "" } : transaction
+    transaction.paymentAccountId === item.id || transaction.transferAccountId === item.id
+      ? {
+          ...transaction,
+          paymentAccountId: transaction.paymentAccountId === item.id ? "" : transaction.paymentAccountId,
+          transferAccountId: transaction.transferAccountId === item.id ? "" : transaction.transferAccountId,
+        }
+      : transaction
   );
   persistPaymentAccounts();
   persistTransactions({ replaceCloud: true });
@@ -2818,7 +2978,11 @@ function openPaymentAccountRecordsModal(account) {
   const accountId = String(account.id || "");
   viewingPaymentAccountRecordsId = accountId;
   const relatedTransactions = transactions
-    .filter((transaction) => String(transaction.paymentAccountId || "") === accountId)
+    .filter(
+      (transaction) =>
+        String(transaction.paymentAccountId || "") === accountId ||
+        String(transaction.transferAccountId || "") === accountId
+    )
     .sort(compareTransactionsNewestFirst);
 
   const incomeTotal = relatedTransactions
@@ -2898,22 +3062,47 @@ function closePaymentAccountRecordsModal() {
 }
 
 function getPaymentAccountRecordTotals(accountId) {
-  const relatedTransactions = transactions.filter(
-    (transaction) => String(transaction.paymentAccountId || "") === String(accountId || "")
-  );
-  const income = relatedTransactions
-    .filter((transaction) => transaction.type === "income")
-    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
-  const expense = relatedTransactions
-    .filter((transaction) => transaction.type === "expense")
-    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+  const relatedEffects = transactions
+    .map((transaction) => ({
+      transaction,
+      effect: getTransactionPaymentAccountEffect(transaction, accountId),
+    }))
+    .filter((item) => item.effect !== 0);
+  const income = relatedEffects
+    .filter((item) => item.effect > 0)
+    .reduce((sum, item) => sum + item.effect, 0);
+  const expense = relatedEffects
+    .filter((item) => item.effect < 0)
+    .reduce((sum, item) => sum + Math.abs(item.effect), 0);
 
   return {
-    count: relatedTransactions.length,
+    count: relatedEffects.length,
     income: roundMoney(income),
     expense: roundMoney(expense),
     net: roundMoney(income - expense),
   };
+}
+
+function getTransactionPaymentAccountEffect(transaction, accountId) {
+  const targetId = String(accountId || "");
+  const primaryId = String(transaction?.paymentAccountId || "");
+  const transferId = String(transaction?.transferAccountId || "");
+  const amount = Number(transaction?.amount || 0);
+
+  if (!targetId || !Number.isFinite(amount) || amount <= 0) {
+    return 0;
+  }
+
+  let effect = 0;
+  if (primaryId === targetId) {
+    effect += transaction.type === "income" ? amount : -amount;
+  }
+
+  if (transferId === targetId && transferId !== primaryId) {
+    effect += transaction.type === "income" ? -amount : amount;
+  }
+
+  return roundMoney(effect);
 }
 
 function getCreditCardStatementPeriod(account, referenceDate = getTurkeyTodayISO()) {
@@ -3302,6 +3491,7 @@ function validateTransactionPayment(transaction, statusElement = null) {
 
 function applyTransactionPaymentEffect(transaction, direction = 1) {
   const accountId = String(transaction.paymentAccountId || "");
+  const transferAccountId = String(transaction.transferAccountId || "");
   const amount = Number(transaction.amount || 0);
 
   if (!accountId || !Number.isFinite(amount) || amount <= 0) {
@@ -3360,6 +3550,24 @@ function applyTransactionPaymentEffect(transaction, direction = 1) {
 
     return item;
   });
+
+  if (transferAccountId && transferAccountId !== account.id) {
+    const transferAccount = paymentAccounts.find((item) => item.id === transferAccountId && item.type !== "credit_card");
+    if (transferAccount) {
+      paymentAccounts = paymentAccounts.map((item) => {
+        if (item.id !== transferAccount.id) {
+          return item;
+        }
+
+        const transferFactor = transaction.type === "expense" ? 1 : -1;
+        return {
+          ...item,
+          balance: roundMoney(Number(item.balance || 0) + amount * transferFactor * factor),
+          updatedAt: now,
+        };
+      });
+    }
+  }
 
   return true;
 }
@@ -6460,6 +6668,7 @@ function toCloudTransaction(transaction) {
     category: transaction.category,
     paymentMethod: normalizePaymentMethod(transaction.paymentMethod || "cash"),
     paymentAccountId: String(transaction.paymentAccountId || ""),
+    transferAccountId: String(transaction.transferAccountId || ""),
     date: transaction.date,
     note: transaction.note || "",
     transactionAt: transaction.transactionAt || "",
@@ -6478,6 +6687,7 @@ function readCloudTransaction(doc) {
     category: String(data.category || ""),
     paymentMethod: normalizePaymentMethod(data.paymentMethod || "cash"),
     paymentAccountId: String(data.paymentAccountId || ""),
+    transferAccountId: String(data.transferAccountId || ""),
     date: String(data.date || ""),
     note: String(data.note || ""),
     transactionAt: String(data.transactionAt || ""),
@@ -6646,6 +6856,7 @@ function mergeTransactions(...sources) {
         amount: Number(item.amount),
         paymentMethod: normalizePaymentMethod(item.paymentMethod || "cash"),
         paymentAccountId: String(item.paymentAccountId || ""),
+        transferAccountId: String(item.transferAccountId || ""),
         note: item.note || "",
         transactionAt: item.transactionAt || "",
         createdAt: item.createdAt || "",
@@ -6771,7 +6982,12 @@ function buildPendingBankImportItems(parsedMovements, sourceName = "", existingS
   const selectedAccount = options.paymentAccountId
     ? paymentAccounts.find((item) => item.id === options.paymentAccountId)
     : getBankImportSelectedAccount();
+  const selectedTransferAccount = options.transferAccountId
+    ? paymentAccounts.find((item) => item.id === options.transferAccountId && item.type !== "credit_card")
+    : getBankImportSelectedTransferAccount();
   const paymentAccountId = selectedAccount ? selectedAccount.id : "";
+  const transferAccountId =
+    selectedTransferAccount && selectedTransferAccount.id !== paymentAccountId ? selectedTransferAccount.id : "";
   const paymentMethod = getPaymentMethodForImportAccount(selectedAccount);
   const importLabel = String(options.importLabel || "Yapay zeka banka önizleme");
 
@@ -6801,6 +7017,7 @@ function buildPendingBankImportItems(parsedMovements, sourceName = "", existingS
       category: categorizeBankTransaction(title, type),
       paymentMethod,
       paymentAccountId,
+      transferAccountId,
       date,
       note: sourceName ? `${importLabel} · ${sourceName}` : importLabel,
       transactionAt: movementTime ? buildTransactionDateTime(date, movementTime) : "",
@@ -7875,6 +8092,8 @@ function confirmBankImport(options = {}) {
   pendingBankFiles = [];
   bankImportText.value = "";
   bankImportFile.value = "";
+  if (bankImportTransferAccountSelect) bankImportTransferAccountSelect.value = "";
+  if (bankImportPreviewTransferAccount) bankImportPreviewTransferAccount.value = "";
   renderBankImportPreview();
   closeBankImportPreviewModal();
   if (bankImportAddButton) {
@@ -7893,6 +8112,8 @@ function clearBankImport() {
   pendingBankFiles = [];
   bankImportText.value = "";
   bankImportFile.value = "";
+  if (bankImportTransferAccountSelect) bankImportTransferAccountSelect.value = "";
+  if (bankImportPreviewTransferAccount) bankImportPreviewTransferAccount.value = "";
   renderBankImportPreview();
   closeBankImportPreviewModal();
   if (bankImportAddButton) {
@@ -8112,10 +8333,14 @@ function createBankImportPreviewEditRow(item, index) {
   const rowAccount = item.transaction.paymentAccountId
     ? paymentAccounts.find((account) => account.id === item.transaction.paymentAccountId)
     : null;
+  const rowTransferAccount = item.transaction.transferAccountId
+    ? paymentAccounts.find((account) => account.id === item.transaction.transferAccountId)
+    : null;
   meta.textContent = [
     item.sourceName,
     item.duplicate ? "Tekrar" : "",
     rowAccount ? formatPaymentAccountName(rowAccount) : "Kart / hesap seçilmedi",
+    rowTransferAccount ? `Karşı hesap: ${formatPaymentAccountName(rowTransferAccount)}` : "",
   ].filter(Boolean).join(" · ");
 
   if (item.raw && normalizeBankText(item.raw) !== normalizeBankText(item.transaction.title)) {
@@ -8221,6 +8446,8 @@ function updateBankImportTransactionField(index, field, value) {
 function applyBankImportAccountToPending(accountId = "") {
   const account = accountId ? paymentAccounts.find((item) => item.id === accountId) : null;
   const paymentMethod = getPaymentMethodForImportAccount(account);
+  const transferAccount = getBankImportSelectedTransferAccount();
+  const transferAccountId = transferAccount && transferAccount.id !== account?.id ? transferAccount.id : "";
 
   pendingBankImports = pendingBankImports.map((item) => {
     if (!item.valid || !item.transaction) {
@@ -8233,6 +8460,32 @@ function applyBankImportAccountToPending(accountId = "") {
         ...item.transaction,
         paymentMethod,
         paymentAccountId: account ? account.id : "",
+        transferAccountId,
+      },
+    };
+  });
+
+  renderBankImportPreview();
+}
+
+function applyBankImportTransferAccountToPending(accountId = "") {
+  const sourceAccount = getBankImportSelectedAccount();
+  const transferAccount =
+    accountId && accountId !== sourceAccount?.id
+      ? paymentAccounts.find((item) => item.id === accountId && item.type !== "credit_card")
+      : null;
+  const transferAccountId = transferAccount ? transferAccount.id : "";
+
+  pendingBankImports = pendingBankImports.map((item) => {
+    if (!item.valid || !item.transaction) {
+      return item;
+    }
+
+    return {
+      ...item,
+      transaction: {
+        ...item.transaction,
+        transferAccountId,
       },
     };
   });
@@ -8248,18 +8501,22 @@ function updateBankImportPreviewSummary() {
   const duplicateCount = pendingBankImports.filter((item) => item.duplicate).length;
   const invalidCount = pendingBankImports.filter((item) => !item.valid).length;
   const account = getBankImportSelectedAccount();
+  const transferAccount = getBankImportSelectedTransferAccount();
   const accountText = account ? formatPaymentAccountName(account) : "Kart / hesap seçilmedi";
+  const transferText = transferAccount ? ` Aktarım karşı hesabı: ${formatPaymentAccountName(transferAccount)}.` : "";
 
   if (bankImportPreviewModalSummary) {
     bankImportPreviewModalSummary.textContent =
-      `${readyCount} hareket bulundu, ${selectedCount} hareket seçili. ${accountText}.` +
+      `${readyCount} hareket bulundu, ${selectedCount} hareket seçili. ${accountText}.${transferText}` +
       (duplicateCount ? ` ${duplicateCount} tekrar.` : "") +
       (invalidCount ? ` ${invalidCount} satır kontrol istiyor.` : "");
   }
 
   if (bankImportPreviewStatus) {
     bankImportPreviewStatus.textContent = account
-      ? `Seçilen hareketler ${formatPaymentAccountName(account)} bakiyesine işlenecek.`
+      ? transferAccount
+        ? `Seçilen hareketler ${formatPaymentAccountName(account)} ve ${formatPaymentAccountName(transferAccount)} arasında aktarım etkisiyle işlenecek.`
+        : `Seçilen hareketler ${formatPaymentAccountName(account)} bakiyesine işlenecek.`
       : "Kart / hesap seçmezsen hareketler sadece kayıt listesine eklenir.";
   }
 
