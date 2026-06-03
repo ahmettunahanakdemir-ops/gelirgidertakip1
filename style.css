@@ -549,7 +549,9 @@ button {
 
 .workspace {
   min-width: 0;
+  max-width: 100%;
   padding: 22px;
+  overflow-x: hidden;
 }
 
 .topbar {
@@ -630,6 +632,8 @@ button {
 
 .view-section {
   display: none;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .view-section.active {
@@ -661,6 +665,8 @@ button {
 }
 
 .panel {
+  min-width: 0;
+  max-width: 100%;
   padding: 20px;
   border: 1px solid var(--stroke);
   border-radius: 8px;
@@ -5582,6 +5588,68 @@ label,
   min-width: 170px;
 }
 
+.notification-settings-card .ios-switch {
+  min-width: 0;
+  width: auto;
+}
+
+.ios-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-weight: 900;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.ios-switch-track {
+  position: relative;
+  width: 58px;
+  height: 34px;
+  flex: 0 0 58px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  background: #cbd5e1;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.18);
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.ios-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.24);
+  transition: transform 180ms ease;
+}
+
+.ios-switch.is-on .ios-switch-track {
+  border-color: rgba(16, 185, 129, 0.42);
+  background: linear-gradient(135deg, #2dd4bf, #10b981);
+}
+
+.ios-switch.is-on .ios-switch-thumb {
+  transform: translateX(24px);
+}
+
+.ios-switch-text {
+  min-width: 58px;
+  text-align: left;
+}
+
+.ios-switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.64;
+}
+
 #categoryManageModal .modal-actions {
   position: sticky;
   bottom: 0;
@@ -5615,6 +5683,20 @@ html[data-theme="dark"] .notification-settings-card {
   background:
     linear-gradient(135deg, rgba(20, 184, 166, 0.13), rgba(15, 23, 32, 0.88)),
     rgba(17, 24, 34, 0.84);
+}
+
+html[data-theme="dark"] .ios-switch {
+  color: #f0fafc;
+}
+
+html[data-theme="dark"] .ios-switch-track {
+  border-color: rgba(151, 183, 199, 0.20);
+  background: #334155;
+}
+
+html[data-theme="dark"] .ios-switch.is-on .ios-switch-track {
+  border-color: rgba(94, 224, 209, 0.40);
+  background: linear-gradient(135deg, #2dd4bf, #059669);
 }
 
 html[data-theme="dark"] #categoryManageModal .modal-actions {
@@ -5667,6 +5749,10 @@ html[data-theme="dark"] .payment-card-amount.expense {
 
   .notification-settings-card button {
     width: 100%;
+  }
+
+  .notification-settings-card .ios-switch {
+    justify-content: space-between;
   }
 }
 
@@ -8701,6 +8787,7 @@ body:not([data-theme="dark"]) .bank-import-edit-item.selected {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .bank-import-preview-modal .panel-heading,
@@ -8708,12 +8795,16 @@ body:not([data-theme="dark"]) .bank-import-edit-item.selected {
 .bank-import-preview-modal .sync-status,
 .bank-import-preview-modal .modal-actions {
   flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .bank-import-preview-list {
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 4px;
+  max-width: 100%;
 }
 
 .bank-import-edit-grid input,
@@ -8732,6 +8823,106 @@ body:not([data-theme="dark"]) .bank-import-edit-item.selected {
 
 .payment-card-refresh-btn {
   border-color: rgba(20, 184, 166, 0.22) !important;
+}
+
+/* v152: banka hareketleri onay penceresinde telefon/tablet taşmalarını engelle */
+.bank-import-preview-modal,
+.bank-import-preview-modal *,
+.bank-import-preview-modal *::before,
+.bank-import-preview-modal *::after {
+  box-sizing: border-box;
+}
+
+.bank-import-preview-modal {
+  width: min(920px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+}
+
+.bank-import-edit-item {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.bank-import-edit-grid {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bank-import-edit-grid label,
+.bank-import-modal-tools label,
+.bank-import-preview-actions,
+.bank-import-edit-body {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bank-import-edit-grid input,
+.bank-import-edit-grid select,
+.bank-import-modal-tools select {
+  max-width: 100%;
+}
+
+.bank-import-raw,
+.bank-import-edit-item .transaction-meta,
+.bank-import-preview-modal .panel-note {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 980px) {
+  .bank-import-preview-modal {
+    width: min(100%, calc(100vw - 22px));
+    max-width: calc(100vw - 22px);
+  }
+
+  .bank-import-edit-grid {
+    grid-template-columns:
+      minmax(0, 1.45fr)
+      minmax(96px, 0.8fr)
+      minmax(108px, 0.85fr)
+      minmax(118px, 0.95fr)
+      minmax(112px, 0.85fr);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 860px) {
+  .bank-import-preview-modal .bank-import-modal-tools {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .bank-import-preview-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .bank-import-preview-actions > button {
+    width: 100%;
+  }
+
+  .bank-import-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .bank-import-preview-modal {
+    width: calc(100vw - max(18px, env(safe-area-inset-left) + env(safe-area-inset-right)));
+    max-width: calc(100vw - max(18px, env(safe-area-inset-left) + env(safe-area-inset-right)));
+    padding-inline: 14px;
+  }
+
+  .bank-import-edit-grid,
+  .bank-import-preview-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .bank-import-edit-item {
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+    padding-inline: 10px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -8891,6 +9082,13 @@ body[data-theme="dark"] #bankImportLocalButton {
   }
 }
 
+@media (max-width: 900px) {
+  #entryView .bank-import-panel .storage-actions,
+  .home-summary-filter-controls {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 @media (max-width: 640px) {
   #entryView .bank-import-panel .storage-actions {
     grid-template-columns: 1fr !important;
@@ -8954,4 +9152,76 @@ html[data-theme="dark"] .payment-card .payment-card-actions .danger-lite-btn:hov
     linear-gradient(180deg, rgba(153, 27, 27, 0.48), rgba(127, 29, 29, 0.40)),
     rgba(254, 226, 226, 0.16) !important;
   color: #ffe4e6 !important;
+}
+
+/* v147: iPhone'da ust aksiyon menusu ve sabit hamburger cakismasini engelle */
+@media (max-width: 720px) {
+  html,
+  body,
+  .app-shell,
+  .workspace {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .workspace {
+    padding-top: calc(max(12px, env(safe-area-inset-top)) + 64px) !important;
+  }
+
+  .topbar {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0 !important;
+    padding: 16px !important;
+    overflow: hidden;
+  }
+
+  .topbar > div:first-child {
+    min-width: 0;
+  }
+
+  .topbar h1,
+  .topbar p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .topbar-side {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    width: 100%;
+    min-width: 0;
+    gap: 10px !important;
+  }
+
+  .topbar-side > button {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    font-size: 0.98rem;
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  .sidebar-toggle.topbar-menu {
+    top: max(12px, env(safe-area-inset-top)) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 16px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar-side > button {
+    font-size: 0.92rem;
+    min-height: 46px;
+    padding-inline: 10px;
+  }
 }

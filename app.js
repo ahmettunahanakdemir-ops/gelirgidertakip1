@@ -1,4 +1,4 @@
-const STORAGE_KEY = "akis-budget-tracker";
+﻿const STORAGE_KEY = "akis-budget-tracker";
 const ASSETS_STORAGE_KEY = "akis-budget-assets";
 const BES_STORAGE_KEY = "akis-budget-bes";
 const MARKET_STORAGE_KEY = "akis-budget-market-prices";
@@ -63,6 +63,7 @@ const FONT_WEIGHT_MAP = {
 const USERNAME_EMAIL_DOMAIN = "gelirgidertakip.local";
 const PDFJS_VERSION = "5.4.624";
 const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+const BANK_OCR_TIMEOUT_MS = 30000;
 const TRANSACTIONS_PER_PAGE = 20;
 const TROY_OUNCE_GRAMS = 31.1034768;
 const BANK_OCR_BALANCE_KEYWORDS = [
@@ -614,6 +615,7 @@ let profileUnsubscribe = null;
 let cloudWriteQueue = Promise.resolve();
 let cloudTransactionsSyncVersion = 0;
 let cloudProfileSyncVersion = 0;
+let firestorePersistenceEnabled = false;
 let activeView = "homeView";
 let selectedYear = "all";
 let selectedMonth = "all";
@@ -877,7 +879,7 @@ function refreshCardReminderSettingsForCurrentUser() {
 
 function initCardReminderNotifications() {
   updateCardReminderControls();
-  cardReminderPermissionButton?.addEventListener("click", requestCardReminderPermission);
+  cardReminderPermissionButton?.addEventListener("click", toggleCardReminderNotifications);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       checkCardPaymentReminders();
@@ -894,12 +896,14 @@ function updateCardReminderControls() {
   const enabled = Boolean(cardReminderSettings.enabled && permission === "granted");
 
   if (cardReminderPermissionButton) {
-    cardReminderPermissionButton.disabled = !supported;
-    cardReminderPermissionButton.textContent = enabled
-      ? "Bildirimler Açık"
-      : permission === "denied"
-        ? "Bildirim İzni Kapalı"
-        : "Bildirimleri Aç";
+    cardReminderPermissionButton.disabled = !supported || permission === "denied";
+    cardReminderPermissionButton.classList.toggle("is-on", enabled);
+    cardReminderPermissionButton.setAttribute("aria-pressed", enabled ? "true" : "false");
+    cardReminderPermissionButton.setAttribute("aria-checked", enabled ? "true" : "false");
+    const switchText = cardReminderPermissionButton.querySelector(".ios-switch-text");
+    if (switchText) {
+      switchText.textContent = enabled ? "Açık" : permission === "denied" ? "İzin kapalı" : "Kapalı";
+    }
   }
 
   if (!cardReminderStatus) {
@@ -922,6 +926,27 @@ function updateCardReminderControls() {
 
 function isCardReminderSupported() {
   return typeof window !== "undefined" && "Notification" in window;
+}
+
+async function toggleCardReminderNotifications() {
+  if (!isCardReminderSupported()) {
+    updateCardReminderControls();
+    return;
+  }
+
+  const enabled = Boolean(cardReminderSettings.enabled && Notification.permission === "granted");
+
+  if (enabled) {
+    cardReminderSettings.enabled = false;
+    saveCardReminderSettings();
+    updateCardReminderControls();
+    if (cardReminderStatus) {
+      cardReminderStatus.textContent = "Kart bildirimleri kapatıldı. İstediğin zaman ayarlardan tekrar açabilirsin.";
+    }
+    return;
+  }
+
+  await requestCardReminderPermission();
 }
 
 async function requestCardReminderPermission() {
@@ -1196,6 +1221,32 @@ function hideAllStartupModals() {
   });
 }
 
+function mountSummaryFilterPanel() {
+  const filterPanel = document.querySelector(".home-summary-filter-standalone");
+  const summaryStack = document.querySelector("#summaryView .summary-stack");
+  const statsGrid = document.querySelector("#summaryView .stats-grid");
+
+  if (!filterPanel || !summaryStack || !statsGrid || filterPanel.closest("#summaryView")) {
+    return;
+  }
+
+  filterPanel.setAttribute("aria-label", "Gelir gider ve tasarruf filtresi");
+  filterPanel.classList.add("summary-filter-panel");
+  summaryStack.insertBefore(filterPanel, statsGrid);
+
+  const kicker = filterPanel.querySelector(".panel-kicker");
+  const title = filterPanel.querySelector("h2");
+  if (kicker) {
+    kicker.textContent = "Filtre";
+  }
+  if (title) {
+    title.textContent = "Gelir / gider tarih filtresi";
+  }
+  if (applyHomeSummaryFilterButton) {
+    applyHomeSummaryFilterButton.textContent = "Özete Uygula";
+  }
+}
+
 function init() {
   hideAllStartupModals();
   hideStartupSplash();
@@ -1207,6 +1258,7 @@ function init() {
   // Açılışta şifre alanına otomatik odaklanma yapılmıyor.
   // Böylece tarayıcının "parolayı otomatik doldur" penceresi splash/login geçişinde açılmaz.
   dateInput.value = getTurkeyTodayISO();
+  mountSummaryFilterPanel();
   syncHomeSummaryFilterControls();
   updateCategoryOptions(typeInput.value);
   updatePaymentAccountFormVisibility();
@@ -1271,8 +1323,8 @@ function init() {
   copySyncButton?.addEventListener("click", copySyncCode);
   importSyncButton?.addEventListener("click", importSyncCode);
   bankImportFile.addEventListener("change", handleBankImportFile);
-  bankImportAddButton.addEventListener("click", addSelectedBankFiles);
-  bankImportLocalButton?.addEventListener("click", () => previewBankImportLocally());
+  bankImportAddButton.addEventListener("click", previewBankImportWithAi);
+  bankImportLocalButton?.addEventListener("click", addSelectedBankFiles);
   bankImportAccountSelect?.addEventListener("change", () => {
     syncBankImportAccountSelects(bankImportAccountSelect.value);
     applyBankImportAccountToPending(bankImportAccountSelect.value);
@@ -1749,7 +1801,7 @@ function render() {
 }
 
 function renderStats() {
-  const scopedTransactions = getDateFilteredTransactions();
+  const scopedTransactions = getSummaryScopedTransactions();
   const income = scopedTransactions
     .filter((item) => item.type === "income")
     .reduce((sum, item) => sum + item.amount, 0);
@@ -1766,7 +1818,7 @@ function renderStats() {
   incomeTotal.textContent = currency.format(income);
   expenseTotal.textContent = currency.format(expense);
   monthlySavings.textContent = currency.format(balance);
-  overviewMonthLabel.textContent = `${getDateFilterLabel()} gider dağılımı`;
+  overviewMonthLabel.textContent = `${getSummaryScopeLabel()} gider dağılımı`;
 }
 
 function normalizeHomeSummaryFilter(raw = {}) {
@@ -1819,6 +1871,14 @@ function getHomeSummaryTransactions() {
   });
 }
 
+function getSummaryScopedTransactions() {
+  return isHomeSummaryFilterActive() ? getHomeSummaryTransactions() : getDateFilteredTransactions();
+}
+
+function getSummaryScopeLabel() {
+  return isHomeSummaryFilterActive() ? getHomeSummaryFilterLabel() : getDateFilterLabel();
+}
+
 function getHomeSummaryFilterLabel() {
   if (!isHomeSummaryFilterActive()) {
     return "Tüm kayıtlar";
@@ -1848,15 +1908,15 @@ function updateHomeSummaryFilterStatus(totals = null, count = null) {
   }
 
   if (!isHomeSummaryFilterActive()) {
-    homeSummaryFilterStatus.textContent = "Ana sayfa tüm gelir/gider kayıtlarını gösteriyor.";
+    homeSummaryFilterStatus.textContent = "Özet ve tasarruf tüm gelir/gider kayıtlarını gösteriyor.";
     return;
   }
 
   const label = getHomeSummaryFilterLabel();
   if (totals) {
-    homeSummaryFilterStatus.textContent = `${label} aralığı ana sayfaya uygulanıyor. ${count ?? 0} kayıt · Net ${currency.format(totals.balance)}.`;
+    homeSummaryFilterStatus.textContent = `${label} aralığı özete uygulanıyor. ${count ?? 0} kayıt · Net ${currency.format(totals.balance)}.`;
   } else {
-    homeSummaryFilterStatus.textContent = `${label} aralığı ana sayfaya uygulanıyor.`;
+    homeSummaryFilterStatus.textContent = `${label} aralığı özete uygulanıyor.`;
   }
 }
 
@@ -1868,6 +1928,8 @@ function applyHomeSummaryFilter() {
   saveHomeSummaryFilter();
   syncHomeSummaryFilterControls();
   renderHome();
+  renderStats();
+  renderCategoryBreakdown();
 }
 
 function clearHomeSummaryFilter() {
@@ -1875,6 +1937,8 @@ function clearHomeSummaryFilter() {
   saveHomeSummaryFilter();
   syncHomeSummaryFilterControls();
   renderHome();
+  renderStats();
+  renderCategoryBreakdown();
 }
 
 function renderHome() {
@@ -4111,7 +4175,7 @@ function formatMarketTime(value) {
 }
 
 function renderCategoryBreakdown() {
-  const expenses = getDateFilteredTransactions().filter((item) => item.type === "expense");
+  const expenses = getSummaryScopedTransactions().filter((item) => item.type === "expense");
   const totalExpense = expenses.reduce((sum, item) => sum + item.amount, 0);
   const grouped = expenses.reduce((acc, item) => {
     acc[item.category] = (acc[item.category] || 0) + item.amount;
@@ -5595,11 +5659,30 @@ function initCloud() {
 
     firebaseAuth = window.firebase.auth();
     firebaseDb = window.firebase.firestore();
+    enableFirestoreOfflineCache();
     firebaseAuth.onAuthStateChanged(handleAuthStateChanged);
     cloudStatus.textContent = "Bulut bağlantısı hazır. Hesabınla giriş yapabilirsin.";
   } catch (error) {
     cloudStatus.textContent = `Firebase başlatılamadı: ${error.message}`;
   }
+}
+
+function enableFirestoreOfflineCache() {
+  if (!firebaseDb || firestorePersistenceEnabled || typeof firebaseDb.enablePersistence !== "function") {
+    return;
+  }
+
+  firestorePersistenceEnabled = true;
+  firebaseDb.enablePersistence({ synchronizeTabs: true }).catch((error) => {
+    if (error?.code === "failed-precondition") {
+      cloudStatus.textContent = "Bulut onbellegi acik sekmeler nedeniyle sinirli. Veriler yine de esitlenecek.";
+      return;
+    }
+
+    if (error?.code === "unimplemented") {
+      cloudStatus.textContent = "Bu tarayici Firebase yerel onbellegini desteklemiyor. Veriler agdan yuklenecek.";
+    }
+  });
 }
 
 function ensureCloudReady(statusElement = cloudStatus) {
@@ -6117,14 +6200,19 @@ async function handleAuthStateChanged(user) {
   const anonymousLocalPaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
   currentUser = user;
   refreshCardReminderSettingsForCurrentUser();
+  const userLocalTransactions = getCloudReadyTransactions(loadTransactions());
+  const userLocalAssets = getCloudReadyAssets(loadAssets());
+  const userLocalBesAccounts = getCloudReadyBesAccounts(loadBesAccounts());
+  const userLocalPaymentAccounts = getCloudReadyPaymentAccounts(loadPaymentAccounts());
+  transactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions);
+  assets = mergeRecordsById(userLocalAssets, anonymousLocalAssets);
+  besAccounts = mergeRecordsById(userLocalBesAccounts, anonymousLocalBesAccounts);
+  paymentAccounts = mergeRecordsById(userLocalPaymentAccounts, anonymousLocalPaymentAccounts);
   renderAuthState();
+  render();
   cloudStatus.textContent = "Bulut kayıtları yükleniyor...";
 
   try {
-    const userLocalTransactions = getCloudReadyTransactions(loadTransactions());
-    const userLocalAssets = getCloudReadyAssets(loadAssets());
-    const userLocalBesAccounts = getCloudReadyBesAccounts(loadBesAccounts());
-    const userLocalPaymentAccounts = getCloudReadyPaymentAccounts(loadPaymentAccounts());
     const cloudProfile = await fetchCloudProfile(user.uid);
     const cloudTransactions = await fetchCloudTransactions(user.uid);
     transactions = mergeTransactions(cloudTransactions, userLocalTransactions, anonymousLocalTransactions);
@@ -6238,10 +6326,11 @@ function subscribeCloudTransactions(userId) {
   cloudUnsubscribe = getUserTransactionsCollection(userId).onSnapshot(
     { includeMetadataChanges: true },
     (snapshot) => {
-      transactions = mergeTransactions(snapshot.docs.map(readCloudTransaction).filter(Boolean));
+      transactions = mergeTransactions(snapshot.docs.map(readCloudTransaction).filter(Boolean), transactions);
       persistTransactions({ syncCloud: false });
       render();
-      cloudStatus.textContent = `${transactions.length} kayıt bulutla güncel.`;
+      const sourceLabel = snapshot.metadata?.fromCache ? "yerel önbellekten" : "buluttan";
+      cloudStatus.textContent = `${transactions.length} kayıt ${sourceLabel} güncel.`;
     },
     (error) => {
       cloudStatus.textContent = `Bulut dinleme hatası: ${error.message}`;
@@ -6609,13 +6698,29 @@ function setBankImportLoading(isLoading) {
   bankImportStatus?.classList.toggle("is-loading", Boolean(isLoading));
 }
 
+function withTimeout(promise, timeoutMs, message) {
+  let timeoutId = null;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
+    }
+  });
+}
+
 function handleBankImportFile(event) {
   pendingBankFiles = Array.from(event.target.files || []);
   pendingBankImports = [];
   renderBankImportPreview();
 
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
+    bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
+  }
+  if (bankImportLocalButton) {
+    bankImportLocalButton.textContent = "Kayıtlara Ekle";
   }
 
   if (!pendingBankFiles.length) {
@@ -6634,6 +6739,30 @@ function isPdfFile(file) {
 
 function isImageFile(file) {
   return file.type.startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(file.name);
+}
+
+function getImportedMovementSortTime(item) {
+  if (!item) {
+    return 0;
+  }
+
+  const transactionAt = item.transactionAt || "";
+  if (transactionAt) {
+    const timestamp = Date.parse(transactionAt);
+    if (Number.isFinite(timestamp)) {
+      return timestamp;
+    }
+  }
+
+  const date = item.date || "";
+  const time = getTimePart(item.raw || item.title || item.note || transactionAt || "") || getTimePart(transactionAt) || "00:00";
+  const timestamp = Date.parse(buildTransactionDateTime(date, time));
+
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function compareImportedMovementsNewestFirst(first, second) {
+  return getImportedMovementSortTime(second) - getImportedMovementSortTime(first);
 }
 
 function buildPendingBankImportItems(parsedMovements, sourceName = "", existingSignatures = null, seenSignatures = null, options = {}) {
@@ -6697,7 +6826,7 @@ function buildPendingBankImportItems(parsedMovements, sourceName = "", existingS
 
 async function addSelectedBankFiles() {
   if (pendingBankImports.length) {
-    openBankImportPreviewModal();
+    confirmBankImport();
     return;
   }
 
@@ -6706,20 +6835,23 @@ async function addSelectedBankFiles() {
     return;
   }
 
-  await previewBankImportWithAi();
-  return;
-
   const allPendingImports = [];
   const failedFiles = [];
   const existingSignatures = new Set(transactions.map(getTransactionSignature));
   const seenSignatures = new Set();
 
-  bankImportAddButton.disabled = true;
+  if (bankImportAddButton) {
+    bankImportAddButton.disabled = true;
+  }
   if (bankImportLocalButton) {
     bankImportLocalButton.disabled = true;
+    bankImportLocalButton.textContent = "Okunuyor...";
   }
   bankImportCancelButton.disabled = true;
-  bankImportStatus.textContent = `${pendingBankFiles.length} dosya okunuyor...`;
+  setBankImportLoading(true);
+  bankImportStatus.textContent = pendingBankFiles.length
+    ? `${pendingBankFiles.length} dosya okunuyor...`
+    : "Yapıştırılan banka metni okunuyor...";
 
   try {
     for (let index = 0; index < pendingBankFiles.length; index += 1) {
@@ -6729,14 +6861,29 @@ async function addSelectedBankFiles() {
       try {
         const text = await readBankImportFile(file);
         const parsedMovements = parseBankMovements(text);
-        const pendingItems = buildPendingBankImportItems(parsedMovements, file.name, existingSignatures, seenSignatures);
+        const pendingItems = buildPendingBankImportItems(parsedMovements, file.name, existingSignatures, seenSignatures, {
+          importLabel: "Banka içe aktarımı",
+        });
         allPendingImports.push(...pendingItems);
       } catch (error) {
         failedFiles.push(`${file.name}${error?.message ? ` (${error.message})` : ""}`);
       }
     }
 
-    pendingBankImports = allPendingImports;
+    const pastedText = bankImportText.value.trim();
+
+    if (pastedText) {
+      allPendingImports.push(
+        ...buildPendingBankImportItems(parseBankMovements(pastedText), "Yapıştırılan metin", existingSignatures, seenSignatures, {
+          importLabel: "Banka içe aktarımı",
+        })
+      );
+    }
+
+    pendingBankImports = allPendingImports
+      .slice()
+      .sort((first, second) => compareImportedMovementsNewestFirst(first.transaction, second.transaction));
+    applyBankImportAccountToPending(bankImportAccountSelect?.value || bankImportPreviewAccount?.value || "");
     renderBankImportPreview();
 
     const readyCount = pendingBankImports.filter((item) => item.valid && !item.duplicate).length;
@@ -6747,8 +6894,8 @@ async function addSelectedBankFiles() {
       bankImportStatus.textContent =
         "Seçilen dosyalardan hareket okunamadı. Görseldeki satırları daha net okumak için banka hareketleri ekranını tam ve parlak şekilde yükle." +
         (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
-      if (bankImportAddButton) {
-        bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
+      if (bankImportLocalButton) {
+        bankImportLocalButton.textContent = "Kayıtlara Ekle";
       }
       return;
     }
@@ -6758,11 +6905,31 @@ async function addSelectedBankFiles() {
       (duplicateCount ? ` ${duplicateCount} tekrar işaretlenmedi.` : "") +
       (invalidCount ? ` ${invalidCount} satır okunamadı.` : "") +
       (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
-    if (bankImportAddButton) {
-      bankImportAddButton.textContent = "Seçilenleri Onayla ve Ekle";
+    if (bankImportLocalButton) {
+      bankImportLocalButton.textContent = "Seçilenleri Onayla ve Ekle";
+    }
+    openBankImportPreviewModal();
+  } catch (error) {
+    pendingBankImports = [];
+    renderBankImportPreview();
+    closeBankImportPreviewModal();
+    bankImportStatus.textContent = error?.message
+      ? `Kayıtlara ekleme hazırlanamadı: ${error.message}`
+      : "Kayıtlara ekleme hazırlanamadı. Dosyayı tekrar seç.";
+    if (bankImportLocalButton) {
+      bankImportLocalButton.textContent = "Kayıtlara Ekle";
     }
   } finally {
-    bankImportAddButton.disabled = false;
+    setBankImportLoading(false);
+    if (bankImportAddButton) {
+      bankImportAddButton.disabled = false;
+    }
+    if (bankImportLocalButton) {
+      bankImportLocalButton.disabled = false;
+      if (!pendingBankImports.length) {
+        bankImportLocalButton.textContent = "Kayıtlara Ekle";
+      }
+    }
     bankImportCancelButton.disabled = false;
   }
 }
@@ -6826,7 +6993,7 @@ async function previewBankImportLocally(options = {}) {
         (fallbackReason ? ` Yapay zeka mesajı: ${fallbackReason}` : "") +
         (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
       if (bankImportAddButton) {
-        bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
+        bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
       }
       return false;
     }
@@ -6891,7 +7058,7 @@ async function previewBankImportWithAi() {
     return;
   }
 
-  const previousAddText = bankImportAddButton?.textContent || "Yapay Zeka ile Önizle";
+  const previousAddText = bankImportAddButton?.textContent || "Yapay Zeka ile Kayıtlara Ekle";
 
   bankImportAddButton.disabled = true;
   bankImportCancelButton.disabled = true;
@@ -6951,7 +7118,7 @@ async function previewBankImportWithAi() {
   } catch (error) {
     const message = getBankAiImportErrorMessage(error);
 
-    bankImportStatus.textContent = `${message} Normal önizleme için "Önizle" butonunu kullanabilirsin.`;
+    bankImportStatus.textContent = `${message} Normal okuma için "Kayıtlara Ekle" butonunu kullanabilirsin.`;
   } finally {
     setBankImportLoading(false);
     bankImportAddButton.disabled = false;
@@ -7315,11 +7482,19 @@ async function recognizeBankImageUrl(url, statusLabel = "Görsel") {
     bankImportStatus.textContent = `${statusLabel} OCR ile okunuyor...`;
   }
 
-  const tesseract = await loadTesseract();
-  const result = await tesseract.recognize(url, "tur+eng", {
-    tessedit_pageseg_mode: "6",
-    preserve_interword_spaces: "1",
-  });
+  const tesseract = await withTimeout(
+    loadTesseract(),
+    BANK_OCR_TIMEOUT_MS,
+    "Görsel okuma motoru çok uzun sürede açıldı. Lütfen görseli tekrar seç."
+  );
+  const result = await withTimeout(
+    tesseract.recognize(url, "tur+eng", {
+      tessedit_pageseg_mode: "6",
+      preserve_interword_spaces: "1",
+    }),
+    BANK_OCR_TIMEOUT_MS,
+    "OCR okuma çok uzun sürdü. Görseli kırpmadan, daha net ya da daha küçük boyutta tekrar yükle."
+  );
 
   return extractOcrTextFromResult(result);
 }
@@ -7355,11 +7530,12 @@ function chooseBestBankOcrText(candidates) {
   const scoreCandidate = (text, index) => {
     const movements = safeParseBankMovementsForOcrScore(text);
     const lines = getBankOcrLines(text);
-    const rowStartCount = countMobileBankOcrStarts(lines);
+    const rowStartCount = Math.max(countMobileBankOcrStarts(lines), countBankAppTemplateRowStarts(text));
     const signedCount = movements.filter((movement) => movement.hasExplicitSign).length;
     const balanceTitleCount = movements.filter((movement) =>
       hasAnyBankKeyword(movement.title || movement.raw || "", BANK_OCR_BALANCE_KEYWORDS)
     ).length;
+    const suspiciousRateCount = movements.filter(isSuspiciousBankRateMovement).length;
     const overRowPenaltyWeight = isStrictBankCardScreen(text) ? 145 : 85;
     const overRowPenalty = rowStartCount ? Math.max(0, movements.length - rowStartCount) * overRowPenaltyWeight : 0;
     const score =
@@ -7367,6 +7543,7 @@ function chooseBestBankOcrText(candidates) {
       signedCount * 8 +
       Math.min(rowStartCount, movements.length || rowStartCount) * 10 -
       balanceTitleCount * 45 -
+      suspiciousRateCount * 80 -
       overRowPenalty -
       index * 3;
 
@@ -7406,6 +7583,18 @@ function safeParseBankMovementsForOcrScore(text) {
   } catch {
     return [];
   }
+}
+
+function isSuspiciousBankRateMovement(movement) {
+  const amount = Number(movement?.amount || 0);
+  const text = normalizeBankText(`${movement?.title || ""} ${movement?.raw || ""}`);
+
+  return (
+    amount > 0 &&
+    amount < 100 &&
+    !movement?.hasExplicitSign &&
+    /\b(orani|oran|stopaj|faiz tutari|n faiz|f orani)\b/.test(text)
+  );
 }
 
 function buildOcrTextFromLines(lines) {
@@ -7470,15 +7659,16 @@ async function extractImageText(file) {
   try {
     processedUrl = await preprocessImageForBankOcr(file);
     const targetUrl = processedUrl || imageUrl;
-    const text = await recognizeBankImageUrl(targetUrl, file.name);
+    const processedText = await recognizeBankImageUrl(targetUrl, file.name);
 
-    if (parseBankMovements(text).length || !processedUrl) {
-      return text;
+    if (!processedUrl) {
+      return processedText;
     }
 
-    bankImportStatus.textContent = `${file.name} için orijinal görüntü tekrar deneniyor...`;
-    const fallbackText = await recognizeBankImageUrl(imageUrl, file.name);
-    return [text, fallbackText].filter(Boolean).join("\n");
+    bankImportStatus.textContent = `${file.name} için orijinal görüntü de kontrol ediliyor...`;
+    const originalText = await recognizeBankImageUrl(imageUrl, file.name);
+    const combinedText = [processedText, originalText].filter(Boolean).join("\n");
+    return chooseBestBankOcrText([processedText, originalText, combinedText]);
   } finally {
     URL.revokeObjectURL(imageUrl);
     if (processedUrl) {
@@ -7612,7 +7802,7 @@ function previewBankImport(options = {}) {
   const invalidCount = pendingBankImports.filter((item) => !item.valid).length;
 
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = pendingBankImports.length ? "Seçilenleri Onayla ve Ekle" : "Yapay Zeka ile Önizle";
+    bankImportAddButton.textContent = pendingBankImports.length ? "Seçilenleri Onayla ve Ekle" : "Yapay Zeka ile Kayıtlara Ekle";
   }
 
   if (!updateStatus) {
@@ -7688,7 +7878,10 @@ function confirmBankImport(options = {}) {
   renderBankImportPreview();
   closeBankImportPreviewModal();
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
+    bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
+  }
+  if (bankImportLocalButton) {
+    bankImportLocalButton.textContent = "Kayıtlara Ekle";
   }
   if (updateStatus) {
     bankImportStatus.textContent = `${selectedTransactions.length} banka hareketi kayıtlara eklendi. Seçilen dosya/görsel alanı temizlendi.`;
@@ -7703,7 +7896,10 @@ function clearBankImport() {
   renderBankImportPreview();
   closeBankImportPreviewModal();
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "Yapay Zeka ile Önizle";
+    bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
+  }
+  if (bankImportLocalButton) {
+    bankImportLocalButton.textContent = "Kayıtlara Ekle";
   }
   bankImportStatus.textContent = "Banka içe aktarma alanı temizlendi.";
 }
@@ -8106,25 +8302,29 @@ function parseBankMovements(raw) {
   }
 
   const templateMovements = dedupeBankMovements(parseBankAppTemplateRows(normalizedRaw));
+  const templateRowStartCount = countBankAppTemplateRowStarts(normalizedRaw);
 
-  if (shouldTrustBankAppTemplateRows(normalizedRaw, templateMovements)) {
+  if (shouldTrustBankAppTemplateRows(normalizedRaw, templateMovements) && templateMovements.length >= templateRowStartCount) {
     return templateMovements;
   }
 
   const mobileMovements = dedupeBankMovements(parseMobileBankOcrRows(normalizedRaw));
   const screenshotMovements = dedupeBankMovements(parseBankScreenshotMovements(normalizedRaw));
+  const mobileRowStartCount = countMobileBankOcrStarts(getBankOcrLines(normalizedRaw));
 
-  if (isStrictBankCardScreen(normalizedRaw) && mobileMovements.length) {
+  if (isStrictBankCardScreen(normalizedRaw) && mobileMovements.length >= mobileRowStartCount) {
     return mobileMovements;
   }
 
   const structuredMovements = dedupeBankMovements([...mobileMovements, ...screenshotMovements]);
+  const structuredRowStartCount = Math.max(templateRowStartCount, mobileRowStartCount);
 
-  if (shouldTrustStructuredBankRows(normalizedRaw, structuredMovements)) {
+  if (shouldTrustStructuredBankRows(normalizedRaw, structuredMovements) && structuredMovements.length >= structuredRowStartCount) {
     return structuredMovements;
   }
 
   const parsers = [
+    () => templateMovements,
     () => structuredMovements,
     () => parseSignedBankOcrAmounts(normalizedRaw),
     () => parseBankText(normalizedRaw),
@@ -8224,6 +8424,30 @@ function parseBankAppTemplateRows(raw) {
     .filter(Boolean);
 }
 
+function countBankAppTemplateRowStarts(raw) {
+  const sourceLines = getBankOcrLines(raw);
+  const lines = [];
+  const starts = [];
+
+  for (const line of sourceLines) {
+    if (isBankTemplateHardStopLine(line)) {
+      break;
+    }
+
+    lines.push(line);
+  }
+
+  lines.forEach((line, index) => {
+    const start = parseBankTemplateRowStart(lines, index);
+
+    if (start && !starts.some((item) => item.index === start.index)) {
+      starts.push(start);
+    }
+  });
+
+  return starts.length;
+}
+
 function parseBankTemplateRowStart(lines, index) {
   const line = String(lines[index] || "").trim();
 
@@ -8232,11 +8456,11 @@ function parseBankTemplateRowStart(lines, index) {
   }
 
   const sameLineDate = parseBankTemplateDateFromLine(line) || parseBankScreenshotDateFromLine(line);
-  const context = lines.slice(index, Math.min(lines.length, index + 8));
+  const context = lines.slice(index, Math.min(lines.length, index + 10));
   const normalizedContext = normalizeBankText(context.join(" "));
 
   if (sameLineDate) {
-    if (!hasBankTemplateRowEvidence(context, normalizedContext)) {
+    if (!hasBankTemplateRowEvidence(context, normalizedContext) && !hasBankTemplateLooseRowEvidence(context, normalizedContext)) {
       return null;
     }
 
@@ -8261,9 +8485,12 @@ function parseBankTemplateRowStart(lines, index) {
   }
 
   const monthLineIndex = context.findIndex((candidate) => getBankMonthNumber(candidate));
-  const hasMonthNearby = monthLineIndex >= 0 && monthLineIndex <= 3;
+  const hasMonthNearby = monthLineIndex >= 0 && monthLineIndex <= 6;
 
-  if (!hasMonthNearby || !hasBankTemplateRowEvidence(context, normalizedContext)) {
+  if (
+    !hasMonthNearby ||
+    (!hasBankTemplateRowEvidence(context, normalizedContext) && !hasBankTemplateLooseRowEvidence(context, normalizedContext))
+  ) {
     return null;
   }
 
@@ -8313,6 +8540,14 @@ function hasBankTemplateRowEvidence(contextLines, normalizedContext) {
   const rowKeywordCount = BANK_OCR_ROW_KEYWORDS.filter((keyword) => normalizedContext.includes(keyword)).length;
 
   return hasAmount && (hasTitle || rowKeywordCount > 0);
+}
+
+function hasBankTemplateLooseRowEvidence(contextLines, normalizedContext) {
+  const lines = contextLines || [];
+  const hasTitle = lines.some((line) => isBankTemplateTitleLine(line));
+  const rowKeywordCount = BANK_OCR_ROW_KEYWORDS.filter((keyword) => normalizedContext.includes(keyword)).length;
+
+  return hasTitle || rowKeywordCount > 0;
 }
 
 function parseBankTemplateBlock(block, start) {
@@ -9096,7 +9331,7 @@ function parseBankScreenshotDateFromLine(line) {
   const text = String(line || "");
   const normalized = normalizeBankText(text);
   const monthRegex =
-    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|haziran|haz|june|jun|temmuz|tem|july|jul|agustos|ağustos|agu|august|aug|eylul|eylül|eyl|september|sep|ekim|eki|october|oct|kasim|kasım|kas|november|nov|aralik|aralık|ara|december|dec)";
+    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|way|mav|haziran|haz|june|jun|temmuz|tem|july|jul|agustos|ağustos|agu|august|aug|eylul|eylül|eyl|september|sep|ekim|eki|october|oct|kasim|kasım|kas|november|nov|aralik|aralık|ara|december|dec)";
   const match = text.match(new RegExp(String.raw`\b(\d{1,2})\s+${monthRegex}\s+(20\d{2})(?:\s+([01]?\d|2[0-3])[:.]([0-5]\d))?`, "i"));
 
   if (!match) {
@@ -9313,11 +9548,26 @@ function isBankBalanceAmountMatch(line, match) {
 function isLikelyBankNoiseAmount(line, match, details) {
   const amountText = String(match?.text || "").trim();
   const source = String(line || "");
-  const after = source.slice(Number(match?.index || 0) + amountText.length, Number(match?.index || 0) + amountText.length + 6);
+  const amountIndex = Number(match?.index || 0);
+  const before = source.slice(Math.max(0, amountIndex - 18), amountIndex);
+  const after = source.slice(amountIndex + amountText.length, amountIndex + amountText.length + 6);
   const normalizedLine = normalizeBankText(line);
   const digitsOnly = amountText.replace(/\D/g, "");
 
   if (!details.hasExplicitSign && /^\s*\d/.test(after)) {
+    return true;
+  }
+
+  if (!details.hasExplicitSign && /%\s*$/.test(before)) {
+    return true;
+  }
+
+  if (
+    !details.hasExplicitSign &&
+    !/TL|TRY|₺/i.test(amountText) &&
+    details.amount < 1000 &&
+    /\b(orani|oran|stopaj|faiz tutari|n faiz|f orani)\b/.test(normalizedLine)
+  ) {
     return true;
   }
 
@@ -10390,11 +10640,11 @@ function hideStartupSplash() {
   window.setTimeout(() => {
     appSplashScreen.classList.add("is-hidden");
     finishStartup();
-  }, 5000);
+  }, 1400);
 
   window.setTimeout(() => {
     appSplashScreen.remove();
-  }, 5700);
+  }, 2100);
 }
 
 function registerServiceWorker() {
@@ -10411,3 +10661,4 @@ function registerServiceWorker() {
     navigator.serviceWorker.register("./service-worker.js").catch(() => {});
   });
 }
+

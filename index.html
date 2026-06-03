@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="manifest" href="manifest.json" />
+    <link rel="manifest" href="manifest.json?v=152" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
@@ -32,7 +32,7 @@
         }
       } catch (e) {}
     </script>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=152" />
   </head>
   <body>
 
@@ -360,7 +360,7 @@
               <div>
                 <p class="panel-kicker">Ana sayfa hesabı</p>
                 <h2>Gelir / gider tarih filtresi</h2>
-                <p id="homeSummaryFilterStatus" class="panel-note">Ana sayfa varsayılan olarak tüm gelir/gider hesabını gösterir.</p>
+                <p id="homeSummaryFilterStatus" class="panel-note">Özet ve tasarruf varsayılan olarak tüm gelir/gider hesabını gösterir.</p>
               </div>
             </div>
             <div class="home-summary-filter-panel">
@@ -373,7 +373,7 @@
                   Bitiş
                   <input id="homeSummaryEndDate" type="date" />
                 </label>
-                <button id="applyHomeSummaryFilterButton" class="primary-btn" type="button">Ana Sayfaya Uygula</button>
+                <button id="applyHomeSummaryFilterButton" class="primary-btn" type="button">Özete Uygula</button>
                 <button id="clearHomeSummaryFilterButton" class="ghost-btn" type="button">Filtreyi Temizle</button>
               </div>
             </div>
@@ -409,8 +409,8 @@
                 multiple
                 hidden
               />
-              <button id="bankImportAddButton" class="success-btn" type="button">Yapay Zeka ile Önizle</button>
-              <button id="bankImportLocalButton" class="ghost-btn" type="button">Önizle</button>
+              <button id="bankImportAddButton" class="success-btn" type="button">Yapay Zeka ile Kayıtlara Ekle</button>
+              <button id="bankImportLocalButton" class="ghost-btn" type="button">Kayıtlara Ekle</button>
               <button id="bankImportCancelButton" class="danger-btn" type="button">İptal Et</button>
             </div>
             <p id="bankImportStatus" class="sync-status">Henüz banka hareketi okunmadı.</p>
@@ -859,7 +859,12 @@
                     <strong>Kredi kartı bildirimleri</strong>
                     <small>Telefona uygulama olarak eklediğinde de izin verilirse bildirim gönderir.</small>
                   </div>
-                  <button id="cardReminderPermissionButton" class="success-btn" type="button">Bildirimleri Aç</button>
+                  <button id="cardReminderPermissionButton" class="ios-switch" type="button" role="switch" aria-checked="false" aria-pressed="false" aria-label="Kart bildirimlerini aç veya kapat">
+                    <span class="ios-switch-track" aria-hidden="true">
+                      <span class="ios-switch-thumb"></span>
+                    </span>
+                    <span class="ios-switch-text">Kapalı</span>
+                  </button>
                 </div>
                 <p id="cardReminderStatus" class="sync-status">Bildirimler kapalı.</p>
               </section>
@@ -1465,10 +1470,10 @@
       </article>
     </template>
 
-    <script src="firebase-config.js"></script>
+    <script src="firebase-config.js?v=152"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=152"></script>
   </body>
 </html>
