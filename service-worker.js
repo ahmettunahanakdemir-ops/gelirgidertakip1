@@ -1,11 +1,11 @@
-const CACHE_NAME = "akis-butce-v166";
+const CACHE_NAME = "akis-butce-v180";
 const APP_ASSETS = [
   "./",
   "./index.html",
-  "./style.css?v=166",
-  "./app.js?v=166",
-  "./firebase-config.js?v=166",
-  "./manifest.json?v=166",
+  "./style.css?v=180",
+  "./app.js?v=180",
+  "./firebase-config.js?v=180",
+  "./manifest.json?v=180",
   "./icon.svg",
   "./login-pattern.svg",
 ];
@@ -95,8 +95,3 @@ self.addEventListener("notificationclick", (event) => {
     })
   );
 });
-
-
-
-
-

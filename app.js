@@ -13,6 +13,7 @@ const CARD_REMINDER_STATE_STORAGE_KEY = "akis-budget-card-reminder-state";
 const DELETED_TRANSACTIONS_STORAGE_KEY = "akis-budget-deleted-transactions";
 const DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY = "akis-budget-deleted-transaction-signatures";
 const DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-transfer-tombstones";
+const TRANSACTIONS_STATE_UPDATED_STORAGE_KEY = "akis-budget-transactions-state-updated";
 const MAX_DELETED_TRANSACTION_MARKERS = 5000;
 const MAX_DELETED_TRANSFER_TOMBSTONES = 2000;
 
@@ -420,6 +421,10 @@ const historyEndDate = document.getElementById("historyEndDate");
 const clearHistoryRangeButton = document.getElementById("clearHistoryRangeButton");
 const exportPdfButton = document.getElementById("exportPdfButton");
 const exportExcelButton = document.getElementById("exportExcelButton");
+const openRecentTransactionsButton = document.getElementById("openRecentTransactionsButton");
+const recentTransactionsModal = document.getElementById("recentTransactionsModal");
+const recentTransactionsList = document.getElementById("recentTransactionsList");
+const closeRecentTransactionsButton = document.getElementById("closeRecentTransactionsButton");
 const exportButton = document.getElementById("exportButton");
 const importFile = document.getElementById("importFile");
 const storageStatus = document.getElementById("storageStatus");
@@ -622,6 +627,7 @@ let cloudUnsubscribe = null;
 let profileUnsubscribe = null;
 let cloudWriteQueue = Promise.resolve();
 let cloudTransactionsSyncVersion = 0;
+let cloudTransactionsSyncInFlight = false;
 let cloudProfileSyncVersion = 0;
 let firestorePersistenceEnabled = false;
 let activeView = "homeView";
@@ -1384,6 +1390,26 @@ function getFirstHomeSummaryInputValue(inputs) {
   return inputs[0]?.value || "";
 }
 
+
+function updateHistoryResponsiveLayout() {
+  const panel = document.querySelector("#historyView .history-panel");
+  const panelWidth = panel ? panel.getBoundingClientRect().width : window.innerWidth;
+  const compact = window.matchMedia("(max-width: 980px)").matches || panelWidth <= 980;
+  document.documentElement.classList.toggle("history-compact-layout", compact);
+}
+
+function bindHistoryResponsiveLayout() {
+  updateHistoryResponsiveLayout();
+  window.addEventListener("resize", updateHistoryResponsiveLayout);
+
+  const panel = document.querySelector("#historyView .history-panel");
+  if (panel && "ResizeObserver" in window) {
+    const observer = new ResizeObserver(() => updateHistoryResponsiveLayout());
+    observer.observe(panel);
+  }
+}
+
+
 function init() {
   hideAllStartupModals();
   hideStartupSplash();
@@ -1405,6 +1431,7 @@ function init() {
   syncBankImportAccountSelects();
   render();
   initHistoryCustomFilterSelects();
+  bindHistoryResponsiveLayout();
   registerServiceWorker();
   initCardReminderNotifications();
   if (!window.__akisWealthFitBound) {
@@ -1469,6 +1496,13 @@ function init() {
   exportButton?.addEventListener("click", exportTransactions);
   exportPdfButton?.addEventListener("click", exportFilteredTransactionsPdf);
   exportExcelButton?.addEventListener("click", exportFilteredTransactionsExcel);
+  openRecentTransactionsButton?.addEventListener("click", openRecentTransactionsModal);
+  closeRecentTransactionsButton?.addEventListener("click", closeRecentTransactionsModal);
+  recentTransactionsModal?.addEventListener("click", (event) => {
+    if (event.target === recentTransactionsModal) {
+      closeRecentTransactionsModal();
+    }
+  });
   importFile?.addEventListener("change", importTransactions);
   generateSyncButton?.addEventListener("click", generateSyncCode);
   copySyncButton?.addEventListener("click", copySyncCode);
@@ -1700,7 +1734,11 @@ function init() {
     }
 
     transactions = [entry, ...transactions].sort(compareTransactionsNewestFirst);
-    persistTransactions();
+    persistTransactions({ replaceCloud: true }).catch((error) => {
+      if (entryFormStatus) {
+        entryFormStatus.textContent = `Firebase'e kaydedilemedi: ${error.message}`;
+      }
+    });
     form.reset();
     typeInput.value = "income";
     updateCategoryOptions("income");
@@ -2252,11 +2290,36 @@ function getStorageKey(baseKey = STORAGE_KEY) {
   return currentUser ? `${baseKey}-${currentUser.uid}` : baseKey;
 }
 
+function loadTransactionsStateUpdatedAt() {
+  const value = Number(localStorage.getItem(getStorageKey(TRANSACTIONS_STATE_UPDATED_STORAGE_KEY)));
+  return Number.isFinite(value) ? value : 0;
+}
+
+function saveTransactionsStateUpdatedAt(timestamp = Date.now()) {
+  localStorage.setItem(getStorageKey(TRANSACTIONS_STATE_UPDATED_STORAGE_KEY), String(timestamp));
+  return timestamp;
+}
+
+function getTransactionsNewestMutationTimestamp(records = []) {
+  return records.reduce((latest, item) => {
+    const timestamp =
+      getRecordTimestamp(item?.updatedAt) ||
+      getRecordTimestamp(item?.createdAt) ||
+      getRecordTimestamp(item?.transactionAt) ||
+      getTransactionSortTimestamp(item) ||
+      0;
+    return Math.max(latest, timestamp);
+  }, 0);
+}
+
 function persistTransactions(options = {}) {
-  const { syncCloud = true, replaceCloud = false } = options;
+  const { syncCloud = true, replaceCloud = syncCloud } = options;
 
   transactions = mergeTransactions(transactions);
   localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
+  if (syncCloud) {
+    saveTransactionsStateUpdatedAt();
+  }
   updateStorageStatus();
 
   if (syncCloud) {
@@ -2344,6 +2407,9 @@ function render() {
   renderHome();
   renderCategoryBreakdown();
   renderTransactions();
+  if (recentTransactionsModal && !recentTransactionsModal.hidden) {
+    renderRecentTransactionsModal();
+  }
   updateStorageStatus();
   updateCardReminderControls();
 }
@@ -5187,32 +5253,122 @@ function renderTransactions() {
   const pageStart = (currentHistoryPage - 1) * TRANSACTIONS_PER_PAGE;
   const pagedTransactions = filtered.slice(pageStart, pageStart + TRANSACTIONS_PER_PAGE);
 
-  pagedTransactions
-    .forEach((item) => {
-      const fragment = transactionTemplate.content.cloneNode(true);
-      const title = fragment.querySelector(".transaction-title");
-      const meta = fragment.querySelector(".transaction-meta");
-      const amount = fragment.querySelector(".transaction-amount");
-      const editButton = fragment.querySelector(".edit-transaction-btn");
-      const removeButton = fragment.querySelector(".delete-transaction-btn");
-
-      title.textContent = item.title;
-      meta.textContent = `${formatTransactionDateTime(item)} · ${item.category} · ${getTransactionPaymentInfo(item)}${item.note ? ` · ${item.note}` : ""}`;
-      amount.textContent = item.type === "transfer"
-        ? `Transfer ${currency.format(item.amount)}${
-            Number(item.transferFee || 0) > 0 ? ` + ücret ${currency.format(Number(item.transferFee || 0))}` : ""
-          }`
-        : `${item.type === "income" ? "+" : "-"} ${currency.format(item.amount)}`;
-      amount.classList.add(item.type);
-
-      editButton.addEventListener("click", () => editTransaction(item));
-
-      removeButton.addEventListener("click", () => requestTransactionDelete(item));
-
-      transactionList.append(fragment);
-    });
+  pagedTransactions.forEach((item) => {
+    transactionList.append(createTransactionListItem(item));
+  });
 
   renderPagination(filtered.length, totalPages);
+}
+
+function createTransactionListItem(item, options = {}) {
+  const fragment = transactionTemplate.content.cloneNode(true);
+  const row = fragment.querySelector(".transaction-item");
+  const title = fragment.querySelector(".transaction-title");
+  const meta = fragment.querySelector(".transaction-meta");
+  const amount = fragment.querySelector(".transaction-amount");
+  const editButton = fragment.querySelector(".edit-transaction-btn");
+  const removeButton = fragment.querySelector(".delete-transaction-btn");
+  const addedAt = getTransactionAddedTimestamp(item);
+
+  if (row && options.className) {
+    row.classList.add(options.className);
+  }
+
+  title.textContent = item.title;
+  meta.textContent = `${formatTransactionDateTime(item)} · ${item.category} · ${getTransactionPaymentInfo(item)}${item.note ? ` · ${item.note}` : ""}`;
+  amount.textContent = item.type === "transfer"
+    ? `Transfer ${currency.format(item.amount)}${
+        Number(item.transferFee || 0) > 0 ? ` + ücret ${currency.format(Number(item.transferFee || 0))}` : ""
+      }`
+    : `${item.type === "income" ? "+" : "-"} ${currency.format(item.amount)}`;
+  amount.classList.add(item.type);
+
+  if (options.showAddedAt && meta) {
+    const addedText = addedAt ? formatAddedDateTime(addedAt) : "Eklenme saati bilinmiyor";
+    meta.textContent = `${meta.textContent} · Eklenme: ${addedText}`;
+  }
+
+  editButton.addEventListener("click", () => {
+    closeRecentTransactionsModal();
+    editTransaction(item);
+  });
+
+  removeButton.addEventListener("click", () => {
+    if (options.closeModalBeforeDelete) {
+      closeRecentTransactionsModal();
+    }
+    requestTransactionDelete(item);
+  });
+
+  return fragment;
+}
+
+function getTransactionAddedTimestamp(item) {
+  return (
+    getRecordTimestamp(item?.createdAt) ||
+    getRecordTimestamp(item?.transactionAt) ||
+    getTransactionSortTimestamp(item) ||
+    0
+  );
+}
+
+function formatAddedDateTime(timestamp) {
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(timestamp));
+}
+
+function getRecentAddedTransactions(limit = 20) {
+  return [...transactions]
+    .filter((item) => !isTransactionDeleted(item))
+    .sort((first, second) => {
+      const addedDiff = getTransactionAddedTimestamp(second) - getTransactionAddedTimestamp(first);
+      if (addedDiff) {
+        return addedDiff;
+      }
+      return compareTransactionsNewestFirst(first, second);
+    })
+    .slice(0, limit);
+}
+
+function openRecentTransactionsModal() {
+  renderRecentTransactionsModal();
+  if (recentTransactionsModal) {
+    recentTransactionsModal.hidden = false;
+    setTimeout(() => closeRecentTransactionsButton?.focus(), 0);
+  }
+}
+
+function closeRecentTransactionsModal() {
+  if (recentTransactionsModal) {
+    recentTransactionsModal.hidden = true;
+  }
+}
+
+function renderRecentTransactionsModal() {
+  if (!recentTransactionsList) {
+    return;
+  }
+
+  const latestTransactions = getRecentAddedTransactions(20);
+  recentTransactionsList.innerHTML = "";
+
+  if (!latestTransactions.length) {
+    recentTransactionsList.innerHTML = '<div class="empty-state">Henüz kayıt yok.</div>';
+    return;
+  }
+
+  latestTransactions.forEach((item) => {
+    recentTransactionsList.append(createTransactionListItem(item, {
+      className: "recent-transaction-item",
+      closeModalBeforeDelete: true,
+      showAddedAt: true,
+    }));
+  });
 }
 
 function getVisibleFilteredTransactions() {
@@ -5460,6 +5616,27 @@ function getTransactionTime(item) {
 }
 
 function getRecordTimestamp(value) {
+  if (!value) {
+    return 0;
+  }
+
+  if (typeof value === "number") {
+    return value > 1000000000000 ? value : value * 1000;
+  }
+
+  if (typeof value.toMillis === "function") {
+    return value.toMillis();
+  }
+
+  if (typeof value.toDate === "function") {
+    const date = value.toDate();
+    return date instanceof Date && !Number.isNaN(date.getTime()) ? date.getTime() : 0;
+  }
+
+  if (Number.isFinite(Number(value.seconds))) {
+    return Number(value.seconds) * 1000;
+  }
+
   const timestamp = Date.parse(String(value || ""));
   return Number.isNaN(timestamp) ? 0 : timestamp;
 }
@@ -5744,7 +5921,11 @@ function saveTransactionEdit(event) {
   if (revertedPaymentAccount || appliedPaymentAccount || cleanedPaymentAccount) {
     persistPaymentAccounts();
   }
-  persistTransactions({ replaceCloud: true });
+  persistTransactions({ replaceCloud: true }).catch((error) => {
+    if (transactionEditStatus) {
+      transactionEditStatus.textContent = `Firebase'e kaydedilemedi: ${error.message}`;
+    }
+  });
   closeTransactionEditModal();
   render();
 }
@@ -6088,6 +6269,8 @@ function renderView() {
   if (activeView === "settingsView") {
     syncAppearanceControls();
   }
+
+  updateHistoryResponsiveLayout();
 }
 
 function toggleSidebar() {
@@ -7235,6 +7418,7 @@ async function handleAuthStateChanged(user) {
   const anonymousLocalPaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
   const anonymousLocalCategories = normalizeCategoryState(transactionCategories);
   const anonymousDeletedTransactionState = getDeletedTransactionStateSnapshot();
+  const anonymousLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
   currentUser = user;
   deletedTransactionIds = loadDeletedTransactionIds();
   deletedTransactionSignatures = loadDeletedTransactionSignatures();
@@ -7242,6 +7426,7 @@ async function handleAuthStateChanged(user) {
   applyDeletedTransactionState(anonymousDeletedTransactionState, getDeletedTransactionStateSnapshot());
   refreshCardReminderSettingsForCurrentUser();
   const userLocalTransactions = getCloudReadyTransactions(loadTransactions());
+  const userLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
   const userLocalAssets = getCloudReadyAssets(loadAssets());
   const userLocalBesAccounts = getCloudReadyBesAccounts(loadBesAccounts());
   const userLocalPaymentAccounts = getCloudReadyPaymentAccounts(loadPaymentAccounts());
@@ -7265,7 +7450,20 @@ async function handleAuthStateChanged(user) {
     const cloudProfile = await fetchCloudProfile(user.uid);
     applyDeletedTransactionState(readCloudDeletedTransactionState(cloudProfile), anonymousDeletedTransactionState);
     const cloudTransactions = await fetchCloudTransactions(user.uid);
-    transactions = mergeTransactions(cloudTransactions, userLocalTransactions, anonymousLocalTransactions);
+    const localTransactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions);
+    const localTransactionsUpdatedAt = Math.max(
+      userLocalTransactionsUpdatedAt,
+      anonymousLocalTransactionsUpdatedAt,
+      getTransactionsNewestMutationTimestamp(localTransactions)
+    );
+    const cloudTransactionsUpdatedAt =
+      getRecordTimestamp(cloudProfile?.transactionsStateUpdatedAt) ||
+      getTransactionsNewestMutationTimestamp(cloudTransactions);
+
+    transactions =
+      localTransactions.length && localTransactionsUpdatedAt >= cloudTransactionsUpdatedAt
+        ? localTransactions
+        : mergeTransactions(cloudTransactions);
     assets = mergeRecordsById(readCloudAssets(cloudProfile.assets), userLocalAssets, anonymousLocalAssets);
     besAccounts = mergeRecordsById(
       readCloudBesAccounts(cloudProfile.besAccounts),
@@ -7403,7 +7601,26 @@ function subscribeCloudTransactions(userId) {
         .map(readCloudTransaction)
         .filter(Boolean)
         .filter((item) => !isTransactionDeleted(item));
-      transactions = mergeTransactions(transactions, cloudTransactions);
+
+      if (snapshot.metadata?.hasPendingWrites || cloudTransactionsSyncInFlight) {
+        cloudStatus.textContent = `${transactions.length} kayıt buluta yazılıyor...`;
+        return;
+      }
+
+      const localUpdatedAt = Math.max(
+        loadTransactionsStateUpdatedAt(),
+        getTransactionsNewestMutationTimestamp(transactions)
+      );
+      const cloudProfileUpdatedAt = 0;
+      const cloudUpdatedAt = getTransactionsNewestMutationTimestamp(cloudTransactions);
+
+      if (transactions.length && localUpdatedAt > cloudUpdatedAt && snapshot.metadata?.fromCache) {
+        cloudStatus.textContent = `${transactions.length} kayıt yerelde daha güncel; Firebase yazımı bekleniyor.`;
+        syncTransactionsToCloud({ replace: true });
+        return;
+      }
+
+      transactions = mergeTransactions(cloudTransactions);
       transactionCategories = mergeCategoryStates(transactionCategories, getTransactionCategoriesFromRecords(transactions));
       persistTransactionCategories({ syncCloud: false });
       syncCategorySelects();
@@ -7418,6 +7635,31 @@ function subscribeCloudTransactions(userId) {
   );
 }
 
+function getCloudWriteBatchLimit() {
+  // Firestore batch limiti 500'dür. Profil güncellemesi ve güvenli pay için 450 kullanıyoruz.
+  return 450;
+}
+
+async function commitCloudOperationsInChunks(operations = []) {
+  const limit = getCloudWriteBatchLimit();
+
+  for (let index = 0; index < operations.length; index += limit) {
+    const batch = firebaseDb.batch();
+    const chunk = operations.slice(index, index + limit);
+
+    chunk.forEach((operation) => {
+      if (operation.type === "delete") {
+        batch.delete(operation.ref);
+        return;
+      }
+
+      batch.set(operation.ref, operation.data, operation.options || { merge: true });
+    });
+
+    await batch.commit();
+  }
+}
+
 function syncTransactionsToCloud(options = {}) {
   const { replace = false } = options;
 
@@ -7428,17 +7670,21 @@ function syncTransactionsToCloud(options = {}) {
   const user = currentUser;
   const safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
   const deletedPayload = getCloudDeletedTransactionPayload();
+  const transactionsStateUpdatedAt = saveTransactionsStateUpdatedAt();
   const syncVersion = ++cloudTransactionsSyncVersion;
+  cloudTransactionsSyncInFlight = true;
+
   const writeTransactions = async () => {
     if (syncVersion !== cloudTransactionsSyncVersion) {
       return;
     }
 
     const collection = getUserTransactionsCollection(user.uid);
-    const batch = firebaseDb.batch();
+    const operations = [];
 
     if (replace) {
       const snapshot = await collection.get();
+
       if (syncVersion !== cloudTransactionsSyncVersion) {
         return;
       }
@@ -7446,48 +7692,63 @@ function syncTransactionsToCloud(options = {}) {
       const currentIds = new Set(safeTransactions.map((item) => item.id));
       snapshot.docs.forEach((doc) => {
         if (!currentIds.has(doc.id)) {
-          batch.delete(doc.ref);
+          operations.push({ type: "delete", ref: doc.ref });
         }
       });
     }
 
     safeTransactions.forEach((transaction) => {
-      batch.set(collection.doc(transaction.id), toCloudTransaction(transaction), { merge: true });
+      operations.push({
+        type: "set",
+        ref: collection.doc(transaction.id),
+        data: toCloudTransaction(transaction),
+        // Düzenlenen kayıtta eski type/category/payment alanları kalmasın diye dokümanı birebir güncelliyoruz.
+        options: { merge: false },
+      });
     });
 
-    batch.set(
-      firebaseDb.collection("users").doc(user.uid),
-      {
+    operations.push({
+      type: "set",
+      ref: firebaseDb.collection("users").doc(user.uid),
+      data: {
         email: user.email || "",
         username: getUserDisplayName(user),
         ...deletedPayload,
+        transactionsStateUpdatedAt,
         updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
       },
-      { merge: true }
-    );
+      options: { merge: true },
+    });
 
     cloudStatus.textContent = "Buluta kaydediliyor...";
-    await batch.commit();
+    try {
+      await commitCloudOperationsInChunks(operations);
+    } finally {
+      if (syncVersion === cloudTransactionsSyncVersion) {
+        cloudTransactionsSyncInFlight = false;
+      }
+    }
 
     if (syncVersion === cloudTransactionsSyncVersion) {
-      cloudStatus.textContent = `${safeTransactions.length} kayıt buluta kaydedildi.`;
+      cloudStatus.textContent = `${safeTransactions.length} kayıt Firebase'e son haliyle kaydedildi.`;
     }
   };
 
-  const syncPromise = writeTransactions().catch((error) => {
-    if (syncVersion === cloudTransactionsSyncVersion) {
-      cloudStatus.textContent = `Buluta kaydedilemedi: ${error.message}`;
-    }
-  });
+  const runSync = () =>
+    writeTransactions().catch((error) => {
+      if (syncVersion === cloudTransactionsSyncVersion) {
+        cloudTransactionsSyncInFlight = false;
+        const message = error?.code === "permission-denied"
+          ? "Firebase kuralları eski görünüyor. firestore.rules dosyasını Firebase Console'da yayınla."
+          : `Firebase'e kaydedilemedi: ${error.message}`;
+        cloudStatus.textContent = message;
+      }
+      throw error;
+    });
 
-  if (replace) {
-    cloudWriteQueue = cloudWriteQueue.catch(() => {}).then(() => syncPromise);
-    return cloudWriteQueue;
-  }
-
-  return syncPromise;
+  cloudWriteQueue = cloudWriteQueue.catch(() => {}).then(runSync);
+  return cloudWriteQueue;
 }
-
 
 function syncUserProfileToCloud() {
   if (!currentUser || !firebaseDb) {
