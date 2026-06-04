@@ -5488,19 +5488,22 @@ label,
 
 .settings-panel-main {
   display: grid;
-  gap: 24px;
+  gap: 22px;
 }
 
 .settings-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+  max-width: none;
+  width: 100%;
 }
 
 .settings-block {
   display: grid;
   gap: 16px;
+  width: 100%;
 }
 
 .compact-heading {
@@ -5511,11 +5514,13 @@ label,
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  max-width: none;
 }
 
 .font-size-control {
   display: grid;
   gap: 12px;
+  max-width: 100%;
 }
 
 .font-size-headline {
@@ -5554,10 +5559,6 @@ label,
 
 .settings-actions > button {
   width: 100%;
-}
-
-.notification-settings-block {
-  grid-column: 1 / -1;
 }
 
 .notification-settings-card {
