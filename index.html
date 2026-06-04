@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="manifest" href="manifest.json?v=154" />
+    <link rel="manifest" href="manifest.json?v=162" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
@@ -32,7 +32,7 @@
         }
       } catch (e) {}
     </script>
-    <link rel="stylesheet" href="style.css?v=154" />
+    <link rel="stylesheet" href="style.css?v=162" />
   </head>
   <body>
 
@@ -433,6 +433,7 @@
                   <select id="type" name="type">
                     <option value="income">Gelir</option>
                     <option value="expense">Gider</option>
+                    <option value="transfer">Hesaplar arası transfer</option>
                   </select>
                 </label>
 
@@ -481,6 +482,24 @@
                 <label>
                   Kart / hesap
                   <select id="paymentAccount" name="paymentAccount"></select>
+                </label>
+
+                <label id="transferAccountLabel" hidden>
+                  Transfer karşı hesabı
+                  <select id="transferAccount" name="transferAccount"></select>
+                </label>
+
+                <label id="transferFeeLabel" hidden>
+                  Havale / EFT ücreti
+                  <input
+                    id="transferFee"
+                    name="transferFee"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputmode="decimal"
+                    placeholder="0"
+                  />
                 </label>
 
                 <label>
@@ -580,7 +599,6 @@
                 </div>
                 <div class="payment-account-toolbar-actions">
                   <button id="openPaymentAccountModalButton" class="primary-btn" type="button">Kart / Hesap Ekle</button>
-                  <button id="openAccountTransferModalButton" class="ghost-btn" type="button">Hesaplar Arası Aktar</button>
                 </div>
               </div>
               <p id="paymentAccountStatus" class="sync-status"></p>
@@ -725,6 +743,7 @@
                   <option value="all">Tüm İşlemler</option>
                   <option value="income">Sadece Gelir</option>
                   <option value="expense">Sadece Gider</option>
+                  <option value="transfer">Sadece Transfer</option>
                 </select>
                 <select id="filterPaymentMethod" aria-label="Ödeme şekli filtresi">
                   <option value="all">Tüm Ödemeler</option>
@@ -1159,6 +1178,7 @@
             <select id="categoryAddType" required>
               <option value="income">Gelir</option>
               <option value="expense">Gider</option>
+              <option value="transfer">Hesaplar arası transfer</option>
             </select>
           </label>
           <label>
@@ -1228,6 +1248,7 @@
             <select id="transactionTypeInput" required>
               <option value="income">Gelir</option>
               <option value="expense">Gider</option>
+              <option value="transfer">Hesaplar arası transfer</option>
             </select>
           </label>
           <label>
@@ -1268,6 +1289,14 @@
           <label>
             Kart / hesap
             <select id="transactionPaymentAccountInput"></select>
+          </label>
+          <label id="transactionTransferAccountLabel" hidden>
+            Transfer karşı hesabı
+            <select id="transactionTransferAccountInput"></select>
+          </label>
+          <label id="transactionTransferFeeLabel" hidden>
+            Havale / EFT ücreti
+            <input id="transactionTransferFeeInput" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" />
           </label>
           <label>
             Tarih
@@ -1390,6 +1419,12 @@
               <p id="paymentAccountRecordsSummary" class="panel-note">Bu karta veya hesaba bağlı eklediğin kayıtlar burada görünür.</p>
             </div>
           </div>
+          <div class="account-records-filter">
+            <label>
+              Gösterilecek dönem
+              <select id="paymentAccountRecordsPeriodFilter"></select>
+            </label>
+          </div>
           <div id="paymentAccountRecordsList" class="transaction-list account-records-list"></div>
           <div class="auth-actions">
             <button id="refreshPaymentAccountFromRecordsButton" class="success-btn" type="button">Güncelle</button>
@@ -1426,42 +1461,6 @@
       </section>
     </div>
 
-
-    <div id="accountTransferModal" class="modal-backdrop" hidden>
-      <section class="modal-card wide-modal" role="dialog" aria-modal="true" aria-labelledby="accountTransferModalTitle">
-        <form id="accountTransferForm" class="profile-form">
-          <div class="panel-heading">
-            <div>
-              <p class="panel-kicker">Para Aktarma</p>
-              <h2 id="accountTransferModalTitle">Hesaplar arası para aktar</h2>
-              <p class="panel-note">Nakit cüzdan veya banka hesapların arasında para aktarabilirsin. Bu işlem gelir/gider toplamını değiştirmez.</p>
-            </div>
-          </div>
-          <label>
-            Gönderen hesap
-            <select id="accountTransferSource" required></select>
-          </label>
-          <label>
-            Alıcı hesap
-            <select id="accountTransferTarget" required></select>
-          </label>
-          <label>
-            Aktarım tutarı
-            <input id="accountTransferAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" required />
-          </label>
-          <label>
-            Not
-            <textarea id="accountTransferNote" rows="3" maxlength="100" placeholder="İstersen kısa bir açıklama ekle"></textarea>
-          </label>
-          <div class="auth-actions modal-actions">
-            <button class="primary-btn" type="submit">Aktar</button>
-            <button id="closeAccountTransferModalButton" class="ghost-btn" type="button">İptal</button>
-          </div>
-          <p id="accountTransferStatus" class="sync-status"></p>
-        </form>
-      </section>
-    </div>
-
     <template id="transactionTemplate">
       <article class="transaction-item">
         <div>
@@ -1476,10 +1475,10 @@
       </article>
     </template>
 
-    <script src="firebase-config.js?v=154"></script>
+    <script src="firebase-config.js?v=162"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="app.js?v=154"></script>
+    <script src="app.js?v=162"></script>
   </body>
 </html>

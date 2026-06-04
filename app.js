@@ -1,4 +1,4 @@
-﻿const STORAGE_KEY = "akis-budget-tracker";
+const STORAGE_KEY = "akis-budget-tracker";
 const ASSETS_STORAGE_KEY = "akis-budget-assets";
 const BES_STORAGE_KEY = "akis-budget-bes";
 const MARKET_STORAGE_KEY = "akis-budget-market-prices";
@@ -10,6 +10,9 @@ const UI_SETTINGS_STORAGE_KEY = "akis-budget-ui-settings";
 const HOME_SUMMARY_FILTER_STORAGE_KEY = "akis-budget-home-summary-filter";
 const CARD_REMINDER_SETTINGS_STORAGE_KEY = "akis-budget-card-reminder-settings";
 const CARD_REMINDER_STATE_STORAGE_KEY = "akis-budget-card-reminder-state";
+const DELETED_TRANSACTIONS_STORAGE_KEY = "akis-budget-deleted-transactions";
+const DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY = "akis-budget-deleted-transaction-signatures";
+const DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-transfer-tombstones";
 
 const DEFAULT_CATEGORIES = {
   income: ["Maaş", "Serbest İş", "Yatırım", "Hediye", "Promosyon", "Harçlık", "Borç Ödeme", "Diğer"],
@@ -29,6 +32,7 @@ const DEFAULT_CATEGORIES = {
     "Yatırım",
     "Diğer",
   ],
+  transfer: ["Transfer", "Kart Ödemesi", "Hesap Aktarımı", "Diğer"],
 };
 
 const DEFAULT_UI_SETTINGS = {
@@ -344,7 +348,6 @@ const marketUpdatedAt = document.getElementById("marketUpdatedAt");
 const assetCount = document.getElementById("assetCount");
 const assetList = document.getElementById("assetList");
 const openPaymentAccountModalButton = document.getElementById("openPaymentAccountModalButton");
-const openAccountTransferModalButton = document.getElementById("openAccountTransferModalButton");
 const paymentAccountModal = document.getElementById("paymentAccountModal");
 const paymentAccountModalTitle = document.getElementById("paymentAccountModalTitle");
 const paymentAccountModalSubtitle = document.getElementById("paymentAccountModalSubtitle");
@@ -391,6 +394,10 @@ const typeInput = document.getElementById("type");
 const categoryInput = document.getElementById("category");
 const paymentMethodInput = document.getElementById("paymentMethod");
 const paymentAccountSelect = document.getElementById("paymentAccount");
+const transferAccountLabel = document.getElementById("transferAccountLabel");
+const transferAccountSelect = document.getElementById("transferAccount");
+const transferFeeLabel = document.getElementById("transferFeeLabel");
+const transferFeeInput = document.getElementById("transferFee");
 const entryFormStatus = document.getElementById("entryFormStatus");
 const dateInput = document.getElementById("date");
 const homeSummaryStartDate = document.getElementById("homeSummaryStartDate");
@@ -507,6 +514,10 @@ const transactionTimeInput = document.getElementById("transactionTimeInput");
 const transactionNoteInput = document.getElementById("transactionNoteInput");
 const transactionPaymentMethodInput = document.getElementById("transactionPaymentMethodInput");
 const transactionPaymentAccountInput = document.getElementById("transactionPaymentAccountInput");
+const transactionTransferAccountLabel = document.getElementById("transactionTransferAccountLabel");
+const transactionTransferAccountInput = document.getElementById("transactionTransferAccountInput");
+const transactionTransferFeeLabel = document.getElementById("transactionTransferFeeLabel");
+const transactionTransferFeeInput = document.getElementById("transactionTransferFeeInput");
 const transactionEditStatus = document.getElementById("transactionEditStatus");
 const closeTransactionEditButton = document.getElementById("closeTransactionEditButton");
 const openEntryModalButton = document.getElementById("openEntryModalButton");
@@ -533,18 +544,11 @@ const paymentAccountPaySource = document.getElementById("paymentAccountPaySource
 const paymentAccountPayAmount = document.getElementById("paymentAccountPayAmount");
 const paymentAccountPayStatus = document.getElementById("paymentAccountPayStatus");
 const closePaymentAccountPayButton = document.getElementById("closePaymentAccountPayButton");
-const accountTransferModal = document.getElementById("accountTransferModal");
-const accountTransferForm = document.getElementById("accountTransferForm");
-const accountTransferSource = document.getElementById("accountTransferSource");
-const accountTransferTarget = document.getElementById("accountTransferTarget");
-const accountTransferAmount = document.getElementById("accountTransferAmount");
-const accountTransferNote = document.getElementById("accountTransferNote");
-const accountTransferStatus = document.getElementById("accountTransferStatus");
-const closeAccountTransferModalButton = document.getElementById("closeAccountTransferModalButton");
 const paymentAccountRecordsModal = document.getElementById("paymentAccountRecordsModal");
 const paymentAccountRecordsTitle = document.getElementById("paymentAccountRecordsTitle");
 const paymentAccountRecordsSummary = document.getElementById("paymentAccountRecordsSummary");
 const paymentAccountRecordsList = document.getElementById("paymentAccountRecordsList");
+const paymentAccountRecordsPeriodFilter = document.getElementById("paymentAccountRecordsPeriodFilter");
 const refreshPaymentAccountFromRecordsButton = document.getElementById("refreshPaymentAccountFromRecordsButton");
 const closePaymentAccountRecordsButton = document.getElementById("closePaymentAccountRecordsButton");
 const cloudStatus = document.getElementById("cloudStatus");
@@ -631,6 +635,7 @@ let editingPaymentAccountId = "";
 let payingPaymentAccountId = "";
 let deletingPaymentAccountId = "";
 let viewingPaymentAccountRecordsId = "";
+let viewingPaymentAccountRecordsPeriod = "";
 let pendingDeletePassword = "";
 let pendingGenericConfirmAction = null;
 let uiSettings = loadUiSettings();
@@ -638,6 +643,9 @@ let cardReminderSettings = loadCardReminderSettings();
 let cardReminderState = loadCardReminderState();
 let cardReminderTimer = null;
 let homeSummaryFilter = loadHomeSummaryFilter();
+let deletedTransactionIds = loadDeletedTransactionIds();
+let deletedTransactionSignatures = loadDeletedTransactionSignatures();
+let deletedTransferTombstones = loadDeletedTransferTombstones();
 let transactions = loadTransactions();
 let assets = loadAssets();
 let besAccounts = loadBesAccounts();
@@ -1201,13 +1209,48 @@ function requestBesDelete(item) {
   );
 }
 
+function getTransactionDeletionCascadeIds(item) {
+  const ids = new Set();
+
+  if (!item?.id) {
+    return ids;
+  }
+
+  ids.add(item.id);
+
+  if (item.type === "transfer") {
+    getLegacyTransferCounterpartIds(item).forEach((id) => ids.add(id));
+    return ids;
+  }
+
+  transactions.forEach((candidate) => {
+    if (candidate.id !== item.id && isLikelySplitTransferPair(item, candidate)) {
+      ids.add(candidate.id);
+    }
+  });
+
+  return ids;
+}
+
 function requestTransactionDelete(item) {
   openGenericConfirmModal(
     `${item.title} silinsin mi?`,
-    "Bu kayıt silinecek. Bağlı kart/hesap bakiyesi de buna göre güncellenecek.",
+    "Bu kayıt silinecek. Bağlı kart/hesap bakiyesi de buna göre güncellenecek ve yenilemede geri gelmeyecek.",
     () => {
-      const changedPaymentAccount = applyTransactionPaymentEffect(item, -1);
-      transactions = transactions.filter((transaction) => transaction.id !== item.id);
+      const idsToDelete = getTransactionDeletionCascadeIds(item);
+      let changedPaymentAccount = false;
+
+      idsToDelete.forEach((transactionId) => {
+        const transaction = transactions.find((record) => record.id === transactionId) || (transactionId === item.id ? item : null);
+        if (transaction) {
+          changedPaymentAccount = applyTransactionPaymentEffect(transaction, -1) || changedPaymentAccount;
+          markTransactionDeleted(transactionId, transaction);
+        } else {
+          markTransactionDeleted(transactionId);
+        }
+      });
+
+      transactions = transactions.filter((transaction) => !idsToDelete.has(transaction.id) && !isTransactionDeleted(transaction));
       if (changedPaymentAccount) {
         persistPaymentAccounts();
       }
@@ -1356,6 +1399,7 @@ function init() {
   updateCategoryOptions(typeInput.value);
   updatePaymentAccountFormVisibility();
   updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput?.value || "cash");
+  syncEntryTransferVisibility();
   syncBankImportAccountSelects();
   render();
   initHistoryCustomFilterSelects();
@@ -1366,9 +1410,23 @@ function init() {
     window.__akisWealthFitBound = true;
   }
 
-  typeInput.addEventListener("change", () => updateCategoryOptions(typeInput.value));
+  typeInput.addEventListener("change", () => {
+    updateCategoryOptions(typeInput.value);
+    syncEntryTransferVisibility();
+  });
   paymentMethodInput?.addEventListener("change", () => {
     updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput.value);
+  });
+  paymentAccountSelect?.addEventListener("change", () => {
+    updateEntryTransferAccountSelect();
+  });
+  transferAccountSelect?.addEventListener("change", () => {
+    if (typeInput?.value === "transfer") {
+      updateAnyPaymentAccountSelect(paymentAccountSelect, paymentAccountSelect?.value || "", {
+        excludeId: transferAccountSelect.value,
+        placeholder: "Kaynak kart / hesap seç",
+      });
+    }
   });
   filterType.addEventListener("change", () => {
     currentHistoryPage = 1;
@@ -1483,15 +1541,6 @@ function init() {
       closePaymentAccountPayModal();
     }
   });
-  openAccountTransferModalButton?.addEventListener("click", openAccountTransferModal);
-  accountTransferForm?.addEventListener("submit", submitAccountTransfer);
-  closeAccountTransferModalButton?.addEventListener("click", closeAccountTransferModal);
-  accountTransferSource?.addEventListener("change", () => fillAccountTransferTargetSelect(accountTransferSource.value, accountTransferTarget.value));
-  accountTransferModal?.addEventListener("click", (event) => {
-    if (event.target === accountTransferModal) {
-      closeAccountTransferModal();
-    }
-  });
   closePaymentAccountRecordsButton?.addEventListener("click", closePaymentAccountRecordsModal);
   refreshPaymentAccountFromRecordsButton?.addEventListener("click", () => {
     refreshPaymentAccountFromRecords(viewingPaymentAccountRecordsId);
@@ -1584,9 +1633,29 @@ function init() {
   transactionEditForm.addEventListener("submit", saveTransactionEdit);
   transactionTypeInput?.addEventListener("change", () => {
     updateCategorySelect(transactionCategoryInput, transactionTypeInput.value);
+    syncTransactionTransferVisibility();
   });
   transactionPaymentMethodInput?.addEventListener("change", () => {
     updatePaymentAccountSelect(transactionPaymentAccountInput, transactionPaymentMethodInput.value);
+    syncTransactionTransferVisibility();
+  });
+  transactionPaymentAccountInput?.addEventListener("change", () => {
+    updateTransactionTransferAccountSelect();
+  });
+  transactionTransferAccountInput?.addEventListener("change", () => {
+    if (transactionTypeInput?.value === "transfer") {
+      updateAnyPaymentAccountSelect(transactionPaymentAccountInput, transactionPaymentAccountInput?.value || "", {
+        excludeId: transactionTransferAccountInput.value,
+        placeholder: "Kaynak kart / hesap seç",
+      });
+    }
+  });
+  paymentAccountRecordsPeriodFilter?.addEventListener("change", () => {
+    viewingPaymentAccountRecordsPeriod = paymentAccountRecordsPeriodFilter.value || "";
+    const account = paymentAccounts.find((item) => item.id === viewingPaymentAccountRecordsId);
+    if (account) {
+      openPaymentAccountRecordsModal(account, { preservePeriod: true });
+    }
   });
   initCloud();
   refreshMarketPrices({ silent: true });
@@ -1596,14 +1665,18 @@ function init() {
 
     const formData = new FormData(form);
     const now = getTurkeyNowDateTime();
+    const entryType = formData.get("type") === "transfer" ? "transfer" : formData.get("type");
     const entry = {
       id: crypto.randomUUID(),
-      type: formData.get("type"),
+      type: entryType,
       title: String(formData.get("title")).trim(),
       amount: Number(formData.get("amount")),
-      category: formData.get("category"),
-      paymentMethod: normalizePaymentMethod(formData.get("paymentMethod")),
+      category: entryType === "transfer" ? (formData.get("category") || "Transfer") : formData.get("category"),
+      paymentMethod: entryType === "transfer" ? "transfer" : normalizePaymentMethod(formData.get("paymentMethod")),
       paymentAccountId: String(formData.get("paymentAccount") || ""),
+      transferAccountId: entryType === "transfer" ? String(formData.get("transferAccount") || "") : "",
+      transferFee:
+        entryType === "transfer" ? Math.max(0, roundMoney(readSignedNumber(formData.get("transferFee"), 0))) : 0,
       date: formData.get("date"),
       note: String(formData.get("note")).trim(),
       transactionAt: buildTransactionDateTime(formData.get("date"), getTurkeyNowTime()),
@@ -1629,7 +1702,11 @@ function init() {
     typeInput.value = "income";
     updateCategoryOptions("income");
     paymentMethodInput.value = "cash";
+    paymentMethodInput.disabled = false;
     updatePaymentAccountSelect(paymentAccountSelect, "cash");
+    if (transferFeeInput) transferFeeInput.value = "";
+    updateEntryTransferAccountSelect("");
+    syncEntryTransferVisibility();
     if (entryFormStatus) {
       entryFormStatus.textContent = "";
     }
@@ -1710,7 +1787,186 @@ function standardizeModalLayouts() {
 }
 
 function loadTransactions() {
-  return loadJsonState(STORAGE_KEY, []);
+  return mergeTransactions(loadJsonState(STORAGE_KEY, []));
+}
+
+function loadDeletedTransactionIds() {
+  const values = loadJsonState(DELETED_TRANSACTIONS_STORAGE_KEY, []);
+  return new Set((Array.isArray(values) ? values : []).map((item) => String(item || "")).filter(Boolean));
+}
+
+function loadDeletedTransactionSignatures() {
+  const values = loadJsonState(DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY, []);
+  return new Set((Array.isArray(values) ? values : []).map((item) => String(item || "")).filter(Boolean));
+}
+
+function normalizeDeletedTransferTombstone(item) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+
+  const date = String(item.date || "");
+  const amount = Number(item.amount || 0).toFixed(2);
+  const sourceAccountId = String(item.sourceAccountId || "");
+  const targetAccountId = String(item.targetAccountId || "");
+
+  if (!date || !Number.isFinite(Number(amount)) || Number(amount) <= 0 || !sourceAccountId || !targetAccountId) {
+    return null;
+  }
+
+  return {
+    date,
+    minute: String(item.minute || "").slice(0, 5),
+    amount,
+    sourceAccountId,
+    targetAccountId,
+  };
+}
+
+function loadDeletedTransferTombstones() {
+  const values = loadJsonState(DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY, []);
+  return (Array.isArray(values) ? values : []).map(normalizeDeletedTransferTombstone).filter(Boolean);
+}
+
+function persistDeletedTransactionIds() {
+  localStorage.setItem(getStorageKey(DELETED_TRANSACTIONS_STORAGE_KEY), JSON.stringify([...deletedTransactionIds]));
+}
+
+function persistDeletedTransactionSignatures() {
+  localStorage.setItem(getStorageKey(DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY), JSON.stringify([...deletedTransactionSignatures]));
+}
+
+function persistDeletedTransferTombstones() {
+  const limited = deletedTransferTombstones.slice(-1000);
+  deletedTransferTombstones = limited;
+  localStorage.setItem(getStorageKey(DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY), JSON.stringify(limited));
+}
+
+function getTransferDeletionTombstone(transaction) {
+  if (!transaction || transaction.type !== "transfer") {
+    return null;
+  }
+
+  const date = String(transaction.date || "");
+  const amount = Number(transaction.amount || 0).toFixed(2);
+  const sourceAccountId = String(transaction.paymentAccountId || "");
+  const targetAccountId = String(transaction.transferAccountId || "");
+
+  if (!date || !Number.isFinite(Number(amount)) || Number(amount) <= 0 || !sourceAccountId || !targetAccountId) {
+    return null;
+  }
+
+  return {
+    date,
+    minute: getComparableTransactionMinute(transaction),
+    amount,
+    sourceAccountId,
+    targetAccountId,
+  };
+}
+
+function addDeletedTransactionSignature(transaction) {
+  if (!transaction || !isValidTransaction(transaction)) {
+    return;
+  }
+
+  const signature = getTransactionSignature(transaction);
+  if (signature) {
+    deletedTransactionSignatures.add(signature);
+    persistDeletedTransactionSignatures();
+  }
+}
+
+function addDeletedTransferTombstone(transaction) {
+  const tombstone = getTransferDeletionTombstone(transaction);
+  if (!tombstone) {
+    return;
+  }
+
+  const key = JSON.stringify(tombstone);
+  const exists = deletedTransferTombstones.some((item) => JSON.stringify(item) === key);
+  if (!exists) {
+    deletedTransferTombstones.push(tombstone);
+    persistDeletedTransferTombstones();
+  }
+}
+
+function markTransactionDeleted(transactionId, transaction = null) {
+  const id = String(transactionId || transaction?.id || "");
+  if (id) {
+    deletedTransactionIds.add(id);
+    persistDeletedTransactionIds();
+  }
+
+  if (transaction) {
+    addDeletedTransactionSignature(transaction);
+    addDeletedTransferTombstone(transaction);
+  }
+}
+
+function haveCompatibleTombstoneTimes(tombstoneMinute, transactionMinute) {
+  return !tombstoneMinute || !transactionMinute || tombstoneMinute === transactionMinute;
+}
+
+function isTransactionCoveredByDeletedTransferTombstone(transaction) {
+  if (!transaction || !deletedTransferTombstones.length) {
+    return false;
+  }
+
+  const transactionAmount = Number(transaction.amount || 0).toFixed(2);
+  const transactionDate = String(transaction.date || "");
+  const transactionMinute = getComparableTransactionMinute(transaction);
+  const transactionPaymentAccountId = String(transaction.paymentAccountId || "");
+  const transactionTransferAccountId = String(transaction.transferAccountId || "");
+
+  return deletedTransferTombstones.some((tombstone) => {
+    if (
+      tombstone.date !== transactionDate ||
+      tombstone.amount !== transactionAmount ||
+      !haveCompatibleTombstoneTimes(tombstone.minute, transactionMinute)
+    ) {
+      return false;
+    }
+
+    if (transaction.type === "transfer") {
+      return (
+        transactionPaymentAccountId === tombstone.sourceAccountId &&
+        transactionTransferAccountId === tombstone.targetAccountId
+      );
+    }
+
+    if (!isTransferLikeRecord(transaction)) {
+      return false;
+    }
+
+    if (transaction.type === "expense") {
+      return transactionPaymentAccountId === tombstone.sourceAccountId;
+    }
+
+    if (transaction.type === "income") {
+      return transactionPaymentAccountId === tombstone.targetAccountId;
+    }
+
+    return false;
+  });
+}
+
+function isTransactionDeleted(transactionOrId) {
+  if (!transactionOrId || typeof transactionOrId !== "object") {
+    return deletedTransactionIds.has(String(transactionOrId || ""));
+  }
+
+  const transaction = transactionOrId;
+  const id = String(transaction.id || "");
+  if (id && deletedTransactionIds.has(id)) {
+    return true;
+  }
+
+  if (isValidTransaction(transaction) && deletedTransactionSignatures.has(getTransactionSignature(transaction))) {
+    return true;
+  }
+
+  return isTransactionCoveredByDeletedTransferTombstone(transaction);
 }
 
 function loadAssets() {
@@ -1729,6 +1985,7 @@ function cloneDefaultCategories() {
   return {
     income: [...DEFAULT_CATEGORIES.income],
     expense: [...DEFAULT_CATEGORIES.expense],
+    transfer: [...DEFAULT_CATEGORIES.transfer],
   };
 }
 
@@ -1755,7 +2012,73 @@ function normalizeCategoryState(state) {
   return {
     income: normalizeList(source.income, fallback.income),
     expense: normalizeList(source.expense, fallback.expense),
+    transfer: normalizeList(source.transfer, fallback.transfer),
   };
+}
+
+
+function hasCategoryState(source) {
+  return (
+    source &&
+    typeof source === "object" &&
+    (Array.isArray(source.income) || Array.isArray(source.expense) || Array.isArray(source.transfer))
+  );
+}
+
+function mergeCategoryStates(...states) {
+  const candidates = states.filter(hasCategoryState);
+
+  if (!candidates.length) {
+    return cloneDefaultCategories();
+  }
+
+  const merged = { income: [], expense: [], transfer: [] };
+  const seen = { income: new Set(), expense: new Set(), transfer: new Set() };
+  const addCategory = (type, name) => {
+    const value = String(name || "").trim();
+
+    if (!value) {
+      return;
+    }
+
+    const key = value.toLocaleLowerCase("tr-TR");
+    if (seen[type].has(key)) {
+      return;
+    }
+
+    seen[type].add(key);
+    merged[type].push(value);
+  };
+
+  candidates.forEach((state) => {
+    const normalized = normalizeCategoryState(state);
+    ["income", "expense", "transfer"].forEach((type) => {
+      (normalized[type] || []).forEach((category) => addCategory(type, category));
+    });
+  });
+
+  return normalizeCategoryState(merged);
+}
+
+function getTransactionCategoriesFromRecords(source = transactions) {
+  const recordCategories = { income: [], expense: [], transfer: [] };
+
+  (Array.isArray(source) ? source : []).forEach((item) => {
+    if (!item || !["income", "expense", "transfer"].includes(item.type)) {
+      return;
+    }
+
+    const category = String(item.category || "").trim();
+    if (category) {
+      recordCategories[item.type].push(category);
+    }
+  });
+
+  return recordCategories;
+}
+
+function readCloudTransactionCategories(source) {
+  return hasCategoryState(source) ? normalizeCategoryState(source) : null;
 }
 
 function loadTransactionCategories() {
@@ -1763,7 +2086,7 @@ function loadTransactionCategories() {
 }
 
 function persistTransactionCategories(options = {}) {
-  const { syncCloud = false } = options;
+  const { syncCloud = true } = options;
   localStorage.setItem(getStorageKey(CATEGORY_STORAGE_KEY), JSON.stringify(transactionCategories));
   if (syncCloud) {
     syncUserProfileToCloud();
@@ -1809,12 +2132,15 @@ function getStorageKey(baseKey = STORAGE_KEY) {
 function persistTransactions(options = {}) {
   const { syncCloud = true, replaceCloud = false } = options;
 
+  transactions = mergeTransactions(transactions);
   localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
   updateStorageStatus();
 
   if (syncCloud) {
-    syncTransactionsToCloud({ replace: replaceCloud });
+    return syncTransactionsToCloud({ replace: replaceCloud });
   }
+
+  return Promise.resolve();
 }
 
 function persistAssets(options = {}) {
@@ -1901,13 +2227,7 @@ function render() {
 
 function renderStats() {
   const scopedTransactions = getSummaryScopedTransactions();
-  const income = scopedTransactions
-    .filter((item) => item.type === "income")
-    .reduce((sum, item) => sum + item.amount, 0);
-  const expense = scopedTransactions
-    .filter((item) => item.type === "expense")
-    .reduce((sum, item) => sum + item.amount, 0);
-  const balance = income - expense;
+  const { income, expense, balance } = getTransactionTotals(scopedTransactions);
 
   heroBalance.textContent = currency.format(balance);
   heroInsight.textContent =
@@ -2268,9 +2588,15 @@ function renderHomeMiniPagination(container, currentPage, totalPages, onPageChan
 }
 
 function getTransactionTotals(source) {
-  const income = source.filter((item) => item.type === "income").reduce((sum, item) => sum + item.amount, 0);
-  const expense = source.filter((item) => item.type === "expense").reduce((sum, item) => sum + item.amount, 0);
-  return { income, expense, balance: income - expense };
+  const safeSource = Array.isArray(source) ? source : [];
+  const income = safeSource
+    .filter((item) => item.type === "income")
+    .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const expense = safeSource
+    .filter((item) => item.type === "expense")
+    .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+  return { income: roundMoney(income), expense: roundMoney(expense), balance: roundMoney(income - expense) };
 }
 
 function renderAssets() {
@@ -2554,8 +2880,17 @@ function getPaymentAccountCardNote(item) {
 
 function updatePaymentAccountSelects() {
   if (paymentAccountSelect) {
-    updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput?.value || "cash", paymentAccountSelect.value);
+    if (typeInput?.value === "transfer") {
+      updateAnyPaymentAccountSelect(paymentAccountSelect, paymentAccountSelect.value, {
+        excludeId: transferAccountSelect?.value || "",
+        placeholder: "Kaynak kart / hesap seç",
+      });
+    } else {
+      updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput?.value || "cash", paymentAccountSelect.value);
+    }
   }
+
+  updateEntryTransferAccountSelect();
 
   if (transactionPaymentAccountInput) {
     updatePaymentAccountSelect(
@@ -2565,11 +2900,120 @@ function updatePaymentAccountSelects() {
     );
   }
 
+  updateTransactionTransferAccountSelect();
+
   if (paymentAccountPaySource) {
     fillPaymentSourceSelect(paymentAccountPaySource);
   }
 
   syncBankImportAccountSelects();
+}
+
+function updateAnyPaymentAccountSelect(selectElement, selectedValue = "", options = {}) {
+  if (!selectElement) {
+    return;
+  }
+
+  const { excludeId = "", placeholder = "Kart / hesap seç" } = options;
+  const currentValue = String(selectedValue || selectElement.value || "");
+  const normalizedExcludeId = String(excludeId || "");
+  const availableAccounts = paymentAccounts.filter((item) => String(item.id || "") !== normalizedExcludeId);
+  selectElement.innerHTML = "";
+
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = availableAccounts.length ? placeholder : "Kart / hesap ekle";
+  selectElement.append(emptyOption);
+
+  availableAccounts.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = formatPaymentAccountName(item);
+    selectElement.append(option);
+  });
+
+  selectElement.value = availableAccounts.some((item) => item.id === currentValue) ? currentValue : "";
+}
+
+function updateTransactionTransferAccountSelect(selectedValue = "") {
+  if (!transactionTransferAccountInput) {
+    return;
+  }
+
+  updateAnyPaymentAccountSelect(transactionTransferAccountInput, selectedValue || transactionTransferAccountInput.value, {
+    excludeId: transactionPaymentAccountInput?.value || "",
+    placeholder: "Karşı kart / hesap seç",
+  });
+}
+
+function updateEntryTransferAccountSelect(selectedValue = "") {
+  if (!transferAccountSelect) {
+    return;
+  }
+
+  updateAnyPaymentAccountSelect(transferAccountSelect, selectedValue || transferAccountSelect.value, {
+    excludeId: paymentAccountSelect?.value || "",
+    placeholder: "Alıcı kart / hesap seç",
+  });
+}
+
+function syncEntryTransferVisibility() {
+  const isTransfer = typeInput?.value === "transfer";
+
+  if (transferAccountLabel) {
+    transferAccountLabel.hidden = !isTransfer;
+  }
+
+  if (transferFeeLabel) {
+    transferFeeLabel.hidden = !isTransfer;
+  }
+
+  if (paymentMethodInput) {
+    paymentMethodInput.disabled = isTransfer;
+    paymentMethodInput.value = isTransfer ? "transfer" : normalizePaymentMethod(paymentMethodInput.value || "cash");
+  }
+
+  if (paymentAccountSelect) {
+    if (isTransfer) {
+      updateAnyPaymentAccountSelect(paymentAccountSelect, paymentAccountSelect.value, {
+        excludeId: transferAccountSelect?.value || "",
+        placeholder: "Kaynak kart / hesap seç",
+      });
+    } else {
+      updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput?.value || "cash", paymentAccountSelect.value);
+    }
+  }
+
+  updateEntryTransferAccountSelect();
+}
+
+function syncTransactionTransferVisibility() {
+  const isTransfer = transactionTypeInput?.value === "transfer";
+
+  if (transactionTransferAccountLabel) {
+    transactionTransferAccountLabel.hidden = !isTransfer;
+  }
+
+  if (transactionTransferFeeLabel) {
+    transactionTransferFeeLabel.hidden = !isTransfer;
+  }
+
+  if (transactionPaymentMethodInput) {
+    transactionPaymentMethodInput.value = isTransfer ? "transfer" : normalizePaymentMethod(transactionPaymentMethodInput.value || "cash");
+  }
+
+  if (transactionPaymentAccountInput) {
+    if (isTransfer) {
+      updateAnyPaymentAccountSelect(transactionPaymentAccountInput, transactionPaymentAccountInput.value, {
+        excludeId: transactionTransferAccountInput?.value || "",
+        placeholder: "Kaynak kart / hesap seç",
+      });
+    } else {
+      updatePaymentAccountSelect(transactionPaymentAccountInput, transactionPaymentMethodInput?.value || "cash", transactionPaymentAccountInput.value);
+    }
+  }
+
+  updateTransactionTransferAccountSelect();
 }
 
 function updatePaymentAccountSelect(selectElement, method = "cash", selectedValue = "") {
@@ -2666,7 +3110,7 @@ function updateBankImportTransferAccountSelect(selectElement, selectedValue = ""
 
   const sourceId = String(sourceAccountId || "");
   const currentValue = String(selectedValue || selectElement.value || "");
-  const eligibleAccounts = paymentAccounts.filter((item) => item.type !== "credit_card" && item.id !== sourceId);
+  const eligibleAccounts = paymentAccounts.filter((item) => item.id !== sourceId);
   selectElement.innerHTML = "";
 
   const emptyOption = document.createElement("option");
@@ -2695,7 +3139,7 @@ function getBankImportSelectedTransferAccount() {
   if (!accountId || accountId === sourceId) {
     return null;
   }
-  return paymentAccounts.find((item) => item.id === accountId && item.type !== "credit_card") || null;
+  return paymentAccounts.find((item) => item.id === accountId) || null;
 }
 
 function getPaymentMethodForImportAccount(account) {
@@ -2762,8 +3206,25 @@ function addPaymentAccount(event) {
   }
 
   const now = getTurkeyNowDateTime();
+  const nextAccountId = editingPaymentAccountId || crypto.randomUUID();
+  const draftCreditAccount = {
+    ...(existing || {}),
+    id: nextAccountId,
+    type: "credit_card",
+    statementDay: type === "credit_card" ? statementDay : existing?.statementDay,
+  };
+  const accountRecordTotals = wasEditing ? getPaymentAccountRecordTotals(nextAccountId) : { net: 0 };
+  const cardRecordTotals = wasEditing ? getCreditCardRecordTotals(draftCreditAccount) : { totalDebt: 0, currentStatementDebt: 0 };
+  const requestedBalanceOrDebt = Number.isFinite(balanceOrDebt) ? roundMoney(balanceOrDebt) : 0;
+  const openingBalance = type !== "credit_card" ? roundMoney(requestedBalanceOrDebt - Number(accountRecordTotals.net || 0)) : 0;
+  const openingDebt = type === "credit_card"
+    ? Math.max(0, roundMoney(requestedBalanceOrDebt - Number(cardRecordTotals.totalDebt || 0)))
+    : 0;
+  const openingCurrentStatementDebt = type === "credit_card"
+    ? Math.max(0, roundMoney(requestedBalanceOrDebt - Number(cardRecordTotals.currentStatementDebt || 0)))
+    : 0;
   const nextAccount = {
-    id: editingPaymentAccountId || crypto.randomUUID(),
+    id: nextAccountId,
     type,
     name,
     bank,
@@ -2773,12 +3234,15 @@ function addPaymentAccount(event) {
     statementDay: type === "credit_card" ? statementDay : 0,
     dueDay: type === "credit_card" ? dueDay : 0,
     limit: type === "credit_card" && Number.isFinite(limit) ? Math.max(0, limit) : 0,
-    debt: type === "credit_card" && Number.isFinite(balanceOrDebt) ? Math.max(0, roundMoney(balanceOrDebt)) : 0,
-    currentStatementDebt: type === "credit_card" && Number.isFinite(balanceOrDebt) ? Math.max(0, roundMoney(balanceOrDebt)) : 0,
+    debt: type === "credit_card" ? Math.max(0, requestedBalanceOrDebt) : 0,
+    currentStatementDebt: type === "credit_card" ? Math.max(0, requestedBalanceOrDebt) : 0,
+    openingDebt,
+    openingCurrentStatementDebt,
     creditPaidTotal: existing?.creditPaidTotal || 0,
     currentStatementPaidTotal: existing?.currentStatementPaidTotal || 0,
     creditPaidPeriodKey: existing?.creditPaidPeriodKey || "",
-    balance: type !== "credit_card" && Number.isFinite(balanceOrDebt) ? roundMoney(balanceOrDebt) : 0,
+    balance: type !== "credit_card" ? requestedBalanceOrDebt : 0,
+    openingBalance,
     note: String(formData.get("paymentAccountNote") || "").trim(),
     createdAt: existing?.createdAt || now,
     updatedAt: now,
@@ -2970,40 +3434,62 @@ function updatePaymentAccountFormVisibility() {
 }
 
 
-function openPaymentAccountRecordsModal(account) {
+function getPaymentAccountRelatedTransactions(accountId, sourceTransactions = transactions) {
+  const normalizedAccountId = String(accountId || "");
+
+  if (!normalizedAccountId) {
+    return [];
+  }
+
+  return (Array.isArray(sourceTransactions) ? sourceTransactions : [])
+    .filter(
+      (transaction) =>
+        String(transaction.paymentAccountId || "") === normalizedAccountId ||
+        String(transaction.transferAccountId || "") === normalizedAccountId
+    )
+    .sort(compareTransactionsNewestFirst);
+}
+
+function openPaymentAccountRecordsModal(account, options = {}) {
   if (!paymentAccountRecordsModal || !account) {
     return;
   }
 
   const accountId = String(account.id || "");
+  const accountChanged = viewingPaymentAccountRecordsId !== accountId;
   viewingPaymentAccountRecordsId = accountId;
-  const relatedTransactions = transactions
-    .filter(
-      (transaction) =>
-        String(transaction.paymentAccountId || "") === accountId ||
-        String(transaction.transferAccountId || "") === accountId
-    )
-    .sort(compareTransactionsNewestFirst);
-
-  const incomeTotal = relatedTransactions
-    .filter((transaction) => transaction.type === "income")
-    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
-  const expenseTotal = relatedTransactions
-    .filter((transaction) => transaction.type === "expense")
-    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+  const relatedTransactions = getPaymentAccountRelatedTransactions(accountId);
+  const periodOptions = buildPaymentAccountRecordsPeriodOptions(account, relatedTransactions);
+  const defaultPeriod = periodOptions[0]?.value || "all";
+  const currentPeriod = !options.preservePeriod || accountChanged ? defaultPeriod : viewingPaymentAccountRecordsPeriod || defaultPeriod;
+  viewingPaymentAccountRecordsPeriod = periodOptions.some((item) => item.value === currentPeriod) ? currentPeriod : defaultPeriod;
+  const visibleTransactions = filterPaymentAccountRecordsByPeriod(account, relatedTransactions, viewingPaymentAccountRecordsPeriod);
+  const visibleTotals = getPaymentAccountRecordTotals(account.id, visibleTransactions);
 
   if (paymentAccountRecordsTitle) {
     paymentAccountRecordsTitle.textContent = `${formatPaymentAccountName(account)} kayıtları`;
   }
 
+  if (paymentAccountRecordsPeriodFilter) {
+    paymentAccountRecordsPeriodFilter.innerHTML = "";
+    periodOptions.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item.value;
+      option.textContent = item.label;
+      paymentAccountRecordsPeriodFilter.append(option);
+    });
+    paymentAccountRecordsPeriodFilter.value = viewingPaymentAccountRecordsPeriod;
+  }
+
   if (paymentAccountRecordsSummary) {
     if (account.type === "credit_card") {
       const cardTotals = getCreditCardRecordTotals(account);
+      const periodLabel = periodOptions.find((item) => item.value === viewingPaymentAccountRecordsPeriod)?.label || "Seçili dönem";
       paymentAccountRecordsSummary.textContent =
-        `${relatedTransactions.length} kayıt · Dönem borcu ${currency.format(cardTotals.currentStatementDebt)} · Toplam borç ${currency.format(cardTotals.totalDebt)} · Ödenen ${currency.format(cardTotals.totalPaid)}`;
+        `${periodLabel}: ${visibleTransactions.length} kayıt · Dönem borcu ${currency.format(cardTotals.currentStatementDebt)} · Toplam borç ${currency.format(cardTotals.totalDebt)} · Ödenen ${currency.format(cardTotals.totalPaid)}`;
     } else {
-      paymentAccountRecordsSummary.textContent = relatedTransactions.length
-        ? `${relatedTransactions.length} kayıt · Gelir ${currency.format(incomeTotal)} · Gider ${currency.format(expenseTotal)}`
+      paymentAccountRecordsSummary.textContent = visibleTransactions.length
+        ? `${visibleTransactions.length} kayıt · Gelen ${currency.format(visibleTotals.income)} · Giden ${currency.format(visibleTotals.expense)} · Net ${currency.format(visibleTotals.net)}`
         : "Bu karta veya hesaba bağlı henüz kayıt yok.";
     }
   }
@@ -3011,10 +3497,10 @@ function openPaymentAccountRecordsModal(account) {
   if (paymentAccountRecordsList) {
     paymentAccountRecordsList.innerHTML = "";
 
-    if (!relatedTransactions.length) {
+    if (!visibleTransactions.length) {
       paymentAccountRecordsList.innerHTML = '<div class="empty-state">Bu kart / hesap için kayıt bulunamadı.</div>';
     } else {
-      relatedTransactions.forEach((transaction) => {
+      visibleTransactions.forEach((transaction) => {
         const row = document.createElement("article");
         row.className = "transaction-item account-record-item";
 
@@ -3025,14 +3511,16 @@ function openPaymentAccountRecordsModal(account) {
 
         const meta = document.createElement("p");
         meta.className = "transaction-meta";
-        meta.textContent = `${formatTransactionDateTime(transaction)} · ${transaction.category}${transaction.note ? ` · ${transaction.note}` : ""}`;
+        meta.textContent = `${formatTransactionDateTime(transaction)} · ${transaction.category} · ${getTransactionPaymentInfo(transaction)}${transaction.note ? ` · ${transaction.note}` : ""}`;
         info.append(title, meta);
 
         const side = document.createElement("div");
         side.className = "transaction-side";
         const amount = document.createElement("strong");
-        amount.className = `transaction-amount ${transaction.type}`;
-        amount.textContent = `${transaction.type === "income" ? "+" : "-"} ${currency.format(transaction.amount)}`;
+        const effect = getTransactionPaymentAccountEffect(transaction, accountId);
+        const displayType = effect >= 0 ? "income" : "expense";
+        amount.className = `transaction-amount ${displayType}`;
+        amount.textContent = formatPaymentAccountRecordEffectText(transaction, accountId, effect);
         side.append(amount);
 
         row.append(info, side);
@@ -3049,8 +3537,93 @@ function openPaymentAccountRecordsModal(account) {
   setTimeout(() => closePaymentAccountRecordsButton?.focus(), 0);
 }
 
+function buildPaymentAccountRecordsPeriodOptions(account, relatedTransactions = []) {
+  if (account.type === "credit_card") {
+    const activePeriod = getCreditCardStatementPeriod(account);
+    const periodMap = new Map();
+
+    if (activePeriod.key !== "all") {
+      periodMap.set(`statement:${activePeriod.key}`, {
+        value: `statement:${activePeriod.key}`,
+        label: `Aktif dönem: ${formatDate(activePeriod.start)} - ${formatDate(activePeriod.end)}`,
+        start: activePeriod.start,
+        end: activePeriod.end,
+        time: Date.parse(`${activePeriod.start}T00:00:00`) || 0,
+      });
+    }
+
+    relatedTransactions.forEach((transaction) => {
+      const period = getCreditCardStatementPeriod(account, transaction.date);
+      const value = period.key === "all" ? "all" : `statement:${period.key}`;
+      if (value !== "all" && !periodMap.has(value)) {
+        periodMap.set(value, {
+          value,
+          label: `${formatDate(period.start)} - ${formatDate(period.end)}`,
+          start: period.start,
+          end: period.end,
+          time: Date.parse(`${period.start}T00:00:00`) || 0,
+        });
+      }
+    });
+
+    const options = Array.from(periodMap.values()).sort((first, second) => second.time - first.time);
+    return options.length ? options : [{ value: "all", label: "Tüm dönemler" }];
+  }
+
+  const currentMonth = getTurkeyTodayISO().slice(0, 7);
+  const months = new Set([currentMonth]);
+  relatedTransactions.forEach((transaction) => {
+    const month = String(transaction.date || "").slice(0, 7);
+    if (/^\d{4}-\d{2}$/.test(month)) {
+      months.add(month);
+    }
+  });
+
+  const monthOptions = Array.from(months)
+    .sort((first, second) => second.localeCompare(first))
+    .map((month) => ({
+      value: `month:${month}`,
+      label: formatMonthLabel(month),
+      month,
+    }));
+
+  return [{ value: "all", label: "Tüm zamanlar" }, ...monthOptions];
+}
+
+function filterPaymentAccountRecordsByPeriod(account, relatedTransactions = [], periodValue = "all") {
+  if (periodValue === "all") {
+    return relatedTransactions;
+  }
+
+  if (account.type === "credit_card" && periodValue.startsWith("statement:")) {
+    const [, key] = periodValue.split(":");
+    const [start, end] = String(key || "").split("_");
+    return relatedTransactions.filter((transaction) => {
+      const transactionDate = String(transaction.date || "");
+      return transactionDate && (!start || transactionDate >= start) && (!end || transactionDate <= end);
+    });
+  }
+
+  if (periodValue.startsWith("month:")) {
+    const month = periodValue.slice("month:".length);
+    return relatedTransactions.filter((transaction) => String(transaction.date || "").startsWith(month));
+  }
+
+  return relatedTransactions;
+}
+
+function formatMonthLabel(monthKey = "") {
+  const date = new Date(`${monthKey}-01T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return "Seçili ay";
+  }
+
+  return new Intl.DateTimeFormat("tr-TR", { month: "long", year: "numeric" }).format(date);
+}
+
 function closePaymentAccountRecordsModal() {
   viewingPaymentAccountRecordsId = "";
+  viewingPaymentAccountRecordsPeriod = "";
 
   if (paymentAccountRecordsModal) {
     paymentAccountRecordsModal.hidden = true;
@@ -3061,8 +3634,8 @@ function closePaymentAccountRecordsModal() {
   }
 }
 
-function getPaymentAccountRecordTotals(accountId) {
-  const relatedEffects = transactions
+function getPaymentAccountRecordTotals(accountId, sourceTransactions = transactions) {
+  const relatedEffects = sourceTransactions
     .map((transaction) => ({
       transaction,
       effect: getTransactionPaymentAccountEffect(transaction, accountId),
@@ -3083,17 +3656,61 @@ function getPaymentAccountRecordTotals(accountId) {
   };
 }
 
+function formatPaymentAccountRecordEffectText(transaction, accountId, effect) {
+  const signedEffect = Number(effect || 0);
+  const sign = signedEffect >= 0 ? "+" : "-";
+  const amountText = currency.format(Math.abs(signedEffect || Number(transaction?.amount || 0)));
+
+  if (transaction?.type !== "transfer") {
+    return `${sign} ${amountText}`;
+  }
+
+  const targetId = String(accountId || "");
+  const sourceId = String(transaction.paymentAccountId || "");
+  const receiverId = String(transaction.transferAccountId || "");
+  const isSender = sourceId && sourceId === targetId;
+  const isReceiver = receiverId && receiverId === targetId && receiverId !== sourceId;
+  const directionText = isSender ? "Transfer çıkışı" : isReceiver ? "Transfer girişi" : "Transfer";
+
+  return `${sign} ${amountText} · ${directionText}`;
+}
+
+function getPaymentAccountOpeningBalanceForRefresh(account) {
+  return hasStoredMoneyValue(account?.openingBalance) ? Number(account.openingBalance) : 0;
+}
+
+function getPaymentAccountOpeningDebtForRefresh(account) {
+  return hasStoredMoneyValue(account?.openingDebt) ? Number(account.openingDebt) : 0;
+}
+
+function getPaymentAccountOpeningStatementDebtForRefresh(account) {
+  return hasStoredMoneyValue(account?.openingCurrentStatementDebt) ? Number(account.openingCurrentStatementDebt) : 0;
+}
+
 function getTransactionPaymentAccountEffect(transaction, accountId) {
   const targetId = String(accountId || "");
   const primaryId = String(transaction?.paymentAccountId || "");
   const transferId = String(transaction?.transferAccountId || "");
   const amount = Number(transaction?.amount || 0);
+  const transferFee = Math.max(0, Number(transaction?.transferFee || 0));
 
   if (!targetId || !Number.isFinite(amount) || amount <= 0) {
     return 0;
   }
 
   let effect = 0;
+  if (transaction.type === "transfer") {
+    if (primaryId === targetId) {
+      effect -= amount + transferFee;
+    }
+
+    if (transferId === targetId && transferId !== primaryId) {
+      effect += amount;
+    }
+
+    return roundMoney(effect);
+  }
+
   if (primaryId === targetId) {
     effect += transaction.type === "income" ? amount : -amount;
   }
@@ -3143,27 +3760,30 @@ function toDateInputValue(date) {
   return `${year}-${month}-${day}`;
 }
 
-function getCreditCardRecordTotals(account) {
-  const all = getPaymentAccountRecordTotals(account.id);
+function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
   const period = getCreditCardStatementPeriod(account);
-  const periodTransactions = transactions.filter((transaction) => {
-    const transactionDate = String(transaction.date || "");
-    return (
-      String(transaction.paymentAccountId || "") === String(account.id || "") &&
-      (!period.start || transactionDate >= period.start) &&
-      (!period.end || transactionDate <= period.end)
-    );
-  });
+  const accountId = String(account.id || "");
+  const relatedTransactions = getPaymentAccountRelatedTransactions(accountId, sourceTransactions);
+  const all = getPaymentAccountRecordTotals(account.id, relatedTransactions);
+  const periodTransactions = relatedTransactions.filter((transaction) => isTransactionInStatementPeriod(transaction, period));
+  const allDebtEffect = relatedTransactions.reduce(
+    (sum, transaction) => sum + getCreditCardTransactionDebtEffect(transaction, accountId),
+    0
+  );
+  const periodDebtEffect = periodTransactions.reduce(
+    (sum, transaction) => sum + getCreditCardTransactionDebtEffect(transaction, accountId),
+    0
+  );
   const periodIncome = periodTransactions
-    .filter((transaction) => transaction.type === "income")
-    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+    .filter((transaction) => getCreditCardTransactionDebtEffect(transaction, accountId) < 0)
+    .reduce((sum, transaction) => sum + Math.abs(getCreditCardTransactionDebtEffect(transaction, accountId)), 0);
   const periodExpense = periodTransactions
-    .filter((transaction) => transaction.type === "expense")
-    .reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+    .filter((transaction) => getCreditCardTransactionDebtEffect(transaction, accountId) > 0)
+    .reduce((sum, transaction) => sum + getCreditCardTransactionDebtEffect(transaction, accountId), 0);
   const totalPaid = Math.max(0, Number(account.creditPaidTotal || 0));
   const periodPaid = account.creditPaidPeriodKey === period.key ? Math.max(0, Number(account.currentStatementPaidTotal || 0)) : 0;
-  const totalDebt = Math.max(0, roundMoney(all.expense - all.income - totalPaid));
-  const currentStatementDebt = Math.max(0, roundMoney(periodExpense - periodIncome - periodPaid));
+  const totalDebt = Math.max(0, roundMoney(allDebtEffect - totalPaid));
+  const currentStatementDebt = Math.max(0, roundMoney(periodDebtEffect - periodPaid));
 
   return {
     all,
@@ -3177,6 +3797,32 @@ function getCreditCardRecordTotals(account) {
   };
 }
 
+function getCreditCardTransactionDebtEffect(transaction, accountId) {
+  const targetId = String(accountId || "");
+  const primaryId = String(transaction?.paymentAccountId || "");
+  const transferId = String(transaction?.transferAccountId || "");
+  const amount = Number(transaction?.amount || 0);
+  const transferFee = Math.max(0, Number(transaction?.transferFee || 0));
+
+  if (!targetId || !Number.isFinite(amount) || amount <= 0) {
+    return 0;
+  }
+
+  if (transaction.type === "transfer") {
+    if (primaryId === targetId) return amount + transferFee;
+    if (transferId === targetId && transferId !== primaryId) return -amount;
+    return 0;
+  }
+
+  if (primaryId !== targetId) {
+    return 0;
+  }
+
+  if (transaction.type === "expense") return amount;
+  if (transaction.type === "income") return -amount;
+  return 0;
+}
+
 function isTransactionInStatementPeriod(transaction, period) {
   const transactionDate = String(transaction?.date || "");
   return Boolean(
@@ -3184,6 +3830,10 @@ function isTransactionInStatementPeriod(transaction, period) {
     (!period?.start || transactionDate >= period.start) &&
     (!period?.end || transactionDate <= period.end)
   );
+}
+
+function hasStoredMoneyValue(value) {
+  return value !== undefined && value !== null && value !== "" && Number.isFinite(Number(value));
 }
 
 function refreshPaymentAccountFromRecords(accountId) {
@@ -3194,7 +3844,10 @@ function refreshPaymentAccountFromRecords(accountId) {
     return;
   }
 
-  const totals = account.type === "credit_card" ? getCreditCardRecordTotals(account) : getPaymentAccountRecordTotals(account.id);
+  const allRelatedTransactions = getPaymentAccountRelatedTransactions(account.id, transactions);
+  const totals = account.type === "credit_card"
+    ? getCreditCardRecordTotals(account, allRelatedTransactions)
+    : getPaymentAccountRecordTotals(account.id, allRelatedTransactions);
   const now = getTurkeyNowDateTime();
 
   paymentAccounts = paymentAccounts.map((item) => {
@@ -3203,18 +3856,26 @@ function refreshPaymentAccountFromRecords(accountId) {
     }
 
     if (item.type === "credit_card") {
+      const openingDebt = getPaymentAccountOpeningDebtForRefresh(item);
+      const openingCurrentStatementDebt = getPaymentAccountOpeningStatementDebtForRefresh(item);
+
       return {
         ...item,
-        debt: totals.totalDebt,
-        currentStatementDebt: totals.currentStatementDebt,
+        openingDebt: roundMoney(openingDebt),
+        openingCurrentStatementDebt: roundMoney(openingCurrentStatementDebt),
+        debt: Math.max(0, roundMoney(openingDebt + Number(totals.totalDebt || 0))),
+        currentStatementDebt: Math.max(0, roundMoney(openingCurrentStatementDebt + Number(totals.currentStatementDebt || 0))),
         creditPaidPeriodKey: totals.period.key,
         updatedAt: now,
       };
     }
 
+    const openingBalance = getPaymentAccountOpeningBalanceForRefresh(item);
+
     return {
       ...item,
-      balance: totals.net,
+      openingBalance: roundMoney(openingBalance),
+      balance: roundMoney(openingBalance + Number(totals.net || 0)),
       updatedAt: now,
     };
   });
@@ -3227,141 +3888,11 @@ function refreshPaymentAccountFromRecords(accountId) {
     ? `dönem borcu ${currency.format(refreshedAccount.currentStatementDebt || 0)} · toplam borç ${currency.format(refreshedAccount.debt || 0)}`
     : `bakiye ${currency.format(refreshedAccount?.balance || 0)}`;
   paymentAccountStatus.textContent =
-    `${formatPaymentAccountName(refreshedAccount || account)} kayıtlardan yeniden hesaplandı: ${valueText}.`;
+    `${formatPaymentAccountName(refreshedAccount || account)} tüm zamanlardaki kayıtlarından yeniden hesaplandı: ${valueText}.`;
 
   if (!paymentAccountRecordsModal?.hidden && viewingPaymentAccountRecordsId === account.id) {
-    openPaymentAccountRecordsModal(refreshedAccount || account);
+    openPaymentAccountRecordsModal(refreshedAccount || account, { preservePeriod: true });
   }
-}
-
-function getTransferEligibleAccounts() {
-  return paymentAccounts.filter((item) => item.type !== "credit_card");
-}
-
-function fillAccountTransferSourceSelect(selectedValue = "") {
-  if (!accountTransferSource) {
-    return;
-  }
-
-  const accounts = getTransferEligibleAccounts();
-  accountTransferSource.innerHTML = "";
-
-  const emptyOption = document.createElement("option");
-  emptyOption.value = "";
-  emptyOption.textContent = accounts.length ? "Gönderen hesap seç" : "Aktarım için uygun hesap ekle";
-  accountTransferSource.append(emptyOption);
-
-  accounts.forEach((item) => {
-    const option = document.createElement("option");
-    option.value = item.id;
-    option.textContent = `${formatPaymentAccountName(item)} · ${currency.format(item.balance || 0)}`;
-    accountTransferSource.append(option);
-  });
-
-  accountTransferSource.value = accounts.some((item) => item.id === selectedValue) ? selectedValue : "";
-}
-
-function fillAccountTransferTargetSelect(sourceId = "", selectedValue = "") {
-  if (!accountTransferTarget) {
-    return;
-  }
-
-  const accounts = getTransferEligibleAccounts().filter((item) => item.id !== sourceId);
-  accountTransferTarget.innerHTML = "";
-
-  const emptyOption = document.createElement("option");
-  emptyOption.value = "";
-  emptyOption.textContent = accounts.length ? "Alıcı hesap seç" : "Alıcı hesap bulunamadı";
-  accountTransferTarget.append(emptyOption);
-
-  accounts.forEach((item) => {
-    const option = document.createElement("option");
-    option.value = item.id;
-    option.textContent = `${formatPaymentAccountName(item)} · ${currency.format(item.balance || 0)}`;
-    accountTransferTarget.append(option);
-  });
-
-  accountTransferTarget.value = accounts.some((item) => item.id === selectedValue) ? selectedValue : "";
-}
-
-function openAccountTransferModal() {
-  if (!accountTransferModal) {
-    return;
-  }
-
-  accountTransferForm?.reset();
-  accountTransferStatus.textContent = "";
-  fillAccountTransferSourceSelect();
-  fillAccountTransferTargetSelect();
-  accountTransferModal.hidden = false;
-  setTimeout(() => accountTransferSource?.focus(), 0);
-}
-
-function closeAccountTransferModal() {
-  accountTransferForm?.reset();
-  if (accountTransferStatus) {
-    accountTransferStatus.textContent = "";
-  }
-  if (accountTransferModal) {
-    accountTransferModal.hidden = true;
-  }
-}
-
-function submitAccountTransfer(event) {
-  event.preventDefault();
-
-  const sourceId = String(accountTransferSource?.value || "");
-  const targetId = String(accountTransferTarget?.value || "");
-  const requestedAmount = readSignedNumber(accountTransferAmount?.value);
-  const sourceAccount = paymentAccounts.find((item) => item.id === sourceId && item.type !== "credit_card");
-  const targetAccount = paymentAccounts.find((item) => item.id === targetId && item.type !== "credit_card");
-
-  if (!sourceAccount) {
-    accountTransferStatus.textContent = "Gönderen hesabı seçmelisin.";
-    accountTransferSource?.focus();
-    return;
-  }
-
-  if (!targetAccount) {
-    accountTransferStatus.textContent = "Alıcı hesabı seçmelisin.";
-    accountTransferTarget?.focus();
-    return;
-  }
-
-  if (sourceAccount.id === targetAccount.id) {
-    accountTransferStatus.textContent = "Gönderen ve alıcı hesap aynı olamaz.";
-    return;
-  }
-
-  if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) {
-    accountTransferStatus.textContent = "Aktarım tutarı sıfırdan büyük olmalı.";
-    accountTransferAmount?.focus();
-    return;
-  }
-
-  const amount = roundMoney(requestedAmount);
-  if (roundMoney(sourceAccount.balance || 0) < amount) {
-    accountTransferStatus.textContent = "Gönderen hesap bakiyesi bu aktarım için yetersiz.";
-    accountTransferAmount?.focus();
-    return;
-  }
-
-  const now = getTurkeyNowDateTime();
-  paymentAccounts = paymentAccounts.map((item) => {
-    if (item.id === sourceAccount.id) {
-      return { ...item, balance: roundMoney(Number(item.balance || 0) - amount), updatedAt: now };
-    }
-    if (item.id === targetAccount.id) {
-      return { ...item, balance: roundMoney(Number(item.balance || 0) + amount), updatedAt: now };
-    }
-    return item;
-  });
-
-  const transferNote = String(accountTransferNote?.value || "").trim();
-  persistPaymentAccounts();
-  closeAccountTransferModal();
-  paymentAccountStatus.textContent = `${formatPaymentAccountName(sourceAccount)} hesabından ${formatPaymentAccountName(targetAccount)} hesabına ${currency.format(amount)} aktarıldı${transferNote ? ` · ${transferNote}` : ""}.`;
-  render();
 }
 
 function openPaymentAccountPayModal(account) {
@@ -3467,7 +3998,23 @@ function payCreditCardDebt(event) {
 function validateTransactionPayment(transaction, statusElement = null) {
   const method = normalizePaymentMethod(transaction.paymentMethod);
   const accountId = String(transaction.paymentAccountId || "");
+  const transferAccountId = String(transaction.transferAccountId || "");
   const account = accountId ? paymentAccounts.find((item) => item.id === accountId) : null;
+  const transferAccount = transferAccountId ? paymentAccounts.find((item) => item.id === transferAccountId) : null;
+
+  if (transaction.type === "transfer") {
+    if (!account || !transferAccount || account.id === transferAccount.id) {
+      if (statusElement) {
+        statusElement.textContent = "Transfer için kaynak ve farklı bir karşı kart / hesap seçmelisin.";
+      }
+      return false;
+    }
+
+    if (statusElement) {
+      statusElement.textContent = "";
+    }
+    return true;
+  }
 
   if (method === "credit_card" && transaction.type === "expense" && !account) {
     if (statusElement) {
@@ -3506,6 +4053,33 @@ function applyTransactionPaymentEffect(transaction, direction = 1) {
 
   const factor = direction < 0 ? -1 : 1;
   const now = getTurkeyNowDateTime();
+
+  if (transaction.type === "transfer") {
+    const targetAccount = transferAccountId
+      ? paymentAccounts.find((item) => item.id === transferAccountId && item.id !== account.id)
+      : null;
+
+    if (!targetAccount) {
+      return false;
+    }
+
+    const transferFee = Math.max(0, Number(transaction.transferFee || 0));
+    const sourceDebit = amount + transferFee;
+
+    paymentAccounts = paymentAccounts.map((item) => {
+      if (item.id === account.id) {
+        return applyTransferEffectToAccount(item, transaction, -sourceDebit * factor, now);
+      }
+
+      if (item.id === targetAccount.id) {
+        return applyTransferEffectToAccount(item, transaction, amount * factor, now);
+      }
+
+      return item;
+    });
+
+    return true;
+  }
 
   paymentAccounts = paymentAccounts.map((item) => {
     if (item.id !== account.id) {
@@ -3572,6 +4146,31 @@ function applyTransactionPaymentEffect(transaction, direction = 1) {
   return true;
 }
 
+function applyTransferEffectToAccount(account, transaction, signedAmount, now = getTurkeyNowDateTime()) {
+  const amount = Number(signedAmount || 0);
+
+  if (account.type === "credit_card") {
+    const period = getCreditCardStatementPeriod(account, transaction.date || getTurkeyTodayISO());
+    const inPeriod = isTransactionInStatementPeriod(transaction, period);
+    const debtDelta = -amount;
+    return {
+      ...account,
+      debt: Math.max(0, roundMoney(Number(account.debt || 0) + debtDelta)),
+      currentStatementDebt: inPeriod
+        ? Math.max(0, roundMoney(Number(account.currentStatementDebt || 0) + debtDelta))
+        : Number(account.currentStatementDebt || 0),
+      creditPaidPeriodKey: account.creditPaidPeriodKey || period.key,
+      updatedAt: now,
+    };
+  }
+
+  return {
+    ...account,
+    balance: roundMoney(Number(account.balance || 0) + amount),
+    updatedAt: now,
+  };
+}
+
 function getPaymentAccountMeta(item) {
   const parts = [getPaymentAccountTypeLabel(item.type)];
 
@@ -3606,6 +4205,19 @@ function getPaymentAccountMeta(item) {
 }
 
 function getTransactionPaymentInfo(item) {
+  if (item?.type === "transfer") {
+    const sourceAccount = item.paymentAccountId
+      ? paymentAccounts.find((candidate) => candidate.id === item.paymentAccountId)
+      : null;
+    const targetAccount = item.transferAccountId
+      ? paymentAccounts.find((candidate) => candidate.id === item.transferAccountId)
+      : null;
+    const sourceText = sourceAccount ? formatPaymentAccountName(sourceAccount) : "Kaynak seçilmedi";
+    const targetText = targetAccount ? formatPaymentAccountName(targetAccount) : "Karşı hesap seçilmedi";
+    const fee = Math.max(0, Number(item.transferFee || 0));
+    return `Hesaplar arası transfer · ${sourceText} -> ${targetText}${fee ? ` · Ücret ${currency.format(fee)}` : ""}`;
+  }
+
   const method = normalizePaymentMethod(item.paymentMethod || "cash");
   const account = item.paymentAccountId ? paymentAccounts.find((candidate) => candidate.id === item.paymentAccountId) : null;
 
@@ -4383,8 +4995,9 @@ function formatMarketTime(value) {
 }
 
 function renderCategoryBreakdown() {
-  const expenses = getSummaryScopedTransactions().filter((item) => item.type === "expense");
-  const totalExpense = expenses.reduce((sum, item) => sum + item.amount, 0);
+  const scopedTransactions = getSummaryScopedTransactions();
+  const expenses = scopedTransactions.filter((item) => item.type === "expense");
+  const totalExpense = expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const grouped = expenses.reduce((acc, item) => {
     acc[item.category] = (acc[item.category] || 0) + item.amount;
     return acc;
@@ -4462,7 +5075,11 @@ function renderTransactions() {
 
       title.textContent = item.title;
       meta.textContent = `${formatTransactionDateTime(item)} · ${item.category} · ${getTransactionPaymentInfo(item)}${item.note ? ` · ${item.note}` : ""}`;
-      amount.textContent = `${item.type === "income" ? "+" : "-"} ${currency.format(item.amount)}`;
+      amount.textContent = item.type === "transfer"
+        ? `Transfer ${currency.format(item.amount)}${
+            Number(item.transferFee || 0) > 0 ? ` + ücret ${currency.format(Number(item.transferFee || 0))}` : ""
+          }`
+        : `${item.type === "income" ? "+" : "-"} ${currency.format(item.amount)}`;
       amount.classList.add(item.type);
 
       editButton.addEventListener("click", () => editTransaction(item));
@@ -4487,11 +5104,14 @@ function getVisibleFilteredTransactions() {
     .filter((item) => {
       const itemPaymentMethod = normalizePaymentMethod(item.paymentMethod || "cash");
       const itemPaymentAccountId = String(item.paymentAccountId || "");
+      const itemTransferAccountId = String(item.transferAccountId || "");
       const matchesType = selectedType === "all" || item.type === selectedType;
       const matchesPaymentMethod = selectedPaymentMethod === "all" || itemPaymentMethod === selectedPaymentMethod;
       const matchesPaymentAccount =
         selectedPaymentAccount === "all" ||
-        (selectedPaymentAccount === "none" ? !itemPaymentAccountId : itemPaymentAccountId === selectedPaymentAccount);
+        (selectedPaymentAccount === "none"
+          ? !itemPaymentAccountId && !itemTransferAccountId
+          : itemPaymentAccountId === selectedPaymentAccount || itemTransferAccountId === selectedPaymentAccount);
       const haystack = `${item.title} ${item.category} ${item.note} ${getTransactionPaymentInfo(item)}`.toLocaleLowerCase("tr-TR");
       const matchesQuery = !query || haystack.includes(query);
       return matchesType && matchesPaymentMethod && matchesPaymentAccount && matchesQuery && isInHistoryDateRange(item);
@@ -4858,15 +5478,31 @@ function getHistoryFilterLabel() {
 
 function editTransaction(item) {
   editingTransactionId = item.id;
-  transactionTypeInput.value = item.type;
-  updateCategorySelect(transactionCategoryInput, item.type, item.category);
+  transactionTypeInput.value = item.type === "transfer" ? "transfer" : item.type;
+  updateCategorySelect(transactionCategoryInput, transactionTypeInput.value, item.category);
   transactionTitleInput.value = item.title;
   transactionAmountInput.value = Number(item.amount) || "";
   transactionDateInput.value = item.date;
   transactionTimeInput.value = (getTransactionTime(item) || "").slice(0, 5);
   transactionNoteInput.value = item.note || "";
   transactionPaymentMethodInput.value = normalizePaymentMethod(item.paymentMethod || "cash");
-  updatePaymentAccountSelect(transactionPaymentAccountInput, transactionPaymentMethodInput.value, item.paymentAccountId || "");
+  if (transactionTransferFeeInput) {
+    transactionTransferFeeInput.value = item.type === "transfer" && Number(item.transferFee || 0) > 0 ? Number(item.transferFee) : "";
+  }
+  if (transactionTypeInput.value === "transfer") {
+    updateAnyPaymentAccountSelect(transactionPaymentAccountInput, item.paymentAccountId || "", {
+      excludeId: item.transferAccountId || "",
+      placeholder: "Kaynak kart / hesap seç",
+    });
+    updateAnyPaymentAccountSelect(transactionTransferAccountInput, item.transferAccountId || "", {
+      excludeId: item.paymentAccountId || "",
+      placeholder: "Karşı kart / hesap seç",
+    });
+  } else {
+    updatePaymentAccountSelect(transactionPaymentAccountInput, transactionPaymentMethodInput.value, item.paymentAccountId || "");
+    updateTransactionTransferAccountSelect(item.transferAccountId || "");
+  }
+  syncTransactionTransferVisibility();
   transactionEditStatus.textContent = "";
   transactionEditModal.hidden = false;
   setTimeout(() => {
@@ -4880,6 +5516,13 @@ function closeTransactionEditModal() {
   transactionEditStatus.textContent = "";
   transactionEditForm.reset();
   updatePaymentAccountSelect(transactionPaymentAccountInput, "cash", "");
+  updateTransactionTransferAccountSelect("");
+  if (transactionTransferAccountLabel) {
+    transactionTransferAccountLabel.hidden = true;
+  }
+  if (transactionTransferFeeLabel) {
+    transactionTransferFeeLabel.hidden = true;
+  }
   transactionEditModal.hidden = true;
 }
 
@@ -4890,18 +5533,21 @@ function saveTransactionEdit(event) {
     return;
   }
 
-  const type = transactionTypeInput.value;
+  const type = transactionTypeInput.value === "transfer" ? "transfer" : transactionTypeInput.value;
   const title = transactionTitleInput.value.trim().slice(0, 40);
   const amount = Number(transactionAmountInput.value);
-  const category = transactionCategoryInput.value;
-  const paymentMethod = normalizePaymentMethod(transactionPaymentMethodInput.value);
+  const category = type === "transfer" ? (transactionCategoryInput.value || "Transfer") : transactionCategoryInput.value;
+  const paymentMethod = type === "transfer" ? "transfer" : normalizePaymentMethod(transactionPaymentMethodInput.value);
   const paymentAccountId = String(transactionPaymentAccountInput.value || "");
+  const transferAccountId = type === "transfer" ? String(transactionTransferAccountInput?.value || "") : "";
+  const transferFee =
+    type === "transfer" ? Math.max(0, roundMoney(readSignedNumber(transactionTransferFeeInput?.value, 0))) : 0;
   const date = transactionDateInput.value;
   const note = transactionNoteInput.value.trim().slice(0, 100);
   const time = transactionTimeInput.value ? `${transactionTimeInput.value}:00` : "";
   const transactionAt = buildTransactionDateTime(date, time || "00:00:00");
 
-  if (!["income", "expense"].includes(type)) {
+  if (!["income", "expense", "transfer"].includes(type)) {
     transactionEditStatus.textContent = "İşlem tipi geçerli değil.";
     transactionTypeInput.focus();
     return;
@@ -4941,6 +5587,8 @@ function saveTransactionEdit(event) {
     category,
     paymentMethod,
     paymentAccountId,
+    transferAccountId,
+    transferFee,
     date,
     note,
     transactionAt,
@@ -4953,12 +5601,24 @@ function saveTransactionEdit(event) {
 
   const revertedPaymentAccount = previousTransaction ? applyTransactionPaymentEffect(previousTransaction, -1) : false;
   const appliedPaymentAccount = applyTransactionPaymentEffect(nextTransaction, 1);
+  const cleanupIds = getLegacyTransferCounterpartIds(nextTransaction, previousTransaction);
+  let cleanedPaymentAccount = false;
+
+  cleanupIds.delete(editingTransactionId);
+  cleanupIds.forEach((transactionId) => {
+    const cleanupTransaction = transactions.find((transaction) => transaction.id === transactionId);
+    if (cleanupTransaction) {
+      cleanedPaymentAccount = applyTransactionPaymentEffect(cleanupTransaction, -1) || cleanedPaymentAccount;
+    }
+    markTransactionDeleted(transactionId);
+  });
 
   transactions = transactions
+    .filter((transaction) => !cleanupIds.has(transaction.id))
     .map((transaction) => (transaction.id === editingTransactionId ? nextTransaction : transaction))
     .sort(compareTransactionsNewestFirst);
 
-  if (revertedPaymentAccount || appliedPaymentAccount) {
+  if (revertedPaymentAccount || appliedPaymentAccount || cleanedPaymentAccount) {
     persistPaymentAccounts();
   }
   persistTransactions({ replaceCloud: true });
@@ -4967,7 +5627,9 @@ function saveTransactionEdit(event) {
 }
 
 function getCategoryTypeLabel(type) {
-  return type === "income" ? "Gelir" : "Gider";
+  if (type === "income") return "Gelir";
+  if (type === "transfer") return "Transfer";
+  return "Gider";
 }
 
 function syncCategorySelects() {
@@ -5336,12 +5998,13 @@ function updateStorageStatus() {
 function exportTransactions() {
   const payload = JSON.stringify(
     {
-      version: 2,
+      version: 3,
       createdAt: getTurkeyNowDateTime(),
       transactions,
       assets,
       besAccounts,
       paymentAccounts,
+      transactionCategories,
     },
     null,
     2
@@ -5378,7 +6041,7 @@ function buildFilteredTransactionsReportHtml(filtered) {
           <td>${escapeHtml(item.category)}</td>
           <td>${escapeHtml(getTransactionTypeLabel(item.type))}</td>
           <td>${escapeHtml(getTransactionPaymentInfo(item))}</td>
-          <td class="${item.type}">${item.type === "income" ? "+" : "-"} ${escapeHtml(currency.format(item.amount))}</td>
+          <td class="${item.type}">${escapeHtml(formatTransactionAmountForExport(item))}</td>
         </tr>
       `
     )
@@ -5666,7 +6329,7 @@ function exportFilteredTransactionsExcel() {
           <td>${escapeHtml(item.category)}</td>
           <td>${escapeHtml(getTransactionTypeLabel(item.type))}</td>
           <td>${escapeHtml(getTransactionPaymentInfo(item))}</td>
-          <td style="text-align:right;">${item.type === "income" ? "+" : "-"} ${escapeHtml(currency.format(item.amount))}</td>
+          <td style="text-align:right;">${escapeHtml(formatTransactionAmountForExport(item))}</td>
         </tr>`
     )
     .join("");
@@ -5722,8 +6385,19 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
+function formatTransactionAmountForExport(item) {
+  if (item?.type === "transfer") {
+    const fee = Math.max(0, Number(item.transferFee || 0));
+    return `Transfer ${currency.format(Number(item.amount || 0))}${fee ? ` + ücret ${currency.format(fee)}` : ""}`;
+  }
+
+  return `${item?.type === "income" ? "+" : "-"} ${currency.format(Number(item?.amount || 0))}`;
+}
+
 function getTransactionTypeLabel(type) {
-  return type === "income" ? "Gelir" : "Gider";
+  if (type === "income") return "Gelir";
+  if (type === "transfer") return "Transfer";
+  return "Gider";
 }
 
 function importTransactions(event) {
@@ -5760,6 +6434,15 @@ function importTransactions(event) {
         persistPaymentAccounts();
       }
 
+      if (hasCategoryState(parsed.transactionCategories || parsed.categories)) {
+        transactionCategories = mergeCategoryStates(parsed.transactionCategories || parsed.categories, transactionCategories);
+        persistTransactionCategories();
+        syncCategorySelects();
+      }
+
+      transactionCategories = mergeCategoryStates(transactionCategories, getTransactionCategoriesFromRecords(transactions));
+      persistTransactionCategories();
+      syncCategorySelects();
       persistTransactions({ replaceCloud: true });
       render();
     } catch {
@@ -5773,12 +6456,13 @@ function importTransactions(event) {
 
 function generateSyncCode() {
   const payload = {
-    version: 2,
+    version: 3,
     createdAt: getTurkeyNowDateTime(),
     transactions,
     assets,
     besAccounts,
     paymentAccounts,
+    transactionCategories,
   };
   syncPayload.value = JSON.stringify(payload);
   syncStatus.textContent = "Paylaşım kodu hazır. Diğer telefonda bu kodu yapıştırabilirsin.";
@@ -5837,9 +6521,16 @@ function importSyncCode() {
       persistPaymentAccounts();
     }
 
+    if (hasCategoryState(parsed.transactionCategories || parsed.categories)) {
+      transactionCategories = mergeCategoryStates(parsed.transactionCategories || parsed.categories, transactionCategories);
+    }
+
+    transactionCategories = mergeCategoryStates(transactionCategories, getTransactionCategoriesFromRecords(transactions));
+    persistTransactionCategories();
+    syncCategorySelects();
     persistTransactions({ replaceCloud: true });
     render();
-    syncStatus.textContent = `${transactions.length} kayıt ve tanımlı kart/hesap bilgileri bu telefona aktarıldı.`;
+    syncStatus.textContent = `${transactions.length} kayıt, tanımlı kart/hesap ve kategori bilgileri bu telefona aktarıldı.`;
   } catch {
     syncStatus.textContent = "Paylaşım kodu okunamadı. Geçerli bir kod yapıştır.";
   }
@@ -6389,11 +7080,16 @@ async function handleAuthStateChanged(user) {
 
   if (!user) {
     currentUser = null;
+    deletedTransactionIds = loadDeletedTransactionIds();
+    deletedTransactionSignatures = loadDeletedTransactionSignatures();
+    deletedTransferTombstones = loadDeletedTransferTombstones();
     refreshCardReminderSettingsForCurrentUser();
     transactions = loadTransactions();
     assets = loadAssets();
     besAccounts = loadBesAccounts();
     paymentAccounts = loadPaymentAccounts();
+    transactionCategories = loadTransactionCategories();
+    syncCategorySelects();
     renderAuthState();
     render();
     cloudStatus.textContent = firebaseDb
@@ -6406,16 +7102,28 @@ async function handleAuthStateChanged(user) {
   const anonymousLocalAssets = getCloudReadyAssets(assets);
   const anonymousLocalBesAccounts = getCloudReadyBesAccounts(besAccounts);
   const anonymousLocalPaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
+  const anonymousLocalCategories = normalizeCategoryState(transactionCategories);
   currentUser = user;
+  deletedTransactionIds = loadDeletedTransactionIds();
+  deletedTransactionSignatures = loadDeletedTransactionSignatures();
+  deletedTransferTombstones = loadDeletedTransferTombstones();
   refreshCardReminderSettingsForCurrentUser();
   const userLocalTransactions = getCloudReadyTransactions(loadTransactions());
   const userLocalAssets = getCloudReadyAssets(loadAssets());
   const userLocalBesAccounts = getCloudReadyBesAccounts(loadBesAccounts());
   const userLocalPaymentAccounts = getCloudReadyPaymentAccounts(loadPaymentAccounts());
+  const userLocalCategories = loadTransactionCategories();
   transactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions);
   assets = mergeRecordsById(userLocalAssets, anonymousLocalAssets);
   besAccounts = mergeRecordsById(userLocalBesAccounts, anonymousLocalBesAccounts);
   paymentAccounts = mergeRecordsById(userLocalPaymentAccounts, anonymousLocalPaymentAccounts);
+  transactionCategories = mergeCategoryStates(
+    userLocalCategories,
+    anonymousLocalCategories,
+    getTransactionCategoriesFromRecords(transactions)
+  );
+  persistTransactionCategories({ syncCloud: false });
+  syncCategorySelects();
   renderAuthState();
   render();
   cloudStatus.textContent = "Bulut kayıtları yükleniyor...";
@@ -6435,10 +7143,18 @@ async function handleAuthStateChanged(user) {
       userLocalPaymentAccounts,
       anonymousLocalPaymentAccounts
     );
+    transactionCategories = mergeCategoryStates(
+      readCloudTransactionCategories(cloudProfile.transactionCategories),
+      userLocalCategories,
+      anonymousLocalCategories,
+      getTransactionCategoriesFromRecords(transactions)
+    );
     persistTransactions({ syncCloud: false });
     persistAssets({ syncCloud: false });
     persistBesAccounts({ syncCloud: false });
     persistPaymentAccounts({ syncCloud: false });
+    persistTransactionCategories({ syncCloud: false });
+    syncCategorySelects();
     render();
     await Promise.all([syncTransactionsToCloud({ replace: true }), syncUserProfileToCloud()]);
     subscribeCloudTransactions(user.uid);
@@ -6513,6 +7229,16 @@ function subscribeCloudProfile(userId) {
           persistPaymentAccounts({ syncCloud: false });
         }
 
+        if (hasCategoryState(data.transactionCategories)) {
+          transactionCategories = mergeCategoryStates(
+            data.transactionCategories,
+            transactionCategories,
+            getTransactionCategoriesFromRecords(transactions)
+          );
+          persistTransactionCategories({ syncCloud: false });
+          syncCategorySelects();
+        }
+
         renderAssets();
         renderPaymentAccounts();
         renderBesAccounts();
@@ -6527,14 +7253,21 @@ function subscribeCloudProfile(userId) {
 function fetchCloudTransactions(userId) {
   return getUserTransactionsCollection(userId)
     .get()
-    .then((snapshot) => snapshot.docs.map(readCloudTransaction).filter(Boolean));
+    .then((snapshot) => snapshot.docs.map(readCloudTransaction).filter(Boolean).filter((item) => !isTransactionDeleted(item)));
 }
 
 function subscribeCloudTransactions(userId) {
   cloudUnsubscribe = getUserTransactionsCollection(userId).onSnapshot(
     { includeMetadataChanges: true },
     (snapshot) => {
-      transactions = mergeTransactions(snapshot.docs.map(readCloudTransaction).filter(Boolean), transactions);
+      const cloudTransactions = snapshot.docs
+        .map(readCloudTransaction)
+        .filter(Boolean)
+        .filter((item) => !isTransactionDeleted(item));
+      transactions = mergeTransactions(transactions, cloudTransactions);
+      transactionCategories = mergeCategoryStates(transactionCategories, getTransactionCategoriesFromRecords(transactions));
+      persistTransactionCategories({ syncCloud: false });
+      syncCategorySelects();
       persistTransactions({ syncCloud: false });
       render();
       const sourceLabel = snapshot.metadata?.fromCache ? "yerel önbellekten" : "buluttan";
@@ -6554,7 +7287,7 @@ function syncTransactionsToCloud(options = {}) {
   }
 
   const user = currentUser;
-  const safeTransactions = getCloudReadyTransactions(transactions);
+  const safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
   const syncVersion = ++cloudTransactionsSyncVersion;
   const writeTransactions = async () => {
     if (syncVersion !== cloudTransactionsSyncVersion) {
@@ -6625,6 +7358,7 @@ function syncUserProfileToCloud() {
   const safeAssets = getCloudReadyAssets(assets);
   const safeBesAccounts = getCloudReadyBesAccounts(besAccounts);
   const safePaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
+  const safeTransactionCategories = normalizeCategoryState(transactionCategories);
 
   const syncPromise = firebaseDb
     .collection("users")
@@ -6636,13 +7370,14 @@ function syncUserProfileToCloud() {
         assets: safeAssets,
         besAccounts: safeBesAccounts,
         paymentAccounts: safePaymentAccounts,
+        transactionCategories: safeTransactionCategories,
         updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
     )
     .then(() => {
       if (syncVersion === cloudProfileSyncVersion) {
-        cloudStatus.textContent = "Kart, hesap, varlık ve BES bilgileri buluta kaydedildi.";
+        cloudStatus.textContent = "Kart, hesap, varlık, BES ve kategori bilgileri buluta kaydedildi.";
       }
     })
     .catch((error) => {
@@ -6669,11 +7404,12 @@ function toCloudTransaction(transaction) {
     paymentMethod: normalizePaymentMethod(transaction.paymentMethod || "cash"),
     paymentAccountId: String(transaction.paymentAccountId || ""),
     transferAccountId: String(transaction.transferAccountId || ""),
+    transferFee: Math.max(0, Number(transaction.transferFee || 0)),
     date: transaction.date,
     note: transaction.note || "",
     transactionAt: transaction.transactionAt || "",
     createdAt: transaction.createdAt || "",
-    updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: transaction.updatedAt || window.firebase.firestore.FieldValue.serverTimestamp(),
   };
 }
 
@@ -6688,10 +7424,12 @@ function readCloudTransaction(doc) {
     paymentMethod: normalizePaymentMethod(data.paymentMethod || "cash"),
     paymentAccountId: String(data.paymentAccountId || ""),
     transferAccountId: String(data.transferAccountId || ""),
+    transferFee: Math.max(0, Number(data.transferFee || 0)),
     date: String(data.date || ""),
     note: String(data.note || ""),
     transactionAt: String(data.transactionAt || ""),
     createdAt: String(data.createdAt || ""),
+    updatedAt: normalizeCloudTimestamp(data.updatedAt),
   };
 
   return isValidTransaction(transaction) ? transaction : null;
@@ -6795,6 +7533,11 @@ function normalizePaymentAccount(item) {
   const creditPaidTotal = Number(item.creditPaidTotal || 0);
   const currentStatementPaidTotal = Number(item.currentStatementPaidTotal || 0);
   const limit = Number(item.limit || 0);
+  const openingBalance = hasStoredMoneyValue(item.openingBalance) ? Number(item.openingBalance) : null;
+  const openingDebt = hasStoredMoneyValue(item.openingDebt) ? Number(item.openingDebt) : null;
+  const openingCurrentStatementDebt = hasStoredMoneyValue(item.openingCurrentStatementDebt)
+    ? Number(item.openingCurrentStatementDebt)
+    : null;
 
   if (
     !name ||
@@ -6821,10 +7564,13 @@ function normalizePaymentAccount(item) {
     limit: type === "credit_card" ? Math.max(0, roundMoney(limit)) : 0,
     debt: type === "credit_card" ? Math.max(0, roundMoney(debt)) : 0,
     currentStatementDebt: type === "credit_card" ? Math.max(0, roundMoney(currentStatementDebt)) : 0,
+    openingDebt: type === "credit_card" && openingDebt !== null ? Math.max(0, roundMoney(openingDebt)) : null,
+    openingCurrentStatementDebt: type === "credit_card" && openingCurrentStatementDebt !== null ? Math.max(0, roundMoney(openingCurrentStatementDebt)) : null,
     creditPaidTotal: type === "credit_card" ? Math.max(0, roundMoney(creditPaidTotal)) : 0,
     currentStatementPaidTotal: type === "credit_card" ? Math.max(0, roundMoney(currentStatementPaidTotal)) : 0,
     creditPaidPeriodKey: type === "credit_card" ? String(item.creditPaidPeriodKey || "") : "",
     balance: type !== "credit_card" ? roundMoney(balance) : 0,
+    openingBalance: type !== "credit_card" && openingBalance !== null ? roundMoney(openingBalance) : null,
     note: String(item.note || ""),
     createdAt: String(item.createdAt || ""),
     updatedAt: String(item.updatedAt || ""),
@@ -6844,31 +7590,330 @@ function mergeRecordsById(...sources) {
   return Array.from(merged.values());
 }
 
+function normalizeCloudTimestamp(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value.toDate === "function") {
+    return value.toDate().toISOString();
+  }
+
+  if (Number.isFinite(Number(value.seconds))) {
+    return new Date(Number(value.seconds) * 1000).toISOString();
+  }
+
+  return "";
+}
+
+function normalizeTransactionRecord(item) {
+  if (!isValidTransaction(item)) {
+    return null;
+  }
+
+  return {
+    ...item,
+    amount: Number(item.amount),
+    transferFee: Math.max(0, Number(item.transferFee || 0)),
+    paymentMethod: item.type === "transfer" ? "transfer" : normalizePaymentMethod(item.paymentMethod || "cash"),
+    paymentAccountId: String(item.paymentAccountId || ""),
+    transferAccountId: item.type === "transfer" ? String(item.transferAccountId || "") : "",
+    note: String(item.note || ""),
+    transactionAt: String(item.transactionAt || ""),
+    createdAt: String(item.createdAt || ""),
+    updatedAt: String(item.updatedAt || ""),
+  };
+}
+
+function getTransactionMergeTimestamp(item) {
+  return (
+    getRecordTimestamp(item?.updatedAt) ||
+    getRecordTimestamp(item?.createdAt) ||
+    getTransactionSortTimestamp(item) ||
+    0
+  );
+}
+
+function shouldReplaceMergedTransaction(existing, next) {
+  if (!existing) {
+    return true;
+  }
+
+  if (existing.id === next.id) {
+    if (next.type === "transfer" && existing.type !== "transfer") {
+      return true;
+    }
+
+    if (existing.type === "transfer" && next.type !== "transfer" && isLegacySplitRowForTransfer(existing, next)) {
+      return false;
+    }
+  }
+
+  const existingTime = getTransactionMergeTimestamp(existing);
+  const nextTime = getTransactionMergeTimestamp(next);
+
+  if (nextTime !== existingTime) {
+    return nextTime > existingTime;
+  }
+
+  return String(next.id || "") > String(existing.id || "");
+}
+
 function mergeTransactions(...sources) {
-  const merged = new Map();
+  const byId = new Map();
 
   sources
     .flat()
-    .filter(isValidTransaction)
-    .forEach((item) => {
-      const transaction = {
-        ...item,
-        amount: Number(item.amount),
-        paymentMethod: normalizePaymentMethod(item.paymentMethod || "cash"),
-        paymentAccountId: String(item.paymentAccountId || ""),
-        transferAccountId: String(item.transferAccountId || ""),
-        note: item.note || "",
-        transactionAt: item.transactionAt || "",
-        createdAt: item.createdAt || "",
-      };
-      const signature = getTransactionSignature(transaction);
-
-      if (!merged.has(signature)) {
-        merged.set(signature, transaction);
+    .map(normalizeTransactionRecord)
+    .filter(Boolean)
+    .filter((item) => !isTransactionDeleted(item))
+    .forEach((transaction) => {
+      const existing = byId.get(transaction.id);
+      if (shouldReplaceMergedTransaction(existing, transaction)) {
+        byId.set(transaction.id, transaction);
       }
     });
 
-  return Array.from(merged.values()).sort(compareTransactionsNewestFirst);
+  const bySignature = new Map();
+  Array.from(byId.values()).forEach((transaction) => {
+    const signature = getTransactionSignature(transaction);
+    const existing = bySignature.get(signature);
+
+    if (shouldReplaceMergedTransaction(existing, transaction)) {
+      bySignature.set(signature, transaction);
+    }
+  });
+
+  const records = Array.from(bySignature.values());
+  return coalesceLegacyTransferPairs(removeLegacyRowsCoveredByTransfers(records)).sort(compareTransactionsNewestFirst);
+}
+
+function isTransferLikeRecord(item) {
+  const text = normalizeBankText([item?.title, item?.category, item?.note].filter(Boolean).join(" "));
+
+  if (!text) {
+    return false;
+  }
+
+  return [
+    "transfer",
+    "para transferi",
+    "hesap transferi",
+    "hesap aktarimi",
+    "aktarim",
+    "aktarma",
+    "virman",
+    "havale",
+    "eft",
+    "fast",
+    "hesaba",
+    "hesabima",
+    "hesabindan",
+    "diger hesap",
+    "maas hesab",
+    "kart odemesi",
+  ].some((keyword) => text.includes(keyword));
+}
+
+function areSameTransactionAmount(first, second) {
+  return Math.abs(Number(first?.amount || 0) - Number(second?.amount || 0)) < 0.01;
+}
+
+function getComparableTransactionMinute(item) {
+  const time = getTransactionTime(item);
+  return time ? time.slice(0, 5) : "";
+}
+
+function haveCompatibleTransferTimes(first, second) {
+  const firstMinute = getComparableTransactionMinute(first);
+  const secondMinute = getComparableTransactionMinute(second);
+  return !firstMinute || !secondMinute || firstMinute === secondMinute;
+}
+
+function hasSameTransferDayAndAmount(first, second) {
+  return (
+    String(first?.date || "") === String(second?.date || "") &&
+    areSameTransactionAmount(first, second) &&
+    haveCompatibleTransferTimes(first, second)
+  );
+}
+
+function isLegacySplitRowForTransfer(transfer, candidate) {
+  if (!transfer || !candidate || transfer.type !== "transfer" || candidate.type === "transfer") {
+    return false;
+  }
+
+  if (!hasSameTransferDayAndAmount(transfer, candidate)) {
+    return false;
+  }
+
+  const sourceId = String(transfer.paymentAccountId || "");
+  const targetId = String(transfer.transferAccountId || "");
+  const candidateAccountId = String(candidate.paymentAccountId || "");
+
+  if (!sourceId || !targetId || !candidateAccountId) {
+    return false;
+  }
+
+  const isSourceExpense = candidate.type === "expense" && candidateAccountId === sourceId;
+  const isTargetIncome = candidate.type === "income" && candidateAccountId === targetId;
+
+  return (isSourceExpense || isTargetIncome) && isTransferLikeRecord(candidate);
+}
+
+function removeLegacyRowsCoveredByTransfers(source = []) {
+  const transfers = source.filter((item) => item.type === "transfer");
+
+  if (!transfers.length) {
+    return source;
+  }
+
+  return source.filter((item) => {
+    if (item.type === "transfer") {
+      return true;
+    }
+
+    return !transfers.some((transfer) => transfer.id !== item.id && isLegacySplitRowForTransfer(transfer, item));
+  });
+}
+
+function isLikelySplitTransferPair(first, second) {
+  if (!first || !second || first.type === second.type || first.type === "transfer" || second.type === "transfer") {
+    return false;
+  }
+
+  if (!hasSameTransferDayAndAmount(first, second)) {
+    return false;
+  }
+
+  const firstAccountId = String(first.paymentAccountId || "");
+  const secondAccountId = String(second.paymentAccountId || "");
+
+  if (!firstAccountId || !secondAccountId || firstAccountId === secondAccountId) {
+    return false;
+  }
+
+  return isTransferLikeRecord(first) || isTransferLikeRecord(second);
+}
+
+function getTransactionPairScore(first, second) {
+  let score = 0;
+
+  if (getComparableTransactionMinute(first) && getComparableTransactionMinute(first) === getComparableTransactionMinute(second)) {
+    score += 4;
+  }
+
+  if (normalizeBankText(first.note) && normalizeBankText(first.note) === normalizeBankText(second.note)) {
+    score += 2;
+  }
+
+  if (isTransferLikeRecord(first)) score += 1;
+  if (isTransferLikeRecord(second)) score += 1;
+
+  return score;
+}
+
+function buildTransferFromSplitPair(first, second) {
+  const expense = first.type === "expense" ? first : second;
+  const income = first.type === "income" ? first : second;
+  const updatedAt = [expense.updatedAt, income.updatedAt]
+    .filter(Boolean)
+    .sort((left, right) => getRecordTimestamp(right) - getRecordTimestamp(left))[0] || getTurkeyNowDateTime();
+  const createdAt = [expense.createdAt, income.createdAt].filter(Boolean).sort()[0] || expense.createdAt || income.createdAt || updatedAt;
+  const notes = [expense.note, income.note].map((value) => String(value || "").trim()).filter(Boolean);
+  const uniqueNotes = [...new Set(notes)];
+
+  return {
+    ...expense,
+    id: expense.id,
+    type: "transfer",
+    title: (expense.title || income.title || "Hesaplar Arası Transfer").slice(0, 40),
+    amount: roundMoney(Number(expense.amount || income.amount || 0)),
+    category: "Transfer",
+    paymentMethod: "transfer",
+    paymentAccountId: String(expense.paymentAccountId || ""),
+    transferAccountId: String(income.paymentAccountId || ""),
+    transferFee: 0,
+    date: expense.date || income.date,
+    note: uniqueNotes.join(" · ").slice(0, 100),
+    transactionAt: expense.transactionAt || income.transactionAt || "",
+    createdAt,
+    updatedAt,
+  };
+}
+
+function coalesceLegacyTransferPairs(source = []) {
+  const records = [...source];
+  const usedIds = new Set();
+  const result = [];
+
+  records.forEach((item) => {
+    if (usedIds.has(item.id)) {
+      return;
+    }
+
+    if (item.type !== "expense") {
+      return;
+    }
+
+    const candidates = records
+      .filter((candidate) => !usedIds.has(candidate.id) && candidate.id !== item.id && candidate.type === "income")
+      .filter((candidate) => isLikelySplitTransferPair(item, candidate))
+      .sort((first, second) => getTransactionPairScore(item, second) - getTransactionPairScore(item, first));
+
+    if (!candidates.length) {
+      return;
+    }
+
+    const income = candidates[0];
+    usedIds.add(item.id);
+    usedIds.add(income.id);
+    result.push(buildTransferFromSplitPair(item, income));
+  });
+
+  records.forEach((item) => {
+    if (!usedIds.has(item.id)) {
+      result.push(item);
+    }
+  });
+
+  return result;
+}
+
+function getLegacyTransferCounterpartIds(transfer, previousTransaction = null) {
+  const ids = new Set();
+
+  if (!transfer || transfer.type !== "transfer") {
+    return ids;
+  }
+
+  transactions.forEach((candidate) => {
+    if (candidate.id === transfer.id || isTransactionDeleted(candidate.id)) {
+      return;
+    }
+
+    if (isLegacySplitRowForTransfer(transfer, candidate)) {
+      ids.add(candidate.id);
+      return;
+    }
+
+    if (previousTransaction && isLikelySplitTransferPair(previousTransaction, candidate)) {
+      const previousWasSourceExpense = previousTransaction.type === "expense";
+      const candidateIsTargetIncome = candidate.type === "income" && String(candidate.paymentAccountId || "") === String(transfer.transferAccountId || "");
+      const previousWasTargetIncome = previousTransaction.type === "income";
+      const candidateIsSourceExpense = candidate.type === "expense" && String(candidate.paymentAccountId || "") === String(transfer.paymentAccountId || "");
+
+      if ((previousWasSourceExpense && candidateIsTargetIncome) || (previousWasTargetIncome && candidateIsSourceExpense)) {
+        ids.add(candidate.id);
+      }
+    }
+  });
+
+  return ids;
 }
 
 function isSampleTransaction(item) {
@@ -6983,7 +8028,7 @@ function buildPendingBankImportItems(parsedMovements, sourceName = "", existingS
     ? paymentAccounts.find((item) => item.id === options.paymentAccountId)
     : getBankImportSelectedAccount();
   const selectedTransferAccount = options.transferAccountId
-    ? paymentAccounts.find((item) => item.id === options.transferAccountId && item.type !== "credit_card")
+    ? paymentAccounts.find((item) => item.id === options.transferAccountId)
     : getBankImportSelectedTransferAccount();
   const paymentAccountId = selectedAccount ? selectedAccount.id : "";
   const transferAccountId =
@@ -8073,6 +9118,22 @@ function confirmBankImport(options = {}) {
     return;
   }
 
+  const invalidTransfer = selectedTransactions.find(
+    (transaction) =>
+      transaction.type === "transfer" &&
+      (!transaction.paymentAccountId ||
+        !transaction.transferAccountId ||
+        transaction.paymentAccountId === transaction.transferAccountId)
+  );
+
+  if (invalidTransfer) {
+    if (updateStatus) {
+      bankImportStatus.textContent = "Transfer kayıtları için her satırda kaynak ve farklı bir karşı kart / hesap seçmelisin.";
+    }
+    openBankImportPreviewModal();
+    return;
+  }
+
   let changedPaymentAccount = false;
   selectedTransactions.forEach((transaction) => {
     if (applyTransactionPaymentEffect(transaction, 1)) {
@@ -8325,7 +9386,9 @@ function createBankImportPreviewEditRow(item, index) {
     createBankImportEditField("Tip", createBankImportTypeSelect(index, item.transaction.type)),
     createBankImportEditField("Tutar", createBankImportEditInput(index, "amount", item.transaction.amount, "number")),
     createBankImportEditField("Kategori", createBankImportCategorySelect(index, item.transaction.type, item.transaction.category)),
-    createBankImportEditField("Tarih", createBankImportEditInput(index, "date", item.transaction.date, "date"))
+    createBankImportEditField("Tarih", createBankImportEditInput(index, "date", item.transaction.date, "date")),
+    createBankImportEditField("Kaynak", createBankImportPaymentAccountSelect(index, "paymentAccountId", item.transaction.paymentAccountId, item.transaction.transferAccountId)),
+    createBankImportEditField("Karşı", createBankImportPaymentAccountSelect(index, "transferAccountId", item.transaction.transferAccountId, item.transaction.paymentAccountId))
   );
 
   const meta = document.createElement("p");
@@ -8384,20 +9447,24 @@ function createBankImportTypeSelect(index, value) {
   [
     ["income", "Gelir"],
     ["expense", "Gider"],
+    ["transfer", "Transfer"],
   ].forEach(([optionValue, label]) => {
     const option = document.createElement("option");
     option.value = optionValue;
     option.textContent = label;
     select.append(option);
   });
-  select.value = value === "income" ? "income" : "expense";
+  select.value = ["income", "expense", "transfer"].includes(value) ? value : "expense";
   select.addEventListener("change", () => {
     updateBankImportTransactionField(index, "type", select.value);
     const item = pendingBankImports[index];
     if (item?.valid) {
       item.transaction.category = transactionCategories[select.value]?.[0] || "Diğer";
+      item.transaction.paymentMethod = select.value === "transfer"
+        ? "transfer"
+        : getPaymentMethodForImportAccount(paymentAccounts.find((account) => account.id === item.transaction.paymentAccountId));
     }
-    renderBankImportPreview();
+    renderBankImportPreviewModal();
   });
   return select;
 }
@@ -8417,6 +9484,33 @@ function createBankImportCategorySelect(index, type, value) {
   return select;
 }
 
+function createBankImportPaymentAccountSelect(index, field, value, excludeValue = "") {
+  const select = document.createElement("select");
+  const currentValue = String(value || "");
+  const excludedId = String(excludeValue || "");
+
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = field === "paymentAccountId" ? "Kaynak seçilmedi" : "Karşı hesap yok";
+  select.append(emptyOption);
+
+  paymentAccounts
+    .filter((account) => String(account.id || "") !== excludedId)
+    .forEach((account) => {
+      const option = document.createElement("option");
+      option.value = account.id;
+      option.textContent = formatPaymentAccountName(account);
+      select.append(option);
+    });
+
+  select.value = Array.from(select.options).some((option) => option.value === currentValue) ? currentValue : "";
+  select.addEventListener("change", () => {
+    updateBankImportTransactionField(index, field, select.value);
+    renderBankImportPreviewModal();
+  });
+  return select;
+}
+
 function updateBankImportTransactionField(index, field, value) {
   const item = pendingBankImports[index];
 
@@ -8428,7 +9522,16 @@ function updateBankImportTransactionField(index, field, value) {
     const amount = Number(value);
     item.transaction.amount = Number.isFinite(amount) && amount > 0 ? Number(amount.toFixed(2)) : 0;
   } else if (field === "type") {
-    item.transaction.type = value === "income" ? "income" : "expense";
+    item.transaction.type = ["income", "expense", "transfer"].includes(value) ? value : "expense";
+    if (item.transaction.type === "transfer") {
+      item.transaction.category = transactionCategories.transfer?.[0] || "Transfer";
+      item.transaction.paymentMethod = "transfer";
+    } else {
+      item.transaction.transferAccountId = "";
+      item.transaction.paymentMethod = getPaymentMethodForImportAccount(
+        paymentAccounts.find((account) => account.id === item.transaction.paymentAccountId)
+      );
+    }
   } else if (field === "date") {
     item.transaction.date = String(value || "");
     item.transaction.transactionAt = buildTransactionDateTime(item.transaction.date, getTimePart(item.transaction.transactionAt || item.raw || ""));
@@ -8438,6 +9541,18 @@ function updateBankImportTransactionField(index, field, value) {
 
   if (field === "title") {
     item.transaction.title = item.transaction.title.slice(0, 40) || "Banka Hareketi";
+  }
+
+  if (field === "paymentAccountId") {
+    const account = paymentAccounts.find((candidate) => candidate.id === item.transaction.paymentAccountId);
+    item.transaction.paymentMethod = item.transaction.type === "transfer" ? "transfer" : getPaymentMethodForImportAccount(account);
+    if (item.transaction.transferAccountId === item.transaction.paymentAccountId) {
+      item.transaction.transferAccountId = "";
+    }
+  }
+
+  if (field === "transferAccountId" && item.transaction.transferAccountId === item.transaction.paymentAccountId) {
+    item.transaction.transferAccountId = "";
   }
 
   updateBankImportPreviewSummary();
@@ -8458,7 +9573,7 @@ function applyBankImportAccountToPending(accountId = "") {
       ...item,
       transaction: {
         ...item.transaction,
-        paymentMethod,
+        paymentMethod: item.transaction.type === "transfer" ? "transfer" : paymentMethod,
         paymentAccountId: account ? account.id : "",
         transferAccountId,
       },
@@ -8472,7 +9587,7 @@ function applyBankImportTransferAccountToPending(accountId = "") {
   const sourceAccount = getBankImportSelectedAccount();
   const transferAccount =
     accountId && accountId !== sourceAccount?.id
-      ? paymentAccounts.find((item) => item.id === accountId && item.type !== "credit_card")
+      ? paymentAccounts.find((item) => item.id === accountId)
       : null;
   const transferAccountId = transferAccount ? transferAccount.id : "";
 
@@ -10783,6 +11898,10 @@ function inferTransactionType(title, sign = 1, hasExplicitSign = false) {
 function categorizeBankTransaction(title, type) {
   const text = normalizeBankText(title);
 
+  if (type === "transfer") {
+    return "Transfer";
+  }
+
   if (type === "income") {
     if (["maas", "ucret"].some((keyword) => text.includes(keyword))) {
       return "Maaş";
@@ -10835,7 +11954,16 @@ function categorizeBankTransaction(title, type) {
 }
 
 function getTransactionSignature(item) {
-  return [item.date, item.type, Number(item.amount || 0).toFixed(2), normalizeBankText(item.title)].join("|");
+  const time = getTransactionTime(item) || "";
+  return [
+    item.date,
+    time.slice(0, 5),
+    item.type,
+    Number(item.amount || 0).toFixed(2),
+    normalizeBankText(item.title),
+    String(item.paymentAccountId || ""),
+    String(item.transferAccountId || ""),
+  ].join("|");
 }
 
 function normalizeBankText(value) {
@@ -10861,7 +11989,7 @@ function isValidTransaction(item) {
   return (
     item &&
     typeof item.id === "string" &&
-    (item.type === "income" || item.type === "expense") &&
+    (item.type === "income" || item.type === "expense" || item.type === "transfer") &&
     typeof item.title === "string" &&
     typeof item.amount === "number" &&
     typeof item.category === "string" &&
