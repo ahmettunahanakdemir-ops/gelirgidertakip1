@@ -10910,3 +10910,177 @@ html.history-compact-layout #historyView .history-filters > .custom-filter-selec
     align-items: end !important;
   }
 }
+
+
+/* v181: masaüstü kayıt filtrelerini tek satırda aynı dikey çizgiye hizala */
+@media (min-width: 1451px) {
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) !important;
+    align-items: end !important;
+    column-gap: 18px !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    align-self: end !important;
+    width: 170px !important;
+    min-width: 170px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns:
+      minmax(116px, 0.80fr)
+      minmax(116px, 0.80fr)
+      minmax(142px, 1fr)
+      minmax(142px, 1fr)
+      minmax(170px, 1.16fr)
+      minmax(128px, 0.88fr)
+      minmax(92px, 0.64fr)
+      minmax(136px, 0.95fr)
+      minmax(128px, 0.88fr)
+      minmax(104px, 0.72fr)
+      minmax(96px, 0.68fr) !important;
+    grid-template-areas: "start end type payment account clear searchBtn searchInput recent excel pdf" !important;
+    gap: 10px !important;
+    align-items: end !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  html:not(.history-compact-layout) #historyView .history-filters > #recentTransactionsButton { grid-area: recent !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    align-self: end !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    /* Tarih alanlarındaki Başlangıç/Bitiş etiket yüksekliği kadar aşağı hizala */
+    margin-top: 22px !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-rows: 18px 44px !important;
+    gap: 4px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.1 !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput,
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Orta masaüstünde kayma olmasın diye düzgün iki satır, her satır kendi içinde aynı hizada */
+@media (min-width: 981px) and (max-width: 1450px) {
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    row-gap: 12px !important;
+    align-items: start !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "start end type payment account clear"
+      "searchBtn searchInput searchInput recent excel pdf" !important;
+    gap: 10px !important;
+    align-items: end !important;
+    justify-items: stretch !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  html:not(.history-compact-layout) #historyView .history-filters > #recentTransactionsButton { grid-area: recent !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    align-self: end !important;
+    justify-self: stretch !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    margin-top: 22px !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput,
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+}
