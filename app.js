@@ -13,6 +13,8 @@ const CARD_REMINDER_STATE_STORAGE_KEY = "akis-budget-card-reminder-state";
 const DELETED_TRANSACTIONS_STORAGE_KEY = "akis-budget-deleted-transactions";
 const DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY = "akis-budget-deleted-transaction-signatures";
 const DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-transfer-tombstones";
+const MAX_DELETED_TRANSACTION_MARKERS = 5000;
+const MAX_DELETED_TRANSFER_TOMBSTONES = 2000;
 
 const DEFAULT_CATEGORIES = {
   income: ["Maaş", "Serbest İş", "Yatırım", "Hediye", "Promosyon", "Harçlık", "Borç Ödeme", "Diğer"],
@@ -1681,6 +1683,7 @@ function init() {
       note: String(formData.get("note")).trim(),
       transactionAt: buildTransactionDateTime(formData.get("date"), getTurkeyNowTime()),
       createdAt: now,
+      updatedAt: now,
     };
 
     if (!entry.title || !entry.amount || !entry.date) {
@@ -1792,12 +1795,12 @@ function loadTransactions() {
 
 function loadDeletedTransactionIds() {
   const values = loadJsonState(DELETED_TRANSACTIONS_STORAGE_KEY, []);
-  return new Set((Array.isArray(values) ? values : []).map((item) => String(item || "")).filter(Boolean));
+  return new Set((Array.isArray(values) ? values : []).map(normalizeDeletedMarkerValue).filter(Boolean));
 }
 
 function loadDeletedTransactionSignatures() {
   const values = loadJsonState(DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY, []);
-  return new Set((Array.isArray(values) ? values : []).map((item) => String(item || "")).filter(Boolean));
+  return new Set((Array.isArray(values) ? values : []).map(normalizeDeletedMarkerValue).filter(Boolean));
 }
 
 function normalizeDeletedTransferTombstone(item) {
@@ -1828,16 +1831,136 @@ function loadDeletedTransferTombstones() {
   return (Array.isArray(values) ? values : []).map(normalizeDeletedTransferTombstone).filter(Boolean);
 }
 
+function limitMarkerArray(values, max = MAX_DELETED_TRANSACTION_MARKERS) {
+  return Array.from(values || [])
+    .map(normalizeDeletedMarkerValue)
+    .filter(Boolean)
+    .slice(-max);
+}
+
+function normalizeDeletedMarkerValue(item) {
+  if (!item) {
+    return "";
+  }
+
+  if (typeof item === "object") {
+    return String(item.id || item.transactionId || item.transaction?.id || "");
+  }
+
+  return String(item || "");
+}
+
+function mergeMarkerSet(...sources) {
+  const markers = [];
+  sources.forEach((source) => {
+    if (!source) {
+      return;
+    }
+
+    const values =
+      source instanceof Set || Array.isArray(source)
+        ? Array.from(source)
+        : [source];
+
+    values.forEach((item) => {
+      const value = normalizeDeletedMarkerValue(item);
+      if (value) {
+        markers.push(value);
+      }
+    });
+  });
+
+  return new Set(limitMarkerArray(new Set(markers)));
+}
+
+function getDeletedTransactionStateSnapshot() {
+  return {
+    ids: limitMarkerArray(deletedTransactionIds),
+    signatures: limitMarkerArray(deletedTransactionSignatures),
+    transferTombstones: deletedTransferTombstones
+      .map(normalizeDeletedTransferTombstone)
+      .filter(Boolean)
+      .slice(-MAX_DELETED_TRANSFER_TOMBSTONES),
+  };
+}
+
+function readCloudDeletedTransactionState(data = {}) {
+  return {
+    ids: Array.isArray(data.deletedTransactionIds)
+      ? data.deletedTransactionIds
+      : Array.isArray(data.deletedTransactions)
+        ? data.deletedTransactions
+        : [],
+    signatures: Array.isArray(data.deletedTransactionSignatures) ? data.deletedTransactionSignatures : [],
+    transferTombstones: Array.isArray(data.deletedTransferTombstones) ? data.deletedTransferTombstones : [],
+  };
+}
+
+function mergeDeletedTransferTombstones(...sources) {
+  const byKey = new Map();
+
+  sources
+    .flat()
+    .map(normalizeDeletedTransferTombstone)
+    .filter(Boolean)
+    .forEach((item) => {
+      const key = JSON.stringify(item);
+      byKey.set(key, item);
+    });
+
+  return Array.from(byKey.values()).slice(-MAX_DELETED_TRANSFER_TOMBSTONES);
+}
+
+function applyDeletedTransactionState(...states) {
+  const beforeIds = deletedTransactionIds.size;
+  const beforeSignatures = deletedTransactionSignatures.size;
+  const beforeTombstones = deletedTransferTombstones.length;
+
+  deletedTransactionIds = mergeMarkerSet(
+    deletedTransactionIds,
+    ...states.map((state) => state?.ids || state?.deletedTransactionIds || state?.deletedTransactions || [])
+  );
+  deletedTransactionSignatures = mergeMarkerSet(
+    deletedTransactionSignatures,
+    ...states.map((state) => state?.signatures || state?.deletedTransactionSignatures || [])
+  );
+  deletedTransferTombstones = mergeDeletedTransferTombstones(
+    deletedTransferTombstones,
+    ...states.map((state) => state?.transferTombstones || state?.deletedTransferTombstones || [])
+  );
+
+  persistDeletedTransactionIds();
+  persistDeletedTransactionSignatures();
+  persistDeletedTransferTombstones();
+
+  return (
+    beforeIds !== deletedTransactionIds.size ||
+    beforeSignatures !== deletedTransactionSignatures.size ||
+    beforeTombstones !== deletedTransferTombstones.length
+  );
+}
+
+function getCloudDeletedTransactionPayload() {
+  const snapshot = getDeletedTransactionStateSnapshot();
+  return {
+    deletedTransactionIds: snapshot.ids,
+    deletedTransactionSignatures: snapshot.signatures,
+    deletedTransferTombstones: snapshot.transferTombstones,
+  };
+}
+
 function persistDeletedTransactionIds() {
+  deletedTransactionIds = new Set(limitMarkerArray(deletedTransactionIds));
   localStorage.setItem(getStorageKey(DELETED_TRANSACTIONS_STORAGE_KEY), JSON.stringify([...deletedTransactionIds]));
 }
 
 function persistDeletedTransactionSignatures() {
+  deletedTransactionSignatures = new Set(limitMarkerArray(deletedTransactionSignatures));
   localStorage.setItem(getStorageKey(DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY), JSON.stringify([...deletedTransactionSignatures]));
 }
 
 function persistDeletedTransferTombstones() {
-  const limited = deletedTransferTombstones.slice(-1000);
+  const limited = deletedTransferTombstones.slice(-MAX_DELETED_TRANSFER_TOMBSTONES);
   deletedTransferTombstones = limited;
   localStorage.setItem(getStorageKey(DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY), JSON.stringify(limited));
 }
@@ -6969,7 +7092,15 @@ async function deleteUserCloudData(userId) {
 }
 
 function clearUserLocalData(userId) {
-  [STORAGE_KEY, ASSETS_STORAGE_KEY, BES_STORAGE_KEY, PAYMENT_ACCOUNTS_STORAGE_KEY].forEach((baseKey) => {
+  [
+    STORAGE_KEY,
+    ASSETS_STORAGE_KEY,
+    BES_STORAGE_KEY,
+    PAYMENT_ACCOUNTS_STORAGE_KEY,
+    DELETED_TRANSACTIONS_STORAGE_KEY,
+    DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY,
+    DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY,
+  ].forEach((baseKey) => {
     localStorage.removeItem(`${baseKey}-${userId}`);
   });
 }
@@ -7103,10 +7234,12 @@ async function handleAuthStateChanged(user) {
   const anonymousLocalBesAccounts = getCloudReadyBesAccounts(besAccounts);
   const anonymousLocalPaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
   const anonymousLocalCategories = normalizeCategoryState(transactionCategories);
+  const anonymousDeletedTransactionState = getDeletedTransactionStateSnapshot();
   currentUser = user;
   deletedTransactionIds = loadDeletedTransactionIds();
   deletedTransactionSignatures = loadDeletedTransactionSignatures();
   deletedTransferTombstones = loadDeletedTransferTombstones();
+  applyDeletedTransactionState(anonymousDeletedTransactionState, getDeletedTransactionStateSnapshot());
   refreshCardReminderSettingsForCurrentUser();
   const userLocalTransactions = getCloudReadyTransactions(loadTransactions());
   const userLocalAssets = getCloudReadyAssets(loadAssets());
@@ -7130,6 +7263,7 @@ async function handleAuthStateChanged(user) {
 
   try {
     const cloudProfile = await fetchCloudProfile(user.uid);
+    applyDeletedTransactionState(readCloudDeletedTransactionState(cloudProfile), anonymousDeletedTransactionState);
     const cloudTransactions = await fetchCloudTransactions(user.uid);
     transactions = mergeTransactions(cloudTransactions, userLocalTransactions, anonymousLocalTransactions);
     assets = mergeRecordsById(readCloudAssets(cloudProfile.assets), userLocalAssets, anonymousLocalAssets);
@@ -7239,6 +7373,11 @@ function subscribeCloudProfile(userId) {
           syncCategorySelects();
         }
 
+        if (applyDeletedTransactionState(readCloudDeletedTransactionState(data))) {
+          transactions = mergeTransactions(transactions);
+          persistTransactions({ syncCloud: false });
+        }
+
         renderAssets();
         renderPaymentAccounts();
         renderBesAccounts();
@@ -7288,6 +7427,7 @@ function syncTransactionsToCloud(options = {}) {
 
   const user = currentUser;
   const safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
+  const deletedPayload = getCloudDeletedTransactionPayload();
   const syncVersion = ++cloudTransactionsSyncVersion;
   const writeTransactions = async () => {
     if (syncVersion !== cloudTransactionsSyncVersion) {
@@ -7320,6 +7460,7 @@ function syncTransactionsToCloud(options = {}) {
       {
         email: user.email || "",
         username: getUserDisplayName(user),
+        ...deletedPayload,
         updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
@@ -7359,6 +7500,7 @@ function syncUserProfileToCloud() {
   const safeBesAccounts = getCloudReadyBesAccounts(besAccounts);
   const safePaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
   const safeTransactionCategories = normalizeCategoryState(transactionCategories);
+  const deletedPayload = getCloudDeletedTransactionPayload();
 
   const syncPromise = firebaseDb
     .collection("users")
@@ -7371,6 +7513,7 @@ function syncUserProfileToCloud() {
         besAccounts: safeBesAccounts,
         paymentAccounts: safePaymentAccounts,
         transactionCategories: safeTransactionCategories,
+        ...deletedPayload,
         updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
@@ -7436,7 +7579,7 @@ function readCloudTransaction(doc) {
 }
 
 function getCloudReadyTransactions(source) {
-  return source.filter((item) => isValidTransaction(item) && !isSampleTransaction(item));
+  return source.filter((item) => isValidTransaction(item) && !isSampleTransaction(item) && !isTransactionDeleted(item));
 }
 
 function getCloudReadyAssets(source) {
@@ -12046,4 +12189,3 @@ function registerServiceWorker() {
     navigator.serviceWorker.register("./service-worker.js").catch(() => {});
   });
 }
-

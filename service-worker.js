@@ -1,11 +1,11 @@
-const CACHE_NAME = "akis-butce-v162";
+const CACHE_NAME = "akis-butce-v163";
 const APP_ASSETS = [
   "./",
   "./index.html",
-  "./style.css?v=162",
-  "./app.js?v=162",
-  "./firebase-config.js?v=162",
-  "./manifest.json?v=162",
+  "./style.css?v=163",
+  "./app.js?v=163",
+  "./firebase-config.js?v=163",
+  "./manifest.json?v=163",
   "./icon.svg",
   "./login-pattern.svg",
 ];
