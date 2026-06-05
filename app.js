@@ -2425,6 +2425,9 @@ function render() {
   renderStats();
   renderAssets();
   renderPaymentAccountFilterOptions();
+  if (activeView === "cardsView") {
+    refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: true });
+  }
   renderPaymentAccounts();
   renderBesAccounts();
   renderHome();
@@ -4105,6 +4108,100 @@ function refreshPaymentAccountFromRecords(accountId) {
   if (!paymentAccountRecordsModal?.hidden && viewingPaymentAccountRecordsId === account.id) {
     openPaymentAccountRecordsModal(refreshedAccount || account, { preservePeriod: true });
   }
+}
+
+
+function buildRefreshedPaymentAccountFromRecords(item, now = getTurkeyNowDateTime()) {
+  if (!item?.id) {
+    return item;
+  }
+
+  const allRelatedTransactions = getPaymentAccountRelatedTransactions(item.id, transactions);
+  const totals = item.type === "credit_card"
+    ? getCreditCardRecordTotals(item, allRelatedTransactions)
+    : getPaymentAccountRecordTotals(item.id, allRelatedTransactions);
+
+  if (item.type === "credit_card") {
+    const openingDebt = roundMoney(getPaymentAccountOpeningDebtForRefresh(item));
+    const openingCurrentStatementDebt = roundMoney(getPaymentAccountOpeningStatementDebtForRefresh(item));
+    const nextDebt = Math.max(0, roundMoney(openingDebt + Number(totals.totalDebt || 0)));
+    const nextCurrentStatementDebt = Math.max(0, roundMoney(openingCurrentStatementDebt + Number(totals.currentStatementDebt || 0)));
+    const nextPeriodKey = totals.period.key;
+
+    if (
+      roundMoney(Number(item.openingDebt || 0)) === openingDebt &&
+      roundMoney(Number(item.openingCurrentStatementDebt || 0)) === openingCurrentStatementDebt &&
+      roundMoney(Number(item.debt || 0)) === nextDebt &&
+      roundMoney(Number(item.currentStatementDebt || 0)) === nextCurrentStatementDebt &&
+      String(item.creditPaidPeriodKey || "") === String(nextPeriodKey || "")
+    ) {
+      return item;
+    }
+
+    return {
+      ...item,
+      openingDebt,
+      openingCurrentStatementDebt,
+      debt: nextDebt,
+      currentStatementDebt: nextCurrentStatementDebt,
+      creditPaidPeriodKey: nextPeriodKey,
+      updatedAt: now,
+    };
+  }
+
+  const openingBalance = roundMoney(getPaymentAccountOpeningBalanceForRefresh(item));
+  const nextBalance = roundMoney(openingBalance + Number(totals.net || 0));
+
+  if (
+    roundMoney(Number(item.openingBalance || 0)) === openingBalance &&
+    roundMoney(Number(item.balance || 0)) === nextBalance
+  ) {
+    return item;
+  }
+
+  return {
+    ...item,
+    openingBalance,
+    balance: nextBalance,
+    updatedAt: now,
+  };
+}
+
+function refreshAllPaymentAccountsFromRecords(options = {}) {
+  const { silent = true, syncCloud = true } = options;
+
+  if (!Array.isArray(paymentAccounts) || !paymentAccounts.length) {
+    return false;
+  }
+
+  const now = getTurkeyNowDateTime();
+  let changed = false;
+  paymentAccounts = paymentAccounts.map((item) => {
+    const refreshed = buildRefreshedPaymentAccountFromRecords(item, now);
+    if (refreshed !== item) {
+      changed = true;
+    }
+    return refreshed;
+  });
+
+  if (changed) {
+    persistPaymentAccounts({ syncCloud });
+  }
+
+  if (!silent && paymentAccountStatus) {
+    paymentAccountStatus.textContent = changed
+      ? "Kartlar ve hesaplar tüm zamanlardaki kayıtlarına göre otomatik güncellendi."
+      : "Kartlar ve hesaplar zaten güncel.";
+  }
+
+  if (!paymentAccountRecordsModal?.hidden && viewingPaymentAccountRecordsId) {
+    const account = paymentAccounts.find((item) => item.id === viewingPaymentAccountRecordsId);
+    if (account) {
+      openPaymentAccountRecordsModal(account, { preservePeriod: true });
+    }
+  }
+
+  return changed;
 }
 
 function openPaymentAccountPayModal(account) {
@@ -6270,6 +6367,11 @@ function switchView(viewId) {
   }
 
   renderView();
+
+  if (activeView === "cardsView") {
+    refreshAllPaymentAccountsFromRecords({ silent: false, syncCloud: true });
+    renderPaymentAccounts();
+  }
 
   if (activeView === "historyView") {
     renderTransactions();

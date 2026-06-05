@@ -12457,3 +12457,106 @@ body[data-theme="dark"] {
     }
   }
 }
+
+
+/* v197: iPhone en üst şablon başlık/metin kırılmasını düzelt */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    .topbar {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      align-items: start !important;
+      justify-items: stretch !important;
+      gap: 12px !important;
+      padding:
+        calc(max(10px, env(safe-area-inset-top)) + 54px)
+        18px
+        18px
+        18px !important;
+      margin-bottom: 14px !important;
+      min-height: 0 !important;
+    }
+
+    .topbar > div:first-child {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      display: block !important;
+    }
+
+    .topbar .panel-kicker,
+    .topbar #pageKicker {
+      display: block !important;
+      margin: 0 0 8px !important;
+      letter-spacing: 0.20em !important;
+      line-height: 1.1 !important;
+      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+      hyphens: none !important;
+      font-size: clamp(0.72rem, 3.1vw, 0.84rem) !important;
+    }
+
+    .topbar h1,
+    .topbar #pageTitle {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      font-size: clamp(2rem, 9vw, 2.62rem) !important;
+      line-height: 1.08 !important;
+      letter-spacing: 0.01em !important;
+      white-space: normal !important;
+      word-break: keep-all !important;
+      overflow-wrap: normal !important;
+      hyphens: none !important;
+      text-wrap: balance;
+    }
+
+    .topbar p,
+    .topbar #pageSubtitle {
+      max-width: 100% !important;
+      margin: 10px 0 0 !important;
+      font-size: clamp(1rem, 4.3vw, 1.22rem) !important;
+      line-height: 1.38 !important;
+      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+      hyphens: none !important;
+      text-wrap: pretty;
+    }
+
+    .topbar-side {
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 2px 0 0 !important;
+      display: flex !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+    }
+
+    .topbar .user-chip,
+    .topbar #appUserEmail {
+      max-width: min(260px, 100%) !important;
+      width: fit-content !important;
+      justify-self: start !important;
+      margin: 0 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .topbar h1,
+    .topbar #pageTitle {
+      font-size: clamp(1.82rem, 8.1vw, 2.20rem) !important;
+      line-height: 1.10 !important;
+    }
+
+    .topbar p,
+    .topbar #pageSubtitle {
+      font-size: clamp(0.96rem, 4vw, 1.08rem) !important;
+      line-height: 1.36 !important;
+    }
+  }
+}
