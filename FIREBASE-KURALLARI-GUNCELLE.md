@@ -16,3 +16,5 @@ Eski kural sadece bazı kayıt tiplerine veya alanlarına izin verdiği için ye
 v208 ile kayıtlar önce `users/{uid}/transactions/{transactionId}` alt koleksiyonuna yazılır. `users/{uid}` profil dokümanındaki eski `transactionsBackup` alanı Firestore doküman limitine yaklaşırsa otomatik temizlenir ve ana kaynak alt koleksiyon olur.
 
 v209 ile giriş sırasında tüm geçmişi her seferinde yeniden yazan tam senkron kaldırıldı. Sadece bu cihazda bekleyen yerel değişiklik varsa transactions yazımı yapılır; takılan Firebase yazımlarına da zaman aşımı eklenmiştir.
+
+v210 ile normal ekleme, düzenleme, silme, kart ödeme ve banka içe aktarma işlemleri delta senkrona geçirildi. Artık tek kayıt değiştiğinde tüm geçmiş yeniden yazılmaz; sadece değişen işlem dokümanı yazılır veya silinir.

@@ -15,6 +15,7 @@ const DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY = "akis-budget-deleted-transact
 const DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-transfer-tombstones";
 const TRANSACTIONS_STATE_UPDATED_STORAGE_KEY = "akis-budget-transactions-state-updated";
 const TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY = "akis-budget-transactions-cloud-dirty";
+const TRANSACTIONS_CLOUD_FULL_SYNC_STORAGE_KEY = "akis-budget-transactions-cloud-full-sync";
 const RECENT_ADDED_TRANSACTION_DAYS = 3;
 const MAX_DELETED_TRANSACTION_MARKERS = 5000;
 const MAX_DELETED_TRANSFER_TOMBSTONES = 2000;
@@ -1268,7 +1269,7 @@ function requestTransactionDelete(item) {
       if (changedPaymentAccount) {
         persistPaymentAccounts();
       }
-      persistTransactions({ replaceCloud: true });
+      persistTransactions({ cloudDeletes: [...idsToDelete] });
       render();
     }
   );
@@ -1765,7 +1766,7 @@ function init() {
     }
 
     transactions = [entry, ...transactions].sort(compareTransactionsNewestFirst);
-    persistTransactions({ replaceCloud: true }).catch((error) => {
+    persistTransactions({ cloudUpserts: [entry] }).catch((error) => {
       if (entryFormStatus) {
         entryFormStatus.textContent = `Firebase'e kaydedilemedi: ${error.message}`;
       }
@@ -2339,13 +2340,31 @@ function markTransactionsCloudDirty(timestamp = Date.now()) {
   return timestamp;
 }
 
-function clearTransactionsCloudDirty() {
+function clearTransactionsCloudDirty(syncedThrough = Number.POSITIVE_INFINITY) {
+  const dirtyAt = loadTransactionsCloudDirtyAt();
+  if (dirtyAt && Number.isFinite(syncedThrough) && dirtyAt > syncedThrough) {
+    return false;
+  }
+
   localStorage.removeItem(getStorageKey(TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY));
+  return true;
 }
 
 function loadTransactionsCloudDirtyAt() {
   const value = Number(localStorage.getItem(getStorageKey(TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY)));
   return Number.isFinite(value) ? value : 0;
+}
+
+function markTransactionsCloudFullSyncRequired() {
+  localStorage.setItem(getStorageKey(TRANSACTIONS_CLOUD_FULL_SYNC_STORAGE_KEY), "1");
+}
+
+function clearTransactionsCloudFullSyncRequired() {
+  localStorage.removeItem(getStorageKey(TRANSACTIONS_CLOUD_FULL_SYNC_STORAGE_KEY));
+}
+
+function isTransactionsCloudFullSyncRequired() {
+  return localStorage.getItem(getStorageKey(TRANSACTIONS_CLOUD_FULL_SYNC_STORAGE_KEY)) === "1";
 }
 
 function getTransactionsNewestMutationTimestamp(records = []) {
@@ -2361,7 +2380,7 @@ function getTransactionsNewestMutationTimestamp(records = []) {
 }
 
 function persistTransactions(options = {}) {
-  const { syncCloud = true, replaceCloud = false } = options;
+  const { syncCloud = true, replaceCloud = false, cloudUpserts = null, cloudDeletes = null } = options;
 
   transactions = mergeTransactions(transactions);
   localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
@@ -2372,7 +2391,7 @@ function persistTransactions(options = {}) {
   updateStorageStatus();
 
   if (syncCloud) {
-    return syncTransactionsToCloud({ replace: replaceCloud });
+    return syncTransactionsToCloud({ replace: replaceCloud, upserts: cloudUpserts, deletes: cloudDeletes });
   }
 
   return Promise.resolve();
@@ -3637,17 +3656,23 @@ function deletePaymentAccountAfterConfirmation() {
   }
 
   paymentAccounts = paymentAccounts.filter((account) => account.id !== item.id);
+  const updatedTransactions = [];
   transactions = transactions.map((transaction) =>
     transaction.paymentAccountId === item.id || transaction.transferAccountId === item.id
-      ? {
+      ? (() => {
+          const updatedTransaction = {
           ...transaction,
           paymentAccountId: transaction.paymentAccountId === item.id ? "" : transaction.paymentAccountId,
           transferAccountId: transaction.transferAccountId === item.id ? "" : transaction.transferAccountId,
-        }
+          updatedAt: getTurkeyNowDateTime(),
+        };
+          updatedTransactions.push(updatedTransaction);
+          return updatedTransaction;
+        })()
       : transaction
   );
   persistPaymentAccounts();
-  persistTransactions({ replaceCloud: true });
+  persistTransactions({ cloudUpserts: updatedTransactions });
   closePaymentAccountDeleteModal();
   paymentAccountStatus.textContent = `${formatPaymentAccountName(item)} silindi.`;
   render();
@@ -4369,7 +4394,7 @@ function payCreditCardDebt(event) {
 
   transactions = [paymentTransaction, ...transactions].sort(compareTransactionsNewestFirst);
   persistPaymentAccounts();
-  persistTransactions({ replaceCloud: true }).catch((error) => {
+  persistTransactions({ cloudUpserts: [paymentTransaction] }).catch((error) => {
     paymentAccountPayStatus.textContent = `Ödeme kaydı buluta yazılamadı: ${error.message}`;
   });
   closePaymentAccountPayModal();
@@ -6133,7 +6158,7 @@ function saveTransactionEdit(event) {
   if (revertedPaymentAccount || appliedPaymentAccount || cleanedPaymentAccount) {
     persistPaymentAccounts();
   }
-  persistTransactions({ replaceCloud: true }).catch((error) => {
+  persistTransactions({ cloudUpserts: [nextTransaction], cloudDeletes: [...cleanupIds] }).catch((error) => {
     if (transactionEditStatus) {
       transactionEditStatus.textContent = `Firebase'e kaydedilemedi: ${error.message}`;
     }
@@ -6310,18 +6335,19 @@ function renameManagedCategory(type, previousName, nextName) {
   transactionCategories[type] = categoryList;
   transactionCategories = normalizeCategoryState(transactionCategories);
 
-  let changedTransaction = false;
+  const changedTransactions = [];
   transactions = transactions.map((item) => {
     if (item.type === type && item.category === previousName) {
-      changedTransaction = true;
-      return { ...item, category: newName };
+      const updatedTransaction = { ...item, category: newName, updatedAt: getTurkeyNowDateTime() };
+      changedTransactions.push(updatedTransaction);
+      return updatedTransaction;
     }
     return item;
   });
 
   persistTransactionCategories();
-  if (changedTransaction) {
-    persistTransactions();
+  if (changedTransactions.length) {
+    persistTransactions({ cloudUpserts: changedTransactions });
   }
   syncCategorySelects();
   renderCategoryManageList();
@@ -8076,7 +8102,7 @@ function createProfileTransactionBackupFields(safeTransactions = [], transaction
 }
 
 function syncTransactionsToCloud(options = {}) {
-  const { replace = false } = options;
+  const { replace = false, upserts = null, deletes = null } = options;
 
   if (!currentUser || !firebaseDb) {
     return Promise.resolve();
@@ -8084,33 +8110,46 @@ function syncTransactionsToCloud(options = {}) {
 
   const user = currentUser;
   let safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
+  let deltaUpserts = Array.isArray(upserts)
+    ? getCloudReadyTransactions(upserts).filter((item) => !isTransactionDeleted(item))
+    : null;
+  let deltaDeletes = Array.isArray(deletes)
+    ? deletes.map((id) => String(id || "")).filter(Boolean)
+    : null;
+  const hasDeltaOperations = !replace && (deltaUpserts !== null || deltaDeletes !== null);
   const deletedPayload = getCloudDeletedTransactionPayload();
   const transactionsStateUpdatedAt = saveTransactionsStateUpdatedAt();
   const syncVersion = ++cloudTransactionsSyncVersion;
+  const isLatestSync = () => syncVersion === cloudTransactionsSyncVersion;
+  const shouldAbortStaleFullSync = () => !hasDeltaOperations && !isLatestSync();
   cloudTransactionsSyncInFlight = true;
 
   const writeTransactions = async () => {
     try {
-    if (syncVersion !== cloudTransactionsSyncVersion) {
+    if (shouldAbortStaleFullSync()) {
       return;
     }
 
     const collection = getUserTransactionsCollection(user.uid);
 
-    if (!replace) {
+    if (!replace && !hasDeltaOperations) {
       const latestCloudTransactions = await withTimeout(
         fetchCloudTransactions(user.uid).catch(() => []),
         CLOUD_WRITE_TIMEOUT_MS,
         "Firebase kayıtları okunurken zaman aşımı oluştu."
       );
 
-      if (syncVersion !== cloudTransactionsSyncVersion) {
+      if (shouldAbortStaleFullSync()) {
         return;
       }
 
       transactions = mergeTransactions(latestCloudTransactions, transactions);
       localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
       safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
+    }
+
+    if (hasDeltaOperations && deltaUpserts !== null) {
+      deltaUpserts = getCloudReadyTransactions(deltaUpserts).filter((item) => !isTransactionDeleted(item));
     }
 
     const profileBackupFields = createProfileTransactionBackupFields(safeTransactions, transactionsStateUpdatedAt);
@@ -8125,10 +8164,14 @@ function syncTransactionsToCloud(options = {}) {
 
     const operations = [];
 
-    const deletedIds = new Set([
-      ...Array.from(deletedTransactionIds || []),
-      ...(deletedPayload.deletedTransactionIds || []),
-    ]);
+    const deletedIds = new Set(
+      hasDeltaOperations
+        ? deltaDeletes || []
+        : [
+            ...Array.from(deletedTransactionIds || []),
+            ...(deletedPayload.deletedTransactionIds || []),
+          ]
+    );
 
     deletedIds.forEach((id) => {
       if (id) {
@@ -8143,7 +8186,7 @@ function syncTransactionsToCloud(options = {}) {
         "Firebase kayıt listesi alınırken zaman aşımı oluştu."
       );
 
-      if (syncVersion !== cloudTransactionsSyncVersion) {
+      if (shouldAbortStaleFullSync()) {
         return;
       }
 
@@ -8155,7 +8198,8 @@ function syncTransactionsToCloud(options = {}) {
       });
     }
 
-    safeTransactions.forEach((transaction) => {
+    const transactionsToWrite = hasDeltaOperations ? deltaUpserts || [] : safeTransactions;
+    transactionsToWrite.forEach((transaction) => {
       operations.push({
         type: "set",
         ref: collection.doc(transaction.id),
@@ -8173,9 +8217,12 @@ function syncTransactionsToCloud(options = {}) {
         "Firebase transactions yazımı zaman aşımına uğradı."
       );
     } catch (error) {
-      if (syncVersion === cloudTransactionsSyncVersion) {
-        markTransactionsCloudDirty(transactionsStateUpdatedAt);
+      if (isLatestSync() || hasDeltaOperations) {
+        markTransactionsCloudFullSyncRequired();
+        markTransactionsCloudDirty();
         schedulePendingTransactionsCloudSync();
+      }
+      if (isLatestSync()) {
         const rulesHint = error?.code === "permission-denied"
           ? " Firebase Console'da firestore.rules dosyasını yayınla."
           : "";
@@ -8184,7 +8231,7 @@ function syncTransactionsToCloud(options = {}) {
       }
       return;
     } finally {
-      if (syncVersion === cloudTransactionsSyncVersion) {
+      if (isLatestSync()) {
         cloudTransactionsSyncInFlight = false;
       }
     }
@@ -8200,15 +8247,24 @@ function syncTransactionsToCloud(options = {}) {
       profileWarning = ` Profil yedeği güncellenemedi: ${error.message}`;
     }
 
-    if (syncVersion === cloudTransactionsSyncVersion) {
-      clearTransactionsCloudDirty();
+    if (isLatestSync()) {
+      if (hasDeltaOperations && isTransactionsCloudFullSyncRequired()) {
+        markTransactionsCloudDirty();
+        schedulePendingTransactionsCloudSync();
+      } else {
+        clearTransactionsCloudFullSyncRequired();
+        clearTransactionsCloudDirty(transactionsStateUpdatedAt);
+      }
       const backupNote = profileBackupFields.transactionsBackupMode === "collection_only"
         ? " Profil yedeği büyüdüğü için kayıtların ana kaynağı transactions alt koleksiyonu."
         : "";
-      cloudStatus.textContent = `${safeTransactions.length} kayıt Firebase transactions koleksiyonuna kaydedildi.${backupNote}${profileWarning}`;
+      const savedCountText = hasDeltaOperations
+        ? `${transactionsToWrite.length + deletedIds.size} değişiklik`
+        : `${safeTransactions.length} kayıt`;
+      cloudStatus.textContent = `${savedCountText} Firebase transactions koleksiyonuna kaydedildi.${backupNote}${profileWarning}`;
     }
     } finally {
-      if (syncVersion === cloudTransactionsSyncVersion) {
+      if (isLatestSync()) {
         cloudTransactionsSyncInFlight = false;
       }
     }
@@ -8216,10 +8272,15 @@ function syncTransactionsToCloud(options = {}) {
 
   const runSync = () =>
     writeTransactions().catch((error) => {
-      if (syncVersion === cloudTransactionsSyncVersion) {
+      if (isLatestSync()) {
         cloudTransactionsSyncInFlight = false;
+      }
+      if (isLatestSync() || hasDeltaOperations) {
+        markTransactionsCloudFullSyncRequired();
         markTransactionsCloudDirty();
         schedulePendingTransactionsCloudSync();
+      }
+      if (isLatestSync()) {
         const message = error?.code === "permission-denied"
           ? "Firebase kuralları eski görünüyor. firestore.rules dosyasını Firebase Console'da yayınla."
           : `Firebase'e kaydedilemedi: ${error.message}`;
@@ -10137,7 +10198,7 @@ function confirmBankImport(options = {}) {
   }
 
   transactions = [...selectedTransactions, ...transactions].sort(compareTransactionsNewestFirst);
-  persistTransactions();
+  persistTransactions({ cloudUpserts: selectedTransactions });
   render();
 
   pendingBankImports = [];
