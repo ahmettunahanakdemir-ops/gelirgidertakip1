@@ -2379,6 +2379,48 @@ function getTransactionsNewestMutationTimestamp(records = []) {
   }, 0);
 }
 
+function getPendingLocalTransactionUpserts(localRecords = [], cloudRecords = []) {
+  const cloudById = new Map(
+    getCloudReadyTransactions(cloudRecords)
+      .filter((item) => !isTransactionDeleted(item))
+      .map((item) => [String(item.id || ""), item])
+      .filter(([id]) => id)
+  );
+
+  return getCloudReadyTransactions(localRecords)
+    .filter((item) => !isTransactionDeleted(item))
+    .filter((item) => {
+      const id = String(item.id || "");
+      if (!id) {
+        return false;
+      }
+
+      const cloudItem = cloudById.get(id);
+      if (!cloudItem) {
+        return true;
+      }
+
+      const localTime = getTransactionMergeTimestamp(item);
+      const cloudTime = getTransactionMergeTimestamp(cloudItem);
+      if (localTime && cloudTime && localTime !== cloudTime) {
+        return localTime > cloudTime;
+      }
+
+      return JSON.stringify(toCloudTransactionBackup(item)) !== JSON.stringify(toCloudTransactionBackup(cloudItem));
+    });
+}
+
+function getPendingLocalTransactionDeletes(cloudRecords = []) {
+  const deletedIds = new Set(Array.from(deletedTransactionIds || []).map((id) => String(id || "")).filter(Boolean));
+  if (!deletedIds.size) {
+    return [];
+  }
+
+  return getCloudReadyTransactions(cloudRecords)
+    .map((item) => String(item.id || ""))
+    .filter((id) => id && deletedIds.has(id));
+}
+
 function persistTransactions(options = {}) {
   const { syncCloud = true, replaceCloud = false, cloudUpserts = null, cloudDeletes = null } = options;
 
@@ -7856,10 +7898,12 @@ async function handleAuthStateChanged(user) {
       anonymousLocalCategories,
       getTransactionCategoriesFromRecords(transactions)
     );
+    const pendingLocalTransactionUpserts = getPendingLocalTransactionUpserts(localTransactions, cloudTransactions);
+    const pendingLocalTransactionDeletes = getPendingLocalTransactionDeletes(cloudTransactions);
+    const hasStaleLocalSyncFlag = loadTransactionsCloudDirtyAt() > 0 || isTransactionsCloudFullSyncRequired();
     const hasPendingLocalTransactionSync =
-      loadTransactionsCloudDirtyAt() > 0 ||
-      localTransactionsUpdatedAt > cloudTransactionsUpdatedAt ||
-      anonymousLocalTransactions.length > 0;
+      pendingLocalTransactionUpserts.length > 0 ||
+      pendingLocalTransactionDeletes.length > 0;
 
     persistTransactions({ syncCloud: false });
     persistAssets({ syncCloud: false });
@@ -7870,7 +7914,14 @@ async function handleAuthStateChanged(user) {
     render();
     const syncTasks = [syncUserProfileToCloud()];
     if (hasPendingLocalTransactionSync) {
-      syncTasks.unshift(syncTransactionsToCloud({ replace: false }));
+      syncTasks.unshift(syncTransactionsToCloud({
+        replace: false,
+        upserts: pendingLocalTransactionUpserts,
+        deletes: pendingLocalTransactionDeletes,
+      }));
+    } else if (hasStaleLocalSyncFlag) {
+      clearTransactionsCloudFullSyncRequired();
+      clearTransactionsCloudDirty();
     }
     const syncResults = await Promise.allSettled(syncTasks);
     const failedSync = syncResults.find((result) => result.status === "rejected");
@@ -8027,7 +8078,8 @@ function subscribeCloudTransactions(userId) {
 
       if (transactions.length && localUpdatedAt > cloudUpdatedAt && snapshot.metadata?.fromCache) {
         cloudStatus.textContent = `${transactions.length} kayıt yerelde daha güncel; Firebase yazımı bekleniyor.`;
-        syncTransactionsToCloud({ replace: false });
+        markTransactionsCloudDirty();
+        schedulePendingTransactionsCloudSync();
         return;
       }
 
@@ -8319,8 +8371,25 @@ function retryPendingTransactionsCloudSync() {
   }
 
   cloudStatus.textContent = "Yerelde kalan kayıtlar Firebase'e gönderiliyor...";
-  return syncTransactionsToCloud({ replace: false })
-    .then(() => true)
+  return fetchCloudTransactions(currentUser.uid, { source: "server" })
+    .catch(() => fetchCloudTransactions(currentUser.uid).catch(() => []))
+    .then((cloudTransactions) => {
+      const pendingUpserts = getPendingLocalTransactionUpserts(transactions, cloudTransactions);
+      const pendingDeletes = getPendingLocalTransactionDeletes(cloudTransactions);
+
+      if (!pendingUpserts.length && !pendingDeletes.length) {
+        clearTransactionsCloudFullSyncRequired();
+        clearTransactionsCloudDirty();
+        cloudStatus.textContent = `${transactions.length} kayÄ±t Firebase ile gÃ¼ncel.`;
+        return true;
+      }
+
+      return syncTransactionsToCloud({
+        replace: false,
+        upserts: pendingUpserts,
+        deletes: pendingDeletes,
+      }).then(() => true);
+    })
     .catch(() => false);
 }
 
