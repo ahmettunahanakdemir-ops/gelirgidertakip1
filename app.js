@@ -14,6 +14,8 @@ const DELETED_TRANSACTIONS_STORAGE_KEY = "akis-budget-deleted-transactions";
 const DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY = "akis-budget-deleted-transaction-signatures";
 const DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-transfer-tombstones";
 const TRANSACTIONS_STATE_UPDATED_STORAGE_KEY = "akis-budget-transactions-state-updated";
+const TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY = "akis-budget-transactions-cloud-dirty";
+const RECENT_ADDED_TRANSACTION_DAYS = 3;
 const MAX_DELETED_TRANSACTION_MARKERS = 5000;
 const MAX_DELETED_TRANSFER_TOMBSTONES = 2000;
 
@@ -492,6 +494,8 @@ const decreaseFontButton = document.getElementById("decreaseFontButton");
 const resetAppearanceButton = document.getElementById("resetAppearanceButton");
 const cardReminderPermissionButton = document.getElementById("cardReminderPermissionButton");
 const cardReminderStatus = document.getElementById("cardReminderStatus");
+const cloudBackupButton = document.getElementById("cloudBackupButton");
+const cloudBackupStatus = document.getElementById("cloudBackupStatus");
 const genericConfirmModal = document.getElementById("genericConfirmModal");
 const genericConfirmTitle = document.getElementById("genericConfirmTitle");
 const genericConfirmText = document.getElementById("genericConfirmText");
@@ -1457,6 +1461,7 @@ function init() {
   bindHistorySearchFallback();
   registerServiceWorker();
   initCardReminderNotifications();
+  updateCloudBackupStatus();
   if (!window.__akisWealthFitBound) {
     window.addEventListener("resize", fitHomeWealthTotalText);
     window.__akisWealthFitBound = true;
@@ -1521,6 +1526,7 @@ function init() {
   exportExcelButton?.addEventListener("click", exportFilteredTransactionsExcel);
   openRecentTransactionsButton?.addEventListener("click", openRecentTransactionsModal);
   closeRecentTransactionsButton?.addEventListener("click", closeRecentTransactionsModal);
+  cloudBackupButton?.addEventListener("click", backupCurrentDataToCloud);
   recentTransactionsModal?.addEventListener("click", (event) => {
     if (event.target === recentTransactionsModal) {
       closeRecentTransactionsModal();
@@ -2142,8 +2148,11 @@ function isTransactionDeleted(transactionOrId) {
 
   const transaction = transactionOrId;
   const id = String(transaction.id || "");
-  if (id && deletedTransactionIds.has(id)) {
-    return true;
+
+  // v206: ID'si olan gerçek kayıtlar sadece aynı ID silinmişse gizlenir.
+  // Benzer başlık/tutar/tarih yüzünden yeni kayıtların kaybolmasını engeller.
+  if (id) {
+    return deletedTransactionIds.has(id);
   }
 
   if (isValidTransaction(transaction) && deletedTransactionSignatures.has(getTransactionSignature(transaction))) {
@@ -2323,6 +2332,20 @@ function saveTransactionsStateUpdatedAt(timestamp = Date.now()) {
   return timestamp;
 }
 
+function markTransactionsCloudDirty(timestamp = Date.now()) {
+  localStorage.setItem(getStorageKey(TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY), String(timestamp));
+  return timestamp;
+}
+
+function clearTransactionsCloudDirty() {
+  localStorage.removeItem(getStorageKey(TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY));
+}
+
+function loadTransactionsCloudDirtyAt() {
+  const value = Number(localStorage.getItem(getStorageKey(TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY)));
+  return Number.isFinite(value) ? value : 0;
+}
+
 function getTransactionsNewestMutationTimestamp(records = []) {
   return records.reduce((latest, item) => {
     const timestamp =
@@ -2336,12 +2359,13 @@ function getTransactionsNewestMutationTimestamp(records = []) {
 }
 
 function persistTransactions(options = {}) {
-  const { syncCloud = true, replaceCloud = syncCloud } = options;
+  const { syncCloud = true, replaceCloud = false } = options;
 
   transactions = mergeTransactions(transactions);
   localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
   if (syncCloud) {
-    saveTransactionsStateUpdatedAt();
+    const mutationTime = saveTransactionsStateUpdatedAt();
+    markTransactionsCloudDirty(mutationTime);
   }
   updateStorageStatus();
 
@@ -2618,12 +2642,12 @@ function fitHomeWealthTotalText() {
     return;
   }
 
-  const maxSize = window.innerWidth <= 720 ? 22 : 30;
-  const minSize = window.innerWidth <= 720 ? 12 : 14;
+  const maxSize = window.innerWidth <= 720 ? 16 : 28;
+  const minSize = window.innerWidth <= 720 ? 10 : 12;
   homeWealthTotal.style.fontSize = `${maxSize}px`;
   homeWealthTotal.style.whiteSpace = "nowrap";
 
-  const availableWidth = Math.max(80, innerCircle.clientWidth - 22);
+  const availableWidth = Math.max(92, innerCircle.clientWidth - 10);
   let current = maxSize;
 
   while (homeWealthTotal.scrollWidth > availableWidth && current > minSize) {
@@ -3995,10 +4019,20 @@ function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
   const periodExpense = periodTransactions
     .filter((transaction) => getCreditCardTransactionDebtEffect(transaction, accountId) > 0)
     .reduce((sum, transaction) => sum + getCreditCardTransactionDebtEffect(transaction, accountId), 0);
-  const totalPaid = Math.max(0, Number(account.creditPaidTotal || 0));
-  const periodPaid = account.creditPaidPeriodKey === period.key ? Math.max(0, Number(account.currentStatementPaidTotal || 0)) : 0;
-  const totalDebt = Math.max(0, roundMoney(allDebtEffect - totalPaid));
-  const currentStatementDebt = Math.max(0, roundMoney(periodDebtEffect - periodPaid));
+  const legacyTotalPaid = Math.max(0, Number(account.creditPaidTotal || 0));
+  const legacyPeriodPaid = account.creditPaidPeriodKey === period.key ? Math.max(0, Number(account.currentStatementPaidTotal || 0)) : 0;
+  const recordedTotalPaid = relatedTransactions.reduce(
+    (sum, transaction) => sum + getCreditCardPaymentRecordAmount(transaction, accountId),
+    0
+  );
+  const recordedPeriodPaid = periodTransactions.reduce(
+    (sum, transaction) => sum + getCreditCardPaymentRecordAmount(transaction, accountId),
+    0
+  );
+  const totalPaid = roundMoney(legacyTotalPaid + recordedTotalPaid);
+  const periodPaid = roundMoney(legacyPeriodPaid + recordedPeriodPaid);
+  const totalDebt = Math.max(0, roundMoney(allDebtEffect - legacyTotalPaid));
+  const currentStatementDebt = Math.max(0, roundMoney(periodDebtEffect - legacyPeriodPaid));
 
   return {
     all,
@@ -4010,6 +4044,26 @@ function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
     totalDebt,
     currentStatementDebt,
   };
+}
+
+function getCreditCardPaymentRecordAmount(transaction, accountId) {
+  const targetId = String(accountId || "");
+  const sourceId = String(transaction?.paymentAccountId || "");
+  const transferId = String(transaction?.transferAccountId || "");
+  const amount = Number(transaction?.amount || 0);
+
+  if (
+    !targetId ||
+    transaction?.type !== "transfer" ||
+    transferId !== targetId ||
+    sourceId === transferId ||
+    !Number.isFinite(amount) ||
+    amount <= 0
+  ) {
+    return 0;
+  }
+
+  return roundMoney(amount);
 }
 
 function getCreditCardTransactionDebtEffect(transaction, accountId) {
@@ -4273,34 +4327,51 @@ function payCreditCardDebt(event) {
     return;
   }
 
-  const amount = Math.min(roundMoney(requestedAmount), roundMoney(creditAccount.debt || 0));
+  const availableDebt = Math.max(
+    roundMoney(Number(creditAccount.debt || 0)),
+    roundMoney(Number(creditAccount.currentStatementDebt || 0))
+  );
+  const amount = Math.min(roundMoney(requestedAmount), availableDebt);
   const now = getTurkeyNowDateTime();
-  const period = getCreditCardStatementPeriod(creditAccount);
 
-  paymentAccounts = paymentAccounts.map((item) => {
-    if (item.id === creditAccount.id) {
-      const periodPaidBase = item.creditPaidPeriodKey === period.key ? Number(item.currentStatementPaidTotal || 0) : 0;
-      return {
-        ...item,
-        debt: Math.max(0, roundMoney(Number(item.debt || 0) - amount)),
-        currentStatementDebt: Math.max(0, roundMoney(Number(item.currentStatementDebt || 0) - amount)),
-        creditPaidTotal: roundMoney(Number(item.creditPaidTotal || 0) + amount),
-        currentStatementPaidTotal: roundMoney(periodPaidBase + amount),
-        creditPaidPeriodKey: period.key,
-        updatedAt: now,
-      };
-    }
+  if (!amount) {
+    paymentAccountPayStatus.textContent = "Bu kredi kartı için ödenecek borç bulunamadı.";
+    return;
+  }
 
-    if (item.id === sourceAccount.id) {
-      return { ...item, balance: roundMoney(Number(item.balance || 0) - amount), updatedAt: now };
-    }
+  const paymentTransaction = {
+    id: crypto.randomUUID(),
+    type: "transfer",
+    title: `${formatPaymentAccountName(creditAccount)} Borç Ödemesi`.slice(0, 60),
+    amount,
+    category: "Kart Ödemesi",
+    paymentMethod: "transfer",
+    paymentAccountId: sourceAccount.id,
+    transferAccountId: creditAccount.id,
+    transferFee: 0,
+    date: getTurkeyTodayISO(),
+    note: `${formatPaymentAccountName(sourceAccount)} → ${formatPaymentAccountName(creditAccount)}`,
+    transactionAt: now,
+    createdAt: now,
+    updatedAt: now,
+  };
 
-    return item;
-  });
+  if (!validateTransactionPayment(paymentTransaction, paymentAccountPayStatus)) {
+    return;
+  }
 
+  if (!applyTransactionPaymentEffect(paymentTransaction, 1)) {
+    paymentAccountPayStatus.textContent = "Ödeme hesap bakiyelerine işlenemedi.";
+    return;
+  }
+
+  transactions = [paymentTransaction, ...transactions].sort(compareTransactionsNewestFirst);
   persistPaymentAccounts();
+  persistTransactions({ replaceCloud: true }).catch((error) => {
+    paymentAccountPayStatus.textContent = `Ödeme kaydı buluta yazılamadı: ${error.message}`;
+  });
   closePaymentAccountPayModal();
-  paymentAccountStatus.textContent = `${formatPaymentAccountName(creditAccount)} için ${currency.format(amount)} ödeme işlendi.`;
+  paymentAccountStatus.textContent = `${formatPaymentAccountName(creditAccount)} için ${currency.format(amount)} ödeme kayıtlara eklendi.`;
   render();
 }
 
@@ -5424,10 +5495,9 @@ function createTransactionListItem(item, options = {}) {
 }
 
 function getTransactionAddedTimestamp(item) {
-  return (
-    getRecordTimestamp(item?.createdAt) ||
-    getRecordTimestamp(item?.transactionAt) ||
-    getTransactionSortTimestamp(item) ||
+  return Math.max(
+    getRecordTimestamp(item?.createdAt),
+    getRecordTimestamp(item?.updatedAt),
     0
   );
 }
@@ -5442,21 +5512,41 @@ function formatAddedDateTime(timestamp) {
   }).format(new Date(timestamp));
 }
 
-function getRecentAddedTransactions(limit = 20) {
+function getRecentAddedTransactions(days = RECENT_ADDED_TRANSACTION_DAYS) {
+  const now = Date.now();
+  const cutoff = now - Math.max(1, Number(days) || RECENT_ADDED_TRANSACTION_DAYS) * 24 * 60 * 60 * 1000;
+
   return [...transactions]
     .filter((item) => !isTransactionDeleted(item))
+    .map((item) => ({ item, addedAt: getTransactionAddedTimestamp(item) }))
+    .filter(({ addedAt }) => addedAt && addedAt >= cutoff && addedAt <= now + 5 * 60 * 1000)
     .sort((first, second) => {
-      const addedDiff = getTransactionAddedTimestamp(second) - getTransactionAddedTimestamp(first);
+      const addedDiff = second.addedAt - first.addedAt;
       if (addedDiff) {
         return addedDiff;
       }
-      return compareTransactionsNewestFirst(first, second);
+      return compareTransactionsNewestFirst(first.item, second.item);
     })
-    .slice(0, limit);
+    .map(({ item }) => item);
 }
 
 function openRecentTransactionsModal() {
-  renderRecentTransactionsModal();
+  if (currentUser && firebaseDb) {
+    Promise.all([
+      fetchCloudProfile(currentUser.uid).catch(() => ({})),
+      fetchCloudTransactions(currentUser.uid, { source: "server" }).catch(() => []),
+    ])
+      .then(([profile, cloudTransactions]) => {
+        const backupTransactions = readCloudTransactionBackupArray(profile.transactionsBackup);
+        transactions = mergeTransactions(transactions, backupTransactions, cloudTransactions);
+        persistTransactions({ syncCloud: false });
+        renderRecentTransactionsModal();
+      })
+      .catch(() => renderRecentTransactionsModal());
+  } else {
+    renderRecentTransactionsModal();
+  }
+
   if (recentTransactionsModal) {
     recentTransactionsModal.hidden = false;
     setTimeout(() => closeRecentTransactionsButton?.focus(), 0);
@@ -5474,11 +5564,11 @@ function renderRecentTransactionsModal() {
     return;
   }
 
-  const latestTransactions = getRecentAddedTransactions(20);
+  const latestTransactions = getRecentAddedTransactions(RECENT_ADDED_TRANSACTION_DAYS);
   recentTransactionsList.innerHTML = "";
 
   if (!latestTransactions.length) {
-    recentTransactionsList.innerHTML = '<div class="empty-state">Henüz kayıt yok.</div>';
+    recentTransactionsList.innerHTML = '<div class="empty-state">Son 3 günde eklenen kayıt yok.</div>';
     return;
   }
 
@@ -6393,6 +6483,7 @@ function renderView() {
 
   if (activeView === "settingsView") {
     syncAppearanceControls();
+    updateCloudBackupStatus();
   }
 
   updateHistoryResponsiveLayout();
@@ -6424,6 +6515,129 @@ function updateStorageStatus() {
   }).format(new Date());
   const storageMode = currentUser ? "bulut hesabın ve bu cihazda" : "bu cihazda";
   storageStatus.textContent = `${transactions.length} kayıt ${storageMode} saklanıyor · Son güncelleme ${savedAt} · ${size} bayt`;
+}
+
+function getCloudBackupSummary() {
+  return {
+    transactions: getCloudReadyTransactions(transactions).length,
+    assets: getCloudReadyAssets(assets).length,
+    besAccounts: getCloudReadyBesAccounts(besAccounts).length,
+    paymentAccounts: getCloudReadyPaymentAccounts(paymentAccounts).length,
+    categories:
+      (transactionCategories.income || []).length +
+      (transactionCategories.expense || []).length +
+      (transactionCategories.transfer || []).length,
+  };
+}
+
+function buildCloudBackupPayload(createdAt = getTurkeyNowDateTime()) {
+  return {
+    version: 4,
+    createdAt,
+    summary: getCloudBackupSummary(),
+    transactions: getCloudReadyTransactions(transactions),
+    assets: getCloudReadyAssets(assets),
+    besAccounts: getCloudReadyBesAccounts(besAccounts),
+    paymentAccounts: getCloudReadyPaymentAccounts(paymentAccounts),
+    transactionCategories: normalizeCategoryState(transactionCategories),
+    deletedTransactionState: getDeletedTransactionStateSnapshot(),
+  };
+}
+
+function formatBackupDateTime(value) {
+  const timestamp = getRecordTimestamp(value);
+
+  if (!timestamp) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(timestamp));
+}
+
+function updateCloudBackupStatus(profile = null) {
+  if (!cloudBackupStatus) {
+    return;
+  }
+
+  if (!currentUser) {
+    cloudBackupStatus.textContent = "Bulut yedeği için giriş yap.";
+    return;
+  }
+
+  const lastBackupAt = profile?.lastBackupAt || "";
+  const summary = profile?.lastBackupSummary || null;
+  const dateText = formatBackupDateTime(lastBackupAt);
+
+  if (!dateText) {
+    cloudBackupStatus.textContent = "Son yedek: Henüz yok.";
+    return;
+  }
+
+  const countText = summary?.transactions ? ` · ${summary.transactions} kayıt` : "";
+  cloudBackupStatus.textContent = `Son yedek: ${dateText}${countText}.`;
+}
+
+async function backupCurrentDataToCloud() {
+  if (!ensureCloudReady(cloudBackupStatus)) {
+    return;
+  }
+
+  if (!currentUser) {
+    cloudBackupStatus.textContent = "Bulut yedeği almak için önce giriş yap.";
+    return;
+  }
+
+  const previousText = cloudBackupButton?.textContent || "Yedek Al";
+  const createdAt = getTurkeyNowDateTime();
+  const backupId = `manual-${new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14)}`;
+  const payload = buildCloudBackupPayload(createdAt);
+
+  try {
+    if (cloudBackupButton) {
+      cloudBackupButton.disabled = true;
+      cloudBackupButton.textContent = "Yedekleniyor...";
+    }
+    cloudBackupStatus.textContent = "Bulut yedeği hazırlanıyor...";
+
+    await Promise.all([syncTransactionsToCloud({ replace: false }), syncUserProfileToCloud()]);
+
+    const userRef = firebaseDb.collection("users").doc(currentUser.uid);
+    await userRef.collection("backups").doc(backupId).set(
+      {
+        id: backupId,
+        ...payload,
+        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: false }
+    );
+    await userRef.set(
+      {
+        lastBackupAt: createdAt,
+        lastBackupId: backupId,
+        lastBackupSummary: payload.summary,
+        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    updateCloudBackupStatus({ lastBackupAt: createdAt, lastBackupSummary: payload.summary });
+  } catch (error) {
+    const message = error?.code === "permission-denied"
+      ? "Bulut yedeği alınamadı: Firebase kurallarında backups izni yayınlanmalı."
+      : `Bulut yedeği alınamadı: ${error.message}`;
+    cloudBackupStatus.textContent = message;
+  } finally {
+    if (cloudBackupButton) {
+      cloudBackupButton.disabled = false;
+      cloudBackupButton.textContent = previousText;
+    }
+  }
 }
 
 function exportTransactions() {
@@ -7568,13 +7782,23 @@ async function handleAuthStateChanged(user) {
   persistTransactionCategories({ syncCloud: false });
   syncCategorySelects();
   renderAuthState();
-  render();
-  cloudStatus.textContent = "Bulut kayıtları yükleniyor...";
+    render();
+    cloudStatus.textContent = "Bulut kayıtları yükleniyor...";
 
   try {
     const cloudProfile = await fetchCloudProfile(user.uid);
+    updateCloudBackupStatus(cloudProfile);
     applyDeletedTransactionState(readCloudDeletedTransactionState(cloudProfile), anonymousDeletedTransactionState);
-    const cloudTransactions = await fetchCloudTransactions(user.uid);
+    const cloudProfileTransactions = readCloudTransactionBackupArray(cloudProfile.transactionsBackup);
+    let cloudCollectionTransactions = [];
+
+    try {
+      cloudCollectionTransactions = await fetchCloudTransactions(user.uid, { source: "server" });
+    } catch {
+      cloudCollectionTransactions = await fetchCloudTransactions(user.uid).catch(() => []);
+    }
+
+    const cloudTransactions = mergeTransactions(cloudProfileTransactions, cloudCollectionTransactions);
     const localTransactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions);
     const localTransactionsUpdatedAt = Math.max(
       userLocalTransactionsUpdatedAt,
@@ -7583,12 +7807,10 @@ async function handleAuthStateChanged(user) {
     );
     const cloudTransactionsUpdatedAt =
       getRecordTimestamp(cloudProfile?.transactionsStateUpdatedAt) ||
+      getRecordTimestamp(cloudProfile?.transactionsBackupUpdatedAt) ||
       getTransactionsNewestMutationTimestamp(cloudTransactions);
 
-    transactions =
-      localTransactions.length && localTransactionsUpdatedAt >= cloudTransactionsUpdatedAt
-        ? localTransactions
-        : mergeTransactions(cloudTransactions);
+    transactions = mergeTransactions(cloudTransactions, localTransactions);
     assets = mergeRecordsById(readCloudAssets(cloudProfile.assets), userLocalAssets, anonymousLocalAssets);
     besAccounts = mergeRecordsById(
       readCloudBesAccounts(cloudProfile.besAccounts),
@@ -7616,7 +7838,9 @@ async function handleAuthStateChanged(user) {
     await Promise.all([syncTransactionsToCloud({ replace: true }), syncUserProfileToCloud()]);
     subscribeCloudTransactions(user.uid);
     subscribeCloudProfile(user.uid);
-    cloudStatus.textContent = `${transactions.length} kayıt bulutla eşitlendi.`;
+    bindPendingCloudSyncEvents();
+    retryPendingTransactionsCloudSync();
+    cloudStatus.textContent = `${transactions.length} kayıt Firebase profil yedeğiyle eşitlendi.`;
   } catch (error) {
     cloudStatus.textContent = `Bulut kayıtları yüklenemedi: ${error.message}`;
   }
@@ -7648,9 +7872,12 @@ function renderAuthState() {
     saveLastUsername(getUserDisplayName(currentUser));
     authPassword.value = "";
     fillProfileForm();
+    bindPendingCloudSyncEvents();
+    window.setTimeout(() => retryPendingTransactionsCloudSync(), 1200);
   } else {
     authEmail.value = loadLastUsername();
     authPassword.value = "";
+    updateCloudBackupStatus();
   }
 }
 
@@ -7670,6 +7897,7 @@ function subscribeCloudProfile(userId) {
       { includeMetadataChanges: true },
       (doc) => {
         const data = doc.data() || {};
+        updateCloudBackupStatus(data);
 
         if (Array.isArray(data.assets)) {
           assets = readCloudAssets(data.assets);
@@ -7701,6 +7929,17 @@ function subscribeCloudProfile(userId) {
           persistTransactions({ syncCloud: false });
         }
 
+        if (Array.isArray(data.transactionsBackup)) {
+          const profileTransactions = readCloudTransactionBackupArray(data.transactionsBackup);
+          if (profileTransactions.length) {
+            transactions = mergeTransactions(transactions, profileTransactions);
+            persistTransactions({ syncCloud: false });
+            transactionCategories = mergeCategoryStates(transactionCategories, getTransactionCategoriesFromRecords(transactions));
+            persistTransactionCategories({ syncCloud: false });
+            syncCategorySelects();
+          }
+        }
+
         renderAssets();
         renderPaymentAccounts();
         renderBesAccounts();
@@ -7712,9 +7951,10 @@ function subscribeCloudProfile(userId) {
     );
 }
 
-function fetchCloudTransactions(userId) {
+function fetchCloudTransactions(userId, options = {}) {
+  const getOptions = options.source ? { source: options.source } : undefined;
   return getUserTransactionsCollection(userId)
-    .get()
+    .get(getOptions)
     .then((snapshot) => snapshot.docs.map(readCloudTransaction).filter(Boolean).filter((item) => !isTransactionDeleted(item)));
 }
 
@@ -7741,11 +7981,11 @@ function subscribeCloudTransactions(userId) {
 
       if (transactions.length && localUpdatedAt > cloudUpdatedAt && snapshot.metadata?.fromCache) {
         cloudStatus.textContent = `${transactions.length} kayıt yerelde daha güncel; Firebase yazımı bekleniyor.`;
-        syncTransactionsToCloud({ replace: true });
+        syncTransactionsToCloud({ replace: false });
         return;
       }
 
-      transactions = mergeTransactions(cloudTransactions);
+      transactions = mergeTransactions(transactions, cloudTransactions);
       transactionCategories = mergeCategoryStates(transactionCategories, getTransactionCategoriesFromRecords(transactions));
       persistTransactionCategories({ syncCloud: false });
       syncCategorySelects();
@@ -7793,7 +8033,7 @@ function syncTransactionsToCloud(options = {}) {
   }
 
   const user = currentUser;
-  const safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
+  let safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
   const deletedPayload = getCloudDeletedTransactionPayload();
   const transactionsStateUpdatedAt = saveTransactionsStateUpdatedAt();
   const syncVersion = ++cloudTransactionsSyncVersion;
@@ -7805,7 +8045,43 @@ function syncTransactionsToCloud(options = {}) {
     }
 
     const collection = getUserTransactionsCollection(user.uid);
+
+    if (!replace) {
+      const latestCloudTransactions = await fetchCloudTransactions(user.uid).catch(() => []);
+
+      if (syncVersion !== cloudTransactionsSyncVersion) {
+        return;
+      }
+
+      transactions = mergeTransactions(latestCloudTransactions, transactions);
+      localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
+      safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
+    }
+
+    const profileBackupPayload = {
+      email: user.email || "",
+      username: getUserDisplayName(user),
+      transactionsBackup: safeTransactions.map(toCloudTransactionBackup),
+      transactionsBackupUpdatedAt: transactionsStateUpdatedAt,
+      ...deletedPayload,
+      transactionsStateUpdatedAt,
+      updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await firebaseDb.collection("users").doc(user.uid).set(profileBackupPayload, { merge: true });
+
     const operations = [];
+
+    const deletedIds = new Set([
+      ...Array.from(deletedTransactionIds || []),
+      ...(deletedPayload.deletedTransactionIds || []),
+    ]);
+
+    deletedIds.forEach((id) => {
+      if (id) {
+        operations.push({ type: "delete", ref: collection.doc(String(id)) });
+      }
+    });
 
     if (replace) {
       const snapshot = await collection.get();
@@ -7835,19 +8111,16 @@ function syncTransactionsToCloud(options = {}) {
     operations.push({
       type: "set",
       ref: firebaseDb.collection("users").doc(user.uid),
-      data: {
-        email: user.email || "",
-        username: getUserDisplayName(user),
-        ...deletedPayload,
-        transactionsStateUpdatedAt,
-        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
-      },
+      data: profileBackupPayload,
       options: { merge: true },
     });
 
     cloudStatus.textContent = "Buluta kaydediliyor...";
+    let collectionWarning = "";
     try {
       await commitCloudOperationsInChunks(operations);
+    } catch (error) {
+      collectionWarning = ` Alt koleksiyon yazılamadı: ${error.message}`;
     } finally {
       if (syncVersion === cloudTransactionsSyncVersion) {
         cloudTransactionsSyncInFlight = false;
@@ -7855,7 +8128,8 @@ function syncTransactionsToCloud(options = {}) {
     }
 
     if (syncVersion === cloudTransactionsSyncVersion) {
-      cloudStatus.textContent = `${safeTransactions.length} kayıt Firebase'e son haliyle kaydedildi.`;
+      clearTransactionsCloudDirty();
+      cloudStatus.textContent = `${safeTransactions.length} kayıt profil yedeğiyle Firebase'e kaydedildi.${collectionWarning}`;
     }
   };
 
@@ -7863,6 +8137,8 @@ function syncTransactionsToCloud(options = {}) {
     writeTransactions().catch((error) => {
       if (syncVersion === cloudTransactionsSyncVersion) {
         cloudTransactionsSyncInFlight = false;
+        markTransactionsCloudDirty();
+        schedulePendingTransactionsCloudSync();
         const message = error?.code === "permission-denied"
           ? "Firebase kuralları eski görünüyor. firestore.rules dosyasını Firebase Console'da yayınla."
           : `Firebase'e kaydedilemedi: ${error.message}`;
@@ -7873,6 +8149,53 @@ function syncTransactionsToCloud(options = {}) {
 
   cloudWriteQueue = cloudWriteQueue.catch(() => {}).then(runSync);
   return cloudWriteQueue;
+}
+
+
+let pendingTransactionsCloudSyncTimer = null;
+
+function schedulePendingTransactionsCloudSync(delay = 3500) {
+  if (pendingTransactionsCloudSyncTimer) {
+    window.clearTimeout(pendingTransactionsCloudSyncTimer);
+  }
+
+  pendingTransactionsCloudSyncTimer = window.setTimeout(() => {
+    pendingTransactionsCloudSyncTimer = null;
+    retryPendingTransactionsCloudSync();
+  }, delay);
+}
+
+function retryPendingTransactionsCloudSync() {
+  if (!currentUser || !firebaseDb || cloudTransactionsSyncInFlight || !loadTransactionsCloudDirtyAt()) {
+    return Promise.resolve(false);
+  }
+
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    cloudStatus.textContent = "İnternet bağlantısı bekleniyor; yerel kayıtlar Firebase'e gönderilecek.";
+    schedulePendingTransactionsCloudSync(7000);
+    return Promise.resolve(false);
+  }
+
+  cloudStatus.textContent = "Yerelde kalan kayıtlar Firebase'e gönderiliyor...";
+  return syncTransactionsToCloud({ replace: false })
+    .then(() => true)
+    .catch(() => false);
+}
+
+function bindPendingCloudSyncEvents() {
+  if (window.__akisBudgetPendingCloudSyncBound) {
+    return;
+  }
+
+  window.__akisBudgetPendingCloudSyncBound = true;
+
+  window.addEventListener("online", () => retryPendingTransactionsCloudSync());
+  window.addEventListener("focus", () => retryPendingTransactionsCloudSync());
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      retryPendingTransactionsCloudSync();
+    }
+  });
 }
 
 function syncUserProfileToCloud() {
@@ -7924,6 +8247,7 @@ function getUserTransactionsCollection(userId) {
 }
 
 function toCloudTransaction(transaction) {
+  const createdAt = ensureTransactionCreatedAt(transaction);
   return {
     id: transaction.id,
     type: transaction.type,
@@ -7937,13 +8261,39 @@ function toCloudTransaction(transaction) {
     date: transaction.date,
     note: transaction.note || "",
     transactionAt: transaction.transactionAt || "",
-    createdAt: transaction.createdAt || "",
+    createdAt,
     updatedAt: transaction.updatedAt || window.firebase.firestore.FieldValue.serverTimestamp(),
+  };
+}
+
+function toCloudTransactionBackup(transaction) {
+  const createdAt = ensureTransactionCreatedAt(transaction);
+  return {
+    id: transaction.id,
+    type: transaction.type,
+    title: transaction.title,
+    amount: Number(transaction.amount),
+    category: transaction.category,
+    paymentMethod: normalizePaymentMethod(transaction.paymentMethod || "cash"),
+    paymentAccountId: String(transaction.paymentAccountId || ""),
+    transferAccountId: String(transaction.transferAccountId || ""),
+    transferFee: Math.max(0, Number(transaction.transferFee || 0)),
+    date: transaction.date,
+    note: transaction.note || "",
+    transactionAt: transaction.transactionAt || "",
+    createdAt,
+    updatedAt: normalizeCloudTimestamp(transaction.updatedAt) || String(transaction.updatedAt || createdAt || getTurkeyNowDateTime()),
   };
 }
 
 function readCloudTransaction(doc) {
   const data = doc.data() || {};
+  const updatedAt = normalizeCloudTimestamp(data.updatedAt);
+  const createdAt =
+    normalizeCloudTimestamp(data.createdAt) ||
+    normalizeCloudTimestamp(data.addedAt) ||
+    updatedAt ||
+    String(data.createdAt || data.addedAt || "");
   const transaction = {
     id: doc.id,
     type: data.type,
@@ -7957,11 +8307,27 @@ function readCloudTransaction(doc) {
     date: String(data.date || ""),
     note: String(data.note || ""),
     transactionAt: String(data.transactionAt || ""),
-    createdAt: String(data.createdAt || ""),
-    updatedAt: normalizeCloudTimestamp(data.updatedAt),
+    createdAt,
+    updatedAt,
   };
 
   return isValidTransaction(transaction) ? transaction : null;
+}
+
+function readCloudTransactionBackupArray(source) {
+  if (!Array.isArray(source)) {
+    return [];
+  }
+
+  return source
+    .map((item) =>
+      readCloudTransaction({
+        id: String(item?.id || ""),
+        data: () => item || {},
+      })
+    )
+    .filter(Boolean)
+    .filter((item) => !isTransactionDeleted(item));
 }
 
 function getCloudReadyTransactions(source) {
@@ -8139,6 +8505,20 @@ function normalizeCloudTimestamp(value) {
   return "";
 }
 
+function ensureTransactionCreatedAt(item) {
+  if (!item) {
+    return getTurkeyNowDateTime();
+  }
+
+  return (
+    normalizeCloudTimestamp(item.createdAt) ||
+    normalizeCloudTimestamp(item.addedAt) ||
+    normalizeCloudTimestamp(item.updatedAt) ||
+    String(item.createdAt || item.addedAt || item.updatedAt || item.transactionAt || "") ||
+    getTurkeyNowDateTime()
+  );
+}
+
 function normalizeTransactionRecord(item) {
   if (!isValidTransaction(item)) {
     return null;
@@ -8153,8 +8533,8 @@ function normalizeTransactionRecord(item) {
     transferAccountId: item.type === "transfer" ? String(item.transferAccountId || "") : "",
     note: String(item.note || ""),
     transactionAt: String(item.transactionAt || ""),
-    createdAt: String(item.createdAt || ""),
-    updatedAt: String(item.updatedAt || ""),
+    createdAt: ensureTransactionCreatedAt(item),
+    updatedAt: normalizeCloudTimestamp(item.updatedAt) || String(item.updatedAt || ""),
   };
 }
 
@@ -8596,6 +8976,7 @@ function buildPendingBankImportItems(parsedMovements, sourceName = "", existingS
       note: sourceName ? `${importLabel} · ${sourceName}` : importLabel,
       transactionAt: movementTime ? buildTransactionDateTime(date, movementTime) : "",
       createdAt,
+      updatedAt: createdAt,
     };
     const signature = getTransactionSignature(transaction);
     const duplicate = existing.has(signature) || seen.has(signature);

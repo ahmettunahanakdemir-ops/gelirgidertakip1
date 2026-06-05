@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="manifest" href="manifest.json?v=200" />
+    <link rel="manifest" href="manifest.json?v=206" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
@@ -32,7 +32,7 @@
         }
       } catch (e) {}
     </script>
-    <link rel="stylesheet" href="style.css?v=200" />
+    <link rel="stylesheet" href="style.css?v=206" />
   </head>
   <body>
 
@@ -888,6 +888,24 @@
                 </div>
                 <p id="cardReminderStatus" class="sync-status">Bildirimler kapalı.</p>
               </section>
+
+              <section class="panel settings-block cloud-backup-settings-block">
+                <div class="panel-heading compact-heading">
+                  <div>
+                    <p class="panel-kicker">Bulut Yedeği</p>
+                    <h3>Verilerini Firebase'e yedekle</h3>
+                    <p class="panel-note">Kayıtlar, kart/hesaplar, varlıklar, BES ve kategori ayarları tek seferde buluta yedeklenir.</p>
+                  </div>
+                </div>
+                <div class="notification-settings-card cloud-backup-card">
+                  <div>
+                    <strong>Manuel bulut yedeği</strong>
+                    <small>Yedek aldığın son tarih burada görünür; verilerinde sorun olursa bu yedek Firebase'de saklanır.</small>
+                  </div>
+                  <button id="cloudBackupButton" class="primary-btn" type="button">Yedek Al</button>
+                </div>
+                <p id="cloudBackupStatus" class="sync-status">Son yedek: Henüz yok.</p>
+              </section>
             </div>
           </section>
         </section>
@@ -1086,7 +1104,7 @@
         <div class="panel-heading">
           <div>
             <p class="panel-kicker">Son Kayıtlar</p>
-            <h2 id="recentTransactionsModalTitle">En son eklenen 20 kayıt</h2>
+            <h2 id="recentTransactionsModalTitle">Son 3 günde eklenen kayıtlar</h2>
             <p class="panel-note">Kayıt tarihine göre değil, uygulamaya eklenme saatine göre sıralanır.</p>
           </div>
         </div>
@@ -1490,10 +1508,10 @@
       </article>
     </template>
 
-    <script src="firebase-config.js?v=200"></script>
+    <script src="firebase-config.js?v=206"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="app.js?v=200"></script>
+    <script src="app.js?v=206"></script>
   </body>
 </html>

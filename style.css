@@ -13072,3 +13072,759 @@ textarea {
     max-width: min(150px, calc(100vw - 110px)) !important;
   }
 }
+
+
+/* v201: v200 mobil genislik kurallarinin kayit, kart ve grafik alanlarini ezmesini engelle */
+@media (max-width: 768px) {
+  #appShell,
+  .app-shell {
+    position: relative !important;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  .sidebar-toggle.topbar-menu {
+    position: absolute !important;
+    top: max(14px, env(safe-area-inset-top)) !important;
+    left: max(14px, env(safe-area-inset-left)) !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    justify-self: end !important;
+    gap: 8px !important;
+    width: auto !important;
+    min-width: 84px !important;
+    max-width: 112px !important;
+    margin: 0 !important;
+  }
+
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn,
+  .payment-card-actions button {
+    width: min(92px, 100%) !important;
+    min-width: 78px !important;
+    max-width: 94px !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 7px 10px !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    text-align: center !important;
+    line-height: 1 !important;
+  }
+
+  .transaction-item,
+  .recent-transactions-modal .transaction-item,
+  #transactionList .transaction-item,
+  #recentTransactionsList .transaction-item,
+  #assetList .transaction-item,
+  .account-record-item {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .transaction-item > div:first-child,
+  .recent-transactions-modal .transaction-item > div:first-child,
+  #transactionList .transaction-item > div:first-child,
+  #recentTransactionsList .transaction-item > div:first-child,
+  #assetList .transaction-item > div:first-child,
+  .account-record-item > div:first-child {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .transaction-side,
+  .recent-transactions-modal .transaction-side,
+  #transactionList .transaction-side,
+  #recentTransactionsList .transaction-side,
+  #assetList .transaction-side,
+  .account-record-item .transaction-side {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    justify-self: end !important;
+    gap: 8px !important;
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+  }
+
+  .transaction-side .ghost-btn,
+  .transaction-side .danger-btn,
+  .transaction-side button,
+  .recent-transactions-modal .transaction-side .ghost-btn,
+  .recent-transactions-modal .transaction-side button,
+  #transactionList .transaction-side .ghost-btn,
+  #transactionList .transaction-side button,
+  #recentTransactionsList .transaction-side .ghost-btn,
+  #recentTransactionsList .transaction-side button,
+  #assetList .transaction-side .ghost-btn,
+  #assetList .transaction-side button {
+    width: auto !important;
+    min-width: 54px !important;
+    max-width: none !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    padding: 8px 12px !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  .transaction-title,
+  .transaction-meta {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .transaction-meta {
+    overflow-wrap: anywhere !important;
+  }
+
+  .transaction-amount {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .wealth-chart-panel .panel-heading,
+  .wealth-chart-panel .panel-heading > div {
+    padding-left: 0 !important;
+    overflow: visible !important;
+  }
+
+  .wealth-chart-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: center !important;
+    gap: 16px !important;
+  }
+
+  .wealth-chart {
+    width: min(280px, calc(100vw - 80px)) !important;
+    height: min(280px, calc(100vw - 80px)) !important;
+    justify-self: center !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .transaction-item,
+  .recent-transactions-modal .transaction-item,
+  #transactionList .transaction-item,
+  #recentTransactionsList .transaction-item,
+  #assetList .transaction-item,
+  .account-record-item {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+
+  .transaction-side,
+  .recent-transactions-modal .transaction-side,
+  #transactionList .transaction-side,
+  #recentTransactionsList .transaction-side,
+  #assetList .transaction-side,
+  .account-record-item .transaction-side {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  .transaction-side .transaction-amount {
+    margin-right: auto !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    min-width: 78px !important;
+    max-width: 96px !important;
+  }
+
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn,
+  .payment-card-actions button {
+    min-width: 72px !important;
+    max-width: 88px !important;
+    font-size: 0.82rem !important;
+  }
+}
+
+
+/* v202: kart butonlari, koyu tema metinleri, donut toplam ve sabit hamburger son ayar */
+@media (max-width: 768px) {
+  .workspace {
+    padding-top: max(8px, env(safe-area-inset-top)) !important;
+  }
+
+  .topbar {
+    padding-top: 66px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  .sidebar-toggle.topbar-menu {
+    position: fixed !important;
+    top: max(10px, env(safe-area-inset-top)) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    z-index: 999 !important;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  .payment-card.cash {
+    padding-right: 108px !important;
+    padding-bottom: 18px !important;
+    overflow: hidden !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    position: absolute !important;
+    top: 42px !important;
+    right: 12px !important;
+    bottom: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 7px !important;
+    width: 84px !important;
+    min-width: 84px !important;
+    max-width: 84px !important;
+  }
+
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn,
+  .payment-card-actions button {
+    width: 84px !important;
+    min-width: 84px !important;
+    max-width: 84px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 6px 9px !important;
+    border-radius: 999px !important;
+    color: #ffffff !important;
+    font-size: 0.78rem !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    text-overflow: ellipsis !important;
+    text-align: center !important;
+  }
+
+  .payment-card-actions .ghost-btn {
+    background: rgba(12, 27, 42, 0.76) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  }
+
+  .payment-card-actions .danger-lite-btn {
+    background: rgba(185, 28, 28, 0.40) !important;
+    border: 1px solid rgba(254, 202, 202, 0.34) !important;
+  }
+
+  .payment-card-actions .success-btn {
+    background: linear-gradient(135deg, #2dd4bf, #10b981) !important;
+    border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  }
+
+  .wealth-chart {
+    width: min(280px, calc(100vw - 96px)) !important;
+    height: min(280px, calc(100vw - 96px)) !important;
+  }
+
+  .wealth-chart > div {
+    width: 52% !important;
+    height: 52% !important;
+    padding: 8px !important;
+    gap: 2px !important;
+  }
+
+  .wealth-chart span {
+    font-size: clamp(0.62rem, 2.6vw, 0.72rem) !important;
+    line-height: 1 !important;
+  }
+
+  .wealth-chart strong {
+    max-width: 100% !important;
+    font-size: clamp(1rem, 4.1vw, 1.48rem) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.055em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+}
+
+html[data-theme="dark"] .modal-card input,
+html[data-theme="dark"] .modal-card select,
+html[data-theme="dark"] .modal-card textarea,
+html[data-theme="dark"] .panel input,
+html[data-theme="dark"] .panel select,
+html[data-theme="dark"] .panel textarea,
+body[data-theme="dark"] .modal-card input,
+body[data-theme="dark"] .modal-card select,
+body[data-theme="dark"] .modal-card textarea,
+body[data-theme="dark"] .panel input,
+body[data-theme="dark"] .panel select,
+body[data-theme="dark"] .panel textarea {
+  color: #f4fbff !important;
+  -webkit-text-fill-color: #f4fbff !important;
+  caret-color: #5eead4 !important;
+}
+
+html[data-theme="dark"] .modal-card input::placeholder,
+html[data-theme="dark"] .modal-card textarea::placeholder,
+body[data-theme="dark"] .modal-card input::placeholder,
+body[data-theme="dark"] .modal-card textarea::placeholder {
+  color: rgba(226, 240, 246, 0.62) !important;
+  -webkit-text-fill-color: rgba(226, 240, 246, 0.62) !important;
+}
+
+html[data-theme="dark"] .modal-card option,
+html[data-theme="dark"] .panel option,
+body[data-theme="dark"] .modal-card option,
+body[data-theme="dark"] .panel option {
+  color: #f4fbff !important;
+  background: #0d1a27 !important;
+}
+
+@media (max-width: 430px) {
+  .topbar {
+    padding-top: 62px !important;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  .payment-card.cash {
+    padding-right: 100px !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    top: 40px !important;
+    right: 10px !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    gap: 6px !important;
+  }
+
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn,
+  .payment-card-actions button {
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    font-size: 0.74rem !important;
+    padding-inline: 7px !important;
+  }
+
+  .wealth-chart strong {
+    font-size: clamp(0.92rem, 4vw, 1.18rem) !important;
+  }
+}
+
+/* v203: son mobil denge ayari - kart butonlari, sabit menu, koyu modal ve donut merkezi */
+@media (max-width: 768px) {
+  .workspace {
+    padding-top: max(6px, env(safe-area-inset-top)) !important;
+  }
+
+  .topbar {
+    padding: 48px 16px 16px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .topbar > div:first-child {
+    padding-left: 0 !important;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  .sidebar-toggle.topbar-menu {
+    display: inline-grid !important;
+    position: fixed !important;
+    top: max(9px, env(safe-area-inset-top)) !important;
+    left: max(10px, env(safe-area-inset-left)) !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    z-index: 1200 !important;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  .payment-card.cash,
+  .payment-card.credit_card {
+    padding-right: 106px !important;
+    overflow: hidden !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    position: absolute !important;
+    top: 36px !important;
+    right: 12px !important;
+    bottom: auto !important;
+    width: 86px !important;
+    min-width: 86px !important;
+    max-width: 86px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+
+  .payment-card-actions button,
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn {
+    width: 86px !important;
+    min-width: 86px !important;
+    max-width: 86px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 8px !important;
+    border-radius: 999px !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 0.75rem !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22) !important;
+  }
+
+  .payment-card-actions .ghost-btn {
+    background: rgba(12, 27, 42, 0.78) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+  }
+
+  .payment-card-actions .danger-lite-btn {
+    background: rgba(190, 36, 36, 0.52) !important;
+    border-color: rgba(254, 202, 202, 0.44) !important;
+  }
+
+  .payment-card-actions .success-btn {
+    background: linear-gradient(135deg, #27d6bd, #0aa56f) !important;
+    border-color: rgba(255, 255, 255, 0.24) !important;
+  }
+
+  .wealth-chart {
+    width: min(280px, calc(100vw - 112px)) !important;
+    height: min(280px, calc(100vw - 112px)) !important;
+    margin-inline: auto !important;
+  }
+
+  .wealth-chart > div {
+    width: 50% !important;
+    height: 50% !important;
+    padding: 8px !important;
+    gap: 2px !important;
+    overflow: hidden !important;
+  }
+
+  .wealth-chart span {
+    font-size: clamp(0.58rem, 2.2vw, 0.68rem) !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .wealth-chart strong {
+    display: block !important;
+    max-width: 100% !important;
+    font-size: clamp(0.9rem, 3.45vw, 1.26rem) !important;
+    line-height: 1 !important;
+    letter-spacing: -0.05em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .topbar {
+    padding: 44px 14px 14px !important;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  .payment-card.cash,
+  .payment-card.credit_card {
+    padding-right: 96px !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    top: 34px !important;
+    right: 10px !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    gap: 5px !important;
+  }
+
+  .payment-card-actions button,
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn {
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    max-height: 30px !important;
+    font-size: 0.70rem !important;
+    padding-inline: 6px !important;
+  }
+
+  .wealth-chart {
+    width: min(252px, calc(100vw - 112px)) !important;
+    height: min(252px, calc(100vw - 112px)) !important;
+  }
+
+  .wealth-chart strong {
+    font-size: clamp(0.82rem, 3.35vw, 1.05rem) !important;
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    .topbar {
+      padding-top: 44px !important;
+    }
+
+    .topbar-menu,
+    .topbar-menu.sidebar-toggle,
+    .sidebar-toggle.topbar-menu {
+      position: fixed !important;
+      top: max(10px, env(safe-area-inset-top)) !important;
+    }
+  }
+}
+
+html[data-theme="dark"] .modal-card label,
+body[data-theme="dark"] .modal-card label,
+html[data-theme="dark"] .profile-form label,
+body[data-theme="dark"] .profile-form label {
+  color: #c9d9e2 !important;
+}
+
+html[data-theme="dark"] .modal-card input,
+html[data-theme="dark"] .modal-card select,
+html[data-theme="dark"] .modal-card textarea,
+html[data-theme="dark"] .profile-form input,
+html[data-theme="dark"] .profile-form select,
+html[data-theme="dark"] .profile-form textarea,
+body[data-theme="dark"] .modal-card input,
+body[data-theme="dark"] .modal-card select,
+body[data-theme="dark"] .modal-card textarea,
+body[data-theme="dark"] .profile-form input,
+body[data-theme="dark"] .profile-form select,
+body[data-theme="dark"] .profile-form textarea {
+  color: #f7fbff !important;
+  -webkit-text-fill-color: #f7fbff !important;
+  background: linear-gradient(180deg, rgba(12, 24, 35, 0.96), rgba(8, 18, 29, 0.98)) !important;
+  border-color: rgba(110, 150, 166, 0.28) !important;
+  caret-color: #5eead4 !important;
+}
+
+html[data-theme="dark"] .modal-card input::placeholder,
+html[data-theme="dark"] .modal-card textarea::placeholder,
+html[data-theme="dark"] .profile-form input::placeholder,
+html[data-theme="dark"] .profile-form textarea::placeholder,
+body[data-theme="dark"] .modal-card input::placeholder,
+body[data-theme="dark"] .modal-card textarea::placeholder,
+body[data-theme="dark"] .profile-form input::placeholder,
+body[data-theme="dark"] .profile-form textarea::placeholder {
+  color: rgba(222, 237, 245, 0.64) !important;
+  -webkit-text-fill-color: rgba(222, 237, 245, 0.64) !important;
+}
+
+html[data-theme="dark"] .modal-card option,
+html[data-theme="dark"] .profile-form option,
+body[data-theme="dark"] .modal-card option,
+body[data-theme="dark"] .profile-form option {
+  color: #f7fbff !important;
+  background: #0b1824 !important;
+}
+
+/* v204: son kayıt, bulut yedek, kart ödeme ve mobil donut düzeltmeleri */
+.cloud-backup-card {
+  align-items: center;
+}
+
+.cloud-backup-card .primary-btn {
+  width: auto;
+  min-width: 132px;
+  padding-inline: 26px;
+}
+
+@media (max-width: 680px) {
+  .cloud-backup-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cloud-backup-card .primary-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .topbar > div:first-child {
+    padding-left: 42px !important;
+  }
+
+  .topbar .app-user-badge {
+    max-width: calc(100% - 56px) !important;
+  }
+
+  .wealth-chart > div {
+    width: 58% !important;
+    height: 58% !important;
+    padding: 6px !important;
+    overflow: visible !important;
+  }
+
+  .wealth-chart strong {
+    max-width: none !important;
+    font-size: clamp(0.72rem, 2.85vw, 0.98rem) !important;
+    letter-spacing: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .topbar > div:first-child {
+    padding-left: 38px !important;
+  }
+
+  .wealth-chart > div {
+    width: 60% !important;
+    height: 60% !important;
+  }
+
+  .wealth-chart strong {
+    font-size: clamp(0.68rem, 2.9vw, 0.88rem) !important;
+  }
+}
+
+/* v205: mobil kart buton kolonu yeniden dengelendi */
+@media (max-width: 768px) {
+  .payment-card,
+  .payment-card.bank_account,
+  .payment-card.cash,
+  .payment-card.credit_card {
+    padding-right: 104px !important;
+    overflow: hidden !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    top: 52px !important;
+    right: 12px !important;
+    width: 84px !important;
+    min-width: 84px !important;
+    max-width: 84px !important;
+    gap: 6px !important;
+  }
+
+  .payment-card-actions button,
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn {
+    width: 84px !important;
+    min-width: 84px !important;
+    max-width: 84px !important;
+    height: 31px !important;
+    min-height: 31px !important;
+    max-height: 31px !important;
+    font-size: 0.73rem !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .payment-card,
+  .payment-card.bank_account,
+  .payment-card.cash,
+  .payment-card.credit_card {
+    padding-right: 96px !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    top: 48px !important;
+    right: 10px !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    gap: 5px !important;
+  }
+
+  .payment-card-actions button,
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn {
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    height: 29px !important;
+    min-height: 29px !important;
+    max-height: 29px !important;
+    font-size: 0.68rem !important;
+  }
+}
