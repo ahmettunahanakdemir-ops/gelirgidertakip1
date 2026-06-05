@@ -19,6 +19,7 @@ const RECENT_ADDED_TRANSACTION_DAYS = 3;
 const MAX_DELETED_TRANSACTION_MARKERS = 5000;
 const MAX_DELETED_TRANSFER_TOMBSTONES = 2000;
 const MAX_PROFILE_TRANSACTIONS_BACKUP_BYTES = 850 * 1024;
+const CLOUD_WRITE_TIMEOUT_MS = 45000;
 
 const DEFAULT_CATEGORIES = {
   income: ["Maaş", "Serbest İş", "Yatırım", "Hediye", "Promosyon", "Harçlık", "Borç Ödeme", "Diğer"],
@@ -7829,6 +7830,11 @@ async function handleAuthStateChanged(user) {
       anonymousLocalCategories,
       getTransactionCategoriesFromRecords(transactions)
     );
+    const hasPendingLocalTransactionSync =
+      loadTransactionsCloudDirtyAt() > 0 ||
+      localTransactionsUpdatedAt > cloudTransactionsUpdatedAt ||
+      anonymousLocalTransactions.length > 0;
+
     persistTransactions({ syncCloud: false });
     persistAssets({ syncCloud: false });
     persistBesAccounts({ syncCloud: false });
@@ -7836,11 +7842,24 @@ async function handleAuthStateChanged(user) {
     persistTransactionCategories({ syncCloud: false });
     syncCategorySelects();
     render();
-    await Promise.all([syncTransactionsToCloud({ replace: true }), syncUserProfileToCloud()]);
+    const syncTasks = [syncUserProfileToCloud()];
+    if (hasPendingLocalTransactionSync) {
+      syncTasks.unshift(syncTransactionsToCloud({ replace: false }));
+    }
+    const syncResults = await Promise.allSettled(syncTasks);
+    const failedSync = syncResults.find((result) => result.status === "rejected");
     subscribeCloudTransactions(user.uid);
     subscribeCloudProfile(user.uid);
     bindPendingCloudSyncEvents();
     retryPendingTransactionsCloudSync();
+    if (failedSync) {
+      cloudStatus.textContent = `Bulut eşitleme tamamlanamadı: ${failedSync.reason?.message || "Bilinmeyen hata"}`;
+    } else if (hasPendingLocalTransactionSync) {
+      cloudStatus.textContent = `${transactions.length} kayıt Firebase ile eşitlendi.`;
+    } else {
+      cloudStatus.textContent = `${transactions.length} kayıt Firebase'den yüklendi.`;
+    }
+    return;
     cloudStatus.textContent = `${transactions.length} kayıt Firebase profil yedeğiyle eşitlendi.`;
   } catch (error) {
     cloudStatus.textContent = `Bulut kayıtları yüklenemedi: ${error.message}`;
@@ -8071,6 +8090,7 @@ function syncTransactionsToCloud(options = {}) {
   cloudTransactionsSyncInFlight = true;
 
   const writeTransactions = async () => {
+    try {
     if (syncVersion !== cloudTransactionsSyncVersion) {
       return;
     }
@@ -8078,7 +8098,11 @@ function syncTransactionsToCloud(options = {}) {
     const collection = getUserTransactionsCollection(user.uid);
 
     if (!replace) {
-      const latestCloudTransactions = await fetchCloudTransactions(user.uid).catch(() => []);
+      const latestCloudTransactions = await withTimeout(
+        fetchCloudTransactions(user.uid).catch(() => []),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Firebase kayıtları okunurken zaman aşımı oluştu."
+      );
 
       if (syncVersion !== cloudTransactionsSyncVersion) {
         return;
@@ -8113,7 +8137,11 @@ function syncTransactionsToCloud(options = {}) {
     });
 
     if (replace) {
-      const snapshot = await collection.get();
+      const snapshot = await withTimeout(
+        collection.get(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Firebase kayıt listesi alınırken zaman aşımı oluştu."
+      );
 
       if (syncVersion !== cloudTransactionsSyncVersion) {
         return;
@@ -8139,7 +8167,11 @@ function syncTransactionsToCloud(options = {}) {
 
     cloudStatus.textContent = "Buluta kaydediliyor...";
     try {
-      await commitCloudOperationsInChunks(operations);
+      await withTimeout(
+        commitCloudOperationsInChunks(operations),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Firebase transactions yazımı zaman aşımına uğradı."
+      );
     } catch (error) {
       if (syncVersion === cloudTransactionsSyncVersion) {
         markTransactionsCloudDirty(transactionsStateUpdatedAt);
@@ -8159,7 +8191,11 @@ function syncTransactionsToCloud(options = {}) {
 
     let profileWarning = "";
     try {
-      await firebaseDb.collection("users").doc(user.uid).set(profileBackupPayload, { merge: true });
+      await withTimeout(
+        firebaseDb.collection("users").doc(user.uid).set(profileBackupPayload, { merge: true }),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Firebase profil yedeği güncellenirken zaman aşımı oluştu."
+      );
     } catch (error) {
       profileWarning = ` Profil yedeği güncellenemedi: ${error.message}`;
     }
@@ -8170,6 +8206,11 @@ function syncTransactionsToCloud(options = {}) {
         ? " Profil yedeği büyüdüğü için kayıtların ana kaynağı transactions alt koleksiyonu."
         : "";
       cloudStatus.textContent = `${safeTransactions.length} kayıt Firebase transactions koleksiyonuna kaydedildi.${backupNote}${profileWarning}`;
+    }
+    } finally {
+      if (syncVersion === cloudTransactionsSyncVersion) {
+        cloudTransactionsSyncInFlight = false;
+      }
     }
   };
 

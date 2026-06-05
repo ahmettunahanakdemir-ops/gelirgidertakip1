@@ -14,3 +14,5 @@ Canlı projede sadece Netlify ZIP yüklemek yeterli olmayabilir. Firebase Consol
 Eski kural sadece bazı kayıt tiplerine veya alanlarına izin verdiği için yeni eklenen alanlar ve `transfer` kayıtları Firebase yazımını engelleyebiliyordu. Batch içinde tek bir kayıt reddedilince ekleme/düzenleme yazımı komple başarısız olabiliyordu.
 
 v208 ile kayıtlar önce `users/{uid}/transactions/{transactionId}` alt koleksiyonuna yazılır. `users/{uid}` profil dokümanındaki eski `transactionsBackup` alanı Firestore doküman limitine yaklaşırsa otomatik temizlenir ve ana kaynak alt koleksiyon olur.
+
+v209 ile giriş sırasında tüm geçmişi her seferinde yeniden yazan tam senkron kaldırıldı. Sadece bu cihazda bekleyen yerel değişiklik varsa transactions yazımı yapılır; takılan Firebase yazımlarına da zaman aşımı eklenmiştir.
