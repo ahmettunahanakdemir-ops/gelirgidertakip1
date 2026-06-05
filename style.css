@@ -12560,3 +12560,141 @@ body[data-theme="dark"] {
     }
   }
 }
+
+
+/* v199: iPhone üst şablonları masaüstüne daha yakın, kompakt ve yatay düzen */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    .topbar {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      align-items: center !important;
+      justify-items: stretch !important;
+      column-gap: 14px !important;
+      row-gap: 8px !important;
+      padding: calc(max(8px, env(safe-area-inset-top)) + 18px) 18px 18px 18px !important;
+      margin-bottom: 14px !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+
+    .topbar > div:first-child {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      display: block !important;
+      align-self: center !important;
+    }
+
+    .topbar .panel-kicker,
+    .topbar #pageKicker {
+      display: block !important;
+      margin: 0 0 8px !important;
+      letter-spacing: 0.22em !important;
+      line-height: 1.1 !important;
+      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+      hyphens: none !important;
+      font-size: clamp(0.72rem, 2.7vw, 0.86rem) !important;
+    }
+
+    .topbar h1,
+    .topbar #pageTitle {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      font-size: clamp(1.72rem, 6.8vw, 2.32rem) !important;
+      line-height: 1.04 !important;
+      letter-spacing: 0.005em !important;
+      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+      hyphens: none !important;
+      text-wrap: balance !important;
+    }
+
+    .topbar p,
+    .topbar #pageSubtitle {
+      max-width: 100% !important;
+      margin: 10px 0 0 !important;
+      font-size: clamp(0.98rem, 3.9vw, 1.18rem) !important;
+      line-height: 1.34 !important;
+      white-space: normal !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+      hyphens: none !important;
+      text-wrap: pretty !important;
+    }
+
+    .topbar-side {
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: 42% !important;
+      margin: 0 !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+      align-self: center !important;
+      justify-self: end !important;
+    }
+
+    .topbar .user-chip,
+    .topbar #appUserEmail {
+      width: auto !important;
+      max-width: 100% !important;
+      min-height: 44px !important;
+      padding: 0 14px !important;
+      justify-self: end !important;
+      margin: 0 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      font-size: 0.9rem !important;
+    }
+  }
+
+  @media (max-width: 430px) {
+    .topbar {
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      column-gap: 12px !important;
+      padding: calc(max(8px, env(safe-area-inset-top)) + 16px) 16px 16px 16px !important;
+    }
+
+    .topbar h1,
+    .topbar #pageTitle {
+      font-size: clamp(1.64rem, 6.5vw, 2.06rem) !important;
+      line-height: 1.05 !important;
+    }
+
+    .topbar p,
+    .topbar #pageSubtitle {
+      font-size: clamp(0.95rem, 3.7vw, 1.05rem) !important;
+      line-height: 1.32 !important;
+    }
+
+    .topbar-side {
+      max-width: 40% !important;
+    }
+
+    .topbar .user-chip,
+    .topbar #appUserEmail {
+      max-width: 150px !important;
+      padding: 0 12px !important;
+      font-size: 0.86rem !important;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .topbar h1,
+    .topbar #pageTitle {
+      font-size: clamp(1.54rem, 6vw, 1.9rem) !important;
+    }
+
+    .topbar .user-chip,
+    .topbar #appUserEmail {
+      max-width: 132px !important;
+      font-size: 0.82rem !important;
+    }
+  }
+}
