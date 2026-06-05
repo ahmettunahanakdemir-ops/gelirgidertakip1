@@ -1410,6 +1410,28 @@ function bindHistoryResponsiveLayout() {
 }
 
 
+function bindHistorySearchFallback() {
+  const searchButton = document.getElementById("historySearchButton");
+  const input = document.getElementById("searchInput");
+
+  if (searchButton && searchButton.dataset.searchFallbackBound !== "true") {
+    searchButton.dataset.searchFallbackBound = "true";
+    searchButton.addEventListener("click", () => applyHistorySearch());
+  }
+
+  if (input && input.dataset.enterSearchBound !== "true") {
+    input.dataset.enterSearchBound = "true";
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applyHistorySearch();
+      }
+    });
+  }
+}
+
+
+
 function init() {
   hideAllStartupModals();
   hideStartupSplash();
@@ -1432,6 +1454,7 @@ function init() {
   render();
   initHistoryCustomFilterSelects();
   bindHistoryResponsiveLayout();
+  bindHistorySearchFallback();
   registerServiceWorker();
   initCardReminderNotifications();
   if (!window.__akisWealthFitBound) {
