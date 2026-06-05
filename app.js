@@ -18,6 +18,7 @@ const TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY = "akis-budget-transactions-cloud-dir
 const RECENT_ADDED_TRANSACTION_DAYS = 3;
 const MAX_DELETED_TRANSACTION_MARKERS = 5000;
 const MAX_DELETED_TRANSFER_TOMBSTONES = 2000;
+const MAX_PROFILE_TRANSACTIONS_BACKUP_BYTES = 850 * 1024;
 
 const DEFAULT_CATEGORIES = {
   income: ["Maaş", "Serbest İş", "Yatırım", "Hediye", "Promosyon", "Harçlık", "Borç Ödeme", "Diğer"],
@@ -8025,6 +8026,36 @@ async function commitCloudOperationsInChunks(operations = []) {
   }
 }
 
+function getJsonByteSize(value) {
+  try {
+    return new Blob([JSON.stringify(value) || ""]).size;
+  } catch {
+    return Number.POSITIVE_INFINITY;
+  }
+}
+
+function createProfileTransactionBackupFields(safeTransactions = [], transactionsStateUpdatedAt = Date.now()) {
+  const backup = safeTransactions.map(toCloudTransactionBackup);
+  const fullBackupFields = {
+    transactionsBackup: backup,
+    transactionsBackupUpdatedAt: transactionsStateUpdatedAt,
+    transactionsBackupMode: "full",
+    transactionsBackupCount: backup.length,
+  };
+
+  if (getJsonByteSize(fullBackupFields) <= MAX_PROFILE_TRANSACTIONS_BACKUP_BYTES) {
+    return fullBackupFields;
+  }
+
+  return {
+    transactionsBackup: window.firebase.firestore.FieldValue.delete(),
+    transactionsBackupUpdatedAt: transactionsStateUpdatedAt,
+    transactionsBackupMode: "collection_only",
+    transactionsBackupCount: backup.length,
+    transactionsBackupSkippedAt: transactionsStateUpdatedAt,
+  };
+}
+
 function syncTransactionsToCloud(options = {}) {
   const { replace = false } = options;
 
@@ -8058,17 +8089,15 @@ function syncTransactionsToCloud(options = {}) {
       safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
     }
 
+    const profileBackupFields = createProfileTransactionBackupFields(safeTransactions, transactionsStateUpdatedAt);
     const profileBackupPayload = {
       email: user.email || "",
       username: getUserDisplayName(user),
-      transactionsBackup: safeTransactions.map(toCloudTransactionBackup),
-      transactionsBackupUpdatedAt: transactionsStateUpdatedAt,
+      ...profileBackupFields,
       ...deletedPayload,
       transactionsStateUpdatedAt,
       updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
     };
-
-    await firebaseDb.collection("users").doc(user.uid).set(profileBackupPayload, { merge: true });
 
     const operations = [];
 
@@ -8108,28 +8137,39 @@ function syncTransactionsToCloud(options = {}) {
       });
     });
 
-    operations.push({
-      type: "set",
-      ref: firebaseDb.collection("users").doc(user.uid),
-      data: profileBackupPayload,
-      options: { merge: true },
-    });
-
     cloudStatus.textContent = "Buluta kaydediliyor...";
-    let collectionWarning = "";
     try {
       await commitCloudOperationsInChunks(operations);
     } catch (error) {
-      collectionWarning = ` Alt koleksiyon yazılamadı: ${error.message}`;
+      if (syncVersion === cloudTransactionsSyncVersion) {
+        markTransactionsCloudDirty(transactionsStateUpdatedAt);
+        schedulePendingTransactionsCloudSync();
+        const rulesHint = error?.code === "permission-denied"
+          ? " Firebase Console'da firestore.rules dosyasını yayınla."
+          : "";
+        cloudStatus.textContent =
+          `${safeTransactions.length} kayıt Firebase transactions alt koleksiyonuna yazılamadı: ${error.message}.${rulesHint}`;
+      }
+      return;
     } finally {
       if (syncVersion === cloudTransactionsSyncVersion) {
         cloudTransactionsSyncInFlight = false;
       }
     }
 
+    let profileWarning = "";
+    try {
+      await firebaseDb.collection("users").doc(user.uid).set(profileBackupPayload, { merge: true });
+    } catch (error) {
+      profileWarning = ` Profil yedeği güncellenemedi: ${error.message}`;
+    }
+
     if (syncVersion === cloudTransactionsSyncVersion) {
       clearTransactionsCloudDirty();
-      cloudStatus.textContent = `${safeTransactions.length} kayıt profil yedeğiyle Firebase'e kaydedildi.${collectionWarning}`;
+      const backupNote = profileBackupFields.transactionsBackupMode === "collection_only"
+        ? " Profil yedeği büyüdüğü için kayıtların ana kaynağı transactions alt koleksiyonu."
+        : "";
+      cloudStatus.textContent = `${safeTransactions.length} kayıt Firebase transactions koleksiyonuna kaydedildi.${backupNote}${profileWarning}`;
     }
   };
 

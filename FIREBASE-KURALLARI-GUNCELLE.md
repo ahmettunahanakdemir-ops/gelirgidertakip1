@@ -11,4 +11,6 @@ Canlı projede sadece Netlify ZIP yüklemek yeterli olmayabilir. Firebase Consol
 5. Rules alanına yapıştır.
 6. Publish / Yayınla butonuna bas.
 
-Eski kural sadece `income` ve `expense` kayıtlarına izin verdiği için `transfer` kayıtları batch yazımını engelleyebiliyordu. Batch içinde bir transfer kaydı reddedilince ekleme/düzenleme yazımı komple başarısız olabiliyordu.
+Eski kural sadece bazı kayıt tiplerine veya alanlarına izin verdiği için yeni eklenen alanlar ve `transfer` kayıtları Firebase yazımını engelleyebiliyordu. Batch içinde tek bir kayıt reddedilince ekleme/düzenleme yazımı komple başarısız olabiliyordu.
+
+v208 ile kayıtlar önce `users/{uid}/transactions/{transactionId}` alt koleksiyonuna yazılır. `users/{uid}` profil dokümanındaki eski `transactionsBackup` alanı Firestore doküman limitine yaklaşırsa otomatik temizlenir ve ana kaynak alt koleksiyon olur.
