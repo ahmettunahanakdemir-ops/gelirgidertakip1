@@ -12698,3 +12698,377 @@ body[data-theme="dark"] {
     }
   }
 }
+
+
+/* v200: iPhone/PWA ve mobil-web final standart katmani */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@media (max-width: 768px) {
+  html,
+  body,
+  #appShell,
+  .app-shell,
+  .workspace,
+  .view-section,
+  .view-section.active {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .workspace {
+    padding:
+      max(12px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(18px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left)) !important;
+  }
+
+  .view-section.active {
+    display: grid !important;
+    gap: 14px !important;
+  }
+
+  .topbar {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 0 14px !important;
+    padding: 82px 18px 18px !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+  }
+
+  .topbar > div:first-child {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .topbar .panel-kicker,
+  .topbar #pageKicker {
+    display: block !important;
+    margin: 0 0 6px !important;
+    font-size: clamp(0.68rem, 2.8vw, 0.78rem) !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0.20em !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  .topbar h1,
+  .topbar #pageTitle {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    font-size: clamp(1.44rem, 5.8vw, 1.86rem) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    text-align: left !important;
+  }
+
+  .topbar p,
+  .topbar #pageSubtitle {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 8px 0 0 !important;
+    font-size: clamp(0.88rem, 3.6vw, 1rem) !important;
+    line-height: 1.34 !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    text-align: left !important;
+  }
+
+  .topbar-side {
+    position: absolute !important;
+    top: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+    max-width: calc(100% - 92px) !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+
+  .topbar .user-chip,
+  .topbar #appUserEmail {
+    width: auto !important;
+    max-width: min(176px, calc(100vw - 118px)) !important;
+    min-width: 0 !important;
+    min-height: 38px !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    font-size: clamp(0.76rem, 3.1vw, 0.86rem) !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  .sidebar-toggle.topbar-menu {
+    display: inline-grid !important;
+    position: fixed !important;
+    top: max(14px, env(safe-area-inset-top)) !important;
+    left: max(14px, env(safe-area-inset-left)) !important;
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    z-index: 60 !important;
+  }
+
+  .topbar-menu span,
+  .topbar-menu.sidebar-toggle span,
+  .sidebar-toggle.topbar-menu span {
+    width: 22px !important;
+    height: 2.5px !important;
+    margin: 2.5px 0 !important;
+  }
+
+  .panel,
+  .summary-card,
+  .action-panel,
+  .entry-bank-panel,
+  .history-panel,
+  .insights-panel,
+  .home-summary-filter-standalone {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 8px !important;
+  }
+
+  .panel-heading,
+  .panel-heading > div,
+  .panel-note,
+  .transaction-list,
+  .compact-list,
+  .content-grid,
+  .summary-stack,
+  .stats-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .action-panel,
+  .entry-primary-actions,
+  .storage-actions,
+  .filters,
+  .auth-actions,
+  .home-summary-filter-controls,
+  .bank-import-account-panel {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    justify-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .entry-primary-actions > *,
+  .storage-actions > *,
+  .filters > *,
+  .auth-actions > *,
+  .home-summary-filter-controls > *,
+  .bank-import-account-panel > *,
+  .date-filter,
+  .range-filter,
+  .custom-filter-select,
+  .history-search-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+  }
+
+  button,
+  .primary-btn,
+  .ghost-btn,
+  .success-btn,
+  .danger-btn,
+  .file-trigger,
+  .custom-filter-trigger {
+    min-height: 48px !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+  }
+
+  input,
+  select,
+  textarea,
+  .custom-filter-trigger,
+  .date-filter input,
+  .range-filter input,
+  .home-summary-filter-controls input,
+  #historyView .history-heading > .history-filters #searchInput {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    font-size: 16px !important;
+  }
+
+  input[type="date"],
+  input[type="month"],
+  .date-filter input,
+  .range-filter input,
+  .home-summary-filter-controls input {
+    min-height: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+    text-align: center !important;
+  }
+
+  #historyView .history-heading,
+  #historyView .panel-heading.history-heading {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+    padding: 18px !important;
+  }
+
+  #historyView .history-heading > div:first-child,
+  #historyView .history-heading > .history-filters,
+  #historyView .panel-heading.history-heading > .filters.history-filters {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #historyView .history-heading > .history-filters,
+  #historyView .panel-heading.history-heading > .filters.history-filters {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    justify-items: stretch !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  #historyView .history-heading > .history-filters > *,
+  #historyView .panel-heading.history-heading > .filters.history-filters > *,
+  #historyView .history-heading > .history-filters .custom-filter-trigger,
+  #historyView .history-heading > .history-filters button,
+  #historyView .history-heading > .history-filters input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  #historyView .history-heading > .history-filters #historySearchButton,
+  #historyView .history-heading > .history-filters #clearHistoryRangeButton,
+  #historyView .history-heading > .history-filters #openRecentTransactionsButton,
+  #historyView .history-heading > .history-filters #exportExcelButton,
+  #historyView .history-heading > .history-filters #exportPdfButton,
+  #historyView .history-heading > .history-filters #searchInput {
+    height: 48px !important;
+    min-height: 48px !important;
+  }
+
+  .modal-backdrop {
+    align-items: center !important;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left)) !important;
+  }
+
+  .modal-card,
+  .delete-modal,
+  .confirm-modal,
+  .wide-modal,
+  .bank-import-preview-modal,
+  #bankImportPreviewModal .modal-card {
+    width: min(100%, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
+  }
+
+  .modal-card form,
+  .modal-card .transaction-list,
+  .bank-import-preview-list,
+  #bankImportPreviewList {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (display-mode: standalone) and (max-width: 768px) {
+  .workspace {
+    padding-top: max(14px, env(safe-area-inset-top)) !important;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  .sidebar-toggle.topbar-menu {
+    top: max(16px, env(safe-area-inset-top)) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .topbar {
+    padding: 78px 16px 16px !important;
+  }
+
+  .topbar h1,
+  .topbar #pageTitle {
+    font-size: clamp(1.34rem, 5.6vw, 1.68rem) !important;
+  }
+
+  .topbar p,
+  .topbar #pageSubtitle {
+    font-size: clamp(0.84rem, 3.4vw, 0.96rem) !important;
+  }
+
+  .topbar .user-chip,
+  .topbar #appUserEmail {
+    max-width: min(150px, calc(100vw - 110px)) !important;
+  }
+}
