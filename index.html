@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="manifest" href="manifest.json?v=211" />
+    <link rel="manifest" href="manifest.json?v=215" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
@@ -32,7 +32,7 @@
         }
       } catch (e) {}
     </script>
-    <link rel="stylesheet" href="style.css?v=211" />
+    <link rel="stylesheet" href="style.css?v=215" />
   </head>
   <body>
 
@@ -1407,7 +1407,11 @@
           </label>
           <label>
             Mevcut bakiye / borç
-            <input id="paymentAccountBalance" name="paymentAccountBalance" type="number" step="0.01" inputmode="decimal" placeholder="Kredi kartıysa borç, diğerlerinde bakiye" />
+            <input id="paymentAccountBalance" name="paymentAccountBalance" type="number" step="0.01" inputmode="decimal" placeholder="Kredi kartıysa toplam borç, diğerlerinde bakiye" />
+          </label>
+          <label class="credit-only">
+            Aktif dönem borcu
+            <input id="paymentAccountCurrentStatementDebt" name="paymentAccountCurrentStatementDebt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Son kesimden sonraki harcamalar" />
           </label>
           <label>
             Not
@@ -1508,10 +1512,10 @@
       </article>
     </template>
 
-    <script src="firebase-config.js?v=211"></script>
+    <script src="firebase-config.js?v=215"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="app.js?v=211"></script>
+    <script src="app.js?v=215"></script>
   </body>
 </html>

@@ -371,6 +371,7 @@ const paymentAccountStatementDay = document.getElementById("paymentAccountStatem
 const paymentAccountDueDay = document.getElementById("paymentAccountDueDay");
 const paymentAccountLimit = document.getElementById("paymentAccountLimit");
 const paymentAccountBalance = document.getElementById("paymentAccountBalance");
+const paymentAccountCurrentStatementDebt = document.getElementById("paymentAccountCurrentStatementDebt");
 const paymentAccountNote = document.getElementById("paymentAccountNote");
 const paymentAccountSubmitButton = document.getElementById("paymentAccountSubmitButton");
 const paymentAccountStatus = document.getElementById("paymentAccountStatus");
@@ -1267,6 +1268,7 @@ function requestTransactionDelete(item) {
 
       transactions = transactions.filter((transaction) => !idsToDelete.has(transaction.id) && !isTransactionDeleted(transaction));
       if (changedPaymentAccount) {
+        refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
         persistPaymentAccounts();
       }
       persistTransactions({ cloudDeletes: [...idsToDelete] });
@@ -1761,11 +1763,11 @@ function init() {
     }
 
     const changedPaymentAccount = applyTransactionPaymentEffect(entry, 1);
+    transactions = [entry, ...transactions].sort(compareTransactionsNewestFirst);
     if (changedPaymentAccount) {
+      refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
       persistPaymentAccounts();
     }
-
-    transactions = [entry, ...transactions].sort(compareTransactionsNewestFirst);
     persistTransactions({ cloudUpserts: [entry] }).catch((error) => {
       if (entryFormStatus) {
         entryFormStatus.textContent = `Firebase'e kaydedilemedi: ${error.message}`;
@@ -3480,6 +3482,59 @@ function getPaymentSelectPlaceholder(method, accountCount) {
   return "Tanımlı kart / hesap yok";
 }
 
+function shiftIsoDate(dateValue, dayOffset) {
+  const date = parseIsoDate(dateValue);
+  if (!date) {
+    return getTurkeyTodayISO();
+  }
+
+  date.setDate(date.getDate() + Number(dayOffset || 0));
+  return toDateInputValue(date);
+}
+
+function createCreditCardDebtAdjustment(account, signedDebtAmount, date, label, now) {
+  const amount = roundMoney(Math.abs(Number(signedDebtAmount || 0)));
+  if (!amount) {
+    return null;
+  }
+
+  return {
+    id: crypto.randomUUID(),
+    type: signedDebtAmount > 0 ? "expense" : "income",
+    title: `${formatPaymentAccountName(account)} ${label}`.slice(0, 60),
+    amount,
+    category: "Kart borcu düzeltmesi",
+    paymentMethod: "credit_card",
+    paymentAccountId: account.id,
+    transferAccountId: "",
+    transferFee: 0,
+    date,
+    note: "Kart formundaki borç tutarını görünür hareketlerle eşitlemek için oluşturuldu.",
+    transactionAt: buildTransactionDateTime(date, getTurkeyNowTime()),
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function buildCreditCardDebtAdjustments(account, requestedTotalDebt, requestedStatementDebt, totals, now) {
+  const targetTotalDebt = Math.max(0, roundMoney(Number(requestedTotalDebt || 0)));
+  const targetStatementDebt = clampCreditCardStatementDebt(targetTotalDebt, requestedStatementDebt);
+  const existingTotalEffect = roundMoney(Number(totals?.totalDebtEffect || 0));
+  const existingStatementEffect = roundMoney(Number(totals?.statementDebtEffect || 0));
+  const statementAdjustment = roundMoney(targetStatementDebt - existingStatementEffect);
+  const previousAdjustment = roundMoney(
+    targetTotalDebt - (existingTotalEffect + statementAdjustment)
+  );
+  const period = getCreditCardStatementPeriod(account);
+  const currentDate = getTurkeyTodayISO();
+  const previousDate = period.start ? shiftIsoDate(period.start, -1) : currentDate;
+
+  return [
+    createCreditCardDebtAdjustment(account, previousAdjustment, previousDate, "önceki dönem borç düzeltmesi", now),
+    createCreditCardDebtAdjustment(account, statementAdjustment, currentDate, "aktif dönem borç düzeltmesi", now),
+  ].filter(Boolean);
+}
+
 function addPaymentAccount(event) {
   event.preventDefault();
 
@@ -3490,6 +3545,7 @@ function addPaymentAccount(event) {
   const color = normalizePaymentCardColor(formData.get("paymentAccountColor"), type);
   const last4 = String(formData.get("paymentAccountLast4") || "").replace(/\D/g, "").slice(-4);
   const balanceOrDebt = readSignedNumber(formData.get("paymentAccountBalance"), 0);
+  const statementDebtRaw = String(formData.get("paymentAccountCurrentStatementDebt") || "").trim();
   const limit = readSignedNumber(formData.get("paymentAccountLimit"), 0);
   const statementDay = clampDay(formData.get("paymentAccountStatementDay"));
   const dueDay = clampDay(formData.get("paymentAccountDueDay"));
@@ -3516,15 +3572,24 @@ function addPaymentAccount(event) {
     statementDay: type === "credit_card" ? statementDay : existing?.statementDay,
   };
   const accountRecordTotals = wasEditing ? getPaymentAccountRecordTotals(nextAccountId) : { net: 0 };
-  const cardRecordTotals = wasEditing ? getCreditCardRecordTotals(draftCreditAccount) : { totalDebt: 0, currentStatementDebt: 0 };
+  const cardRecordTotals = wasEditing
+    ? getCreditCardRecordTotals(draftCreditAccount)
+    : { totalDebt: 0, currentStatementDebt: 0, totalDebtEffect: 0, statementDebtEffect: 0 };
   const requestedBalanceOrDebt = Number.isFinite(balanceOrDebt) ? roundMoney(balanceOrDebt) : 0;
+  const requestedCurrentStatementDebt = type === "credit_card"
+    ? Math.min(
+        Math.max(
+          0,
+          roundMoney(
+            statementDebtRaw
+              ? readSignedNumber(statementDebtRaw, 0)
+              : Number(existing?.currentStatementDebt || 0)
+          )
+        ),
+        Math.max(0, requestedBalanceOrDebt)
+      )
+    : 0;
   const openingBalance = type !== "credit_card" ? roundMoney(requestedBalanceOrDebt - Number(accountRecordTotals.net || 0)) : 0;
-  const openingDebt = type === "credit_card"
-    ? Math.max(0, roundMoney(requestedBalanceOrDebt - Number(cardRecordTotals.totalDebt || 0)))
-    : 0;
-  const openingCurrentStatementDebt = type === "credit_card"
-    ? Math.max(0, roundMoney(requestedBalanceOrDebt - Number(cardRecordTotals.currentStatementDebt || 0)))
-    : 0;
   const nextAccount = {
     id: nextAccountId,
     type,
@@ -3537,11 +3602,12 @@ function addPaymentAccount(event) {
     dueDay: type === "credit_card" ? dueDay : 0,
     limit: type === "credit_card" && Number.isFinite(limit) ? Math.max(0, limit) : 0,
     debt: type === "credit_card" ? Math.max(0, requestedBalanceOrDebt) : 0,
-    currentStatementDebt: type === "credit_card" ? Math.max(0, requestedBalanceOrDebt) : 0,
-    openingDebt,
-    openingCurrentStatementDebt,
-    creditPaidTotal: existing?.creditPaidTotal || 0,
-    currentStatementPaidTotal: existing?.currentStatementPaidTotal || 0,
+    currentStatementDebt: requestedCurrentStatementDebt,
+    openingDebt: 0,
+    openingCurrentStatementDebt: 0,
+    debtBaselineVersion: type === "credit_card" ? 3 : 0,
+    creditPaidTotal: 0,
+    currentStatementPaidTotal: 0,
     creditPaidPeriodKey: existing?.creditPaidPeriodKey || "",
     balance: type !== "credit_card" ? requestedBalanceOrDebt : 0,
     openingBalance,
@@ -3553,6 +3619,29 @@ function addPaymentAccount(event) {
   paymentAccounts = editingPaymentAccountId
     ? paymentAccounts.map((item) => (item.id === editingPaymentAccountId ? nextAccount : item))
     : [nextAccount, ...paymentAccounts];
+
+  const debtAdjustments = type === "credit_card"
+    ? buildCreditCardDebtAdjustments(
+        nextAccount,
+        requestedBalanceOrDebt,
+        requestedCurrentStatementDebt,
+        cardRecordTotals,
+        now
+      )
+    : [];
+
+  if (debtAdjustments.length) {
+    transactions = [...debtAdjustments, ...transactions].sort(compareTransactionsNewestFirst);
+    persistTransactions({ cloudUpserts: debtAdjustments }).catch((error) => {
+      if (paymentAccountStatus) {
+        paymentAccountStatus.textContent = `Kart borcu düzeltme kayıtları Firebase'e yazılamadı: ${error.message}`;
+      }
+    });
+  }
+
+  if (type === "credit_card") {
+    refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
+  }
   persistPaymentAccounts();
   closePaymentAccountModal({ keepStatus: true });
   paymentAccountStatus.textContent = wasEditing ? "Kart / hesap güncellendi." : "Kart / hesap eklendi.";
@@ -3582,6 +3671,12 @@ function openPaymentAccountModal(item = null) {
       ? item.debt || ""
       : item.balance || ""
     : "";
+  if (paymentAccountCurrentStatementDebt) {
+    paymentAccountCurrentStatementDebt.value =
+      item?.type === "credit_card" && Number(item.currentStatementDebt || 0) > 0
+        ? Number(item.currentStatementDebt)
+        : "";
+  }
   paymentAccountNote.value = item?.note || "";
 
   if (paymentAccountModalTitle) {
@@ -3732,8 +3827,12 @@ function updatePaymentAccountFormVisibility() {
 
   if (paymentAccountBalance) {
     paymentAccountBalance.placeholder = isCreditCard
-      ? "Mevcut kredi kartı borcu"
+      ? "Mevcut toplam kredi kartı borcu"
       : "Mevcut nakit / banka bakiyesi";
+  }
+
+  if (paymentAccountCurrentStatementDebt) {
+    paymentAccountCurrentStatementDebt.disabled = !isCreditCard;
   }
 
   if (paymentAccountColor && !editingPaymentAccountId && !paymentAccountColor.value) {
@@ -3793,8 +3892,27 @@ function openPaymentAccountRecordsModal(account, options = {}) {
     if (account.type === "credit_card") {
       const cardTotals = getCreditCardRecordTotals(account);
       const periodLabel = periodOptions.find((item) => item.value === viewingPaymentAccountRecordsPeriod)?.label || "Seçili dönem";
+      const activePeriodValue = `statement:${cardTotals.period.key}`;
+      const selectedPeriodDebtEffect = visibleTransactions.reduce(
+        (sum, transaction) => sum + getCreditCardStatementDebtEffect(transaction, accountId),
+        0
+      );
+      const selectedPeriodPaid = visibleTransactions.reduce(
+        (sum, transaction) => sum + getCreditCardPaymentRecordAmount(transaction, accountId),
+        0
+      );
+      const displayedTotalDebt = Number.isFinite(Number(account.debt))
+        ? Math.max(0, roundMoney(Number(account.debt)))
+        : Math.max(0, roundMoney(cardTotals.totalDebt));
+      const showingActiveDebt =
+        viewingPaymentAccountRecordsPeriod === "all" ||
+        viewingPaymentAccountRecordsPeriod === activePeriodValue;
+      const selectedPeriodDebt = showingActiveDebt
+        ? clampCreditCardStatementDebt(displayedTotalDebt, account.currentStatementDebt)
+        : Math.max(0, roundMoney(selectedPeriodDebtEffect - selectedPeriodPaid));
+      const periodDebtLabel = showingActiveDebt ? "Aktif dönem borcu" : "Seçili dönem net borcu";
       paymentAccountRecordsSummary.textContent =
-        `${periodLabel}: ${visibleTransactions.length} kayıt · Dönem borcu ${currency.format(cardTotals.currentStatementDebt)} · Toplam borç ${currency.format(cardTotals.totalDebt)} · Ödenen ${currency.format(cardTotals.totalPaid)}`;
+        `${periodLabel}: ${visibleTransactions.length} kayıt · ${periodDebtLabel} ${currency.format(selectedPeriodDebt)} · Toplam borç ${currency.format(displayedTotalDebt)} · Karta gelen transferler ${currency.format(selectedPeriodPaid)}`;
     } else {
       paymentAccountRecordsSummary.textContent = visibleTransactions.length
         ? `${visibleTransactions.length} kayıt · Gelen ${currency.format(visibleTotals.income)} · Giden ${currency.format(visibleTotals.expense)} · Net ${currency.format(visibleTotals.net)}`
@@ -3875,7 +3993,7 @@ function buildPaymentAccountRecordsPeriodOptions(account, relatedTransactions = 
     });
 
     const options = Array.from(periodMap.values()).sort((first, second) => second.time - first.time);
-    return options.length ? options : [{ value: "all", label: "Tüm dönemler" }];
+    return [{ value: "all", label: "Tüm dönemler" }, ...options];
   }
 
   const currentMonth = getTurkeyTodayISO().slice(0, 7);
@@ -4079,17 +4197,15 @@ function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
     0
   );
   const periodDebtEffect = periodTransactions.reduce(
-    (sum, transaction) => sum + getCreditCardTransactionDebtEffect(transaction, accountId),
+    (sum, transaction) => sum + getCreditCardStatementDebtEffect(transaction, accountId),
     0
   );
   const periodIncome = periodTransactions
-    .filter((transaction) => getCreditCardTransactionDebtEffect(transaction, accountId) < 0)
-    .reduce((sum, transaction) => sum + Math.abs(getCreditCardTransactionDebtEffect(transaction, accountId)), 0);
+    .filter((transaction) => getCreditCardStatementDebtEffect(transaction, accountId) < 0)
+    .reduce((sum, transaction) => sum + Math.abs(getCreditCardStatementDebtEffect(transaction, accountId)), 0);
   const periodExpense = periodTransactions
-    .filter((transaction) => getCreditCardTransactionDebtEffect(transaction, accountId) > 0)
-    .reduce((sum, transaction) => sum + getCreditCardTransactionDebtEffect(transaction, accountId), 0);
-  const legacyTotalPaid = Math.max(0, Number(account.creditPaidTotal || 0));
-  const legacyPeriodPaid = account.creditPaidPeriodKey === period.key ? Math.max(0, Number(account.currentStatementPaidTotal || 0)) : 0;
+    .filter((transaction) => getCreditCardStatementDebtEffect(transaction, accountId) > 0)
+    .reduce((sum, transaction) => sum + getCreditCardStatementDebtEffect(transaction, accountId), 0);
   const recordedTotalPaid = relatedTransactions.reduce(
     (sum, transaction) => sum + getCreditCardPaymentRecordAmount(transaction, accountId),
     0
@@ -4098,10 +4214,12 @@ function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
     (sum, transaction) => sum + getCreditCardPaymentRecordAmount(transaction, accountId),
     0
   );
-  const totalPaid = roundMoney(legacyTotalPaid + recordedTotalPaid);
-  const periodPaid = roundMoney(legacyPeriodPaid + recordedPeriodPaid);
-  const totalDebt = Math.max(0, roundMoney(allDebtEffect - legacyTotalPaid));
-  const currentStatementDebt = Math.max(0, roundMoney(periodDebtEffect - legacyPeriodPaid));
+  const totalDebtEffect = roundMoney(allDebtEffect);
+  const statementDebtEffect = roundMoney(periodDebtEffect);
+  const totalPaid = roundMoney(recordedTotalPaid);
+  const periodPaid = roundMoney(recordedPeriodPaid);
+  const totalDebt = Math.max(0, totalDebtEffect);
+  const currentStatementDebt = clampCreditCardStatementDebt(totalDebt, statementDebtEffect);
 
   return {
     all,
@@ -4110,6 +4228,8 @@ function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
     periodExpense: roundMoney(periodExpense),
     totalPaid: roundMoney(totalPaid),
     periodPaid: roundMoney(periodPaid),
+    totalDebtEffect,
+    statementDebtEffect,
     totalDebt,
     currentStatementDebt,
   };
@@ -4133,6 +4253,20 @@ function getCreditCardPaymentRecordAmount(transaction, accountId) {
   }
 
   return roundMoney(amount);
+}
+
+function getCreditCardStatementDebtEffect(transaction, accountId) {
+  if (getCreditCardPaymentRecordAmount(transaction, accountId) > 0) {
+    return 0;
+  }
+
+  return getCreditCardTransactionDebtEffect(transaction, accountId);
+}
+
+function clampCreditCardStatementDebt(totalDebt, currentStatementDebt) {
+  const normalizedTotalDebt = Math.max(0, roundMoney(Number(totalDebt || 0)));
+  const normalizedStatementDebt = Math.max(0, roundMoney(Number(currentStatementDebt || 0)));
+  return Math.min(normalizedStatementDebt, normalizedTotalDebt);
 }
 
 function getCreditCardTransactionDebtEffect(transaction, accountId) {
@@ -4194,15 +4328,21 @@ function refreshPaymentAccountFromRecords(accountId) {
     }
 
     if (item.type === "credit_card") {
-      const openingDebt = getPaymentAccountOpeningDebtForRefresh(item);
-      const openingCurrentStatementDebt = getPaymentAccountOpeningStatementDebtForRefresh(item);
+      const nextDebt = Math.max(0, roundMoney(Number(totals.totalDebt || 0)));
+      const nextCurrentStatementDebt = clampCreditCardStatementDebt(
+        nextDebt,
+        Number(totals.currentStatementDebt || 0)
+      );
 
       return {
         ...item,
-        openingDebt: roundMoney(openingDebt),
-        openingCurrentStatementDebt: roundMoney(openingCurrentStatementDebt),
-        debt: Math.max(0, roundMoney(openingDebt + Number(totals.totalDebt || 0))),
-        currentStatementDebt: Math.max(0, roundMoney(openingCurrentStatementDebt + Number(totals.currentStatementDebt || 0))),
+        openingDebt: 0,
+        openingCurrentStatementDebt: 0,
+        debtBaselineVersion: 3,
+        debt: nextDebt,
+        currentStatementDebt: nextCurrentStatementDebt,
+        creditPaidTotal: 0,
+        currentStatementPaidTotal: 0,
         creditPaidPeriodKey: totals.period.key,
         updatedAt: now,
       };
@@ -4245,17 +4385,23 @@ function buildRefreshedPaymentAccountFromRecords(item, now = getTurkeyNowDateTim
     : getPaymentAccountRecordTotals(item.id, allRelatedTransactions);
 
   if (item.type === "credit_card") {
-    const openingDebt = roundMoney(getPaymentAccountOpeningDebtForRefresh(item));
-    const openingCurrentStatementDebt = roundMoney(getPaymentAccountOpeningStatementDebtForRefresh(item));
-    const nextDebt = Math.max(0, roundMoney(openingDebt + Number(totals.totalDebt || 0)));
-    const nextCurrentStatementDebt = Math.max(0, roundMoney(openingCurrentStatementDebt + Number(totals.currentStatementDebt || 0)));
+    const openingDebt = 0;
+    const openingCurrentStatementDebt = 0;
+    const nextDebt = Math.max(0, roundMoney(Number(totals.totalDebt || 0)));
+    const nextCurrentStatementDebt = clampCreditCardStatementDebt(
+      nextDebt,
+      Number(totals.currentStatementDebt || 0)
+    );
     const nextPeriodKey = totals.period.key;
 
     if (
       roundMoney(Number(item.openingDebt || 0)) === openingDebt &&
       roundMoney(Number(item.openingCurrentStatementDebt || 0)) === openingCurrentStatementDebt &&
+      Number(item.debtBaselineVersion || 0) >= 3 &&
       roundMoney(Number(item.debt || 0)) === nextDebt &&
       roundMoney(Number(item.currentStatementDebt || 0)) === nextCurrentStatementDebt &&
+      roundMoney(Number(item.creditPaidTotal || 0)) === 0 &&
+      roundMoney(Number(item.currentStatementPaidTotal || 0)) === 0 &&
       String(item.creditPaidPeriodKey || "") === String(nextPeriodKey || "")
     ) {
       return item;
@@ -4265,8 +4411,11 @@ function buildRefreshedPaymentAccountFromRecords(item, now = getTurkeyNowDateTim
       ...item,
       openingDebt,
       openingCurrentStatementDebt,
+      debtBaselineVersion: 3,
       debt: nextDebt,
       currentStatementDebt: nextCurrentStatementDebt,
+      creditPaidTotal: 0,
+      currentStatementPaidTotal: 0,
       creditPaidPeriodKey: nextPeriodKey,
       updatedAt: now,
     };
@@ -4435,6 +4584,7 @@ function payCreditCardDebt(event) {
   }
 
   transactions = [paymentTransaction, ...transactions].sort(compareTransactionsNewestFirst);
+  refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
   persistPaymentAccounts();
   persistTransactions({ cloudUpserts: [paymentTransaction] }).catch((error) => {
     paymentAccountPayStatus.textContent = `Ödeme kaydı buluta yazılamadı: ${error.message}`;
@@ -4602,12 +4752,24 @@ function applyTransferEffectToAccount(account, transaction, signedAmount, now = 
     const period = getCreditCardStatementPeriod(account, transaction.date || getTurkeyTodayISO());
     const inPeriod = isTransactionInStatementPeriod(transaction, period);
     const debtDelta = -amount;
+    const isCardPayment =
+      transaction.type === "transfer" &&
+      String(transaction.transferAccountId || "") === String(account.id || "") &&
+      String(transaction.paymentAccountId || "") !== String(account.id || "");
+    const nextDebt = Math.max(0, roundMoney(Number(account.debt || 0) + debtDelta));
+    const nextStatementDebt = isCardPayment
+      ? clampCreditCardStatementDebt(nextDebt, account.currentStatementDebt)
+      : inPeriod
+        ? clampCreditCardStatementDebt(
+            nextDebt,
+            roundMoney(Number(account.currentStatementDebt || 0) + debtDelta)
+          )
+        : clampCreditCardStatementDebt(nextDebt, account.currentStatementDebt);
+
     return {
       ...account,
-      debt: Math.max(0, roundMoney(Number(account.debt || 0) + debtDelta)),
-      currentStatementDebt: inPeriod
-        ? Math.max(0, roundMoney(Number(account.currentStatementDebt || 0) + debtDelta))
-        : Number(account.currentStatementDebt || 0),
+      debt: nextDebt,
+      currentStatementDebt: nextStatementDebt,
       creditPaidPeriodKey: account.creditPaidPeriodKey || period.key,
       updatedAt: now,
     };
@@ -6198,6 +6360,7 @@ function saveTransactionEdit(event) {
     .sort(compareTransactionsNewestFirst);
 
   if (revertedPaymentAccount || appliedPaymentAccount || cleanedPaymentAccount) {
+    refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
     persistPaymentAccounts();
   }
   persistTransactions({ cloudUpserts: [nextTransaction], cloudDeletes: [...cleanupIds] }).catch((error) => {
@@ -7905,6 +8068,7 @@ async function handleAuthStateChanged(user) {
       pendingLocalTransactionUpserts.length > 0 ||
       pendingLocalTransactionDeletes.length > 0;
 
+    refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
     persistTransactions({ syncCloud: false });
     persistAssets({ syncCloud: false });
     persistBesAccounts({ syncCloud: false });
@@ -8037,6 +8201,7 @@ function subscribeCloudProfile(userId) {
           }
         }
 
+        refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: true });
         renderAssets();
         renderPaymentAccounts();
         renderBesAccounts();
@@ -8088,6 +8253,7 @@ function subscribeCloudTransactions(userId) {
       persistTransactionCategories({ syncCloud: false });
       syncCategorySelects();
       persistTransactions({ syncCloud: false });
+      refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: true });
       render();
       const sourceLabel = snapshot.metadata?.fromCache ? "yerel önbellekten" : "buluttan";
       cloudStatus.textContent = `${transactions.length} kayıt ${sourceLabel} güncel.`;
@@ -8638,6 +8804,7 @@ function normalizePaymentAccount(item) {
   const currentStatementDebt = Number(item.currentStatementDebt ?? debt);
   const creditPaidTotal = Number(item.creditPaidTotal || 0);
   const currentStatementPaidTotal = Number(item.currentStatementPaidTotal || 0);
+  const debtBaselineVersion = Number(item.debtBaselineVersion || 0);
   const limit = Number(item.limit || 0);
   const openingBalance = hasStoredMoneyValue(item.openingBalance) ? Number(item.openingBalance) : null;
   const openingDebt = hasStoredMoneyValue(item.openingDebt) ? Number(item.openingDebt) : null;
@@ -8669,11 +8836,16 @@ function normalizePaymentAccount(item) {
     dueDay: type === "credit_card" ? clampDay(item.dueDay) : 0,
     limit: type === "credit_card" ? Math.max(0, roundMoney(limit)) : 0,
     debt: type === "credit_card" ? Math.max(0, roundMoney(debt)) : 0,
-    currentStatementDebt: type === "credit_card" ? Math.max(0, roundMoney(currentStatementDebt)) : 0,
-    openingDebt: type === "credit_card" && openingDebt !== null ? Math.max(0, roundMoney(openingDebt)) : null,
-    openingCurrentStatementDebt: type === "credit_card" && openingCurrentStatementDebt !== null ? Math.max(0, roundMoney(openingCurrentStatementDebt)) : null,
+    currentStatementDebt: type === "credit_card"
+      ? clampCreditCardStatementDebt(debt, currentStatementDebt)
+      : 0,
+    openingDebt: type === "credit_card" && openingDebt !== null ? roundMoney(openingDebt) : null,
+    openingCurrentStatementDebt: type === "credit_card" && openingCurrentStatementDebt !== null ? roundMoney(openingCurrentStatementDebt) : null,
     creditPaidTotal: type === "credit_card" ? Math.max(0, roundMoney(creditPaidTotal)) : 0,
     currentStatementPaidTotal: type === "credit_card" ? Math.max(0, roundMoney(currentStatementPaidTotal)) : 0,
+    debtBaselineVersion: type === "credit_card" && Number.isFinite(debtBaselineVersion)
+      ? Math.max(0, Math.trunc(debtBaselineVersion))
+      : 0,
     creditPaidPeriodKey: type === "credit_card" ? String(item.creditPaidPeriodKey || "") : "",
     balance: type !== "credit_card" ? roundMoney(balance) : 0,
     openingBalance: type !== "credit_card" && openingBalance !== null ? roundMoney(openingBalance) : null,

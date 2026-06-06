@@ -13828,3 +13828,251 @@ body[data-theme="dark"] .profile-form option {
     font-size: 0.68rem !important;
   }
 }
+
+/* v212: mobil kart işlemleri kart içeriğinin altına alınır. */
+@media (max-width: 768px) {
+  .payment-account-list {
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: stretch !important;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  .payment-card.cash,
+  .payment-card.credit_card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    padding: 18px !important;
+    gap: 10px !important;
+    overflow: hidden !important;
+  }
+
+  .payment-card-top,
+  .payment-card-chip-line,
+  .payment-card-number,
+  .payment-card-details,
+  .payment-card-bottom {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .payment-card-top,
+  .payment-card-bottom {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+  }
+
+  .payment-card-details,
+  .payment-card-details.credit-card-details {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .payment-card-note {
+    max-width: min(52%, 190px) !important;
+    text-align: right !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 4px 0 0 !important;
+    z-index: 5 !important;
+  }
+
+  .payment-card-actions button,
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+    font-size: 0.78rem !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+  }
+
+  .payment-card-actions .ghost-btn {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+  }
+
+  .payment-card-actions .success-btn {
+    background: #6ee7b7 !important;
+    border-color: rgba(255, 255, 255, 0.24) !important;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+  }
+
+  .payment-card-actions .danger-lite-btn {
+    background: #fee2e2 !important;
+    border-color: rgba(153, 27, 27, 0.24) !important;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+  }
+
+  .payment-card-actions .success-btn:disabled {
+    background: rgba(255, 255, 255, 0.62) !important;
+    color: rgba(17, 17, 17, 0.72) !important;
+    -webkit-text-fill-color: rgba(17, 17, 17, 0.72) !important;
+  }
+
+  html[data-theme="light"] .payment-card .payment-card-actions .ghost-btn,
+  html[data-theme="dark"] .payment-card .payment-card-actions .ghost-btn,
+  body[data-theme="light"] .payment-card .payment-card-actions .ghost-btn,
+  body[data-theme="dark"] .payment-card .payment-card-actions .ghost-btn {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+  }
+
+  html[data-theme="light"] .payment-card .payment-card-actions .danger-lite-btn,
+  html[data-theme="dark"] .payment-card .payment-card-actions .danger-lite-btn,
+  body[data-theme="light"] .payment-card .payment-card-actions .danger-lite-btn,
+  body[data-theme="dark"] .payment-card .payment-card-actions .danger-lite-btn {
+    background: #fee2e2 !important;
+    border-color: rgba(153, 27, 27, 0.24) !important;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .payment-card,
+  .payment-card.bank_account,
+  .payment-card.cash,
+  .payment-card.credit_card {
+    padding: 16px !important;
+  }
+
+  .payment-card-actions,
+  .payment-card .payment-card-actions,
+  .auth-actions.payment-card-actions {
+    gap: 6px !important;
+  }
+
+  .payment-card-actions button,
+  .payment-card-actions .success-btn,
+  .payment-card-actions .ghost-btn,
+  .payment-card-actions .danger-lite-btn {
+    padding-inline: 6px !important;
+    font-size: 0.72rem !important;
+  }
+}
+
+/* v214: Mobil kart kayitlari listesine sabit gorunur alan ayir. */
+@media (max-width: 768px) {
+  #paymentAccountRecordsModal .modal-card.modal-layout-standard {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    width: min(100%, calc(100vw - 20px)) !important;
+    height: min(760px, calc(100dvh - 20px)) !important;
+    max-height: calc(100dvh - 20px) !important;
+    padding: 18px !important;
+    overflow: hidden !important;
+  }
+
+  #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-body-scroll {
+    display: flex !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-body-scroll > .profile-form {
+    display: grid !important;
+    grid-template-rows: auto auto minmax(0, 1fr) !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #paymentAccountRecordsModal .panel-heading,
+  #paymentAccountRecordsModal .account-records-filter {
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  #paymentAccountRecordsModal .account-records-filter label,
+  #paymentAccountRecordsModal .account-records-filter select {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-body-scroll > .profile-form > .account-records-list {
+    display: block !important;
+    align-self: stretch !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 4px 8px 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-footer-actions,
+  #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-footer-actions:has(> button:only-child) {
+    position: relative !important;
+    inset: auto !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    flex: 0 0 auto !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 10px 0 0 !important;
+    padding: 10px 0 max(2px, env(safe-area-inset-bottom)) !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-footer-actions > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    margin: 0 !important;
+  }
+}
