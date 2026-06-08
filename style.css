@@ -17399,3 +17399,205 @@ body {
     }
   }
 }
+
+
+/* v241: iPhone üst menü/topbar ve siyah overscroll düzeltmesi */
+html {
+  background:
+    radial-gradient(circle at top left, rgba(20, 184, 166, 0.10), transparent 34%),
+    #eef7f4 !important;
+}
+
+body {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.82)),
+    url("login-pattern.svg") center top / min(680px, 92vw) auto repeat,
+    radial-gradient(circle at top left, rgba(20, 184, 166, 0.10), transparent 36%),
+    var(--bg) !important;
+}
+
+body:has(#appShell:not([hidden])) {
+  overflow: hidden !important;
+}
+
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    html,
+    body {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 100% !important;
+      min-height: 100% !important;
+      overflow: hidden !important;
+      overscroll-behavior: none !important;
+      background-color: var(--bg) !important;
+    }
+
+    #appShell.app-shell:not([hidden]),
+    .app-shell:not([hidden]) {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 100svh !important;
+      min-height: 100svh !important;
+      max-height: 100svh !important;
+      overflow: hidden !important;
+      position: relative !important;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.80)),
+        url("login-pattern.svg") center top / min(680px, 92vw) auto repeat,
+        var(--bg) !important;
+    }
+
+    @supports (height: 100dvh) {
+      #appShell.app-shell:not([hidden]),
+      .app-shell:not([hidden]) {
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
+      }
+    }
+
+    .workspace {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      height: 100% !important;
+      max-height: 100% !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      overscroll-behavior-y: contain !important;
+      padding:
+        max(10px, env(safe-area-inset-top))
+        max(10px, env(safe-area-inset-right))
+        max(18px, env(safe-area-inset-bottom))
+        max(10px, env(safe-area-inset-left)) !important;
+      scroll-padding-top: 0 !important;
+      background: transparent !important;
+    }
+
+    .workspace::before,
+    .workspace::after {
+      display: none !important;
+      content: none !important;
+    }
+
+    .topbar {
+      position: relative !important;
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      align-items: center !important;
+      column-gap: 12px !important;
+      row-gap: 8px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 0 12px !important;
+      padding: 72px 16px 18px !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+    }
+
+    .topbar > div:first-child {
+      grid-column: 1 / 2 !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .topbar-side {
+      position: absolute !important;
+      top: 16px !important;
+      right: 16px !important;
+      width: auto !important;
+      max-width: calc(100% - 86px) !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+      z-index: 4 !important;
+    }
+
+    .topbar .user-chip,
+    .topbar #appUserEmail {
+      max-width: min(178px, calc(100vw - 116px)) !important;
+      min-height: 38px !important;
+      padding: 8px 12px !important;
+      border-radius: 8px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    .topbar-menu,
+    .topbar-menu.sidebar-toggle,
+    .sidebar-toggle.topbar-menu {
+      display: inline-grid !important;
+      position: fixed !important;
+      top: max(18px, env(safe-area-inset-top)) !important;
+      left: max(18px, env(safe-area-inset-left)) !important;
+      width: 48px !important;
+      height: 48px !important;
+      min-width: 48px !important;
+      min-height: 48px !important;
+      padding: 10px !important;
+      border-radius: 8px !important;
+      z-index: 1000 !important;
+      background: rgba(10, 25, 38, 0.92) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24) !important;
+      transform: none !important;
+    }
+
+    .topbar-menu span,
+    .topbar-menu.sidebar-toggle span,
+    .sidebar-toggle.topbar-menu span {
+      width: 24px !important;
+      height: 2.5px !important;
+      margin: 2.5px 0 !important;
+      border-radius: 999px !important;
+    }
+
+    .topbar .panel-kicker,
+    .topbar #pageKicker {
+      margin-top: 0 !important;
+    }
+
+    #homeView,
+    #entryView,
+    #assetsView,
+    #cardsView,
+    #besView,
+    #summaryView,
+    #historyView,
+    #userView,
+    #settingsView {
+      margin-top: 0 !important;
+    }
+  }
+}
+
+@media (max-width: 390px) {
+  @supports (-webkit-touch-callout: none) {
+    .topbar {
+      padding: 68px 14px 16px !important;
+    }
+
+    .topbar-side {
+      top: 14px !important;
+      right: 14px !important;
+    }
+
+    .topbar-menu,
+    .topbar-menu.sidebar-toggle,
+    .sidebar-toggle.topbar-menu {
+      top: max(16px, env(safe-area-inset-top)) !important;
+      left: max(16px, env(safe-area-inset-left)) !important;
+      width: 46px !important;
+      height: 46px !important;
+      min-width: 46px !important;
+      min-height: 46px !important;
+    }
+  }
+}
