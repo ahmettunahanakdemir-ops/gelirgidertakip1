@@ -656,6 +656,8 @@ let payingPaymentAccountId = "";
 let deletingPaymentAccountId = "";
 let viewingPaymentAccountRecordsId = "";
 let viewingPaymentAccountRecordsPeriod = "";
+let isPaymentAccountRecordsFilterInteracting = false;
+let paymentAccountRecordsInteractionTimer = null;
 let pendingDeletePassword = "";
 let pendingGenericConfirmAction = null;
 let uiSettings = loadUiSettings();
@@ -1732,12 +1734,35 @@ function init() {
       });
     }
   });
+  paymentAccountRecordsPeriodFilter?.addEventListener("pointerdown", (event) => {
+    event.stopPropagation();
+    markPaymentAccountRecordsFilterInteraction(true);
+  });
+  paymentAccountRecordsPeriodFilter?.addEventListener("mousedown", (event) => {
+    event.stopPropagation();
+    markPaymentAccountRecordsFilterInteraction(true);
+  });
+  paymentAccountRecordsPeriodFilter?.addEventListener("touchstart", (event) => {
+    event.stopPropagation();
+    markPaymentAccountRecordsFilterInteraction(true);
+  }, { passive: true });
+  paymentAccountRecordsPeriodFilter?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    markPaymentAccountRecordsFilterInteraction(true);
+  });
+  paymentAccountRecordsPeriodFilter?.addEventListener("focus", () => {
+    markPaymentAccountRecordsFilterInteraction(true);
+  });
+  paymentAccountRecordsPeriodFilter?.addEventListener("blur", () => {
+    markPaymentAccountRecordsFilterInteraction(false, 180);
+  });
   paymentAccountRecordsPeriodFilter?.addEventListener("change", () => {
     viewingPaymentAccountRecordsPeriod = paymentAccountRecordsPeriodFilter.value || "";
     const account = paymentAccounts.find((item) => item.id === viewingPaymentAccountRecordsId);
     if (account) {
-      openPaymentAccountRecordsModal(account, { preservePeriod: true });
+      renderPaymentAccountRecordsModalContent(account, { rebuildFilter: false });
     }
+    markPaymentAccountRecordsFilterInteraction(false, 180);
   });
   initCloud();
   refreshMarketPrices({ silent: true });
@@ -3885,19 +3910,41 @@ function getPaymentAccountRelatedTransactions(accountId, sourceTransactions = tr
     .sort(compareTransactionsNewestFirst);
 }
 
-function openPaymentAccountRecordsModal(account, options = {}) {
-  if (!paymentAccountRecordsModal || !account) {
+function markPaymentAccountRecordsFilterInteraction(active, delay = 0) {
+  if (paymentAccountRecordsInteractionTimer) {
+    clearTimeout(paymentAccountRecordsInteractionTimer);
+    paymentAccountRecordsInteractionTimer = null;
+  }
+
+  if (active) {
+    isPaymentAccountRecordsFilterInteracting = true;
     return;
   }
 
+  if (delay > 0) {
+    paymentAccountRecordsInteractionTimer = setTimeout(() => {
+      isPaymentAccountRecordsFilterInteracting = false;
+      paymentAccountRecordsInteractionTimer = null;
+    }, delay);
+    return;
+  }
+
+  isPaymentAccountRecordsFilterInteracting = false;
+}
+
+function renderPaymentAccountRecordsModalContent(account, options = {}) {
+  if (!account) {
+    return;
+  }
+
+  const { rebuildFilter = true } = options;
   const accountId = String(account.id || "");
-  const accountChanged = viewingPaymentAccountRecordsId !== accountId;
-  viewingPaymentAccountRecordsId = accountId;
   const relatedTransactions = getPaymentAccountRelatedTransactions(accountId);
   const periodOptions = buildPaymentAccountRecordsPeriodOptions(account, relatedTransactions);
   const defaultPeriod = periodOptions[0]?.value || "all";
-  const currentPeriod = !options.preservePeriod || accountChanged ? defaultPeriod : viewingPaymentAccountRecordsPeriod || defaultPeriod;
-  viewingPaymentAccountRecordsPeriod = periodOptions.some((item) => item.value === currentPeriod) ? currentPeriod : defaultPeriod;
+  viewingPaymentAccountRecordsPeriod = periodOptions.some((item) => item.value === viewingPaymentAccountRecordsPeriod)
+    ? viewingPaymentAccountRecordsPeriod
+    : defaultPeriod;
   const visibleTransactions = filterPaymentAccountRecordsByPeriod(account, relatedTransactions, viewingPaymentAccountRecordsPeriod);
   const visibleTotals = getPaymentAccountRecordTotals(account.id, visibleTransactions);
 
@@ -3905,7 +3952,8 @@ function openPaymentAccountRecordsModal(account, options = {}) {
     paymentAccountRecordsTitle.textContent = `${formatPaymentAccountName(account)} kayıtları`;
   }
 
-  if (paymentAccountRecordsPeriodFilter) {
+  if (paymentAccountRecordsPeriodFilter && rebuildFilter) {
+    const existingValue = paymentAccountRecordsPeriodFilter.value || viewingPaymentAccountRecordsPeriod;
     paymentAccountRecordsPeriodFilter.innerHTML = "";
     periodOptions.forEach((item) => {
       const option = document.createElement("option");
@@ -3913,7 +3961,9 @@ function openPaymentAccountRecordsModal(account, options = {}) {
       option.textContent = item.label;
       paymentAccountRecordsPeriodFilter.append(option);
     });
-    paymentAccountRecordsPeriodFilter.value = viewingPaymentAccountRecordsPeriod;
+    const nextValue = periodOptions.some((item) => item.value === existingValue) ? existingValue : viewingPaymentAccountRecordsPeriod;
+    paymentAccountRecordsPeriodFilter.value = nextValue;
+    viewingPaymentAccountRecordsPeriod = paymentAccountRecordsPeriodFilter.value || defaultPeriod;
   }
 
   if (paymentAccountRecordsSummary) {
@@ -3987,9 +4037,29 @@ function openPaymentAccountRecordsModal(account, options = {}) {
   if (refreshPaymentAccountFromRecordsButton) {
     refreshPaymentAccountFromRecordsButton.disabled = false;
   }
+}
 
+function openPaymentAccountRecordsModal(account, options = {}) {
+  if (!paymentAccountRecordsModal || !account) {
+    return;
+  }
+
+  const accountId = String(account.id || "");
+  const accountChanged = viewingPaymentAccountRecordsId !== accountId;
+  viewingPaymentAccountRecordsId = accountId;
+
+  const relatedTransactions = getPaymentAccountRelatedTransactions(accountId);
+  const periodOptions = buildPaymentAccountRecordsPeriodOptions(account, relatedTransactions);
+  const defaultPeriod = periodOptions[0]?.value || "all";
+  const currentPeriod = !options.preservePeriod || accountChanged
+    ? defaultPeriod
+    : viewingPaymentAccountRecordsPeriod || defaultPeriod;
+  viewingPaymentAccountRecordsPeriod = periodOptions.some((item) => item.value === currentPeriod)
+    ? currentPeriod
+    : defaultPeriod;
+
+  renderPaymentAccountRecordsModalContent(account, { rebuildFilter: true });
   paymentAccountRecordsModal.hidden = false;
-  setTimeout(() => closePaymentAccountRecordsButton?.focus(), 0);
 }
 
 function buildPaymentAccountRecordsPeriodOptions(account, relatedTransactions = []) {
@@ -4079,6 +4149,7 @@ function formatMonthLabel(monthKey = "") {
 function closePaymentAccountRecordsModal() {
   viewingPaymentAccountRecordsId = "";
   viewingPaymentAccountRecordsPeriod = "";
+  markPaymentAccountRecordsFilterInteraction(false);
 
   if (paymentAccountRecordsModal) {
     paymentAccountRecordsModal.hidden = true;
@@ -4428,7 +4499,9 @@ function refreshPaymentAccountFromRecords(accountId) {
     `${formatPaymentAccountName(refreshedAccount || account)} tüm zamanlardaki kayıtlarından yeniden hesaplandı: ${valueText}.`;
 
   if (!paymentAccountRecordsModal?.hidden && viewingPaymentAccountRecordsId === account.id) {
-    openPaymentAccountRecordsModal(refreshedAccount || account, { preservePeriod: true });
+    if (!isPaymentAccountRecordsFilterInteracting) {
+      renderPaymentAccountRecordsModalContent(refreshedAccount || account, { rebuildFilter: true });
+    }
   }
 }
 
@@ -4525,10 +4598,10 @@ function refreshAllPaymentAccountsFromRecords(options = {}) {
       : "Kartlar ve hesaplar zaten güncel.";
   }
 
-  if (!paymentAccountRecordsModal?.hidden && viewingPaymentAccountRecordsId) {
+  if (!paymentAccountRecordsModal?.hidden && viewingPaymentAccountRecordsId && !isPaymentAccountRecordsFilterInteracting) {
     const account = paymentAccounts.find((item) => item.id === viewingPaymentAccountRecordsId);
     if (account) {
-      openPaymentAccountRecordsModal(account, { preservePeriod: true });
+      renderPaymentAccountRecordsModalContent(account, { rebuildFilter: true });
     }
   }
 
