@@ -1,4 +1,4 @@
-const CACHE_NAME = "akis-butce-v236";
+const CACHE_NAME = "akis-butce-v238";
 const APP_ASSETS = [
   "./",
   "./index.html",
