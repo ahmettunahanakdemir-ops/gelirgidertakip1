@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="manifest" href="manifest.json?v=215" />
+    <link rel="manifest" href="manifest.json?v=227" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
@@ -32,7 +32,7 @@
         }
       } catch (e) {}
     </script>
-    <link rel="stylesheet" href="style.css?v=215" />
+    <link rel="stylesheet" href="style.css?v=227" />
   </head>
   <body>
 
@@ -719,12 +719,21 @@
             </section>
 
             <section class="panel insights-panel">
-              <div class="panel-heading">
+              <div class="panel-heading category-summary-heading">
                 <div>
                   <p class="panel-kicker">Dağılım</p>
                   <h2>Kategori özeti</h2>
                   <p id="overviewMonthLabel" class="panel-note">Seçili ayın gider dağılımı</p>
                 </div>
+                <label class="summary-category-filter-label">
+                  İşlem tipi
+                  <select id="summaryCategoryTypeFilter" class="summary-category-filter">
+                    <option value="expense" selected>Gider kategorileri</option>
+                    <option value="income">Gelir kategorileri</option>
+                    <option value="transfer">Transfer kategorileri</option>
+                    <option value="all">Tüm kategoriler</option>
+                  </select>
+                </label>
               </div>
               <div id="categoryBreakdown" class="category-breakdown"></div>
             </section>
@@ -903,6 +912,21 @@
                     <small>Yedek aldığın son tarih burada görünür; verilerinde sorun olursa bu yedek Firebase'de saklanır.</small>
                   </div>
                   <button id="cloudBackupButton" class="primary-btn" type="button">Yedek Al</button>
+                </div>
+                <div class="notification-settings-card cloud-backup-card local-backup-card">
+                  <div>
+                    <strong>Yerel dosya yedeği</strong>
+                    <small>Bu cihazdaki kayıtları JSON dosyası olarak indirir. Firebase bağlantısı gerekmez.</small>
+                  </div>
+                  <button id="localBackupDownloadButton" class="ghost-btn" type="button">Dosya İndir</button>
+                </div>
+                <div class="notification-settings-card cloud-backup-card local-backup-card local-backup-import-card">
+                  <div>
+                    <strong>Yerel yedeği yükle</strong>
+                    <small>Bilgisayara indirdiğin JSON yedeğini seçip uygulamaya geri aktarır. Mevcut veriler korunarak birleştirilir.</small>
+                  </div>
+                  <input id="localBackupImportInput" type="file" accept=".json,application/json" hidden />
+                  <button id="localBackupImportButton" class="ghost-btn" type="button">Yedek Yükle</button>
                 </div>
                 <p id="cloudBackupStatus" class="sync-status">Son yedek: Henüz yok.</p>
               </section>
@@ -1512,10 +1536,10 @@
       </article>
     </template>
 
-    <script src="firebase-config.js?v=215"></script>
+    <script src="firebase-config.js?v=227"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="app.js?v=215"></script>
+    <script src="app.js?v=227"></script>
   </body>
 </html>

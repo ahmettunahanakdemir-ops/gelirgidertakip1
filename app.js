@@ -499,6 +499,9 @@ const resetAppearanceButton = document.getElementById("resetAppearanceButton");
 const cardReminderPermissionButton = document.getElementById("cardReminderPermissionButton");
 const cardReminderStatus = document.getElementById("cardReminderStatus");
 const cloudBackupButton = document.getElementById("cloudBackupButton");
+const localBackupDownloadButton = document.getElementById("localBackupDownloadButton");
+const localBackupImportButton = document.getElementById("localBackupImportButton");
+const localBackupImportInput = document.getElementById("localBackupImportInput");
 const cloudBackupStatus = document.getElementById("cloudBackupStatus");
 const genericConfirmModal = document.getElementById("genericConfirmModal");
 const genericConfirmTitle = document.getElementById("genericConfirmTitle");
@@ -597,6 +600,7 @@ const incomeTotal = document.getElementById("incomeTotal");
 const expenseTotal = document.getElementById("expenseTotal");
 const monthlySavings = document.getElementById("monthlySavings");
 const categoryBreakdown = document.getElementById("categoryBreakdown");
+const summaryCategoryTypeFilter = document.getElementById("summaryCategoryTypeFilter");
 
 const sampleTransactions = [
   {
@@ -1514,6 +1518,9 @@ function init() {
   historySearchButton?.addEventListener("click", () => {
     applyHistorySearch();
   });
+  summaryCategoryTypeFilter?.addEventListener("change", () => {
+    renderCategoryBreakdown();
+  });
   historyStartDate.addEventListener("change", () => {
     currentHistoryPage = 1;
     renderTransactions();
@@ -1532,6 +1539,11 @@ function init() {
   openRecentTransactionsButton?.addEventListener("click", openRecentTransactionsModal);
   closeRecentTransactionsButton?.addEventListener("click", closeRecentTransactionsModal);
   cloudBackupButton?.addEventListener("click", backupCurrentDataToCloud);
+  localBackupDownloadButton?.addEventListener("click", downloadLocalDataBackup);
+  localBackupImportButton?.addEventListener("click", () => {
+    localBackupImportInput?.click();
+  });
+  localBackupImportInput?.addEventListener("change", importLocalDataBackupFile);
   recentTransactionsModal?.addEventListener("click", (event) => {
     if (event.target === recentTransactionsModal) {
       closeRecentTransactionsModal();
@@ -3064,11 +3076,14 @@ function renderPaymentAccounts() {
 
     if (item.type === "credit_card") {
       const cardTotals = getCreditCardRecordTotals(item);
+      const activeStatementDebt = getActiveCreditCardStatementDebt(item);
       details.classList.add("credit-card-details");
+      const availableLimit = Math.max(0, Number(item.limit || 0) - Number(item.debt || 0));
       details.append(
         createPaymentCardDetail("SKT", item.expiry ? formatExpiry(item.expiry) : "--/----"),
         createPaymentCardDetail("Kesim", item.statementDay ? `${item.statementDay}. gün` : "-"),
-        createPaymentCardDetail("Dönem", currency.format(item.currentStatementDebt ?? cardTotals.currentStatementDebt ?? 0))
+        createPaymentCardDetail("Dönem", currency.format(activeStatementDebt)),
+        createPaymentCardDetail("KULLANILABİLİR\nLİMİT", currency.format(availableLimit))
       );
     } else {
       details.append(
@@ -3143,11 +3158,24 @@ function renderPaymentAccounts() {
 
 function createPaymentCardDetail(label, value) {
   const wrapper = document.createElement("div");
-  const small = document.createElement("span");
-  small.textContent = label;
   const strong = document.createElement("strong");
+  const labelLines = String(label ?? "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
+
+  if (labelLines.length > 1) {
+    wrapper.classList.add("stacked-label");
+    labelLines.forEach((line) => {
+      const small = document.createElement("span");
+      small.textContent = line;
+      wrapper.append(small);
+    });
+  } else {
+    const small = document.createElement("span");
+    small.textContent = labelLines[0] || String(label ?? "");
+    wrapper.append(small);
+  }
+
   strong.textContent = value;
-  wrapper.append(small, strong);
+  wrapper.append(strong);
   return wrapper;
 }
 
@@ -3166,9 +3194,9 @@ function getPaymentAccountCardNumberPlaceholder(type) {
 function getPaymentAccountCardNote(item) {
   if (item.type === "credit_card") {
     const available = Math.max(0, Number(item.limit || 0) - Number(item.debt || 0));
-    const totals = getCreditCardRecordTotals(item);
+    const activeStatementDebt = getActiveCreditCardStatementDebt(item);
     const parts = [
-      `Dönem ${currency.format(item.currentStatementDebt ?? totals.currentStatementDebt ?? 0)}`,
+      `Dönem ${currency.format(activeStatementDebt)}`,
       `Toplam ${currency.format(item.debt || 0)}`,
     ];
 
@@ -3907,8 +3935,9 @@ function openPaymentAccountRecordsModal(account, options = {}) {
       const showingActiveDebt =
         viewingPaymentAccountRecordsPeriod === "all" ||
         viewingPaymentAccountRecordsPeriod === activePeriodValue;
+      const activeStatementDebt = getActiveCreditCardStatementDebt(account);
       const selectedPeriodDebt = showingActiveDebt
-        ? clampCreditCardStatementDebt(displayedTotalDebt, account.currentStatementDebt)
+        ? clampCreditCardStatementDebt(displayedTotalDebt, activeStatementDebt)
         : Math.max(0, roundMoney(selectedPeriodDebtEffect - selectedPeriodPaid));
       const periodDebtLabel = showingActiveDebt ? "Aktif dönem borcu" : "Seçili dönem net borcu";
       paymentAccountRecordsSummary.textContent =
@@ -4186,17 +4215,35 @@ function toDateInputValue(date) {
   return `${year}-${month}-${day}`;
 }
 
+function getActiveCreditCardStatementDebt(account, sourceTransactions = transactions) {
+  if (!account || account.type !== "credit_card") {
+    return 0;
+  }
+
+  const totals = getCreditCardRecordTotals(account, sourceTransactions);
+  return clampCreditCardStatementDebt(totals.totalDebt, totals.currentStatementDebt);
+}
+
 function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
   const period = getCreditCardStatementPeriod(account);
   const accountId = String(account.id || "");
   const relatedTransactions = getPaymentAccountRelatedTransactions(accountId, sourceTransactions);
   const all = getPaymentAccountRecordTotals(account.id, relatedTransactions);
   const periodTransactions = relatedTransactions.filter((transaction) => isTransactionInStatementPeriod(transaction, period));
+  const previousPeriodTransactions = relatedTransactions.filter((transaction) => {
+    const transactionDate = String(transaction?.date || "");
+    return Boolean(transactionDate && period?.start && transactionDate < period.start);
+  });
+
   const allDebtEffect = relatedTransactions.reduce(
     (sum, transaction) => sum + getCreditCardTransactionDebtEffect(transaction, accountId),
     0
   );
   const periodDebtEffect = periodTransactions.reduce(
+    (sum, transaction) => sum + getCreditCardStatementDebtEffect(transaction, accountId),
+    0
+  );
+  const previousPeriodDebtEffect = previousPeriodTransactions.reduce(
     (sum, transaction) => sum + getCreditCardStatementDebtEffect(transaction, accountId),
     0
   );
@@ -4214,12 +4261,21 @@ function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
     (sum, transaction) => sum + getCreditCardPaymentRecordAmount(transaction, accountId),
     0
   );
+
   const totalDebtEffect = roundMoney(allDebtEffect);
   const statementDebtEffect = roundMoney(periodDebtEffect);
+  const previousStatementDebtEffect = Math.max(0, roundMoney(previousPeriodDebtEffect));
   const totalPaid = roundMoney(recordedTotalPaid);
   const periodPaid = roundMoney(recordedPeriodPaid);
+
+  // v227: Kart ödemeleri önce önceki dönem borcunu kapatır.
+  // Toplam ödeme önceki dönem borcunu aşarsa aşan kısım aktif dönem borcundan düşer.
+  // Gelecek dönem kayıtları toplam borçta kalır ama aktif dönem borcuna girmez.
+  const excessPaymentForActivePeriod = Math.max(0, roundMoney(totalPaid - previousStatementDebtEffect));
+  const statementDebtAfterPayments = Math.max(0, roundMoney(statementDebtEffect - excessPaymentForActivePeriod));
+
   const totalDebt = Math.max(0, totalDebtEffect);
-  const currentStatementDebt = clampCreditCardStatementDebt(totalDebt, statementDebtEffect);
+  const currentStatementDebt = clampCreditCardStatementDebt(totalDebt, statementDebtAfterPayments);
 
   return {
     all,
@@ -4228,8 +4284,11 @@ function getCreditCardRecordTotals(account, sourceTransactions = transactions) {
     periodExpense: roundMoney(periodExpense),
     totalPaid: roundMoney(totalPaid),
     periodPaid: roundMoney(periodPaid),
+    previousStatementDebtEffect,
+    excessPaymentForActivePeriod,
     totalDebtEffect,
     statementDebtEffect,
+    statementDebtAfterPayments,
     totalDebt,
     currentStatementDebt,
   };
@@ -5605,36 +5664,99 @@ function formatMarketTime(value) {
   }).format(new Date(value));
 }
 
+function getSummaryCategoryTypeFilterValue() {
+  const value = summaryCategoryTypeFilter?.value || "expense";
+  return ["income", "expense", "transfer", "all"].includes(value) ? value : "expense";
+}
+
+function getSummaryCategoryTypeLabel(type) {
+  if (type === "income") {
+    return "gelir";
+  }
+
+  if (type === "transfer") {
+    return "transfer";
+  }
+
+  if (type === "all") {
+    return "tüm işlem";
+  }
+
+  return "gider";
+}
+
+function getSummaryCategoryEmptyMessage(type) {
+  if (type === "income") {
+    return "Gelir ekledikçe kategori dağılımı burada görünecek.";
+  }
+
+  if (type === "transfer") {
+    return "Transfer ekledikçe kategori dağılımı burada görünecek.";
+  }
+
+  if (type === "all") {
+    return "Kayıt ekledikçe kategori dağılımı burada görünecek.";
+  }
+
+  return "Gider ekledikçe kategori dağılımı burada görünecek.";
+}
+
+function getSummaryCategoryAmount(item) {
+  const amount = Number(item.amount || 0);
+  if (item.type === "transfer") {
+    return amount + Math.max(0, Number(item.transferFee || 0));
+  }
+
+  return amount;
+}
+
 function renderCategoryBreakdown() {
+  if (!categoryBreakdown) {
+    return;
+  }
+
+  const selectedType = getSummaryCategoryTypeFilterValue();
+  const typeLabel = getSummaryCategoryTypeLabel(selectedType);
   const scopedTransactions = getSummaryScopedTransactions();
-  const expenses = scopedTransactions.filter((item) => item.type === "expense");
-  const totalExpense = expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const grouped = expenses.reduce((acc, item) => {
-    acc[item.category] = (acc[item.category] || 0) + item.amount;
+  const filteredTransactions = scopedTransactions.filter((item) =>
+    selectedType === "all" ? ["income", "expense", "transfer"].includes(item.type) : item.type === selectedType
+  );
+  const totalAmount = filteredTransactions.reduce((sum, item) => sum + getSummaryCategoryAmount(item), 0);
+  const grouped = filteredTransactions.reduce((acc, item) => {
+    const category = item.category || (item.type === "transfer" ? "Transfer" : "Diğer");
+    acc[category] = (acc[category] || 0) + getSummaryCategoryAmount(item);
     return acc;
   }, {});
 
   categoryBreakdown.innerHTML = "";
 
-  if (!expenses.length) {
+  const scopeLabel = isHomeSummaryFilterActive()
+    ? `${getHomeSummaryFilterLabel()} arası`
+    : "Tüm dönem";
+
+  if (overviewMonthLabel) {
+    overviewMonthLabel.textContent = `${scopeLabel} ${typeLabel} kategori dağılımı`;
+  }
+
+  if (!filteredTransactions.length) {
     categoryBreakdown.innerHTML =
-      '<div class="empty-state">Gider ekledikçe kategori dağılımı burada görünecek.</div>';
+      `<div class="empty-state">${getSummaryCategoryEmptyMessage(selectedType)}</div>`;
     return;
   }
 
   Object.entries(grouped)
     .sort(([, a], [, b]) => b - a)
     .forEach(([category, amount]) => {
-      const ratio = totalExpense ? (amount / totalExpense) * 100 : 0;
+      const ratio = totalAmount ? (amount / totalAmount) * 100 : 0;
       const row = document.createElement("div");
-      row.className = "category-row";
+      row.className = `category-row category-row-${selectedType}`;
       row.innerHTML = `
         <div class="category-topline">
-          <span>${category}</span>
-          <span>${currency.format(amount)} · %${ratio.toFixed(0)}</span>
+          <span>${escapeHtml(category)}</span>
+          <span>${escapeHtml(currency.format(amount))} · %${ratio.toFixed(0)}</span>
         </div>
         <div class="category-bar">
-          <span style="width:${ratio}%"></span>
+          <span style="width:${Math.min(100, Math.max(0, ratio))}%"></span>
         </div>
       `;
       categoryBreakdown.append(row);
@@ -6873,6 +6995,217 @@ async function backupCurrentDataToCloud() {
   }
 }
 
+function buildLocalDataBackupPayload(createdAt = getTurkeyNowDateTime()) {
+  return {
+    version: 5,
+    backupType: "local-file",
+    app: "Akış Bütçe",
+    createdAt,
+    exportedFrom: typeof location === "undefined" ? "" : location.href,
+    user: currentUser
+      ? {
+          uid: currentUser.uid || "",
+          email: currentUser.email || "",
+          username: getUserDisplayName(currentUser),
+        }
+      : null,
+    summary: getCloudBackupSummary(),
+    transactions: getCloudReadyTransactions(transactions),
+    assets: getCloudReadyAssets(assets),
+    besAccounts: getCloudReadyBesAccounts(besAccounts),
+    paymentAccounts: getCloudReadyPaymentAccounts(paymentAccounts),
+    transactionCategories: normalizeCategoryState(transactionCategories),
+    deletedTransactionState: getDeletedTransactionStateSnapshot(),
+    uiSettings,
+    cardReminderSettings,
+    marketData,
+    homeSummaryFilter,
+  };
+}
+
+function getLocalBackupFilename(createdAt = getTurkeyNowDateTime()) {
+  const stamp = String(createdAt || getTurkeyNowDateTime())
+    .replace(/[:T]/g, "-")
+    .replace(/\+.*/, "")
+    .replace(/\D/g, "")
+    .slice(0, 12);
+  return `akis-butce-yerel-yedek-${stamp || getExportStamp()}.json`;
+}
+
+function downloadLocalDataBackup() {
+  const previousText = localBackupDownloadButton?.textContent || "Dosya İndir";
+  const createdAt = getTurkeyNowDateTime();
+  const payload = buildLocalDataBackupPayload(createdAt);
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+
+  try {
+    if (localBackupDownloadButton) {
+      localBackupDownloadButton.disabled = true;
+      localBackupDownloadButton.textContent = "İndiriliyor...";
+    }
+
+    downloadBlob(blob, getLocalBackupFilename(createdAt));
+    if (cloudBackupStatus) {
+      cloudBackupStatus.textContent =
+        `Yerel yedek indirildi: ${payload.summary.transactions} kayıt · ${payload.summary.paymentAccounts} kart/hesap.`;
+    }
+  } catch (error) {
+    if (cloudBackupStatus) {
+      cloudBackupStatus.textContent = `Yerel yedek indirilemedi: ${error.message}`;
+    }
+  } finally {
+    if (localBackupDownloadButton) {
+      localBackupDownloadButton.disabled = false;
+      localBackupDownloadButton.textContent = previousText;
+    }
+  }
+}
+
+function getBackupArrayField(parsed, key) {
+  return Array.isArray(parsed?.[key]) ? parsed[key] : [];
+}
+
+function applyLocalDataBackup(parsed) {
+  const sourceTransactions = Array.isArray(parsed)
+    ? parsed
+    : getBackupArrayField(parsed, "transactions");
+
+  if (!Array.isArray(sourceTransactions)) {
+    throw new Error("Yedek dosyasında kayıt listesi bulunamadı.");
+  }
+
+  const validTransactions = sourceTransactions.filter(isValidTransaction);
+  transactions = mergeTransactions(validTransactions, transactions);
+
+  const sourceAssets = getBackupArrayField(parsed, "assets");
+  if (sourceAssets.length) {
+    assets = mergeRecordsById(readCloudAssets(sourceAssets), assets);
+  }
+
+  const sourceBesAccounts = getBackupArrayField(parsed, "besAccounts");
+  if (sourceBesAccounts.length) {
+    besAccounts = mergeRecordsById(readCloudBesAccounts(sourceBesAccounts), besAccounts);
+  }
+
+  const sourcePaymentAccounts = getBackupArrayField(parsed, "paymentAccounts");
+  if (sourcePaymentAccounts.length) {
+    paymentAccounts = mergeRecordsById(readCloudPaymentAccounts(sourcePaymentAccounts), paymentAccounts);
+  }
+
+  const categorySource = parsed?.transactionCategories || parsed?.categories;
+  if (hasCategoryState(categorySource)) {
+    transactionCategories = mergeCategoryStates(categorySource, transactionCategories);
+  }
+  transactionCategories = mergeCategoryStates(transactionCategories, getTransactionCategoriesFromRecords(transactions));
+
+  if (parsed?.deletedTransactionState) {
+    applyDeletedTransactionState(parsed.deletedTransactionState);
+  }
+
+  if (parsed?.uiSettings && typeof parsed.uiSettings === "object") {
+    uiSettings = normalizeUiSettings({ ...uiSettings, ...parsed.uiSettings });
+    saveUiSettings();
+    applyUiSettings();
+  }
+
+  if (parsed?.cardReminderSettings && typeof parsed.cardReminderSettings === "object") {
+    cardReminderSettings = {
+      ...cardReminderSettings,
+      ...parsed.cardReminderSettings,
+    };
+    saveCardReminderSettings();
+    updateCardReminderUi();
+  }
+
+  if (parsed?.homeSummaryFilter && typeof parsed.homeSummaryFilter === "object") {
+    homeSummaryFilter = normalizeHomeSummaryFilter(parsed.homeSummaryFilter);
+    saveHomeSummaryFilter();
+    syncHomeSummaryFilterControls();
+  }
+
+  if (parsed?.marketData && typeof parsed.marketData === "object") {
+    marketData = {
+      ...marketData,
+      ...parsed.marketData,
+    };
+    saveMarketData();
+  }
+
+  persistTransactions({ replaceCloud: false }).catch((error) => {
+    if (cloudBackupStatus) {
+      cloudBackupStatus.textContent = `Yedek yüklendi ama Firebase'e yazılamadı: ${error.message}`;
+    }
+  });
+  persistAssets();
+  persistBesAccounts();
+  persistPaymentAccounts();
+  persistTransactionCategories();
+  syncCategorySelects();
+  updatePaymentAccountFilterOptions();
+  syncBankImportAccountSelects();
+  render();
+  updateStorageStatus();
+
+  return {
+    transactions: validTransactions.length,
+    assets: sourceAssets.length,
+    besAccounts: sourceBesAccounts.length,
+    paymentAccounts: sourcePaymentAccounts.length,
+  };
+}
+
+function importLocalDataBackupFile(event) {
+  const [file] = event.target.files || [];
+  if (!file) {
+    return;
+  }
+
+  const previousText = localBackupImportButton?.textContent || "Yedek Yükle";
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      if (localBackupImportButton) {
+        localBackupImportButton.disabled = true;
+        localBackupImportButton.textContent = "Yükleniyor...";
+      }
+
+      const parsed = JSON.parse(String(reader.result || ""));
+      const result = applyLocalDataBackup(parsed);
+
+      if (cloudBackupStatus) {
+        cloudBackupStatus.textContent =
+          `Yerel yedek yüklendi: ${result.transactions} kayıt · ${result.paymentAccounts} kart/hesap · ${result.assets} varlık.`;
+      }
+    } catch (error) {
+      if (cloudBackupStatus) {
+        cloudBackupStatus.textContent = `Yerel yedek yüklenemedi: ${error.message}`;
+      }
+    } finally {
+      if (localBackupImportButton) {
+        localBackupImportButton.disabled = false;
+        localBackupImportButton.textContent = previousText;
+      }
+      if (localBackupImportInput) {
+        localBackupImportInput.value = "";
+      }
+    }
+  };
+
+  reader.onerror = () => {
+    if (cloudBackupStatus) {
+      cloudBackupStatus.textContent = "Yerel yedek dosyası okunamadı.";
+    }
+    if (localBackupImportInput) {
+      localBackupImportInput.value = "";
+    }
+  };
+
+  reader.readAsText(file, "utf-8");
+}
+
+
 function exportTransactions() {
   const payload = JSON.stringify(
     {
@@ -7614,6 +7947,8 @@ async function signOutUser() {
   }
 
   closeProfileModal();
+  currentUser = null;
+  renderAuthState();
   await firebaseAuth.signOut();
 }
 
@@ -8107,15 +8442,59 @@ async function handleAuthStateChanged(user) {
   }
 }
 
+
+function setLoggedOutVisualState() {
+  document.documentElement.classList.add("auth-logged-out");
+  document.body.classList.add("auth-logged-out");
+
+  if (appShell) {
+    appShell.hidden = true;
+    appShell.setAttribute("aria-hidden", "true");
+    appShell.classList.remove("menu-open");
+  }
+
+  if (sidebar) {
+    sidebar.classList.remove("open");
+  }
+
+  if (loginScreen) {
+    loginScreen.hidden = !startupSplashFinished;
+    loginScreen.setAttribute("aria-hidden", loginScreen.hidden ? "true" : "false");
+  }
+
+  document.querySelectorAll(".modal-backdrop").forEach((modal) => {
+    modal.hidden = true;
+  });
+
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}
+
+function setLoggedInVisualState() {
+  document.documentElement.classList.remove("auth-logged-out");
+  document.body.classList.remove("auth-logged-out");
+
+  if (loginScreen) {
+    loginScreen.hidden = true;
+    loginScreen.setAttribute("aria-hidden", "true");
+  }
+
+  if (appShell) {
+    appShell.hidden = !startupSplashFinished;
+    appShell.setAttribute("aria-hidden", appShell.hidden ? "true" : "false");
+  }
+}
+
 function renderAuthState() {
   const signedIn = Boolean(currentUser);
   const hasOpenAuthSubPanel =
     !signedIn && ((signupForm && !signupForm.hidden) || (resetPasswordForm && !resetPasswordForm.hidden));
 
-  loginScreen.hidden = signedIn || !startupSplashFinished;
-  appShell.hidden = !signedIn || !startupSplashFinished;
-  loginScreen.setAttribute("aria-hidden", loginScreen.hidden ? "true" : "false");
-  appShell.setAttribute("aria-hidden", appShell.hidden ? "true" : "false");
+  if (signedIn) {
+    setLoggedInVisualState();
+  } else {
+    setLoggedOutVisualState();
+  }
+
   if (!hasOpenAuthSubPanel) {
     showAuthPanel("login");
   }
@@ -8138,6 +8517,7 @@ function renderAuthState() {
   } else {
     authEmail.value = loadLastUsername();
     authPassword.value = "";
+    activeView = "homeView";
     updateCloudBackupStatus();
   }
 }
