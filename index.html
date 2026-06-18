@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- ACIKLAMA NOTU: Bu HTML dosyasinda ana elemanlarin yaninda ne ise yaradiklarini anlatan yorumlar vardir. -->
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
@@ -17,11 +18,13 @@
     <title>Akış Bütçe Takip</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- ACIKLAMA: Google Fonts uzerinden uygulamanin kullandigi yazi tiplerini yukler. -->
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="manifest" href="manifest.json?v=241" />
+    <!-- ACIKLAMA: PWA kurulum bilgilerini ve uygulama ikonlarini tarayiciya tanitir. -->
+    <link rel="manifest" href="manifest.json?v=258" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
@@ -32,10 +35,12 @@
         }
       } catch (e) {}
     </script>
-    <link rel="stylesheet" href="style.css?v=241" />
+    <!-- ACIKLAMA: style.css dosyasini yukleyerek tum gorsel tasarim ve responsive kurallari uygular. -->
+    <link rel="stylesheet" href="style.css?v=258" />
   </head>
   <body>
 
+    <!-- ACIKLAMA: appSplashScreen uygulama acilirken gorunen yukleme ekranini/parcalarini temsil eder. -->
     <div id="appSplashScreen" class="app-splash-screen" aria-label="Akış Bütçe açılış ekranı">
       <div class="splash-bg-shape shape-one"></div>
       <div class="splash-bg-shape shape-two"></div>
@@ -56,6 +61,7 @@
         <small>Yükleniyor...</small>
       </section>
     </div>
+    <!-- ACIKLAMA: loginScreen giris ve kimlik dogrulama akisinda JS tarafindan kullanilir. -->
     <main id="loginScreen" class="login-screen" hidden aria-hidden="true">
       <section class="login-card">
         <div class="login-copy">
@@ -68,9 +74,11 @@
         </div>
 
         <div class="auth-panel-stack">
+          <!-- ACIKLAMA: authForm giris ve kimlik dogrulama akisinda JS tarafindan kullanilir. -->
           <form id="authForm" class="auth-form" data-auth-panel="login" autocomplete="off" data-lpignore="true" data-1p-ignore="true">
             <label>
               Kullanıcı adı veya e-posta
+              <!-- ACIKLAMA: authEmail giris ve kimlik dogrulama akisinda JS tarafindan kullanilir. -->
               <input
                 id="authEmail"
                 name="akis_login_user"
@@ -88,6 +96,7 @@
             </label>
             <label>
               Şifre
+              <!-- ACIKLAMA: authPassword giris ve kimlik dogrulama akisinda JS tarafindan kullanilir. -->
               <input
                 id="authPassword"
                 name="akis_login_pass_manual"
@@ -103,15 +112,20 @@
               />
             </label>
             <div class="auth-actions">
+              <!-- ACIKLAMA: loginButton giris ve kimlik dogrulama akisinda JS tarafindan kullanilir. -->
               <button id="loginButton" class="primary-btn" type="submit">Giriş Yap</button>
+              <!-- ACIKLAMA: createAccountButton tiklama olayi JS tarafinda baglanan butondur. -->
               <button id="createAccountButton" class="ghost-btn" type="button">Hesap Aç</button>
             </div>
+            <!-- ACIKLAMA: forgotPasswordButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="forgotPasswordButton" class="text-btn" type="button">Parolamı unuttum</button>
+            <!-- ACIKLAMA: cloudStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
             <p id="cloudStatus" class="auth-status">
               Firebase bağlantısı hazırlanıyor...
             </p>
           </form>
 
+          <!-- ACIKLAMA: signupForm yeni hesap olusturma formu veya mesaj alani icin kullanilir. -->
           <form id="signupForm" class="auth-form" data-auth-panel="signup" hidden>
             <div class="auth-panel-heading">
               <p class="panel-kicker">Hesap Aç</p>
@@ -119,6 +133,7 @@
             </div>
             <label>
               Mail adresi
+              <!-- ACIKLAMA: signupEmail yeni hesap olusturma formu veya mesaj alani icin kullanilir. -->
               <input
                 id="signupEmail"
                 type="email"
@@ -132,6 +147,7 @@
             </label>
             <label>
               Kullanıcı adı
+              <!-- ACIKLAMA: signupUsername yeni hesap olusturma formu veya mesaj alani icin kullanilir. -->
               <input
                 id="signupUsername"
                 type="text"
@@ -144,6 +160,7 @@
             </label>
             <label>
               Şifre
+              <!-- ACIKLAMA: signupPassword yeni hesap olusturma formu veya mesaj alani icin kullanilir. -->
               <input
                 id="signupPassword"
                 type="password"
@@ -154,6 +171,7 @@
             </label>
             <label>
               Şifre onay
+              <!-- ACIKLAMA: signupPasswordConfirm yeni hesap olusturma formu veya mesaj alani icin kullanilir. -->
               <input
                 id="signupPasswordConfirm"
                 type="password"
@@ -164,11 +182,14 @@
             </label>
             <div class="auth-actions">
               <button class="primary-btn" type="submit">Kaydet</button>
+              <!-- ACIKLAMA: cancelSignupButton yeni hesap olusturma formu veya mesaj alani icin kullanilir. -->
               <button id="cancelSignupButton" class="ghost-btn" type="button">İptal Et</button>
             </div>
+            <!-- ACIKLAMA: signupStatus yeni hesap olusturma formu veya mesaj alani icin kullanilir. -->
             <p id="signupStatus" class="auth-status"></p>
           </form>
 
+          <!-- ACIKLAMA: resetPasswordForm parola sifirlama akisinda kullanilir. -->
           <form id="resetPasswordForm" class="auth-form" data-auth-panel="reset" hidden>
             <div class="auth-panel-heading">
               <p class="panel-kicker">Parola</p>
@@ -176,6 +197,7 @@
             </div>
             <label>
               Mail adresi
+              <!-- ACIKLAMA: resetEmail parola sifirlama akisinda kullanilir. -->
               <input
                 id="resetEmail"
                 type="email"
@@ -189,22 +211,28 @@
             </label>
             <div class="auth-actions">
               <button class="primary-btn" type="submit">Gönder</button>
+              <!-- ACIKLAMA: cancelResetButton parola sifirlama akisinda kullanilir. -->
               <button id="cancelResetButton" class="ghost-btn" type="button">İptal Et</button>
             </div>
+            <!-- ACIKLAMA: resetStatus parola sifirlama akisinda kullanilir. -->
             <p id="resetStatus" class="auth-status"></p>
           </form>
         </div>
       </section>
     </main>
 
+    <!-- ACIKLAMA: appShell bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
     <div id="appShell" class="app-shell" hidden>
+      <!-- ACIKLAMA: topbarMenuButton yan menu veya menu ac/kapat davranisi icin kullanilir. -->
       <button id="topbarMenuButton" class="sidebar-toggle topbar-menu" type="button" aria-label="Menüyü aç/kapat">
         <span></span>
         <span></span>
         <span></span>
       </button>
+      <!-- ACIKLAMA: sidebar yan menu veya menu ac/kapat davranisi icin kullanilir. -->
       <aside id="sidebar" class="sidebar">
         <div class="brand-block">
+          <!-- ACIKLAMA: mobileMenuButton yan menu veya menu ac/kapat davranisi icin kullanilir. -->
           <button id="mobileMenuButton" class="sidebar-toggle" type="button" aria-label="Menüyü aç/kapat">
             <span></span>
             <span></span>
@@ -216,8 +244,10 @@
           </div>
         </div>
 
+        <!-- ACIKLAMA: profileButton tiklama olayi JS tarafinda baglanan butondur. -->
         <div id="profileButton" class="sidebar-account">
           <span class="account-label">Kullanıcı</span>
+          <!-- ACIKLAMA: authUserBadge giris ve kimlik dogrulama akisinda JS tarafindan kullanilir. -->
           <span id="authUserBadge" class="auth-badge">Giriş yapıldı</span>
         </div>
 
@@ -260,6 +290,7 @@
           </button>
         </nav>
         <div class="sidebar-footer">
+          <!-- ACIKLAMA: footerLogoutButton tiklama olayi JS tarafinda baglanan butondur. -->
           <button id="footerLogoutButton" class="logout-btn" type="button">Çıkış Yap</button>
         </div>
       </aside>
@@ -267,34 +298,44 @@
       <div class="workspace">
         <header class="topbar">
           <div>
+            <!-- ACIKLAMA: pageKicker bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <p id="pageKicker" class="panel-kicker">Yeni Kayıt</p>
+            <!-- ACIKLAMA: pageTitle bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <h1 id="pageTitle">Gelir veya gider ekle</h1>
+            <!-- ACIKLAMA: pageSubtitle bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <p id="pageSubtitle">Tek işlem ekleyebilir veya banka hareketlerini içe aktarabilirsin.</p>
           </div>
           <div class="topbar-side">
+            <!-- ACIKLAMA: appUserEmail bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <span id="appUserEmail" class="user-chip"></span>
           </div>
         </header>
 
+        <!-- ACIKLAMA: homeView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="homeView" class="view-section active" data-view>
           <div class="summary-stack">
             <section class="panel quick-balance home-balance">
               <span>Güncel Bakiye</span>
+              <!-- ACIKLAMA: homeBalance hesaplanan para/toplam degerinin gosterildigi alandir. -->
               <strong id="homeBalance">0 TL</strong>
+              <!-- ACIKLAMA: homeInsight bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
               <p id="homeInsight">Kayıt ekledikçe finans akışın burada netleşir.</p>
             </section>
 
             <section class="stats-grid">
               <article class="panel stat-card">
                 <span>Toplam Varlık</span>
+                <!-- ACIKLAMA: homeAssetsTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="homeAssetsTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Toplam BES</span>
+                <!-- ACIKLAMA: homeBesTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="homeBesTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Bu Ay Tasarruf</span>
+                <!-- ACIKLAMA: homeSavingsTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="homeSavingsTotal">0 TL</strong>
               </article>
             </section>
@@ -308,12 +349,15 @@
                 </div>
               </div>
               <div class="wealth-chart-layout">
+                <!-- ACIKLAMA: homeWealthChart bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <div id="homeWealthChart" class="wealth-chart" role="img" aria-label="Toplam birikim dağılımı">
                   <div>
                     <span>Toplam</span>
+                    <!-- ACIKLAMA: homeWealthTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                     <strong id="homeWealthTotal">0 TL</strong>
                   </div>
                 </div>
+                <!-- ACIKLAMA: homeWealthLegend bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <div id="homeWealthLegend" class="wealth-legend"></div>
               </div>
             </section>
@@ -326,6 +370,7 @@
                     <h2>Varlık özeti</h2>
                   </div>
                 </div>
+                <!-- ACIKLAMA: homeAssetList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
                 <div id="homeAssetList" class="transaction-list compact-list"></div>
               </section>
 
@@ -336,12 +381,14 @@
                     <h2>BES özeti</h2>
                   </div>
                 </div>
+                <!-- ACIKLAMA: homeBesList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
                 <div id="homeBesList" class="transaction-list compact-list"></div>
               </section>
             </div>
           </div>
         </section>
 
+        <!-- ACIKLAMA: entryView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="entryView" class="view-section" data-view>
           <section class="panel action-panel">
             <div>
@@ -350,8 +397,13 @@
               <p class="panel-note">Gelir ya da gider ekleme formu ayrı pencerede açılır.</p>
             </div>
             <div class="entry-primary-actions">
+              <!-- ACIKLAMA: openEntryModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <button id="openEntryModalButton" class="primary-btn" type="button">Gelir / Gider Ekle</button>
+              <!-- ACIKLAMA: openBulkEntryModalButton coklu gelir/gider penceresini acmak icin kullanilir. -->
+              <button id="openBulkEntryModalButton" class="success-btn" type="button">Çoklu Gelir / Gider Ekle</button>
+              <!-- ACIKLAMA: openCategoryAddModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <button id="openCategoryAddModalButton" class="ghost-btn" type="button">Kategori Ekle</button>
+              <!-- ACIKLAMA: openCategoryManageModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <button id="openCategoryManageModalButton" class="ghost-btn" type="button">Kategorileri Düzenle</button>
             </div>
           </section>
@@ -360,6 +412,7 @@
               <div>
                 <p class="panel-kicker">Ana sayfa hesabı</p>
                 <h2>Gelir / gider tarih filtresi</h2>
+                <!-- ACIKLAMA: homeSummaryFilterStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
                 <p id="homeSummaryFilterStatus" class="panel-note">Özet ve tasarruf varsayılan olarak tüm gelir/gider hesabını gösterir.</p>
               </div>
             </div>
@@ -367,13 +420,17 @@
               <div class="home-summary-filter-controls">
                 <label>
                   Başlangıç
+                  <!-- ACIKLAMA: homeSummaryStartDate bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input id="homeSummaryStartDate" type="date" />
                 </label>
                 <label>
                   Bitiş
+                  <!-- ACIKLAMA: homeSummaryEndDate bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input id="homeSummaryEndDate" type="date" />
                 </label>
+                <!-- ACIKLAMA: applyHomeSummaryFilterButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="applyHomeSummaryFilterButton" class="primary-btn" type="button">Özete Uygula</button>
+                <!-- ACIKLAMA: clearHomeSummaryFilterButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="clearHomeSummaryFilterButton" class="ghost-btn" type="button">Filtreyi Temizle</button>
               </div>
             </div>
@@ -388,6 +445,7 @@
                 </p>
               </div>
             </div>
+            <!-- ACIKLAMA: bankImportText banka hareketi ice aktarma ve onizleme akisinda kullanilir. -->
             <textarea
               id="bankImportText"
               class="sync-textarea bank-import-textarea"
@@ -397,13 +455,16 @@
             ></textarea>
             <div class="bank-import-account-panel">
               <label for="bankImportAccount">Hareketlerin işleneceği kart / hesap</label>
+              <!-- ACIKLAMA: bankImportAccount banka hareketi ice aktarma ve onizleme akisinda kullanilir. -->
               <select id="bankImportAccount"></select>
               <label for="bankImportTransferAccount">Hesaplar arası aktarım karşı hesabı</label>
+              <!-- ACIKLAMA: bankImportTransferAccount banka hareketi ice aktarma ve onizleme akisinda kullanilir. -->
               <select id="bankImportTransferAccount"></select>
               <p>Seçim yapmazsan hareketler sadece kayıt listesine eklenir, kart/hesap bakiyesine işlenmez.</p>
             </div>
             <div class="storage-actions">
               <label class="file-trigger bank-upload-trigger" for="bankImportFile">PDF/CSV/TXT/Görsel Yükle</label>
+              <!-- ACIKLAMA: bankImportFile banka hareketi ice aktarma ve onizleme akisinda kullanilir. -->
               <input
                 id="bankImportFile"
                 type="file"
@@ -411,11 +472,16 @@
                 multiple
                 hidden
               />
+              <!-- ACIKLAMA: bankImportAddButton tiklama olayi JS tarafinda baglanan butondur. -->
               <button id="bankImportAddButton" class="success-btn" type="button">Yapay Zeka ile Kayıtlara Ekle</button>
+              <!-- ACIKLAMA: bankImportLocalButton tiklama olayi JS tarafinda baglanan butondur. -->
               <button id="bankImportLocalButton" class="ghost-btn" type="button">Kayıtlara Ekle</button>
+              <!-- ACIKLAMA: bankImportCancelButton tiklama olayi JS tarafinda baglanan butondur. -->
               <button id="bankImportCancelButton" class="danger-btn" type="button">İptal Et</button>
             </div>
+            <!-- ACIKLAMA: bankImportStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
             <p id="bankImportStatus" class="sync-status">Henüz banka hareketi okunmadı.</p>
+            <!-- ACIKLAMA: bankImportPreview uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
             <div id="bankImportPreview" class="bank-import-preview" hidden></div>
           </section>
           <div class="content-grid entry-grid">
@@ -427,9 +493,11 @@
                 </div>
               </div>
 
+              <!-- ACIKLAMA: entryForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
               <form id="entryForm" class="entry-form" hidden>
                 <label>
                   İşlem tipi
+                  <!-- ACIKLAMA: type bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <select id="type" name="type">
                     <option value="income">Gelir</option>
                     <option value="expense">Gider</option>
@@ -439,6 +507,7 @@
 
                 <label>
                   Başlık
+                  <!-- ACIKLAMA: title bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input
                     id="title"
                     name="title"
@@ -451,6 +520,7 @@
 
                 <label>
                   Tutar
+                  <!-- ACIKLAMA: amount hesaplanan para/toplam degerinin gosterildigi alandir. -->
                   <input
                     id="amount"
                     name="amount"
@@ -465,11 +535,13 @@
 
                 <label>
                   Kategori
+                  <!-- ACIKLAMA: category bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <select id="category" name="category"></select>
                 </label>
 
                 <label>
                   Ödeme şekli
+                  <!-- ACIKLAMA: paymentMethod bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <select id="paymentMethod" name="paymentMethod">
                     <option value="cash">Nakit</option>
                     <option value="credit_card">Kredi Kartı</option>
@@ -481,16 +553,21 @@
 
                 <label>
                   Kart / hesap
+                  <!-- ACIKLAMA: paymentAccount kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
                   <select id="paymentAccount" name="paymentAccount"></select>
                 </label>
 
+                <!-- ACIKLAMA: transferAccountLabel bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <label id="transferAccountLabel" hidden>
                   Transfer karşı hesabı
+                  <!-- ACIKLAMA: transferAccount bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <select id="transferAccount" name="transferAccount"></select>
                 </label>
 
+                <!-- ACIKLAMA: transferFeeLabel bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <label id="transferFeeLabel" hidden>
                   Havale / EFT ücreti
+                  <!-- ACIKLAMA: transferFee bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input
                     id="transferFee"
                     name="transferFee"
@@ -504,11 +581,13 @@
 
                 <label>
                   Tarih
+                  <!-- ACIKLAMA: date bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input id="date" name="date" type="date" required />
                 </label>
 
                 <label>
                   Not
+                  <!-- ACIKLAMA: note bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <textarea
                     id="note"
                     name="note"
@@ -518,31 +597,38 @@
                   ></textarea>
                 </label>
 
+                <!-- ACIKLAMA: entryFormStatus kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
                 <p id="entryFormStatus" class="sync-status"></p>
               </form>
             </section>
 
             <section class="panel quick-balance">
               <span>Güncel Bakiye</span>
+              <!-- ACIKLAMA: heroBalance hesaplanan para/toplam degerinin gosterildigi alandir. -->
               <strong id="heroBalance">0 TL</strong>
+              <!-- ACIKLAMA: heroInsight bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
               <p id="heroInsight">Kayıt ekledikçe finans akışın burada netleşir.</p>
             </section>
           </div>
         </section>
 
+        <!-- ACIKLAMA: assetsView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="assetsView" class="view-section" data-view>
           <div class="summary-stack">
             <section class="stats-grid">
               <article class="panel stat-card">
                 <span>Toplam Varlık</span>
+                <!-- ACIKLAMA: assetsTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="assetsTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Canlı Veri</span>
+                <!-- ACIKLAMA: marketUpdatedAt bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <strong id="marketUpdatedAt">Bekleniyor</strong>
               </article>
               <article class="panel stat-card">
                 <span>Varlık Sayısı</span>
+                <!-- ACIKLAMA: assetCount varlik/portfoy ekrani ve form islemleri icin kullanilir. -->
                 <strong id="assetCount">0</strong>
               </article>
             </section>
@@ -555,9 +641,12 @@
                 </div>
               </div>
               <div class="storage-actions asset-toolbar-actions">
+                <!-- ACIKLAMA: openAssetAddModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
                 <button id="openAssetAddModalButton" class="primary-btn" type="button">Varlık Ekle</button>
+                <!-- ACIKLAMA: refreshPricesButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="refreshPricesButton" class="ghost-btn" type="button">Fiyatları Yenile</button>
               </div>
+              <!-- ACIKLAMA: marketStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
               <p id="marketStatus" class="sync-status">Canlı fiyatlar yükleniyor...</p>
             </section>
 
@@ -568,24 +657,29 @@
                   <h2>Varlık listesi</h2>
                 </div>
               </div>
+              <!-- ACIKLAMA: assetList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
               <div id="assetList" class="transaction-list"></div>
             </section>
           </div>
         </section>
 
+        <!-- ACIKLAMA: cardsView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="cardsView" class="view-section" data-view>
           <div class="summary-stack">
             <section class="stats-grid">
               <article class="panel stat-card">
                 <span>Kredi Kartı Borcu</span>
+                <!-- ACIKLAMA: cardDebtTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="cardDebtTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Nakit / Banka Bakiyesi</span>
+                <!-- ACIKLAMA: bankBalanceTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="bankBalanceTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Kart / Hesap Sayısı</span>
+                <!-- ACIKLAMA: paymentAccountCount kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
                 <strong id="paymentAccountCount">0</strong>
               </article>
             </section>
@@ -598,9 +692,11 @@
                   <p class="panel-note">Kredi kartıyla gider eklediğinde ilgili kartın borcu otomatik artar. Kart borcu öderken seçtiğin nakit/banka hesabından ödeme tutarı düşer.</p>
                 </div>
                 <div class="payment-account-toolbar-actions">
+                  <!-- ACIKLAMA: openPaymentAccountModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
                   <button id="openPaymentAccountModalButton" class="primary-btn" type="button">Kart / Hesap Ekle</button>
                 </div>
               </div>
+              <!-- ACIKLAMA: paymentAccountStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
               <p id="paymentAccountStatus" class="sync-status"></p>
             </section>
 
@@ -614,6 +710,7 @@
               <div class="payment-account-filters">
                 <label class="payment-account-filter-control">
                   Kart / hesap türü
+                  <!-- ACIKLAMA: paymentAccountTypeFilter kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
                   <select id="paymentAccountTypeFilter" aria-label="Kart veya hesap türü filtresi">
                     <option value="all">Tümü</option>
                     <option value="credit_card">Kredi Kartları</option>
@@ -622,28 +719,34 @@
                   </select>
                 </label>
               </div>
+              <!-- ACIKLAMA: paymentAccountList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
               <div id="paymentAccountList" class="payment-account-list"></div>
             </section>
           </div>
         </section>
 
+        <!-- ACIKLAMA: besView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="besView" class="view-section" data-view>
           <div class="summary-stack">
             <section class="stats-grid">
               <article class="panel stat-card">
                 <span>Toplam BES</span>
+                <!-- ACIKLAMA: besTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="besTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Devlet Katkısı</span>
+                <!-- ACIKLAMA: besStateTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="besStateTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Devlet Katkısı Getirisi</span>
+                <!-- ACIKLAMA: besStateGainTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="besStateGainTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Fon Getirisi</span>
+                <!-- ACIKLAMA: besGainTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="besGainTotal">0 TL</strong>
               </article>
             </section>
@@ -655,35 +758,44 @@
                   <h2>BES sözleşmesi ekle</h2>
                   <p class="panel-note">Yeni BES sözleşmesi ayrı pencerede eklenir.</p>
                 </div>
+                <!-- ACIKLAMA: openBesModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
                 <button id="openBesModalButton" class="primary-btn" type="button">BES Ekle</button>
               </div>
+              <!-- ACIKLAMA: besForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
               <form id="besForm" class="entry-form compact-form" hidden>
                 <label>
                   Şirket / kurum
+                  <!-- ACIKLAMA: besProvider BES kayitlari ve toplamlarini yonetmek icin kullanilir. -->
                   <input id="besProvider" name="besProvider" type="text" maxlength="40" placeholder="Emeklilik şirketi" required />
                 </label>
                 <label>
                   Sözleşme no
+                  <!-- ACIKLAMA: besPolicyNo BES kayitlari ve toplamlarini yonetmek icin kullanilir. -->
                   <input id="besPolicyNo" name="besPolicyNo" type="text" maxlength="40" placeholder="İsteğe bağlı" />
                 </label>
                 <label>
                   Kendi birikimin
+                  <!-- ACIKLAMA: besContribution BES kayitlari ve toplamlarini yonetmek icin kullanilir. -->
                   <input id="besContribution" name="besContribution" type="number" min="0" step="0.01" inputmode="decimal" required />
                 </label>
                 <label>
                   Devlet katkısı
+                  <!-- ACIKLAMA: besStateContribution BES kayitlari ve toplamlarini yonetmek icin kullanilir. -->
                   <input id="besStateContribution" name="besStateContribution" type="number" min="0" step="0.01" inputmode="decimal" />
                 </label>
                 <label>
                   Devlet katkısı getirisi
+                  <!-- ACIKLAMA: besStateGain BES kayitlari ve toplamlarini yonetmek icin kullanilir. -->
                   <input id="besStateGain" name="besStateGain" type="text" inputmode="decimal" />
                 </label>
                 <label>
                   Fon getirisi
+                  <!-- ACIKLAMA: besGain BES kayitlari ve toplamlarini yonetmek icin kullanilir. -->
                   <input id="besGain" name="besGain" type="text" inputmode="decimal" />
                 </label>
                 <label>
                   Not
+                  <!-- ACIKLAMA: besNote BES kayitlari ve toplamlarini yonetmek icin kullanilir. -->
                   <textarea id="besNote" name="besNote" rows="2" maxlength="100" placeholder="Fon dağılımı, ödeme günü..."></textarea>
                 </label>
                 </form>
@@ -696,24 +808,29 @@
                   <h2>BES detayları</h2>
                 </div>
               </div>
+              <!-- ACIKLAMA: besList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
               <div id="besList" class="transaction-list"></div>
             </section>
           </div>
         </section>
 
+        <!-- ACIKLAMA: summaryView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="summaryView" class="view-section" data-view>
           <div class="summary-stack">
             <section class="stats-grid">
               <article class="panel stat-card">
                 <span>Toplam Gelir</span>
+                <!-- ACIKLAMA: incomeTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="incomeTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Toplam Gider</span>
+                <!-- ACIKLAMA: expenseTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="expenseTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Tasarruf</span>
+                <!-- ACIKLAMA: monthlySavings bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <strong id="monthlySavings">0 TL</strong>
               </article>
             </section>
@@ -723,10 +840,12 @@
                 <div>
                   <p class="panel-kicker">Dağılım</p>
                   <h2>Kategori özeti</h2>
+                  <!-- ACIKLAMA: overviewMonthLabel uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
                   <p id="overviewMonthLabel" class="panel-note">Seçili ayın gider dağılımı</p>
                 </div>
                 <label class="summary-category-filter-label">
                   İşlem tipi
+                  <!-- ACIKLAMA: summaryCategoryTypeFilter arama/filtreleme kontrolu olarak kullanilir. -->
                   <select id="summaryCategoryTypeFilter" class="summary-category-filter">
                     <option value="expense" selected>Gider kategorileri</option>
                     <option value="income">Gelir kategorileri</option>
@@ -735,11 +854,13 @@
                   </select>
                 </label>
               </div>
+              <!-- ACIKLAMA: categoryBreakdown bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
               <div id="categoryBreakdown" class="category-breakdown"></div>
             </section>
           </div>
         </section>
 
+        <!-- ACIKLAMA: historyView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="historyView" class="view-section" data-view>
           <section class="panel history-panel">
             <div class="panel-heading history-heading">
@@ -750,18 +871,22 @@
               <div class="filters history-filters">
                 <label class="range-filter">
                   Başlangıç
+                  <!-- ACIKLAMA: historyStartDate bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input id="historyStartDate" type="date" />
                 </label>
                 <label class="range-filter">
                   Bitiş
+                  <!-- ACIKLAMA: historyEndDate bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input id="historyEndDate" type="date" />
                 </label>
+                <!-- ACIKLAMA: filterType arama/filtreleme kontrolu olarak kullanilir. -->
                 <select id="filterType" aria-label="İşlem tipi filtresi">
                   <option value="all">Tüm İşlemler</option>
                   <option value="income">Sadece Gelir</option>
                   <option value="expense">Sadece Gider</option>
                   <option value="transfer">Sadece Transfer</option>
                 </select>
+                <!-- ACIKLAMA: filterPaymentMethod arama/filtreleme kontrolu olarak kullanilir. -->
                 <select id="filterPaymentMethod" aria-label="Ödeme şekli filtresi">
                   <option value="all">Tüm Ödemeler</option>
                   <option value="cash">Nakit</option>
@@ -770,22 +895,32 @@
                   <option value="bank_transfer">Havale / EFT</option>
                   <option value="other">Diğer</option>
                 </select>
+                <!-- ACIKLAMA: filterPaymentAccount kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
                 <select id="filterPaymentAccount" aria-label="Kart veya hesap filtresi">
                   <option value="all">Tüm Kart/Hesaplar</option>
                 </select>
+                <!-- ACIKLAMA: historySearchButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="historySearchButton" class="primary-btn" type="button">Ara</button>
+                <!-- ACIKLAMA: clearHistoryRangeButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="clearHistoryRangeButton" class="ghost-btn" type="button">Filtre Temizle</button>
+                <!-- ACIKLAMA: searchInput arama/filtreleme kontrolu olarak kullanilir. -->
                 <input id="searchInput" class="history-search-input-with-icon" type="search" placeholder="Kayıt ara" />
+                <!-- ACIKLAMA: openRecentTransactionsButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="openRecentTransactionsButton" class="ghost-btn" type="button">Son Kayıtlar</button>
+                <!-- ACIKLAMA: exportExcelButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="exportExcelButton" class="success-btn" type="button">Excel Al</button>
+                <!-- ACIKLAMA: exportPdfButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="exportPdfButton" class="danger-btn" type="button">PDF Al</button>
               </div>
             </div>
+            <!-- ACIKLAMA: transactionList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
             <div id="transactionList" class="transaction-list"></div>
+            <!-- ACIKLAMA: paginationControls bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <div id="paginationControls" class="pagination-controls"></div>
           </section>
         </section>
 
+        <!-- ACIKLAMA: settingsView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="settingsView" class="view-section" data-view>
           <section class="panel settings-panel-main">
             <div class="panel-heading">
@@ -832,6 +967,7 @@
                 <div class="settings-form-grid">
                   <label>
                     Yazı tipi
+                    <!-- ACIKLAMA: settingsFontFamily bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                     <select id="settingsFontFamily">
                       <option value="manrope">Manrope</option>
                       <option value="grotesk">Space Grotesk</option>
@@ -843,6 +979,7 @@
                   </label>
                   <label>
                     Yazı kalınlığı
+                    <!-- ACIKLAMA: settingsFontWeight bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                     <select id="settingsFontWeight">
                       <option value="regular">Standart</option>
                       <option value="medium">Orta</option>
@@ -855,11 +992,15 @@
                 <div class="font-size-control">
                   <div class="font-size-headline">
                     <span>Yazı boyutu</span>
+                    <!-- ACIKLAMA: settingsFontSizeValue bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                     <strong id="settingsFontSizeValue">16 px</strong>
                   </div>
                   <div class="font-size-actions">
+                    <!-- ACIKLAMA: decreaseFontButton tiklama olayi JS tarafinda baglanan butondur. -->
                     <button id="decreaseFontButton" class="ghost-btn" type="button">A−</button>
+                    <!-- ACIKLAMA: settingsFontSize bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                     <input id="settingsFontSize" type="range" min="14" max="20" step="1" value="16" />
+                    <!-- ACIKLAMA: increaseFontButton tiklama olayi JS tarafinda baglanan butondur. -->
                     <button id="increaseFontButton" class="ghost-btn" type="button">A+</button>
                   </div>
                 </div>
@@ -871,6 +1012,7 @@
                 </div>
 
                 <div class="auth-actions settings-actions">
+                  <!-- ACIKLAMA: resetAppearanceButton parola sifirlama akisinda kullanilir. -->
                   <button id="resetAppearanceButton" class="ghost-btn" type="button">Varsayılan ayarlara dön</button>
                 </div>
               </section>
@@ -888,6 +1030,7 @@
                     <strong>Kredi kartı bildirimleri</strong>
                     <small>Telefona uygulama olarak eklediğinde de izin verilirse bildirim gönderir.</small>
                   </div>
+                  <!-- ACIKLAMA: cardReminderPermissionButton tiklama olayi JS tarafinda baglanan butondur. -->
                   <button id="cardReminderPermissionButton" class="ios-switch" type="button" role="switch" aria-checked="false" aria-pressed="false" aria-label="Kart bildirimlerini aç veya kapat">
                     <span class="ios-switch-track" aria-hidden="true">
                       <span class="ios-switch-thumb"></span>
@@ -895,6 +1038,7 @@
                     <span class="ios-switch-text">Kapalı</span>
                   </button>
                 </div>
+                <!-- ACIKLAMA: cardReminderStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
                 <p id="cardReminderStatus" class="sync-status">Bildirimler kapalı.</p>
               </section>
 
@@ -911,6 +1055,7 @@
                     <strong>Manuel bulut yedeği</strong>
                     <small>Yedek aldığın son tarih burada görünür; verilerinde sorun olursa bu yedek Firebase'de saklanır.</small>
                   </div>
+                  <!-- ACIKLAMA: cloudBackupButton tiklama olayi JS tarafinda baglanan butondur. -->
                   <button id="cloudBackupButton" class="primary-btn" type="button">Yedek Al</button>
                 </div>
                 <div class="notification-settings-card cloud-backup-card local-backup-card">
@@ -918,6 +1063,7 @@
                     <strong>Yerel dosya yedeği</strong>
                     <small>Bu cihazdaki kayıtları JSON dosyası olarak indirir. Firebase bağlantısı gerekmez.</small>
                   </div>
+                  <!-- ACIKLAMA: localBackupDownloadButton tiklama olayi JS tarafinda baglanan butondur. -->
                   <button id="localBackupDownloadButton" class="ghost-btn" type="button">Dosya İndir</button>
                 </div>
                 <div class="notification-settings-card cloud-backup-card local-backup-card local-backup-import-card">
@@ -925,21 +1071,27 @@
                     <strong>Yerel yedeği yükle</strong>
                     <small>Bilgisayara indirdiğin JSON yedeğini seçip uygulamaya geri aktarır. Mevcut veriler korunarak birleştirilir.</small>
                   </div>
+                  <!-- ACIKLAMA: localBackupImportInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input id="localBackupImportInput" type="file" accept=".json,application/json" hidden />
+                  <!-- ACIKLAMA: localBackupImportButton tiklama olayi JS tarafinda baglanan butondur. -->
                   <button id="localBackupImportButton" class="ghost-btn" type="button">Yedek Yükle</button>
                 </div>
+                <!-- ACIKLAMA: cloudBackupStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
                 <p id="cloudBackupStatus" class="sync-status">Son yedek: Henüz yok.</p>
               </section>
             </div>
           </section>
         </section>
 
+        <!-- ACIKLAMA: userView uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <section id="userView" class="view-section" data-view>
           <section class="panel user-actions-panel">
+            <!-- ACIKLAMA: profileForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
             <form id="profileForm" class="profile-form">
               <div class="panel-heading">
                 <div>
                   <p class="panel-kicker">Kullanıcı İşlemleri</p>
+                  <!-- ACIKLAMA: profileTitle bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <h2 id="profileTitle">Profil bilgileri</h2>
                   <p class="panel-note">
                     Kullanıcı adını güncelle veya şifreni mevcut şifrenle değiştir.
@@ -948,10 +1100,12 @@
               </div>
               <label>
                 Kullanıcı adı
+                <!-- ACIKLAMA: profileUsername bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <input id="profileUsername" type="text" autocomplete="username" required />
               </label>
               <label>
                 Mevcut şifre
+                <!-- ACIKLAMA: profileCurrentPassword bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <input
                   id="profileCurrentPassword"
                   type="password"
@@ -962,6 +1116,7 @@
               </label>
               <label>
                 Yeni şifre
+                <!-- ACIKLAMA: profilePassword bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <input
                   id="profilePassword"
                   type="password"
@@ -973,6 +1128,7 @@
               <div class="auth-actions">
                 <button class="primary-btn" type="submit">Güncelle</button>
               </div>
+              <!-- ACIKLAMA: profileStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
               <p id="profileStatus" class="sync-status"></p>
             </form>
             
@@ -985,10 +1141,12 @@
                 </p>
               </div>
               <div class="auth-actions">
+                <!-- ACIKLAMA: deleteUserButton tiklama olayi JS tarafinda baglanan butondur. -->
                 <button id="deleteUserButton" class="danger-btn" type="button">
                   Hesabı kalıcı olarak sil
                 </button>
               </div>
+              <!-- ACIKLAMA: deleteUserStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
               <p id="deleteUserStatus" class="sync-status"></p>
             </div>
           </section>
@@ -997,28 +1155,36 @@
       </div>
     </div>
 
+    <!-- ACIKLAMA: genericConfirmModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="genericConfirmModal" class="modal-backdrop" hidden>
       <section class="modal-card confirm-modal" role="dialog" aria-modal="true" aria-labelledby="genericConfirmTitle">
         <div class="panel-heading">
           <div>
             <p class="panel-kicker danger-kicker">Onay</p>
+            <!-- ACIKLAMA: genericConfirmTitle bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <h2 id="genericConfirmTitle">Silmek istediğine emin misin?</h2>
+            <!-- ACIKLAMA: genericConfirmText bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <p id="genericConfirmText" class="panel-note">Bu işlem geri alınamaz.</p>
           </div>
         </div>
         <div class="auth-actions modal-actions">
+          <!-- ACIKLAMA: genericConfirmButton tiklama olayi JS tarafinda baglanan butondur. -->
           <button id="genericConfirmButton" class="danger-btn" type="button">Evet, sil</button>
+          <!-- ACIKLAMA: genericConfirmCancelButton tiklama olayi JS tarafinda baglanan butondur. -->
           <button id="genericConfirmCancelButton" class="ghost-btn" type="button">Vazgeç</button>
         </div>
       </section>
     </div>
 
+    <!-- ACIKLAMA: deleteAccountModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="deleteAccountModal" class="modal-backdrop" hidden>
       <section class="modal-card delete-modal" role="dialog" aria-modal="true" aria-labelledby="deleteAccountTitle">
+        <!-- ACIKLAMA: deleteAccountForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
         <form id="deleteAccountForm" class="profile-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker danger-kicker">Kullanıcı Sil</p>
+              <!-- ACIKLAMA: deleteAccountTitle bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
               <h2 id="deleteAccountTitle">Hesabı kalıcı olarak sil</h2>
               <p class="panel-note">
                 Devam etmek için mevcut şifreni iki kez yaz.
@@ -1027,6 +1193,7 @@
           </div>
           <label>
             Şifre
+            <!-- ACIKLAMA: deleteUserPassword bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <input
               id="deleteUserPassword"
               type="password"
@@ -1037,6 +1204,7 @@
           </label>
           <label>
             Şifre onayı
+            <!-- ACIKLAMA: deleteUserPasswordConfirm bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <input
               id="deleteUserPasswordConfirm"
               type="password"
@@ -1047,19 +1215,23 @@
           </label>
           <div class="auth-actions">
             <button class="danger-btn" type="submit">Devam Et</button>
+            <!-- ACIKLAMA: closeDeleteAccountButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="closeDeleteAccountButton" class="ghost-btn" type="button">İptal</button>
           </div>
+          <!-- ACIKLAMA: deleteAccountStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
           <p id="deleteAccountStatus" class="sync-status"></p>
         </form>
       </section>
     </div>
 
+    <!-- ACIKLAMA: confirmDeleteAccountModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="confirmDeleteAccountModal" class="modal-backdrop" hidden>
       <section class="modal-card confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmDeleteAccountTitle">
         <div class="profile-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker danger-kicker">Son Onay</p>
+              <!-- ACIKLAMA: confirmDeleteAccountTitle bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
               <h2 id="confirmDeleteAccountTitle">Hesabı silmek istediğinizden emin misiniz?</h2>
               <p class="panel-note">
                 Evet dersen hesabın ve kayıtların kalıcı olarak silinir.
@@ -1067,90 +1239,149 @@
             </div>
           </div>
           <div class="auth-actions">
+            <!-- ACIKLAMA: confirmDeleteAccountButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="confirmDeleteAccountButton" class="danger-btn" type="button">Evet, Sil</button>
+            <!-- ACIKLAMA: cancelConfirmDeleteButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="cancelConfirmDeleteButton" class="ghost-btn" type="button">Vazgeç</button>
           </div>
+          <!-- ACIKLAMA: confirmDeleteAccountStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
           <p id="confirmDeleteAccountStatus" class="sync-status"></p>
         </div>
       </section>
     </div>
 
+    <!-- ACIKLAMA: entryModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="entryModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal" role="dialog" aria-modal="true" aria-labelledby="entryModalTitle">
         <div class="panel-heading">
           <div>
             <p class="panel-kicker">Gelir / Gider</p>
+            <!-- ACIKLAMA: entryModalTitle acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
             <h2 id="entryModalTitle">Yeni kayıt oluştur</h2>
           </div>
         </div>
+        <!-- ACIKLAMA: entryFormMount kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
         <div id="entryFormMount"></div>
         <div class="auth-actions modal-actions">
+          <!-- ACIKLAMA: entryModalSubmitButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
           <button id="entryModalSubmitButton" class="primary-btn" type="submit" form="entryForm">Kaydı Ekle</button>
+          <!-- ACIKLAMA: closeEntryModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
           <button id="closeEntryModalButton" class="ghost-btn" type="button">İptal</button>
         </div>
       </section>
     </div>
 
+    <!-- ACIKLAMA: bulkEntryModal coklu gelir/gider ekleme formunu acilir pencere icinde gosterir. -->
+    <div id="bulkEntryModal" class="modal-backdrop" hidden>
+      <section class="modal-card wide-modal bulk-entry-modal" role="dialog" aria-modal="true" aria-labelledby="bulkEntryModalTitle">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">Toplu Kayıt</p>
+            <!-- ACIKLAMA: bulkEntryModalTitle coklu gelir/gider penceresinin basligini tutar. -->
+            <h2 id="bulkEntryModalTitle">Birden fazla gelir / gider ekle</h2>
+            <p class="panel-note">Dolu satırları tek seferde kaydet; boş satırlar otomatik yok sayılır.</p>
+          </div>
+        </div>
+        <!-- ACIKLAMA: bulkEntryForm coklu gelir/gider satirlarini tek submit olayinda kaydetmek icin kullanilir. -->
+        <form id="bulkEntryForm" class="bulk-entry-form">
+          <!-- ACIKLAMA: bulkEntryRows JS tarafindan olusturulan coklu kayit satirlarinin yerlestigi alandir. -->
+          <div id="bulkEntryRows" class="bulk-entry-rows"></div>
+          <!-- ACIKLAMA: bulkEntryStatus coklu kayit ekleme sonucunu veya hatasini gosterir. -->
+          <p id="bulkEntryStatus" class="sync-status"></p>
+        </form>
+        <div class="auth-actions modal-actions bulk-entry-actions">
+          <!-- ACIKLAMA: bulkEntryAddRowButton coklu kayit formuna yeni satir ekleyen butondur. -->
+          <button id="bulkEntryAddRowButton" class="ghost-btn" type="button">Satır Ekle</button>
+          <!-- ACIKLAMA: bulkEntryClearButton coklu kayit formundaki satirlari temizleyen butondur. -->
+          <button id="bulkEntryClearButton" class="danger-btn" type="button">Temizle</button>
+          <!-- ACIKLAMA: bulkEntrySubmitButton dolu coklu kayit satirlarini kaydeden butondur. -->
+          <button id="bulkEntrySubmitButton" class="primary-btn" type="submit" form="bulkEntryForm">Tümünü Kaydet</button>
+          <!-- ACIKLAMA: closeBulkEntryModalButton coklu gelir/gider penceresini kapatan butondur. -->
+          <button id="closeBulkEntryModalButton" class="ghost-btn" type="button">Kapat</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ACIKLAMA: bankImportPreviewModal uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
     <div id="bankImportPreviewModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal bank-import-preview-modal" role="dialog" aria-modal="true" aria-labelledby="bankImportPreviewModalTitle">
         <div class="panel-heading">
           <div>
             <p class="panel-kicker">Önizleme</p>
+            <!-- ACIKLAMA: bankImportPreviewModalTitle uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
             <h2 id="bankImportPreviewModalTitle">Banka hareketlerini kontrol et</h2>
+            <!-- ACIKLAMA: bankImportPreviewModalSummary uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
             <p id="bankImportPreviewModalSummary" class="panel-note">Bulunan kayıtları eklemeden önce düzenleyebilirsin.</p>
           </div>
         </div>
         <div class="bank-import-modal-tools">
           <label>
             Kart / hesap
+            <!-- ACIKLAMA: bankImportPreviewAccount uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
             <select id="bankImportPreviewAccount"></select>
           </label>
           <label>
             Aktarım karşı hesabı
+            <!-- ACIKLAMA: bankImportPreviewTransferAccount uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
             <select id="bankImportPreviewTransferAccount"></select>
           </label>
           <div class="bank-import-preview-actions">
+            <!-- ACIKLAMA: bankImportSelectAllButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="bankImportSelectAllButton" class="ghost-btn bank-import-mini-btn" type="button">Tümünü Seç</button>
+            <!-- ACIKLAMA: bankImportClearSelectionButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="bankImportClearSelectionButton" class="ghost-btn bank-import-mini-btn" type="button">Seçimi Kaldır</button>
           </div>
         </div>
+        <!-- ACIKLAMA: bankImportPreviewList uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <div id="bankImportPreviewList" class="bank-import-preview-list"></div>
+        <!-- ACIKLAMA: bankImportPreviewStatus uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
         <p id="bankImportPreviewStatus" class="sync-status"></p>
         <div class="auth-actions modal-actions">
+          <!-- ACIKLAMA: bankImportPreviewConfirmButton uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
           <button id="bankImportPreviewConfirmButton" class="success-btn" type="button">Seçilenleri Ekle</button>
+          <!-- ACIKLAMA: bankImportPreviewCloseButton uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
           <button id="bankImportPreviewCloseButton" class="ghost-btn" type="button">Kapat</button>
         </div>
       </section>
     </div>
 
+    <!-- ACIKLAMA: recentTransactionsModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="recentTransactionsModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal recent-transactions-modal" role="dialog" aria-modal="true" aria-labelledby="recentTransactionsModalTitle">
         <div class="panel-heading">
           <div>
             <p class="panel-kicker">Son Kayıtlar</p>
+            <!-- ACIKLAMA: recentTransactionsModalTitle acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
             <h2 id="recentTransactionsModalTitle">Son 3 günde eklenen kayıtlar</h2>
             <p class="panel-note">Kayıt tarihine göre değil, uygulamaya eklenme saatine göre sıralanır.</p>
           </div>
         </div>
+        <!-- ACIKLAMA: recentTransactionsList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
         <div id="recentTransactionsList" class="transaction-list recent-transactions-list"></div>
         <div class="auth-actions modal-actions">
+          <!-- ACIKLAMA: closeRecentTransactionsButton tiklama olayi JS tarafinda baglanan butondur. -->
           <button id="closeRecentTransactionsButton" class="ghost-btn" type="button">Kapat</button>
         </div>
       </section>
     </div>
 
+    <!-- ACIKLAMA: assetEditModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="assetEditModal" class="modal-backdrop" hidden>
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="assetEditModalTitle">
+        <!-- ACIKLAMA: assetEditForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
         <form id="assetEditForm" class="profile-form compact-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker">Varlıklarım</p>
+              <!-- ACIKLAMA: assetEditModalTitle acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <h2 id="assetEditModalTitle">Varlık ekle</h2>
+              <!-- ACIKLAMA: assetEditModalNote acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <p id="assetEditModalNote" class="panel-note">Varlık bilgilerini bu pencereden girebilirsin.</p>
             </div>
           </div>
           <label>
             Varlık tipi
+            <!-- ACIKLAMA: assetEditType varlik/portfoy ekrani ve form islemleri icin kullanilir. -->
             <select id="assetEditType" name="assetEditType">
               <optgroup label="Nakit ve döviz">
                 <option value="TRY">Türk Lirası</option>
@@ -1206,32 +1437,41 @@
           </label>
           <label>
             Başlık
+            <!-- ACIKLAMA: assetEditLabel varlik/portfoy ekrani ve form islemleri icin kullanilir. -->
             <input id="assetEditLabel" name="assetEditLabel" type="text" maxlength="40" placeholder="Kasa, banka, altın..." />
           </label>
           <label>
             Miktar
+            <!-- ACIKLAMA: assetEditAmount hesaplanan para/toplam degerinin gosterildigi alandir. -->
             <input id="assetEditAmount" name="assetEditAmount" type="number" min="0" step="0.000001" inputmode="decimal" required />
           </label>
+          <!-- ACIKLAMA: assetEditStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
           <p id="assetEditStatus" class="sync-status"></p>
           <div class="auth-actions modal-actions">
+            <!-- ACIKLAMA: assetEditSubmitButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="assetEditSubmitButton" class="primary-btn" type="submit">Varlık Ekle</button>
+            <!-- ACIKLAMA: closeAssetEditModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
             <button id="closeAssetEditModalButton" class="ghost-btn" type="button">İptal</button>
           </div>
         </form>
       </section>
     </div>
 
+    <!-- ACIKLAMA: categoryAddModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="categoryAddModal" class="modal-backdrop" hidden>
       <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="categoryAddModalTitle">
+        <!-- ACIKLAMA: categoryAddForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
         <form id="categoryAddForm" class="profile-form compact-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker">Kategori</p>
+              <!-- ACIKLAMA: categoryAddModalTitle acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <h2 id="categoryAddModalTitle">Yeni kategori ekle</h2>
             </div>
           </div>
           <label>
             İşlem tipi
+            <!-- ACIKLAMA: categoryAddType bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <select id="categoryAddType" required>
               <option value="income">Gelir</option>
               <option value="expense">Gider</option>
@@ -1240,68 +1480,87 @@
           </label>
           <label>
             Kategori adı
+            <!-- ACIKLAMA: categoryAddName bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <input id="categoryAddName" type="text" maxlength="32" autocomplete="off" placeholder="Örn: Eğitim" required />
           </label>
+          <!-- ACIKLAMA: categoryAddStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
           <p id="categoryAddStatus" class="sync-status"></p>
           <div class="auth-actions modal-actions">
+            <!-- ACIKLAMA: categoryAddSubmitButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="categoryAddSubmitButton" class="primary-btn" type="submit">Kategori Ekle</button>
+            <!-- ACIKLAMA: closeCategoryAddModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
             <button id="closeCategoryAddModalButton" class="ghost-btn" type="button">İptal</button>
           </div>
         </form>
       </section>
     </div>
 
+    <!-- ACIKLAMA: categoryManageModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="categoryManageModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal" role="dialog" aria-modal="true" aria-labelledby="categoryManageModalTitle">
         <div class="panel-heading">
           <div>
             <p class="panel-kicker">Kategori</p>
+            <!-- ACIKLAMA: categoryManageModalTitle acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
             <h2 id="categoryManageModalTitle">Kategorileri düzenle</h2>
             <p class="panel-note">Kategori adlarını güncelleyebilir veya istemediklerini silebilirsin.</p>
           </div>
         </div>
         <label class="category-manage-type-label">
           İşlem tipi
+          <!-- ACIKLAMA: categoryManageType bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
           <select id="categoryManageType">
             <option value="income">Gelir</option>
             <option value="expense">Gider</option>
           </select>
         </label>
+        <!-- ACIKLAMA: categoryManageStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
         <p id="categoryManageStatus" class="sync-status"></p>
+        <!-- ACIKLAMA: categoryManageList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
         <div id="categoryManageList" class="category-manage-list"></div>
         <div class="auth-actions modal-actions">
+          <!-- ACIKLAMA: closeCategoryManageModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
           <button id="closeCategoryManageModalButton" class="ghost-btn" type="button">Kapat</button>
         </div>
       </section>
     </div>
 
+    <!-- ACIKLAMA: besModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="besModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal" role="dialog" aria-modal="true" aria-labelledby="besModalTitle">
         <div class="panel-heading">
           <div>
             <p class="panel-kicker">BES</p>
+            <!-- ACIKLAMA: besModalTitle acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
             <h2 id="besModalTitle">BES sözleşmesi ekle</h2>
           </div>
         </div>
+        <!-- ACIKLAMA: besFormMount kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
         <div id="besFormMount"></div>
         <div class="auth-actions modal-actions">
+          <!-- ACIKLAMA: besSubmitButton tiklama olayi JS tarafinda baglanan butondur. -->
           <button id="besSubmitButton" class="primary-btn" type="submit" form="besForm">BES Ekle</button>
+          <!-- ACIKLAMA: closeBesModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
           <button id="closeBesModalButton" class="ghost-btn" type="button">İptal</button>
         </div>
       </section>
     </div>
 
+    <!-- ACIKLAMA: transactionEditModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="transactionEditModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal" role="dialog" aria-modal="true" aria-labelledby="transactionEditTitle">
+        <!-- ACIKLAMA: transactionEditForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
         <form id="transactionEditForm" class="profile-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker">Kayıt</p>
+              <!-- ACIKLAMA: transactionEditTitle bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
               <h2 id="transactionEditTitle">İşlem bilgilerini düzenle</h2>
             </div>
           </div>
           <label>
             İşlem tipi
+            <!-- ACIKLAMA: transactionTypeInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <select id="transactionTypeInput" required>
               <option value="income">Gelir</option>
               <option value="expense">Gider</option>
@@ -1310,6 +1569,7 @@
           </label>
           <label>
             İşlem adı
+            <!-- ACIKLAMA: transactionTitleInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <input
               id="transactionTitleInput"
               type="text"
@@ -1320,6 +1580,7 @@
           </label>
           <label>
             Tutar
+            <!-- ACIKLAMA: transactionAmountInput hesaplanan para/toplam degerinin gosterildigi alandir. -->
             <input
               id="transactionAmountInput"
               type="number"
@@ -1331,10 +1592,12 @@
           </label>
           <label>
             Kategori
+            <!-- ACIKLAMA: transactionCategoryInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <select id="transactionCategoryInput" required></select>
           </label>
           <label>
             Ödeme şekli
+            <!-- ACIKLAMA: transactionPaymentMethodInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <select id="transactionPaymentMethodInput" required>
               <option value="cash">Nakit</option>
               <option value="credit_card">Kredi Kartı</option>
@@ -1345,49 +1608,64 @@
           </label>
           <label>
             Kart / hesap
+            <!-- ACIKLAMA: transactionPaymentAccountInput kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <select id="transactionPaymentAccountInput"></select>
           </label>
+          <!-- ACIKLAMA: transactionTransferAccountLabel bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
           <label id="transactionTransferAccountLabel" hidden>
             Transfer karşı hesabı
+            <!-- ACIKLAMA: transactionTransferAccountInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <select id="transactionTransferAccountInput"></select>
           </label>
+          <!-- ACIKLAMA: transactionTransferFeeLabel bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
           <label id="transactionTransferFeeLabel" hidden>
             Havale / EFT ücreti
+            <!-- ACIKLAMA: transactionTransferFeeInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <input id="transactionTransferFeeInput" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" />
           </label>
           <label>
             Tarih
+            <!-- ACIKLAMA: transactionDateInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <input id="transactionDateInput" type="date" required />
           </label>
           <label>
             Saat
+            <!-- ACIKLAMA: transactionTimeInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <input id="transactionTimeInput" type="time" step="60" />
           </label>
           <label>
             Not
+            <!-- ACIKLAMA: transactionNoteInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
             <textarea id="transactionNoteInput" rows="3" maxlength="100"></textarea>
           </label>
           <div class="auth-actions">
             <button class="primary-btn" type="submit">Kaydet</button>
+            <!-- ACIKLAMA: closeTransactionEditButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="closeTransactionEditButton" class="ghost-btn" type="button">İptal</button>
           </div>
+          <!-- ACIKLAMA: transactionEditStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
           <p id="transactionEditStatus" class="sync-status"></p>
         </form>
       </section>
     </div>
 
+    <!-- ACIKLAMA: paymentAccountModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="paymentAccountModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal" role="dialog" aria-modal="true" aria-labelledby="paymentAccountModalTitle">
+        <!-- ACIKLAMA: paymentAccountForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
         <form id="paymentAccountForm" class="profile-form payment-account-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker">Kartlar / Hesaplar</p>
+              <!-- ACIKLAMA: paymentAccountModalTitle acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <h2 id="paymentAccountModalTitle">Kart / hesap ekle</h2>
+              <!-- ACIKLAMA: paymentAccountModalSubtitle acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <p id="paymentAccountModalSubtitle" class="panel-note">Bilgileri bu pencereden gir; kaydedince kart şablonu listede görünecek.</p>
             </div>
           </div>
           <label>
             Hesap tipi
+            <!-- ACIKLAMA: paymentAccountType kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <select id="paymentAccountType" name="paymentAccountType">
               <option value="cash">Nakit Cüzdan</option>
               <option value="bank_account">Banka Hesabı / Banka Kartı</option>
@@ -1396,132 +1674,167 @@
           </label>
           <label>
             Kart / hesap adı
+            <!-- ACIKLAMA: paymentAccountName kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <input id="paymentAccountName" name="paymentAccountName" type="text" maxlength="40" placeholder="Ziraat Bankkart, Garanti Bonus..." required />
           </label>
           <label>
             Banka / kurum
+            <!-- ACIKLAMA: paymentAccountBank kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <input id="paymentAccountBank" name="paymentAccountBank" type="text" maxlength="40" placeholder="Banka adı" />
           </label>
           <label>
             Kart rengi
             <div class="color-field">
+              <!-- ACIKLAMA: paymentAccountColor kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
               <input id="paymentAccountColor" name="paymentAccountColor" type="color" value="#173f5f" />
               <span>Şablonda görünecek rengi seç</span>
             </div>
           </label>
           <label>
             Son 4 hane
+            <!-- ACIKLAMA: paymentAccountLast4 kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <input id="paymentAccountLast4" name="paymentAccountLast4" type="text" inputmode="numeric" maxlength="4" placeholder="1234" />
           </label>
           <label class="credit-only">
             Son kullanım tarihi
+            <!-- ACIKLAMA: paymentAccountExpiry kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <input id="paymentAccountExpiry" name="paymentAccountExpiry" type="month" />
           </label>
           <label class="credit-only">
             Fatura kesim günü
+            <!-- ACIKLAMA: paymentAccountStatementDay kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <input id="paymentAccountStatementDay" name="paymentAccountStatementDay" type="number" min="1" max="31" inputmode="numeric" placeholder="Ayın kaçında" />
           </label>
           <label class="credit-only">
             Son ödeme günü
+            <!-- ACIKLAMA: paymentAccountDueDay kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <input id="paymentAccountDueDay" name="paymentAccountDueDay" type="number" min="1" max="31" inputmode="numeric" placeholder="Ayın kaçında" />
           </label>
           <label class="credit-only">
             Kart limiti
+            <!-- ACIKLAMA: paymentAccountLimit kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <input id="paymentAccountLimit" name="paymentAccountLimit" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" />
           </label>
           <label>
             Mevcut bakiye / borç
+            <!-- ACIKLAMA: paymentAccountBalance hesaplanan para/toplam degerinin gosterildigi alandir. -->
             <input id="paymentAccountBalance" name="paymentAccountBalance" type="number" step="0.01" inputmode="decimal" placeholder="Kredi kartıysa toplam borç, diğerlerinde bakiye" />
           </label>
           <label class="credit-only">
             Aktif dönem borcu
+            <!-- ACIKLAMA: paymentAccountCurrentStatementDebt kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <input id="paymentAccountCurrentStatementDebt" name="paymentAccountCurrentStatementDebt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Son kesimden sonraki harcamalar" />
           </label>
           <label>
             Not
+            <!-- ACIKLAMA: paymentAccountNote kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <textarea id="paymentAccountNote" name="paymentAccountNote" rows="2" maxlength="100" placeholder="Ek açıklama"></textarea>
           </label>
+          <!-- ACIKLAMA: paymentAccountModalStatus acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
           <p id="paymentAccountModalStatus" class="sync-status"></p>
           <div class="auth-actions">
+            <!-- ACIKLAMA: paymentAccountSubmitButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="paymentAccountSubmitButton" class="primary-btn" type="submit">Kart / Hesap Ekle</button>
+            <!-- ACIKLAMA: closePaymentAccountModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
             <button id="closePaymentAccountModalButton" class="ghost-btn" type="button">İptal</button>
           </div>
         </form>
       </section>
     </div>
 
+    <!-- ACIKLAMA: confirmPaymentAccountDeleteModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="confirmPaymentAccountDeleteModal" class="modal-backdrop" hidden>
       <section class="modal-card confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmPaymentAccountDeleteTitle">
         <div class="profile-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker danger-kicker">Silme Onayı</p>
+              <!-- ACIKLAMA: confirmPaymentAccountDeleteTitle kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
               <h2 id="confirmPaymentAccountDeleteTitle">Kart / hesabı silmek istediğinizden emin misiniz?</h2>
+              <!-- ACIKLAMA: confirmPaymentAccountDeleteText kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
               <p id="confirmPaymentAccountDeleteText" class="panel-note">Bu işlem kartı/hesabı listeden kaldırır. Eski kayıtlardaki kart bağlantısı temizlenir.</p>
             </div>
           </div>
           <div class="auth-actions">
+            <!-- ACIKLAMA: confirmDeletePaymentAccountButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="confirmDeletePaymentAccountButton" class="danger-btn" type="button">Evet, Sil</button>
+            <!-- ACIKLAMA: cancelDeletePaymentAccountButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="cancelDeletePaymentAccountButton" class="ghost-btn" type="button">Vazgeç</button>
           </div>
+          <!-- ACIKLAMA: confirmPaymentAccountDeleteStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
           <p id="confirmPaymentAccountDeleteStatus" class="sync-status"></p>
         </div>
       </section>
     </div>
 
 
+    <!-- ACIKLAMA: paymentAccountRecordsModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="paymentAccountRecordsModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal payment-account-records-modal" role="dialog" aria-modal="true" aria-labelledby="paymentAccountRecordsTitle">
         <div class="profile-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker">Kart Kayıtları</p>
+              <!-- ACIKLAMA: paymentAccountRecordsTitle kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
               <h2 id="paymentAccountRecordsTitle">Kart / hesap kayıtları</h2>
+              <!-- ACIKLAMA: paymentAccountRecordsSummary kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
               <p id="paymentAccountRecordsSummary" class="panel-note">Bu karta veya hesaba bağlı eklediğin kayıtlar burada görünür.</p>
             </div>
           </div>
           <div class="account-records-filter">
             <label>
               Gösterilecek dönem
+              <!-- ACIKLAMA: paymentAccountRecordsPeriodFilter kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
               <select id="paymentAccountRecordsPeriodFilter"></select>
             </label>
           </div>
+          <!-- ACIKLAMA: paymentAccountRecordsList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
           <div id="paymentAccountRecordsList" class="transaction-list account-records-list"></div>
           <div class="auth-actions">
+            <!-- ACIKLAMA: refreshPaymentAccountFromRecordsButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="refreshPaymentAccountFromRecordsButton" class="success-btn" type="button">Güncelle</button>
+            <!-- ACIKLAMA: closePaymentAccountRecordsButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="closePaymentAccountRecordsButton" class="ghost-btn" type="button">Kapat</button>
           </div>
         </div>
       </section>
     </div>
 
+    <!-- ACIKLAMA: paymentAccountPayModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="paymentAccountPayModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal" role="dialog" aria-modal="true" aria-labelledby="paymentAccountPayTitle">
+        <!-- ACIKLAMA: paymentAccountPayForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
         <form id="paymentAccountPayForm" class="profile-form">
           <div class="panel-heading">
             <div>
               <p class="panel-kicker">Kart Borcu</p>
+              <!-- ACIKLAMA: paymentAccountPayTitle kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
               <h2 id="paymentAccountPayTitle">Kart borcu öde</h2>
               <p class="panel-note">Ödeme gider kaydı oluşturmaz; alışveriş zaten kartla gider olarak kaydedildiği için sadece kart borcu azalır ve seçilen nakit/banka hesabı bakiyesi düşer.</p>
             </div>
           </div>
           <label>
             Ödeme yapılacak nakit / banka hesabı
+            <!-- ACIKLAMA: paymentAccountPaySource kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
             <select id="paymentAccountPaySource" required></select>
           </label>
           <label>
             Ödenen tutar
+            <!-- ACIKLAMA: paymentAccountPayAmount hesaplanan para/toplam degerinin gosterildigi alandir. -->
             <input id="paymentAccountPayAmount" type="number" min="0" step="0.01" inputmode="decimal" required />
           </label>
           <div class="auth-actions">
             <button class="primary-btn" type="submit">Öde</button>
+            <!-- ACIKLAMA: closePaymentAccountPayButton tiklama olayi JS tarafinda baglanan butondur. -->
             <button id="closePaymentAccountPayButton" class="ghost-btn" type="button">İptal</button>
           </div>
+          <!-- ACIKLAMA: paymentAccountPayStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
           <p id="paymentAccountPayStatus" class="sync-status"></p>
         </form>
       </section>
     </div>
 
+    <!-- ACIKLAMA: transactionTemplate JS tarafinda klonlanarak tekrar eden satir uretmek icin kullanilan sablondur. -->
     <template id="transactionTemplate">
       <article class="transaction-item">
         <div>
@@ -1536,10 +1849,15 @@
       </article>
     </template>
 
-    <script src="firebase-config.js?v=241"></script>
+    <!-- ACIKLAMA: Firebase proje ayarlarini app.js tarafindan okunacak sekilde yukler. -->
+    <script src="firebase-config.js?v=258"></script>
+    <!-- ACIKLAMA: Firebase cekirdek kutuphanesini yukleyerek bulut baglantisini hazirlar. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <!-- ACIKLAMA: Firebase giris/kayit/parola islemleri icin auth kutuphanesini yukler. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <!-- ACIKLAMA: Firestore veritabani okuma/yazma islemleri icin kutuphaneyi yukler. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="app.js?v=241"></script>
+    <!-- ACIKLAMA: Uygulamanin tum is mantigini ve ekran davranislarini calistiran ana JS dosyasini yukler. -->
+    <script src="app.js?v=258"></script>
   </body>
 </html>

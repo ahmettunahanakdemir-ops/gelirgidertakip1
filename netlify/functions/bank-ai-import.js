@@ -1,13 +1,22 @@
+// ACIKLAMA NOTU: Bu dosyada kod bloklarinin yaninda ne ise yaradiklarini anlatan yorumlar vardir.
+// ACIKLAMA: Netlify ortaminda hangi AI saglayicisinin secildigini okur.
 const AI_PROVIDER = String(process.env.AI_PROVIDER || "").trim().toLowerCase();
 
+// ACIKLAMA: AI isteginde kullanilacak model adini tutar.
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+// ACIKLAMA: Sunucu ortam degiskeninden API anahtarini okur; istemciye gonderilmez.
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || "";
+// ACIKLAMA: D?? servis isteginin gidecegi API adresini tutar.
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
+// ACIKLAMA: AI isteginde kullanilacak model adini tutar.
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+// ACIKLAMA: Sunucu ortam degiskeninden API anahtarini okur; istemciye gonderilmez.
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
+// ACIKLAMA: D?? servis isteginin gidecegi API adresini tutar.
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/responses";
 
+// ACIKLAMA: AI cevabinin beklenen JSON yapisini tanimlar.
 const RESPONSE_SCHEMA = {
   type: "object",
   properties: {
@@ -40,6 +49,7 @@ const RESPONSE_SCHEMA = {
   additionalProperties: false,
 };
 
+// ACIKLAMA: Netlify function giris noktasi; HTTP istegini alir, dogrular ve yaniti dondurur.
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
     return jsonResponse(204, {});
@@ -57,12 +67,14 @@ exports.handler = async (event) => {
     return jsonResponse(400, { error: "Gecersiz istek govdesi." });
   }
 
+  // ACIKLAMA: files degiskeninin Turkce karsiligi "dosyalar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const files = Array.isArray(payload.files) ? payload.files.slice(0, 12) : [];
 
   if (!files.length) {
     return jsonResponse(400, { error: "AI okuma icin dosya veya metin bulunamadi." });
   }
 
+  // ACIKLAMA: provider degiskeninin Turkce karsiligi "saglayici"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const provider = resolveProvider();
 
   if (provider === "openai") {
@@ -78,6 +90,7 @@ exports.handler = async (event) => {
   });
 };
 
+// ACIKLAMA: resolveProvider fonksiyonunun Turkce karsiligi "AI saglayicisini belirle"; ilgili uygulama islemini calistirir.
 function resolveProvider() {
   if (AI_PROVIDER === "openai" || AI_PROVIDER === "chatgpt") {
     return OPENAI_API_KEY ? "openai" : "missing";
@@ -98,6 +111,7 @@ function resolveProvider() {
   return "missing";
 }
 
+// ACIKLAMA: runGemini fonksiyonunun Turkce karsiligi "Gemini istegini calistir"; AI destekli okuma veya API istegi akisini calistirir.
 async function runGemini(files, payload) {
   if (!GEMINI_API_KEY) {
     return jsonResponse(500, {
@@ -105,6 +119,7 @@ async function runGemini(files, payload) {
     });
   }
 
+  // ACIKLAMA: requestBody degiskeninin Turkce karsiligi "istek govdesi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const requestBody = {
     contents: [
       {
@@ -120,6 +135,7 @@ async function runGemini(files, payload) {
   };
 
   try {
+    // ACIKLAMA: response degiskeninin Turkce karsiligi "yanit"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
       method: "POST",
       headers: {
@@ -127,6 +143,7 @@ async function runGemini(files, payload) {
       },
       body: JSON.stringify(requestBody),
     });
+    // ACIKLAMA: data degiskeninin Turkce karsiligi "veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
@@ -135,6 +152,7 @@ async function runGemini(files, payload) {
       });
     }
 
+    // ACIKLAMA: parsed degiskeninin Turkce karsiligi "cozumlenen veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const parsed = parseModelJson(extractGeminiText(data));
     return jsonResponse(200, {
       provider: "gemini",
@@ -149,6 +167,7 @@ async function runGemini(files, payload) {
   }
 }
 
+// ACIKLAMA: runOpenAi fonksiyonunun Turkce karsiligi "OpenAI istegini calistir"; AI destekli okuma veya API istegi akisini calistirir.
 async function runOpenAi(files, payload) {
   if (!OPENAI_API_KEY) {
     return jsonResponse(500, {
@@ -156,6 +175,7 @@ async function runOpenAi(files, payload) {
     });
   }
 
+  // ACIKLAMA: requestBody degiskeninin Turkce karsiligi "istek govdesi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const requestBody = {
     model: OPENAI_MODEL,
     temperature: 0.05,
@@ -176,6 +196,7 @@ async function runOpenAi(files, payload) {
   };
 
   try {
+    // ACIKLAMA: response degiskeninin Turkce karsiligi "yanit"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const response = await fetch(OPENAI_ENDPOINT, {
       method: "POST",
       headers: {
@@ -184,6 +205,7 @@ async function runOpenAi(files, payload) {
       },
       body: JSON.stringify(requestBody),
     });
+    // ACIKLAMA: data degiskeninin Turkce karsiligi "veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
@@ -192,6 +214,7 @@ async function runOpenAi(files, payload) {
       });
     }
 
+    // ACIKLAMA: parsed degiskeninin Turkce karsiligi "cozumlenen veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const parsed = parseModelJson(extractOpenAiText(data));
     return jsonResponse(200, {
       provider: "openai",
@@ -206,6 +229,7 @@ async function runOpenAi(files, payload) {
   }
 }
 
+// ACIKLAMA: buildPrompt fonksiyonunun Turkce karsiligi "komut metni olustur"; AI isteginde modele gonderilecek talimat metnini olusturur.
 function buildPrompt(files, payload) {
   return [
     "Sen bir banka hareketleri ekran goruntusu ve ekstre okuma motorusun.",
@@ -227,10 +251,13 @@ function buildPrompt(files, payload) {
   ].join("\n");
 }
 
+// ACIKLAMA: buildGeminiParts fonksiyonunun Turkce karsiligi "Gemini parcalarini olustur"; Gemini istegine eklenecek metin ve dosya parcalarini hazirlar.
 function buildGeminiParts(files, payload) {
+  // ACIKLAMA: parts degiskeninin Turkce karsiligi "parcalar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const parts = [{ text: buildPrompt(files, payload) }];
 
   files.forEach((file, index) => {
+    // ACIKLAMA: sourceName degiskeninin Turkce karsiligi "kaynak adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const sourceName = cleanSourceName(file.name || `Kaynak ${index + 1}`);
     parts.push({
       text: `Kaynak ${index + 1}: ${sourceName}. Dosya turu: ${file.mimeType || file.kind || "bilinmiyor"}.`,
@@ -253,10 +280,13 @@ function buildGeminiParts(files, payload) {
   return parts;
 }
 
+// ACIKLAMA: buildOpenAiContent fonksiyonunun Turkce karsiligi "OpenAI icerigini olustur"; OpenAI istegine eklenecek metin ve gorsel icerikleri hazirlar.
 function buildOpenAiContent(files, payload) {
+  // ACIKLAMA: content degiskeninin Turkce karsiligi "icerik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const content = [{ type: "input_text", text: buildPrompt(files, payload) }];
 
   files.forEach((file, index) => {
+    // ACIKLAMA: sourceName degiskeninin Turkce karsiligi "kaynak adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const sourceName = cleanSourceName(file.name || `Kaynak ${index + 1}`);
     content.push({
       type: "input_text",
@@ -279,6 +309,7 @@ function buildOpenAiContent(files, payload) {
   return content;
 }
 
+// ACIKLAMA: normalizeModelMovements fonksiyonunun Turkce karsiligi "model hareketlerini standartlastir"; AI modelinden gelen hareketleri uygulamanin bekledigi formata cevirir.
 function normalizeModelMovements(items) {
   if (!Array.isArray(items)) {
     return [];
@@ -286,9 +317,13 @@ function normalizeModelMovements(items) {
 
   return items
     .map((item) => {
+      // ACIKLAMA: amount degiskeninin Turkce karsiligi "tutar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const amount = Math.abs(Number(item.amount));
+      // ACIKLAMA: type degiskeninin Turkce karsiligi "tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const type = String(item.type || "").toLowerCase() === "income" ? "income" : "expense";
+      // ACIKLAMA: date degiskeninin Turkce karsiligi "tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const date = String(item.date || "").trim();
+      // ACIKLAMA: title degiskeninin Turkce karsiligi "baslik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const title = String(item.title || item.description || "").trim();
 
       if (!date || !title || !Number.isFinite(amount) || amount <= 0) {
@@ -315,6 +350,7 @@ function normalizeModelMovements(items) {
     .filter(Boolean);
 }
 
+// ACIKLAMA: extractGeminiText fonksiyonunun Turkce karsiligi "Gemini metnini ayikla"; Gemini cevabindan JSON metnini cikarir.
 function extractGeminiText(data) {
   return String(
     data?.candidates?.[0]?.content?.parts
@@ -323,15 +359,19 @@ function extractGeminiText(data) {
   ).trim();
 }
 
+// ACIKLAMA: extractOpenAiText fonksiyonunun Turkce karsiligi "OpenAI metnini ayikla"; OpenAI cevabindan JSON metnini cikarir.
 function extractOpenAiText(data) {
   if (data?.output_text) {
     return String(data.output_text).trim();
   }
 
+  // ACIKLAMA: chunks degiskeninin Turkce karsiligi "metin parcalari"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const chunks = [];
+  // ACIKLAMA: output degiskeninin Turkce karsiligi "cikti"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const output = Array.isArray(data?.output) ? data.output : [];
 
   output.forEach((item) => {
+    // ACIKLAMA: content degiskeninin Turkce karsiligi "icerik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const content = Array.isArray(item?.content) ? item.content : [];
     content.forEach((part) => {
       if (part?.text) {
@@ -346,13 +386,16 @@ function extractOpenAiText(data) {
   return chunks.join("").trim();
 }
 
+// ACIKLAMA: parseModelJson fonksiyonunun Turkce karsiligi "model JSON cevabini cozumle"; modelden gelen JSON metnini guvenli sekilde nesneye cevirir.
 function parseModelJson(text) {
+  // ACIKLAMA: raw degiskeninin Turkce karsiligi "ham metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const raw = String(text || "").trim();
 
   if (!raw) {
     return { movements: [] };
   }
 
+  // ACIKLAMA: candidates degiskeninin Turkce karsiligi "aday metinler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const candidates = [
     raw,
     raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim(),
@@ -362,6 +405,7 @@ function parseModelJson(text) {
     try {
       return JSON.parse(candidate);
     } catch {
+      // ACIKLAMA: objectText degiskeninin Turkce karsiligi "nesne metni"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const objectText = extractFirstJsonObject(candidate);
       if (objectText) {
         try {
@@ -376,19 +420,26 @@ function parseModelJson(text) {
   return { movements: [] };
 }
 
+// ACIKLAMA: extractFirstJsonObject fonksiyonunun Turkce karsiligi "ilk JSON nesnesini ayikla"; metin icindeki ilk JSON nesnesini bulur.
 function extractFirstJsonObject(value) {
+  // ACIKLAMA: text degiskeninin Turkce karsiligi "metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const text = String(value || "");
+  // ACIKLAMA: start degiskeninin Turkce karsiligi "baslangic"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const start = text.indexOf("{");
 
   if (start < 0) {
     return "";
   }
 
+  // ACIKLAMA: depth degiskeninin Turkce karsiligi "derinlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   let depth = 0;
+  // ACIKLAMA: inString degiskeninin Turkce karsiligi "metin icinde mi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   let inString = false;
+  // ACIKLAMA: escaped degiskeninin Turkce karsiligi "kacis karakteri kullanildi mi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   let escaped = false;
 
   for (let index = start; index < text.length; index += 1) {
+    // ACIKLAMA: char degiskeninin Turkce karsiligi "karakter"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const char = text[index];
 
     if (escaped) {
@@ -423,20 +474,24 @@ function extractFirstJsonObject(value) {
   return "";
 }
 
+// ACIKLAMA: getGeminiErrorMessage fonksiyonunun Turkce karsiligi "Gemini hata mesajini al"; Gemini hata cevabindan okunabilir hata mesajini alir.
 function getGeminiErrorMessage(data) {
   return data?.error?.message || data?.message || "";
 }
 
+// ACIKLAMA: getOpenAiErrorMessage fonksiyonunun Turkce karsiligi "OpenAI hata mesajini al"; OpenAI hata cevabindan okunabilir hata mesajini alir.
 function getOpenAiErrorMessage(data) {
   return data?.error?.message || data?.message || "";
 }
 
+// ACIKLAMA: cleanSourceName fonksiyonunun Turkce karsiligi "kaynak adini temizle"; ilgili uygulama islemini calistirir.
 function cleanSourceName(value) {
   return String(value || "")
     .replace(/[<>]/g, "")
     .slice(0, 80);
 }
 
+// ACIKLAMA: jsonResponse fonksiyonunun Turkce karsiligi "JSON yaniti olustur"; ilgili uygulama islemini calistirir.
 function jsonResponse(statusCode, body) {
   return {
     statusCode,
