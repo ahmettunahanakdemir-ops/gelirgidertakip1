@@ -21083,9 +21083,9 @@ html[data-theme="dark"] .bulk-entry-form select {
   }
 }
 
-/* ACIKLAMA: Mobil Safari/PWA alt bar ve home indicator alaninda son kart veya butonlarin kesilmemesi icin ek alt tampon tanimlar. */
+/* ACIKLAMA: Mobil Safari/PWA alt bar ve home indicator alaninda son kart veya butonlarin kesilmemesi icin kontrollu alt tampon tanimlar. */
 :root {
-  --mobile-bottom-safe-buffer: max(92px, calc(env(safe-area-inset-bottom) + 68px));
+  --mobile-bottom-safe-buffer: max(24px, calc(env(safe-area-inset-bottom) + 14px));
 }
 
 /* ACIKLAMA: Telefon ve tabletlerde sayfanin en altinda son sablonlarin ve butonlarin gorunur kalmasini saglar. */
@@ -21105,7 +21105,7 @@ html[data-theme="dark"] .bulk-entry-form select {
     content: "";
     display: block;
     width: 100%;
-    height: max(28px, env(safe-area-inset-bottom));
+    height: 0;
     flex: 0 0 auto;
   }
 }
@@ -21114,7 +21114,7 @@ html[data-theme="dark"] .bulk-entry-form select {
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 768px) {
     :root {
-      --mobile-bottom-safe-buffer: max(126px, calc(env(safe-area-inset-bottom) + 92px));
+      --mobile-bottom-safe-buffer: max(34px, calc(env(safe-area-inset-bottom) + 18px));
     }
 
     #appShell.app-shell:not([hidden]),
@@ -21130,7 +21130,51 @@ html[data-theme="dark"] .bulk-entry-form select {
     }
 
     .view-section.active::after {
-      height: max(42px, env(safe-area-inset-bottom));
+      height: 0;
+    }
+  }
+}
+
+/* ACIKLAMA: Mobil PWA'da sayfa en uste veya en alta gelince arka planin lastik gibi acilmasini engeller ve kaydirma cubugunu gizler. */
+@media (max-width: 768px) {
+  html,
+  body,
+  #appShell.app-shell:not([hidden]),
+  .app-shell:not([hidden]) {
+    overscroll-behavior: none !important;
+    overscroll-behavior-y: none !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  body::-webkit-scrollbar,
+  #appShell.app-shell:not([hidden])::-webkit-scrollbar,
+  .app-shell:not([hidden])::-webkit-scrollbar,
+  #appShell.app-shell:not([hidden]) > .workspace::-webkit-scrollbar,
+  .app-shell:not([hidden]) > .workspace::-webkit-scrollbar,
+  .workspace::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+  }
+
+  #appShell.app-shell:not([hidden]) > .workspace,
+  .app-shell:not([hidden]) > .workspace,
+  .workspace {
+    overscroll-behavior: none !important;
+    overscroll-behavior-y: none !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+}
+
+/* ACIKLAMA: iOS Safari/PWA'da hizli kaydirma esnemesini azaltmak icin ana kaydirma alanini kontrollu moda alir. */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    #appShell.app-shell:not([hidden]) > .workspace,
+    .app-shell:not([hidden]) > .workspace,
+    .workspace {
+      -webkit-overflow-scrolling: auto !important;
     }
   }
 }

@@ -1934,6 +1934,147 @@ function bindHistorySearchFallback() {
 }
 
 
+// ACIKLAMA: isMobileBoundaryScrollLockNeeded fonksiyonunun Turkce karsiligi "mobil sinir kaydirma kilidi gerekli mi"; iOS/PWA ve dar dokunmatik ekranlarda esneme engelinin calisip calismayacagini belirler.
+function isMobileBoundaryScrollLockNeeded() {
+  // ACIKLAMA: narrowScreen degiskeninin Turkce karsiligi "dar ekran"; telefon/tablet genisligini kontrol etmek icin kullanilir.
+  const narrowScreen = window.matchMedia("(max-width: 768px)").matches;
+  // ACIKLAMA: touchDevice degiskeninin Turkce karsiligi "dokunmatik cihaz"; dokunma olayi olmayan masaustu tarayicilarda bu kilidi kapali tutar.
+  const touchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  // ACIKLAMA: appleTouchDevice degiskeninin Turkce karsiligi "Apple dokunmatik cihaz"; iPhone, iPad ve iPadOS masaustu modu tarayicilarini yakalar.
+  const appleTouchDevice =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  // ACIKLAMA: standalonePwa degiskeninin Turkce karsiligi "bagimsiz PWA"; ana ekrana eklenmis uygulama modunu kontrol eder.
+  const standalonePwa =
+    window.navigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches;
+  // ACIKLAMA: webkitTouchBrowser degiskeninin Turkce karsiligi "WebKit dokunmatik tarayici"; Safari tabanli mobil tarayicilarda ek korumayi acmak icin kullanilir.
+  const webkitTouchBrowser = window.CSS?.supports?.("-webkit-touch-callout", "none") || false;
+  return narrowScreen && touchDevice && (appleTouchDevice || standalonePwa || webkitTouchBrowser);
+}
+
+// ACIKLAMA: isAppShellVisibleForScrollLock fonksiyonunun Turkce karsiligi "uygulama kabugu kaydirma kilidi icin gorunur mu"; kilidin sadece giris sonrasi ana uygulamada calismasini saglar.
+function isAppShellVisibleForScrollLock() {
+  // ACIKLAMA: appShell degiskeninin Turkce karsiligi "uygulama kabugu"; ana PWA arayuzunun DOM elemanidir.
+  const appShell = document.getElementById("appShell");
+  return Boolean(appShell && !appShell.hidden);
+}
+
+// ACIKLAMA: getWorkspaceScrollElement fonksiyonunun Turkce karsiligi "calisma alani kaydirma elemani al"; uygulamanin ana dikey kaydirma alanini bulur.
+function getWorkspaceScrollElement() {
+  return (
+    document.querySelector("#appShell.app-shell:not([hidden]) > .workspace") ||
+    document.querySelector(".app-shell:not([hidden]) > .workspace") ||
+    document.querySelector(".workspace")
+  );
+}
+
+// ACIKLAMA: isScrollableYElement fonksiyonunun Turkce karsiligi "dikey kaydirilabilir eleman mi"; verilen elemanin dikeyde gercekten kaydirilabilir olup olmadigini kontrol eder.
+function isScrollableYElement(element) {
+  if (!element || element === document.body || element === document.documentElement) {
+    return false;
+  }
+
+  // ACIKLAMA: style degiskeninin Turkce karsiligi "stil"; elemanin CSS overflow degerlerini okumak icin kullanilir.
+  const style = window.getComputedStyle(element);
+  // ACIKLAMA: overflowY degiskeninin Turkce karsiligi "dikey tasma"; elemanin dikey kaydirma iznini saklar.
+  const overflowY = style.overflowY || style.overflow;
+  // ACIKLAMA: canScrollStyle degiskeninin Turkce karsiligi "stil kaydirabilir"; overflow degeri kaydirmaya izin veriyor mu kontrol eder.
+  const canScrollStyle = overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay";
+  return canScrollStyle && element.scrollHeight > element.clientHeight + 1;
+}
+
+// ACIKLAMA: canScrollElementInTouchDirection fonksiyonunun Turkce karsiligi "eleman dokunma yonunde kayabilir mi"; parmak hareketinin sayfayi gercek icerikte kaydirip kaydiramayacagini belirler.
+function canScrollElementInTouchDirection(element, deltaY) {
+  // ACIKLAMA: maxScrollTop degiskeninin Turkce karsiligi "en buyuk kaydirma ust degeri"; elemanin ulasabilecegi son dikey kaydirma konumudur.
+  const maxScrollTop = element.scrollHeight - element.clientHeight;
+
+  if (maxScrollTop <= 1) {
+    return false;
+  }
+
+  if (deltaY > 0) {
+    return element.scrollTop > 0;
+  }
+
+  if (deltaY < 0) {
+    return element.scrollTop < maxScrollTop - 1;
+  }
+
+  return true;
+}
+
+// ACIKLAMA: hasScrollableAncestorInTouchDirection fonksiyonunun Turkce karsiligi "dokunma yonunde kaydirilabilir ust eleman var mi"; en ust/en alt sinirda bosluga dogru esnemeyi ayirt eder.
+function hasScrollableAncestorInTouchDirection(target, deltaY) {
+  // ACIKLAMA: workspace degiskeninin Turkce karsiligi "calisma alani"; sayfanin ana kaydirma kabidir.
+  const workspace = getWorkspaceScrollElement();
+  // ACIKLAMA: node degiskeninin Turkce karsiligi "dugum"; dokunulan elemandan baslayip ust elemanlara cikmak icin kullanilir.
+  let node = target instanceof Element ? target : target?.parentElement;
+
+  while (node && node !== document.body && node !== document.documentElement) {
+    if (isScrollableYElement(node) && canScrollElementInTouchDirection(node, deltaY)) {
+      return true;
+    }
+
+    if (node === workspace) {
+      return false;
+    }
+
+    node = node.parentElement;
+  }
+
+  return Boolean(workspace && isScrollableYElement(workspace) && canScrollElementInTouchDirection(workspace, deltaY));
+}
+
+// ACIKLAMA: setupMobileBoundaryScrollLock fonksiyonunun Turkce karsiligi "mobil sinir kaydirma kilidi kur"; iOS/PWA'da en ust ve en altta arka planin gorunmesine neden olan esnemeyi engeller.
+function setupMobileBoundaryScrollLock() {
+  if (window.__akisMobileBoundaryScrollLockBound) {
+    return;
+  }
+
+  // ACIKLAMA: lastTouchY degiskeninin Turkce karsiligi "son dokunma Y konumu"; parmagin yukari mi asagi mi hareket ettigini hesaplamak icin saklanir.
+  let lastTouchY = 0;
+
+  document.addEventListener(
+    "touchstart",
+    (event) => {
+      if (!isMobileBoundaryScrollLockNeeded() || !isAppShellVisibleForScrollLock() || event.touches.length !== 1) {
+        return;
+      }
+
+      lastTouchY = event.touches[0].clientY;
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    "touchmove",
+    (event) => {
+      if (!isMobileBoundaryScrollLockNeeded() || !isAppShellVisibleForScrollLock() || event.touches.length !== 1) {
+        return;
+      }
+
+      // ACIKLAMA: currentTouchY degiskeninin Turkce karsiligi "gecerli dokunma Y konumu"; anlik parmak konumudur.
+      const currentTouchY = event.touches[0].clientY;
+      // ACIKLAMA: deltaY degiskeninin Turkce karsiligi "Y farki"; parmagin son hareket yonunu hesaplar.
+      const deltaY = currentTouchY - lastTouchY;
+      lastTouchY = currentTouchY;
+
+      if (Math.abs(deltaY) < 0.5) {
+        return;
+      }
+
+      if (!hasScrollableAncestorInTouchDirection(event.target, deltaY)) {
+        event.preventDefault();
+      }
+    },
+    { passive: false }
+  );
+
+  window.__akisMobileBoundaryScrollLockBound = true;
+}
+
+
 
 // ACIKLAMA: init fonksiyonunun Turkce karsiligi "baslat"; ilgili uygulama islemini calistirir.
 function init() {
@@ -1960,6 +2101,7 @@ function init() {
   initHistoryCustomFilterSelects();
   bindHistoryResponsiveLayout();
   bindHistorySearchFallback();
+  setupMobileBoundaryScrollLock();
   registerServiceWorker();
   initCardReminderNotifications();
   updateCloudBackupStatus();
