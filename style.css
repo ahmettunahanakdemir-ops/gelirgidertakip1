@@ -21137,30 +21137,30 @@ html[data-theme="dark"] .bulk-entry-form select {
 
 /* ACIKLAMA: Mobil PWA'da sayfa en uste veya en alta gelince arka planin lastik gibi acilmasini engeller ve kaydirma cubugunu gizler. */
 @media (max-width: 768px) {
-  html,
-  body,
-  #appShell.app-shell:not([hidden]),
-  .app-shell:not([hidden]) {
+  html.akis-pwa-standalone,
+  html.akis-pwa-standalone body,
+  html.akis-pwa-standalone #appShell.app-shell:not([hidden]),
+  html.akis-pwa-standalone .app-shell:not([hidden]) {
     overscroll-behavior: none !important;
     overscroll-behavior-y: none !important;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
   }
 
-  body::-webkit-scrollbar,
-  #appShell.app-shell:not([hidden])::-webkit-scrollbar,
-  .app-shell:not([hidden])::-webkit-scrollbar,
-  #appShell.app-shell:not([hidden]) > .workspace::-webkit-scrollbar,
-  .app-shell:not([hidden]) > .workspace::-webkit-scrollbar,
-  .workspace::-webkit-scrollbar {
+  html.akis-pwa-standalone body::-webkit-scrollbar,
+  html.akis-pwa-standalone #appShell.app-shell:not([hidden])::-webkit-scrollbar,
+  html.akis-pwa-standalone .app-shell:not([hidden])::-webkit-scrollbar,
+  html.akis-pwa-standalone #appShell.app-shell:not([hidden]) > .workspace::-webkit-scrollbar,
+  html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace::-webkit-scrollbar,
+  html.akis-pwa-standalone .workspace::-webkit-scrollbar {
     width: 0 !important;
     height: 0 !important;
     display: none !important;
   }
 
-  #appShell.app-shell:not([hidden]) > .workspace,
-  .app-shell:not([hidden]) > .workspace,
-  .workspace {
+  html.akis-pwa-standalone #appShell.app-shell:not([hidden]) > .workspace,
+  html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
+  html.akis-pwa-standalone .workspace {
     overscroll-behavior: none !important;
     overscroll-behavior-y: none !important;
     scrollbar-width: none !important;
@@ -21168,13 +21168,381 @@ html[data-theme="dark"] .bulk-entry-form select {
   }
 }
 
-/* ACIKLAMA: iOS Safari/PWA'da hizli kaydirma esnemesini azaltmak icin ana kaydirma alanini kontrollu moda alir. */
+/* ACIKLAMA: iOS PWA'da hizli kaydirma esnemesini azaltmak icin ana kaydirma alanini kontrollu moda alir. */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 768px) {
-    #appShell.app-shell:not([hidden]) > .workspace,
-    .app-shell:not([hidden]) > .workspace,
-    .workspace {
+    html.akis-pwa-standalone #appShell.app-shell:not([hidden]) > .workspace,
+html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
+    html.akis-pwa-standalone .workspace {
       -webkit-overflow-scrolling: auto !important;
     }
+
+    html:not(.akis-pwa-standalone) #appShell.app-shell:not([hidden]) > .workspace,
+    html:not(.akis-pwa-standalone) .app-shell:not([hidden]) > .workspace,
+    html:not(.akis-pwa-standalone) .workspace {
+      -webkit-overflow-scrolling: touch !important;
+      overscroll-behavior-y: auto !important;
+    }
+  }
+}
+
+/* ACIKLAMA: Mobil kart/hesap kayitlari penceresinde kayit kartlarinin birbirine yapismadan okunmasini saglar. */
+#paymentAccountRecordsModal .account-records-list,
+#paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-body-scroll > .profile-form > .account-records-list {
+  display: grid !important;
+  gap: 18px !important;
+  row-gap: 18px !important;
+  padding-bottom: 18px !important;
+}
+
+/* ACIKLAMA: Kart/hesap kayitlari listesindeki her kayit sablonunun kendi satirinda temiz boslukla durmasini saglar. */
+#paymentAccountRecordsModal .account-records-list .account-record-item {
+  margin: 0 !important;
+}
+
+/* ACIKLAMA: iPhone ve dar mobil PWA ekranlarinda kart kayitlari arasindaki dikey boslugu biraz daha artirir. */
+@media (max-width: 520px) {
+  #paymentAccountRecordsModal .account-records-list,
+  #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-body-scroll > .profile-form > .account-records-list {
+    gap: 22px !important;
+    row-gap: 22px !important;
+    padding-bottom: 22px !important;
+  }
+}
+
+/* ACIKLAMA: Mobil menu acikken ustteki kopya hamburger ikonunu gizler; sadece menu icindeki kapatma/acma ikonu gorunur. */
+@media (max-width: 980px) {
+  #appShell.app-shell.menu-open > #topbarMenuButton.topbar-menu,
+  .app-shell.menu-open > #topbarMenuButton.topbar-menu {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  #appShell.app-shell.menu-open > .sidebar.open .brand-block #mobileMenuButton.sidebar-toggle,
+  .app-shell.menu-open > .sidebar.open .brand-block #mobileMenuButton.sidebar-toggle {
+    display: inline-grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 2 !important;
+  }
+}
+
+/* ACIKLAMA: Kayitlar panelindeki tekrar eden ic baslik kaldirildigi icin filtre ve butonlari panelin ust satirina dengeli yerlestirir. */
+@media (min-width: 981px) {
+  #historyView .history-heading,
+  #historyView .panel-heading.history-heading {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 18px !important;
+    padding: 0 !important;
+  }
+
+  #historyView .history-heading > .history-filters,
+  #historyView .panel-heading.history-heading > .filters.history-filters {
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 0.76fr)
+      minmax(0, 0.76fr)
+      minmax(0, 0.86fr)
+      minmax(0, 0.90fr)
+      minmax(0, 1.04fr)
+      minmax(0, 1.28fr)
+      minmax(0, 0.58fr)
+      minmax(0, 0.92fr)
+      minmax(0, 0.90fr)
+      minmax(0, 0.72fr)
+      minmax(0, 0.66fr) !important;
+    grid-template-areas: "start end type payment account searchInput searchBtn clear recent excel pdf" !important;
+    align-items: end !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    scrollbar-width: none !important;
+  }
+
+  #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  #historyView .history-filters > #filterType,
+  #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  #historyView .history-filters > #filterPaymentMethod,
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  #historyView .history-filters > #filterPaymentAccount,
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  #historyView .history-filters > #openRecentTransactionsButton { grid-area: recent !important; }
+  #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  #historyView .history-filters > *,
+  #historyView .history-filters > .range-filter,
+  #historyView .history-filters > .custom-filter-select,
+  #historyView .history-filters > input,
+  #historyView .history-filters > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  #historyView .history-filters > .range-filter {
+    display: grid !important;
+    gap: 6px !important;
+    font-size: 0.72rem !important;
+  }
+
+  #historyView .history-filters .custom-filter-trigger,
+  #historyView .history-filters > select,
+  #historyView .history-filters > input,
+  #historyView .history-filters > button,
+  #historyView .history-filters > .range-filter input {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    padding-inline: 12px !important;
+    border-radius: 14px !important;
+    font-size: 0.80rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #historyView .history-filters > #historySearchButton,
+  #historyView .history-filters > #clearHistoryRangeButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #exportExcelButton,
+  #historyView .history-filters > #exportPdfButton {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+
+/* ACIKLAMA: Mobilde ic baslik kaldirildiginde filtrelerin panel basinda tam genislikte ve alt alta akmasini korur. */
+@media (max-width: 980px) {
+  #historyView .history-heading,
+  #historyView .panel-heading.history-heading {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 16px !important;
+    padding: 0 !important;
+  }
+
+  #historyView .history-heading > .history-filters,
+  #historyView .panel-heading.history-heading > .filters.history-filters {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+/* ACIKLAMA: Kayitlar ekraninda daha eski ve daha ozgul masaustu kurallari tek satirli filtre duzenini bozmasin diye son karar katmanidir. */
+@media (min-width: 981px) {
+  html:not(.history-compact-layout) body #appShell #historyView .history-heading,
+  html.history-compact-layout body #appShell #historyView .history-heading,
+  html body #appShell #historyView .panel-heading.history-heading {
+    display: block !important;
+    grid-template-columns: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 18px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-heading > .history-filters,
+  html.history-compact-layout body #appShell #historyView .history-heading > .history-filters,
+  html body #appShell #historyView .panel-heading.history-heading > .filters.history-filters {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(0, 1fr) !important;
+    grid-template-columns:
+      minmax(0, 0.74fr)
+      minmax(0, 0.74fr)
+      minmax(0, 0.82fr)
+      minmax(0, 0.86fr)
+      minmax(0, 1.00fr)
+      minmax(0, 1.24fr)
+      minmax(0, 0.58fr)
+      minmax(0, 0.84fr)
+      minmax(0, 0.82fr)
+      minmax(0, 0.68fr)
+      minmax(0, 0.62fr) !important;
+    grid-template-areas: "start end type payment account searchInput searchBtn clear recent excel pdf" !important;
+    align-items: end !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    scrollbar-width: none !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > .range-filter:nth-of-type(1),
+  html.history-compact-layout body #appShell #historyView .history-filters > .range-filter:nth-of-type(1) {
+    grid-area: start !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > .range-filter:nth-of-type(2),
+  html.history-compact-layout body #appShell #historyView .history-filters > .range-filter:nth-of-type(2) {
+    grid-area: end !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #filterType,
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > .custom-filter-select[data-for="filterType"],
+  html.history-compact-layout body #appShell #historyView .history-filters > #filterType,
+  html.history-compact-layout body #appShell #historyView .history-filters > .custom-filter-select[data-for="filterType"] {
+    grid-area: type !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #filterPaymentMethod,
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"],
+  html.history-compact-layout body #appShell #historyView .history-filters > #filterPaymentMethod,
+  html.history-compact-layout body #appShell #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] {
+    grid-area: payment !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #filterPaymentAccount,
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"],
+  html.history-compact-layout body #appShell #historyView .history-filters > #filterPaymentAccount,
+  html.history-compact-layout body #appShell #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] {
+    grid-area: account !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #searchInput,
+  html.history-compact-layout body #appShell #historyView .history-filters > #searchInput {
+    grid-area: searchInput !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #historySearchButton,
+  html.history-compact-layout body #appShell #historyView .history-filters > #historySearchButton {
+    grid-area: searchBtn !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #clearHistoryRangeButton,
+  html.history-compact-layout body #appShell #historyView .history-filters > #clearHistoryRangeButton {
+    grid-area: clear !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #openRecentTransactionsButton,
+  html.history-compact-layout body #appShell #historyView .history-filters > #openRecentTransactionsButton {
+    grid-area: recent !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #exportExcelButton,
+  html.history-compact-layout body #appShell #historyView .history-filters > #exportExcelButton {
+    grid-area: excel !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > #exportPdfButton,
+  html.history-compact-layout body #appShell #historyView .history-filters > #exportPdfButton {
+    grid-area: pdf !important;
+    grid-column: auto !important;
+  }
+
+  html:not(.history-compact-layout) body #appShell #historyView .history-filters > *,
+  html.history-compact-layout body #appShell #historyView .history-filters > * {
+    order: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  html body #appShell #historyView .history-filters > .range-filter {
+    display: grid !important;
+    gap: 6px !important;
+    font-size: 0.70rem !important;
+  }
+
+  html body #appShell #historyView .history-filters .custom-filter-trigger,
+  html body #appShell #historyView .history-filters > select,
+  html body #appShell #historyView .history-filters > input,
+  html body #appShell #historyView .history-filters > button,
+  html body #appShell #historyView .history-filters > .range-filter input {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    padding-inline: 10px !important;
+    border-radius: 14px !important;
+    font-size: 0.76rem !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  html body #appShell #historyView .history-filters > #historySearchButton,
+  html body #appShell #historyView .history-filters > #clearHistoryRangeButton,
+  html body #appShell #historyView .history-filters > #openRecentTransactionsButton,
+  html body #appShell #historyView .history-filters > #exportExcelButton,
+  html body #appShell #historyView .history-filters > #exportPdfButton {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+
+/* ACIKLAMA: Mobil Varliklarim listesindeki Duzenle ve Sil butonlarini kart genisligine gore daha okunakli iki sutun haline getirir. */
+@media (max-width: 640px) {
+  #assetsView #assetList .transaction-item {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  #assetsView #assetList .transaction-side {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    justify-content: stretch !important;
+    justify-self: stretch !important;
+  }
+
+  #assetsView #assetList .transaction-side .transaction-amount {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  #assetsView #assetList .transaction-side .ghost-btn,
+  #assetsView #assetList .transaction-side button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    padding-inline: 14px !important;
+    justify-content: center !important;
+    text-align: center !important;
   }
 }

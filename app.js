@@ -486,10 +486,10 @@ const cancelDeletePaymentAccountButton = document.getElementById("cancelDeletePa
 const confirmPaymentAccountDeleteStatus = document.getElementById("confirmPaymentAccountDeleteStatus");
 // ACIKLAMA: cardDebtTotal hesaplanan toplam degerin ekranda gosterilecegi alandir.
 const cardDebtTotal = document.getElementById("cardDebtTotal");
+// ACIKLAMA: activeStatementDebtTotal aktif donemdeki kredi karti borcu toplaminin ekranda gosterilecegi alandir.
+const activeStatementDebtTotal = document.getElementById("activeStatementDebtTotal");
 // ACIKLAMA: bankBalanceTotal hesaplanan toplam degerin ekranda gosterilecegi alandir.
 const bankBalanceTotal = document.getElementById("bankBalanceTotal");
-// ACIKLAMA: paymentAccountCount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
-const paymentAccountCount = document.getElementById("paymentAccountCount");
 // ACIKLAMA: besForm ilgili formun DOM referansidir; submit ve veri okuma islemlerinde kullanilir.
 const besForm = document.getElementById("besForm");
 // ACIKLAMA: besTotal hesaplanan toplam degerin ekranda gosterilecegi alandir.
@@ -1934,6 +1934,22 @@ function bindHistorySearchFallback() {
 }
 
 
+// ACIKLAMA: isStandalonePwaMode fonksiyonunun Turkce karsiligi "bagimsiz PWA modu mu"; uygulamanin Safari sekmesinde mi yoksa ana ekran PWA modunda mi acildigini belirler.
+function isStandalonePwaMode() {
+  return (
+    window.navigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches
+  );
+}
+
+// ACIKLAMA: syncPwaStandaloneClass fonksiyonunun Turkce karsiligi "PWA bagimsiz sinifini esitle"; CSS'in Safari ile PWA davranisini ayri yonetmesi icin html sinifini gunceller.
+function syncPwaStandaloneClass() {
+  document.documentElement.classList.toggle("akis-pwa-standalone", isStandalonePwaMode());
+}
+
+syncPwaStandaloneClass();
+
+
 // ACIKLAMA: isMobileBoundaryScrollLockNeeded fonksiyonunun Turkce karsiligi "mobil sinir kaydirma kilidi gerekli mi"; iOS/PWA ve dar dokunmatik ekranlarda esneme engelinin calisip calismayacagini belirler.
 function isMobileBoundaryScrollLockNeeded() {
   // ACIKLAMA: narrowScreen degiskeninin Turkce karsiligi "dar ekran"; telefon/tablet genisligini kontrol etmek icin kullanilir.
@@ -1945,12 +1961,8 @@ function isMobileBoundaryScrollLockNeeded() {
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   // ACIKLAMA: standalonePwa degiskeninin Turkce karsiligi "bagimsiz PWA"; ana ekrana eklenmis uygulama modunu kontrol eder.
-  const standalonePwa =
-    window.navigator.standalone === true ||
-    window.matchMedia("(display-mode: standalone)").matches;
-  // ACIKLAMA: webkitTouchBrowser degiskeninin Turkce karsiligi "WebKit dokunmatik tarayici"; Safari tabanli mobil tarayicilarda ek korumayi acmak icin kullanilir.
-  const webkitTouchBrowser = window.CSS?.supports?.("-webkit-touch-callout", "none") || false;
-  return narrowScreen && touchDevice && (appleTouchDevice || standalonePwa || webkitTouchBrowser);
+  const standalonePwa = isStandalonePwaMode();
+  return narrowScreen && touchDevice && appleTouchDevice && standalonePwa;
 }
 
 // ACIKLAMA: isAppShellVisibleForScrollLock fonksiyonunun Turkce karsiligi "uygulama kabugu kaydirma kilidi icin gorunur mu"; kilidin sadece giris sonrasi ana uygulamada calismasini saglar.
@@ -2078,6 +2090,7 @@ function setupMobileBoundaryScrollLock() {
 
 // ACIKLAMA: init fonksiyonunun Turkce karsiligi "baslat"; ilgili uygulama islemini calistirir.
 function init() {
+  syncPwaStandaloneClass();
   hideAllStartupModals();
   hideStartupSplash();
   mountModalForms();
@@ -4248,6 +4261,10 @@ function renderPaymentAccounts() {
   const creditDebt = paymentAccounts
     .filter((item) => item.type === "credit_card")
     .reduce((sum, item) => sum + Number(item.debt || 0), 0);
+  // ACIKLAMA: activeStatementDebt degiskeninin Turkce karsiligi "aktif donem borcu"; kredi kartlarinin aktif donem borclarini toplamak icin kullanilir.
+  const activeStatementDebt = paymentAccounts
+    .filter((item) => item.type === "credit_card")
+    .reduce((sum, item) => sum + getActiveCreditCardStatementDebt(item), 0);
   // ACIKLAMA: liquidBalance degiskeninin Turkce karsiligi "liquid bakiye"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const liquidBalance = paymentAccounts
     .filter((item) => item.type !== "credit_card")
@@ -4257,12 +4274,12 @@ function renderPaymentAccounts() {
     cardDebtTotal.textContent = currency.format(creditDebt);
   }
 
-  if (bankBalanceTotal) {
-    bankBalanceTotal.textContent = currency.format(liquidBalance);
+  if (activeStatementDebtTotal) {
+    activeStatementDebtTotal.textContent = currency.format(activeStatementDebt);
   }
 
-  if (paymentAccountCount) {
-    paymentAccountCount.textContent = String(paymentAccounts.length);
+  if (bankBalanceTotal) {
+    bankBalanceTotal.textContent = currency.format(liquidBalance);
   }
 
   paymentAccountList.innerHTML = "";

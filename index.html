@@ -24,7 +24,7 @@
       rel="stylesheet"
     />
     <!-- ACIKLAMA: PWA kurulum bilgilerini ve uygulama ikonlarini tarayiciya tanitir. -->
-    <link rel="manifest" href="manifest.json?v=260" />
+    <link rel="manifest" href="manifest.json?v=267" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
@@ -36,7 +36,7 @@
       } catch (e) {}
     </script>
     <!-- ACIKLAMA: style.css dosyasini yukleyerek tum gorsel tasarim ve responsive kurallari uygular. -->
-    <link rel="stylesheet" href="style.css?v=260" />
+    <link rel="stylesheet" href="style.css?v=267" />
   </head>
   <body>
 
@@ -668,19 +668,19 @@
           <div class="summary-stack">
             <section class="stats-grid">
               <article class="panel stat-card">
-                <span>Kredi Kartı Borcu</span>
+                <span>Toplam Kredi Kartı Borcu</span>
                 <!-- ACIKLAMA: cardDebtTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="cardDebtTotal">0 TL</strong>
+              </article>
+              <article class="panel stat-card">
+                <span>Aktif Dönem Kredi Kartı Borcu</span>
+                <!-- ACIKLAMA: activeStatementDebtTotal aktif donemdeki kredi karti borcu toplamini gosterir. -->
+                <strong id="activeStatementDebtTotal">0 TL</strong>
               </article>
               <article class="panel stat-card">
                 <span>Nakit / Banka Bakiyesi</span>
                 <!-- ACIKLAMA: bankBalanceTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="bankBalanceTotal">0 TL</strong>
-              </article>
-              <article class="panel stat-card">
-                <span>Kart / Hesap Sayısı</span>
-                <!-- ACIKLAMA: paymentAccountCount kart, banka hesabi veya odeme hesabi ekranlari icin kullanilir. -->
-                <strong id="paymentAccountCount">0</strong>
               </article>
             </section>
 
@@ -864,10 +864,6 @@
         <section id="historyView" class="view-section" data-view>
           <section class="panel history-panel">
             <div class="panel-heading history-heading">
-              <div>
-                <p class="panel-kicker">Hareketler</p>
-                  <h2>Kayıtlar</h2>
-              </div>
               <div class="filters history-filters">
                 <label class="range-filter">
                   Başlangıç
@@ -1850,7 +1846,7 @@
     </template>
 
     <!-- ACIKLAMA: Firebase proje ayarlarini app.js tarafindan okunacak sekilde yukler. -->
-    <script src="firebase-config.js?v=260"></script>
+    <script src="firebase-config.js?v=267"></script>
     <!-- ACIKLAMA: Firebase cekirdek kutuphanesini yukleyerek bulut baglantisini hazirlar. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <!-- ACIKLAMA: Firebase giris/kayit/parola islemleri icin auth kutuphanesini yukler. -->
@@ -1858,6 +1854,6 @@
     <!-- ACIKLAMA: Firestore veritabani okuma/yazma islemleri icin kutuphaneyi yukler. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <!-- ACIKLAMA: Uygulamanin tum is mantigini ve ekran davranislarini calistiran ana JS dosyasini yukler. -->
-    <script src="app.js?v=260"></script>
+    <script src="app.js?v=267"></script>
   </body>
 </html>
