@@ -21082,3 +21082,55 @@ html[data-theme="dark"] .bulk-entry-form select {
     min-width: 0 !important;
   }
 }
+
+/* ACIKLAMA: Mobil Safari/PWA alt bar ve home indicator alaninda son kart veya butonlarin kesilmemesi icin ek alt tampon tanimlar. */
+:root {
+  --mobile-bottom-safe-buffer: max(92px, calc(env(safe-area-inset-bottom) + 68px));
+}
+
+/* ACIKLAMA: Telefon ve tabletlerde sayfanin en altinda son sablonlarin ve butonlarin gorunur kalmasini saglar. */
+@media (max-width: 768px) {
+  #appShell.app-shell:not([hidden]) > .workspace,
+  .app-shell:not([hidden]) > .workspace,
+  .workspace {
+    padding-bottom: var(--mobile-bottom-safe-buffer) !important;
+    scroll-padding-bottom: var(--mobile-bottom-safe-buffer) !important;
+  }
+
+  .view-section.active {
+    padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .view-section.active::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: max(28px, env(safe-area-inset-bottom));
+    flex: 0 0 auto;
+  }
+}
+
+/* ACIKLAMA: iOS Safari ve PWA uygulamasinda alt tarayici cubugu/home indicator icin daha genis kaydirma boslugu birakir. */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    :root {
+      --mobile-bottom-safe-buffer: max(126px, calc(env(safe-area-inset-bottom) + 92px));
+    }
+
+    #appShell.app-shell:not([hidden]),
+    .app-shell:not([hidden]) {
+      min-height: 100svh !important;
+    }
+
+    #appShell.app-shell:not([hidden]) > .workspace,
+    .app-shell:not([hidden]) > .workspace,
+    .workspace {
+      padding-bottom: var(--mobile-bottom-safe-buffer) !important;
+      scroll-padding-bottom: var(--mobile-bottom-safe-buffer) !important;
+    }
+
+    .view-section.active::after {
+      height: max(42px, env(safe-area-inset-bottom));
+    }
+  }
+}
