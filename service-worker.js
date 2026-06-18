@@ -1,14 +1,14 @@
 // ACIKLAMA NOTU: Bu dosyada kod bloklarinin yaninda ne ise yaradiklarini anlatan yorumlar vardir.
 // ACIKLAMA: Service worker tarafinda kullanilan aktif cache adini tutar.
-const CACHE_NAME = "akis-butce-v267";
+const CACHE_NAME = "akis-butce-v269";
 // ACIKLAMA: Uygulamanin cevrimdisi acilmasi icin cachelenecek temel dosyalari listeler.
 const APP_ASSETS = [
   "./",
   "./index.html",
-  "./style.css?v=267",
-  "./app.js?v=267",
-  "./firebase-config.js?v=267",
-  "./manifest.json?v=267",
+  "./style.css?v=269",
+  "./app.js?v=269",
+  "./firebase-config.js?v=269",
+  "./manifest.json?v=269",
   "./icon.svg",
   "./login-pattern.svg",
 ];

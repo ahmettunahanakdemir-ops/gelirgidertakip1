@@ -21546,3 +21546,108 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     text-align: center !important;
   }
 }
+
+/* ACIKLAMA: Mobil ve dar tablet Varliklarim ekraninda tutar, Duzenle ve Sil alanlarini dengeli satira yerlestirir. */
+@media (max-width: 768px) {
+  #assetsView #assetList .transaction-item {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  #assetsView #assetList .transaction-side {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(116px, 132px) minmax(64px, 78px) !important;
+    align-items: center !important;
+    justify-content: stretch !important;
+    justify-self: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #assetsView #assetList .transaction-side .transaction-amount {
+    grid-column: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  #assetsView #assetList .transaction-side button:first-of-type {
+    min-width: 116px !important;
+  }
+
+  #assetsView #assetList .transaction-side .ghost-btn,
+  #assetsView #assetList .transaction-side button {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    padding-inline: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+}
+
+/* ACIKLAMA: Telefonlarda ana uygulama acikken kaydirma sorumlulugunu workspace alanina verir; body kilitliyken sayfa kaydirilmez kalmasin. */
+@media (max-width: 980px) {
+  #appShell.app-shell:not([hidden]),
+  .app-shell:not([hidden]) {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    touch-action: pan-y !important;
+  }
+
+  @supports (height: 100dvh) {
+    #appShell.app-shell:not([hidden]),
+    .app-shell:not([hidden]) {
+      height: 100dvh !important;
+      min-height: 100dvh !important;
+      max-height: 100dvh !important;
+    }
+  }
+
+  #appShell.app-shell:not([hidden]) > .workspace,
+  .app-shell:not([hidden]) > .workspace,
+  .workspace {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: contain !important;
+    scroll-behavior: auto !important;
+  }
+
+  html:not(.akis-pwa-standalone) #appShell.app-shell:not([hidden]) > .workspace,
+  html:not(.akis-pwa-standalone) .app-shell:not([hidden]) > .workspace,
+  html:not(.akis-pwa-standalone) .workspace {
+    overscroll-behavior-y: auto !important;
+  }
+}
+
+/* ACIKLAMA: Daha dar telefonlarda varlik butonlari alt satirda kalir; Duzenle butonu Sil butonundan biraz daha genis tutulur. */
+@media (max-width: 640px) {
+  #assetsView #assetList .transaction-side {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr) !important;
+  }
+
+  #assetsView #assetList .transaction-side .transaction-amount {
+    grid-column: 1 / -1 !important;
+  }
+
+  #assetsView #assetList .transaction-side button:first-of-type {
+    min-width: 0 !important;
+  }
+}

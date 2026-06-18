@@ -4729,29 +4729,36 @@ function updatePaymentAccountSelect(selectElement, method = "cash", selectedValu
     : "";
 }
 
-// ACIKLAMA: syncBankImportAccountSelects fonksiyonunun Turkce karsiligi "esitle banka ice aktar hesap selects"; bulut ve yerel veri esitleme akisini yonetir.
-function syncBankImportAccountSelects(selectedValue = "") {
+// ACIKLAMA: syncBankImportAccountSelects fonksiyonunun Turkce karsiligi "banka ice aktar hesap secimlerini esitle"; ana panel ve onizleme penceresindeki hesap secimini ayni tutar.
+function syncBankImportAccountSelects(selectedValue) {
+  // ACIKLAMA: hasExplicitValue degiskeni kullanicinin bilerek bos secim yapip yapmadigini ayirt eder.
+  const hasExplicitValue = arguments.length > 0;
   // ACIKLAMA: currentValue degiskeninin Turkce karsiligi "mevcut deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const currentValue = String(
-    selectedValue ||
-    bankImportPreviewAccount?.value ||
-    bankImportAccountSelect?.value ||
-    ""
+    hasExplicitValue
+      ? selectedValue || ""
+      : bankImportPreviewAccount?.value || bankImportAccountSelect?.value || ""
   );
 
   updateBankImportAccountSelect(bankImportAccountSelect, currentValue);
   updateBankImportAccountSelect(bankImportPreviewAccount, currentValue);
-  syncBankImportTransferAccountSelects();
+  if (hasExplicitValue && !currentValue) {
+    syncBankImportTransferAccountSelects("");
+  } else {
+    syncBankImportTransferAccountSelects();
+  }
 }
 
 // ACIKLAMA: updateBankImportAccountSelect fonksiyonunun Turkce karsiligi "guncelle banka ice aktar hesap secim alani"; mevcut ekran durumunu veya hesaplanan degerleri gunceller.
-function updateBankImportAccountSelect(selectElement, selectedValue = "") {
+function updateBankImportAccountSelect(selectElement, selectedValue) {
   if (!selectElement) {
     return;
   }
 
+  // ACIKLAMA: hasExplicitValue degiskeni bos secimin eski hesaba geri donmesini engeller.
+  const hasExplicitValue = arguments.length > 1;
   // ACIKLAMA: currentValue degiskeninin Turkce karsiligi "mevcut deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const currentValue = String(selectedValue || selectElement.value || "");
+  const currentValue = String(hasExplicitValue ? selectedValue || "" : selectElement.value || "");
   selectElement.innerHTML = "";
 
   // ACIKLAMA: emptyOption degiskeninin Turkce karsiligi "empty option"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -4771,14 +4778,15 @@ function updateBankImportAccountSelect(selectElement, selectedValue = "") {
   selectElement.value = paymentAccounts.some((item) => item.id === currentValue) ? currentValue : "";
 }
 
-// ACIKLAMA: syncBankImportTransferAccountSelects fonksiyonunun Turkce karsiligi "esitle banka ice aktar aktarim hesap selects"; bulut ve yerel veri esitleme akisini yonetir.
-function syncBankImportTransferAccountSelects(selectedValue = "") {
+// ACIKLAMA: syncBankImportTransferAccountSelects fonksiyonunun Turkce karsiligi "banka ice aktar karsi hesap secimlerini esitle"; aktarim karsi hesabini ana panel ve onizleme arasinda ayni tutar.
+function syncBankImportTransferAccountSelects(selectedValue) {
+  // ACIKLAMA: hasExplicitValue degiskeni kullanicinin aktarim yok secimini korur.
+  const hasExplicitValue = arguments.length > 0;
   // ACIKLAMA: currentValue degiskeninin Turkce karsiligi "mevcut deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const currentValue = String(
-    selectedValue ||
-    bankImportPreviewTransferAccount?.value ||
-    bankImportTransferAccountSelect?.value ||
-    ""
+    hasExplicitValue
+      ? selectedValue || ""
+      : bankImportPreviewTransferAccount?.value || bankImportTransferAccountSelect?.value || ""
   );
   // ACIKLAMA: sourceAccountId degiskeninin Turkce karsiligi "kaynak hesap kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const sourceAccountId = String(bankImportPreviewAccount?.value || bankImportAccountSelect?.value || "");
@@ -4788,15 +4796,17 @@ function syncBankImportTransferAccountSelects(selectedValue = "") {
 }
 
 // ACIKLAMA: updateBankImportTransferAccountSelect fonksiyonunun Turkce karsiligi "guncelle banka ice aktar aktarim hesap secim alani"; mevcut ekran durumunu veya hesaplanan degerleri gunceller.
-function updateBankImportTransferAccountSelect(selectElement, selectedValue = "", sourceAccountId = "") {
+function updateBankImportTransferAccountSelect(selectElement, selectedValue, sourceAccountId = "") {
   if (!selectElement) {
     return;
   }
 
   // ACIKLAMA: sourceId degiskeninin Turkce karsiligi "kaynak kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const sourceId = String(sourceAccountId || "");
+  // ACIKLAMA: hasExplicitValue degiskeni bos karsi hesap seciminin korunmasini saglar.
+  const hasExplicitValue = arguments.length > 1;
   // ACIKLAMA: currentValue degiskeninin Turkce karsiligi "mevcut deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const currentValue = String(selectedValue || selectElement.value || "");
+  const currentValue = String(hasExplicitValue ? selectedValue || "" : selectElement.value || "");
   // ACIKLAMA: eligibleAccounts degiskeninin Turkce karsiligi "eligible hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const eligibleAccounts = paymentAccounts.filter((item) => item.id !== sourceId);
   selectElement.innerHTML = "";
@@ -13394,6 +13404,60 @@ function previewBankImport(options = {}) {
     ". Eklemek istediklerini kontrol edip yeşil butona tekrar bas.";
 }
 
+// ACIKLAMA: resetBankImportInputState fonksiyonunun Turkce karsiligi "banka ice aktar giris durumunu sifirla"; secili hesaplari, dosyalari, onizlemeyi ve buton durumlarini temizler.
+function resetBankImportInputState(statusText = "Banka içe aktarma alanı temizlendi.") {
+  pendingBankImports = [];
+  pendingBankFiles = [];
+
+  if (bankImportText) {
+    bankImportText.value = "";
+  }
+
+  if (bankImportFile) {
+    bankImportFile.value = "";
+  }
+
+  if (bankImportAccountSelect) {
+    bankImportAccountSelect.value = "";
+  }
+
+  if (bankImportPreviewAccount) {
+    bankImportPreviewAccount.value = "";
+  }
+
+  if (bankImportTransferAccountSelect) {
+    bankImportTransferAccountSelect.value = "";
+  }
+
+  if (bankImportPreviewTransferAccount) {
+    bankImportPreviewTransferAccount.value = "";
+  }
+
+  syncBankImportAccountSelects("");
+  syncBankImportTransferAccountSelects("");
+  renderBankImportPreview();
+  closeBankImportPreviewModal();
+  setBankImportLoading(false);
+
+  if (bankImportAddButton) {
+    bankImportAddButton.disabled = false;
+    bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
+  }
+
+  if (bankImportLocalButton) {
+    bankImportLocalButton.disabled = false;
+    bankImportLocalButton.textContent = "Kayıtlara Ekle";
+  }
+
+  if (bankImportCancelButton) {
+    bankImportCancelButton.disabled = false;
+  }
+
+  if (typeof statusText === "string" && bankImportStatus) {
+    bankImportStatus.textContent = statusText;
+  }
+}
+
 
 // ACIKLAMA: confirmBankImport fonksiyonunun Turkce karsiligi "onay banka ice aktar"; veriyi uygulamaya ice aktarir.
 function confirmBankImport(options = {}) {
@@ -13465,42 +13529,16 @@ function confirmBankImport(options = {}) {
   persistTransactions({ cloudUpserts: selectedTransactions });
   render();
 
-  pendingBankImports = [];
-  pendingBankFiles = [];
-  bankImportText.value = "";
-  bankImportFile.value = "";
-  if (bankImportTransferAccountSelect) bankImportTransferAccountSelect.value = "";
-  if (bankImportPreviewTransferAccount) bankImportPreviewTransferAccount.value = "";
-  renderBankImportPreview();
-  closeBankImportPreviewModal();
-  if (bankImportAddButton) {
-    bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
-  }
-  if (bankImportLocalButton) {
-    bankImportLocalButton.textContent = "Kayıtlara Ekle";
-  }
-  if (updateStatus) {
-    bankImportStatus.textContent = `${selectedTransactions.length} banka hareketi kayıtlara eklendi. Seçilen dosya/görsel alanı temizlendi.`;
-  }
+  resetBankImportInputState(
+    updateStatus
+      ? `${selectedTransactions.length} banka hareketi kayıtlara eklendi. Seçilen hesap, karşı hesap, dosya/görsel ve önizleme alanı temizlendi.`
+      : null
+  );
 }
 
 // ACIKLAMA: clearBankImport fonksiyonunun Turkce karsiligi "temizle banka ice aktar"; veriyi uygulamaya ice aktarir.
 function clearBankImport() {
-  pendingBankImports = [];
-  pendingBankFiles = [];
-  bankImportText.value = "";
-  bankImportFile.value = "";
-  if (bankImportTransferAccountSelect) bankImportTransferAccountSelect.value = "";
-  if (bankImportPreviewTransferAccount) bankImportPreviewTransferAccount.value = "";
-  renderBankImportPreview();
-  closeBankImportPreviewModal();
-  if (bankImportAddButton) {
-    bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
-  }
-  if (bankImportLocalButton) {
-    bankImportLocalButton.textContent = "Kayıtlara Ekle";
-  }
-  bankImportStatus.textContent = "Banka içe aktarma alanı temizlendi.";
+  resetBankImportInputState("Banka içe aktarma alanı temizlendi.");
 }
 
 // ACIKLAMA: renderBankImportPreview fonksiyonunun Turkce karsiligi "ekrana bas banka ice aktar onizle"; ilgili ekran, liste veya kartlari ekrana basar.
