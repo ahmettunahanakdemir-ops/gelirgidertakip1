@@ -1,0 +1,2056 @@
+/* ACIKLAMA: Tema degiskenleri, acik/koyu tema, ayarlar ekrani ve genel kontrol gorselleri.
+   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
+
+:root {
+  --bg: #e9f4f1;
+  --surface: rgba(255, 255, 255, 0.68);
+  --surface-soft: rgba(255, 255, 255, 0.52);
+  --sidebar: rgba(18, 56, 84, 0.88);
+  --sidebar-deep: rgba(11, 39, 62, 0.92);
+  --sidebar-active: rgba(48, 112, 157, 0.92);
+  --stroke: rgba(255, 255, 255, 0.52);
+  --text: #12231f;
+  --muted: #5e726d;
+  --income: #118f6b;
+  --expense: #cd5a43;
+  --accent: #1ac7b4;
+  --accent-soft: rgba(26, 199, 180, 0.18);
+  --warning: #d89b24;
+  --shadow: 0 18px 48px rgba(14, 41, 34, 0.12);
+}
+
+/* ACIKLAMA: html secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html {
+  background:
+    radial-gradient(circle at top left, rgba(26, 199, 180, 0.18), transparent 34%),
+    radial-gradient(circle at top right, rgba(23, 63, 95, 0.16), transparent 28%),
+    linear-gradient(180deg, #edf8f5 0%, #e7f1ee 100%);
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body {
+  background:
+    linear-gradient(rgba(255,255,255,0.36), rgba(255,255,255,0.36)),
+    url("../../login-pattern.svg") center top / min(720px, 92vw) auto repeat,
+    radial-gradient(circle at 10% 10%, rgba(26,199,180,0.12), transparent 26%),
+    radial-gradient(circle at 90% 10%, rgba(24,128,95,0.10), transparent 26%),
+    linear-gradient(180deg, #eef8f5 0%, #e9f1ef 100%);
+}
+
+.login-card,
+.panel,
+.transaction-item,
+.balance-card,
+.summary-card,
+.history-card,
+.report-card,
+.stats-card,
+.modal-card,
+.pdf-preview-sheet,
+.sidebar-account,
+/* ACIKLAMA: .empty-state secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.empty-state {
+  background: var(--surface) !important;
+  border: 1px solid var(--stroke) !important;
+  box-shadow: var(--shadow) !important;
+  backdrop-filter: blur(18px) saturate(155%);
+  -webkit-backdrop-filter: blur(18px) saturate(155%);
+}
+
+.panel,
+.transaction-item,
+.modal-card,
+.login-card,
+.sidebar-account,
+/* ACIKLAMA: .empty-state secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.empty-state {
+  border-radius: 22px !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+.login-card {
+  gap: 22px;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.58) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+.login-copy {
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.45);
+  background:
+    linear-gradient(160deg, rgba(255,255,255,0.72), rgba(255,255,255,0.42));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), 0 18px 38px rgba(17,35,28,0.08);
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+.login-copy::after {
+  border-radius: 20px;
+  opacity: 0.78;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar {
+  background:
+    linear-gradient(180deg, rgba(19, 60, 90, 0.86), rgba(10, 38, 61, 0.94)) !important;
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border-right: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 14px 0 36px rgba(12, 34, 53, 0.18);
+}
+
+.brand-block,
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-footer {
+  border-color: rgba(255,255,255,0.10) !important;
+}
+
+.sidebar-toggle,
+.nav-item,
+.logout-btn,
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-account .auth-badge {
+  border-radius: 16px !important;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.nav-item {
+  background: rgba(255,255,255,0.04) !important;
+}
+
+.nav-item:hover,
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.nav-item.active {
+  background: rgba(90, 202, 190, 0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 22px rgba(7, 29, 45, 0.16);
+}
+
+.sidebar-toggle,
+.sidebar-account,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.logout-btn {
+  background: rgba(255,255,255,0.08) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel {
+  padding: clamp(20px, 3vw, 28px);
+}
+
+.auth-form input,
+.entry-form input,
+.entry-form select,
+.entry-form textarea,
+.profile-form input,
+.profile-form select,
+.profile-form textarea,
+.danger-zone input,
+.range-filter input,
+.filters input,
+.filters select,
+.date-filter select,
+.sync-textarea,
+.modal-card input,
+.modal-card select,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card textarea {
+  background: rgba(255,255,255,0.72) !important;
+  border: 1px solid rgba(154, 181, 173, 0.42) !important;
+  border-radius: 16px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.64);
+}
+
+.auth-form input::placeholder,
+.entry-form input::placeholder,
+.entry-form textarea::placeholder,
+.profile-form input::placeholder,
+.profile-form textarea::placeholder,
+.modal-card input::placeholder,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card textarea::placeholder {
+  color: #8a9893;
+}
+
+.auth-form input:focus,
+.entry-form input:focus,
+.entry-form select:focus,
+.entry-form textarea:focus,
+.profile-form input:focus,
+.profile-form select:focus,
+.profile-form textarea:focus,
+.danger-zone input:focus,
+.range-filter input:focus,
+.filters input:focus,
+.filters select:focus,
+.date-filter select:focus,
+.sync-textarea:focus,
+.modal-card input:focus,
+.modal-card select:focus,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card textarea:focus {
+  border-color: rgba(26,199,180,0.92) !important;
+  box-shadow: 0 0 0 4px rgba(26,199,180,0.14), inset 0 1px 0 rgba(255,255,255,0.65) !important;
+}
+
+.primary-btn,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.success-btn {
+  background: linear-gradient(135deg, rgba(28,198,181,0.95), rgba(17,162,136,0.96)) !important;
+  color: #08352f !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 28px rgba(19, 184, 159, 0.18), inset 0 1px 0 rgba(255,255,255,0.34);
+}
+
+.ghost-btn,
+.file-trigger,
+.text-btn,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.logout-btn {
+  background: rgba(255,255,255,0.54) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.44) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 22px rgba(17,35,28,0.06), inset 0 1px 0 rgba(255,255,255,0.50);
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.danger-btn {
+  background: linear-gradient(135deg, rgba(210,96,76,0.95), rgba(192,71,50,0.95)) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 28px rgba(199, 78, 57, 0.16), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+
+.primary-btn:hover,
+.ghost-btn:hover,
+.file-trigger:hover,
+.success-btn:hover,
+.danger-btn:hover,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.logout-btn:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.04);
+}
+
+.hero-card,
+.balance-hero,
+.overview-hero,
+/* ACIKLAMA: .dashboard-hero secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.dashboard-hero {
+  background: linear-gradient(135deg, rgba(18, 140, 113, 0.92), rgba(24, 64, 111, 0.94)) !important;
+  color: #f5fffd !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  box-shadow: 0 22px 44px rgba(18, 71, 60, 0.18) !important;
+}
+
+.transaction-item,
+.mini-row,
+.history-row,
+.record-row,
+/* ACIKLAMA: .report-row secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.report-row {
+  background: rgba(255,255,255,0.48) !important;
+  border: 1px solid rgba(255,255,255,0.5) !important;
+}
+
+.transaction-item:hover,
+.mini-row:hover,
+.history-row:hover,
+/* ACIKLAMA: .record-row:hover secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.record-row:hover {
+  box-shadow: 0 14px 28px rgba(17,35,28,0.08), inset 0 1px 0 rgba(255,255,255,0.42);
+}
+
+.modal-backdrop,
+/* ACIKLAMA: .pdf-preview-overlay secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay {
+  background: rgba(12, 28, 24, 0.34) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card {
+  background: rgba(255,255,255,0.78) !important;
+  border-radius: 26px !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel-kicker {
+  letter-spacing: 0.16em;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  .panel,
+  .transaction-item,
+  .login-card,
+  .modal-card,
+  .sidebar-account,
+  /* ACIKLAMA: .empty-state secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .empty-state {
+    border-radius: 18px !important;
+  }
+
+  .primary-btn,
+  .ghost-btn,
+  .danger-btn,
+  .success-btn,
+  .logout-btn,
+  /* ACIKLAMA: .file-trigger secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .file-trigger {
+    border-radius: 14px !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body {
+  background:
+    linear-gradient(rgba(255,255,255,0.48), rgba(255,255,255,0.48)),
+    url("../../login-pattern.svg") center top / min(720px, 92vw) auto repeat,
+    radial-gradient(circle at 10% 10%, rgba(26,199,180,0.10), transparent 26%),
+    radial-gradient(circle at 90% 10%, rgba(24,128,95,0.08), transparent 26%),
+    linear-gradient(180deg, #eef8f5 0%, #e8f1ef 100%) !important;
+}
+
+.login-card,
+.panel,
+.transaction-item,
+.balance-card,
+.summary-card,
+.history-card,
+.report-card,
+.stats-card,
+.modal-card,
+.pdf-preview-sheet,
+.sidebar-account,
+/* ACIKLAMA: .empty-state secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.empty-state {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.84), rgba(255,255,255,0.74)) !important;
+  border: 1px solid rgba(255,255,255,0.62) !important;
+  box-shadow: 0 18px 40px rgba(14, 41, 34, 0.10) !important;
+}
+
+.panel,
+.transaction-item,
+.mini-row,
+.history-row,
+.record-row,
+/* ACIKLAMA: .report-row secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.report-row {
+  position: relative;
+}
+
+.panel::before,
+.transaction-item::before,
+.mini-row::before,
+.history-row::before,
+.record-row::before,
+.report-row::before,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  pointer-events: none;
+}
+
+.panel > *,
+.transaction-item > *,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.panel h1,
+.panel h2,
+.panel h3,
+.panel strong,
+.transaction-title,
+.balance-card strong,
+.summary-card strong,
+.stats-card strong,
+.modal-card h2,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card h3 {
+  color: #132722 !important;
+}
+
+.panel p,
+.panel-note,
+.sync-status,
+.transaction-meta,
+.modal-card p,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card label {
+  color: #5f716d !important;
+}
+
+.quick-balance,
+.home-balance,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel.quick-balance {
+  background:
+    linear-gradient(135deg, rgba(12, 143, 117, 0.92), rgba(19, 67, 109, 0.94)) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  box-shadow: 0 22px 48px rgba(17, 67, 57, 0.18) !important;
+}
+
+.quick-balance::before,
+.home-balance::before,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel.quick-balance::before {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02)),
+    radial-gradient(circle at top left, rgba(255,255,255,0.18), transparent 32%);
+}
+
+.quick-balance,
+.quick-balance strong,
+.quick-balance span,
+.quick-balance p,
+#heroBalance,
+#heroInsight,
+#homeBalance,
+/* ACIKLAMA: #homeBalance + p secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#homeBalance + p {
+  color: #f7fffd !important;
+}
+
+/* ACIKLAMA: .quick-balance span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.quick-balance span {
+  color: rgba(247,255,253,0.82) !important;
+}
+
+.quick-balance p,
+#heroInsight,
+/* ACIKLAMA: #homeBalance + p secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#homeBalance + p {
+  color: rgba(247,255,253,0.88) !important;
+}
+
+.ghost-btn,
+.file-trigger,
+.text-btn,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.logout-btn {
+  background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(246,250,248,0.66)) !important;
+  color: #17302b !important;
+  border: 1px solid rgba(255,255,255,0.62) !important;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.nav-item {
+  background: rgba(255,255,255,0.06) !important;
+}
+
+.nav-item span,
+.nav-item strong,
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.nav-item {
+  color: #f2fbff !important;
+}
+
+.nav-item:hover,
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(88, 206, 194, 0.28), rgba(255,255,255,0.10)) !important;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.auth-form input,
+.entry-form input,
+.entry-form select,
+.entry-form textarea,
+.profile-form input,
+.profile-form select,
+.profile-form textarea,
+.danger-zone input,
+.range-filter input,
+.filters input,
+.filters select,
+.date-filter select,
+.sync-textarea,
+.modal-card input,
+.modal-card select,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card textarea {
+  background: linear-gradient(180deg, rgba(255,255,255,0.90), rgba(250,252,251,0.82)) !important;
+  color: #1a2d28 !important;
+}
+
+input::placeholder,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+textarea::placeholder {
+  color: #8a9893 !important;
+}
+
+.modal-backdrop,
+/* ACIKLAMA: .pdf-preview-overlay secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay {
+  background: rgba(10, 24, 21, 0.26) !important;
+  backdrop-filter: blur(12px) saturate(125%);
+  -webkit-backdrop-filter: blur(12px) saturate(125%);
+}
+
+
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-account {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.08)),
+    linear-gradient(135deg, rgba(82, 208, 193, 0.20), rgba(255,255,255,0.06)) !important;
+  border: 1px solid rgba(133, 232, 217, 0.22) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 12px 28px rgba(8, 28, 44, 0.22) !important;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-account .auth-badge {
+  background: linear-gradient(135deg, rgba(188, 247, 238, 0.96), rgba(145, 235, 223, 0.98)) !important;
+  color: #0f4b44 !important;
+  border: 1px solid rgba(255,255,255,0.54) !important;
+  box-shadow:
+    0 10px 22px rgba(46, 197, 177, 0.16),
+    inset 0 1px 0 rgba(255,255,255,0.75) !important;
+  font-weight: 800;
+}
+
+.sidebar-account strong,
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-account span:not(.auth-badge) {
+  color: #f3fcff !important;
+}
+
+.payment-card,
+.payment-card.bank_account,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card.cash {
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  box-shadow:
+    0 22px 40px rgba(17, 35, 28, 0.16),
+    inset 0 1px 0 rgba(255,255,255,0.12) !important;
+  filter: saturate(1.08) contrast(1.03);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card::before {
+  opacity: 1 !important;
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,0.30), transparent 30%),
+    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card::after {
+  opacity: 0.92 !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-shine {
+  opacity: 0.9 !important;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,0.00) 18%, rgba(255,255,255,0.18) 38%, rgba(255,255,255,0.05) 58%, rgba(255,255,255,0.00) 76%) !important;
+}
+
+.payment-card-bank,
+.payment-card-small,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-details span {
+  color: rgba(255,255,255,0.84) !important;
+}
+
+.payment-card h3,
+.payment-card-number,
+.payment-card-details strong,
+.payment-card-amount,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-note {
+  color: #ffffff !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-actions .ghost-btn {
+  background: rgba(255,255,255,0.18) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-actions .success-btn {
+  background: linear-gradient(135deg, rgba(22, 187, 126, 0.98), rgba(13, 153, 109, 0.98)) !important;
+  color: #f7fffd !important;
+  box-shadow: 0 12px 26px rgba(12, 116, 89, 0.26), inset 0 1px 0 rgba(255,255,255,0.18) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-actions .danger-lite-btn {
+  background: rgba(255,255,255,0.14) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel .auth-badge {
+  background: linear-gradient(135deg, rgba(196, 248, 240, 0.96), rgba(154, 238, 226, 0.96));
+  color: #0f4b44;
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.theme-panel {
+  display: grid;
+  gap: 18px;
+  margin-top: 22px;
+  padding: 22px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,255,255,0.72));
+  border: 1px solid rgba(255,255,255,0.62);
+  box-shadow: 0 16px 36px rgba(14, 41, 34, 0.09);
+}
+
+/* ACIKLAMA: .theme-switcher secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.theme-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.theme-choice-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 84px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(173, 196, 191, 0.48);
+  background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(247,250,249,0.72));
+  color: #19302b;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 10px 24px rgba(17,35,28,0.06);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.theme-choice-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.76), 0 14px 30px rgba(17,35,28,0.10);
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.theme-choice-btn.active {
+  border-color: rgba(26, 199, 180, 0.88);
+  box-shadow: 0 0 0 4px rgba(26, 199, 180, 0.14), inset 0 1px 0 rgba(255,255,255,0.78), 0 14px 30px rgba(17,35,28,0.10);
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.theme-choice-btn > span:last-child {
+  display: grid;
+  gap: 4px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.theme-choice-btn strong {
+  font-size: 1rem;
+  color: #18302a;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.theme-choice-btn small {
+  color: #6b7f7b;
+  font-size: 0.86rem;
+}
+
+/* ACIKLAMA: .theme-choice-swatch secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.theme-choice-swatch {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.48), 0 10px 22px rgba(17,35,28,0.08);
+}
+
+/* ACIKLAMA: .theme-choice-swatch.light secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.theme-choice-swatch.light {
+  background: linear-gradient(135deg, #f4fffb, #d8f7f0 52%, #b7efe2);
+}
+
+/* ACIKLAMA: .theme-choice-swatch.dark secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.theme-choice-swatch.dark {
+  background: linear-gradient(135deg, #15212b, #1d3040 52%, #2b495d);
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+html[data-theme="dark"] body {
+  background:
+    linear-gradient(rgba(8,12,16,0.46), rgba(8,12,16,0.46)),
+    url("../../login-pattern.svg") center top / min(720px, 92vw) auto repeat,
+    radial-gradient(circle at top left, rgba(46, 203, 176, 0.10), transparent 24%),
+    radial-gradient(circle at top right, rgba(46, 110, 203, 0.10), transparent 24%),
+    linear-gradient(180deg, #0d141b 0%, #101922 100%) !important;
+}
+
+html[data-theme="dark"] .login-card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .transaction-item,
+html[data-theme="dark"] .balance-card,
+html[data-theme="dark"] .summary-card,
+html[data-theme="dark"] .history-card,
+html[data-theme="dark"] .report-card,
+html[data-theme="dark"] .stats-card,
+html[data-theme="dark"] .modal-card,
+html[data-theme="dark"] .pdf-preview-sheet,
+html[data-theme="dark"] .sidebar-account,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .theme-panel,
+/* ACIKLAMA: html[data-theme="dark"] .danger-zone secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .danger-zone {
+  background: linear-gradient(180deg, rgba(18,26,34,0.84), rgba(13,20,28,0.76)) !important;
+  border: 1px solid rgba(150, 181, 196, 0.14) !important;
+  box-shadow: 0 18px 42px rgba(0,0,0,0.30) !important;
+}
+
+html[data-theme="dark"] .panel::before,
+html[data-theme="dark"] .transaction-item::before,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .modal-card::before {
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+}
+
+html[data-theme="dark"] .panel h1,
+html[data-theme="dark"] .panel h2,
+html[data-theme="dark"] .panel h3,
+html[data-theme="dark"] .panel strong,
+html[data-theme="dark"] .modal-card h2,
+html[data-theme="dark"] .modal-card h3,
+html[data-theme="dark"] .transaction-title,
+html[data-theme="dark"] .summary-card strong,
+html[data-theme="dark"] .balance-card strong,
+html[data-theme="dark"] .stats-card strong,
+html[data-theme="dark"] .danger-zone h3,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="dark"] .theme-choice-btn strong {
+  color: #f1fbff !important;
+}
+
+html[data-theme="dark"] .panel p,
+html[data-theme="dark"] .panel-note,
+html[data-theme="dark"] .sync-status,
+html[data-theme="dark"] .transaction-meta,
+html[data-theme="dark"] label,
+html[data-theme="dark"] .theme-choice-btn small,
+/* ACIKLAMA: html[data-theme="dark"] .empty-state secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .empty-state {
+  color: #9fb0b7 !important;
+}
+
+html[data-theme="dark"] .quick-balance,
+html[data-theme="dark"] .home-balance,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .panel.quick-balance {
+  background: linear-gradient(135deg, rgba(12, 140, 116, 0.92), rgba(21, 63, 109, 0.96)) !important;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+html[data-theme="dark"] .sidebar {
+  background: linear-gradient(180deg, rgba(10,18,28,0.96), rgba(8,14,22,0.98)) !important;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 14px 0 40px rgba(0,0,0,0.32);
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+html[data-theme="dark"] .sidebar-account {
+  background: linear-gradient(180deg, rgba(23,38,49,0.92), rgba(16,26,35,0.88)), linear-gradient(135deg, rgba(70, 195, 182, 0.16), rgba(255,255,255,0.03)) !important;
+}
+
+html[data-theme="dark"] .sidebar-account .auth-badge,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .panel .auth-badge {
+  background: linear-gradient(135deg, rgba(34, 199, 178, 0.98), rgba(86, 225, 208, 0.95)) !important;
+  color: #0c3630 !important;
+}
+
+html[data-theme="dark"] .nav-item,
+html[data-theme="dark"] .ghost-btn,
+html[data-theme="dark"] .file-trigger,
+html[data-theme="dark"] .text-btn,
+html[data-theme="dark"] .logout-btn,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="dark"] .theme-choice-btn {
+  background: linear-gradient(180deg, rgba(28,39,50,0.84), rgba(20,29,38,0.78)) !important;
+  color: #ecf8fb !important;
+  border: 1px solid rgba(154,182,197,0.14) !important;
+}
+
+html[data-theme="dark"] .nav-item:hover,
+html[data-theme="dark"] .nav-item.active,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="dark"] .theme-choice-btn.active {
+  background: linear-gradient(135deg, rgba(33, 137, 144, 0.34), rgba(38, 64, 89, 0.54)) !important;
+}
+
+/* ACIKLAMA: html[data-theme="dark"] .theme-choice-swatch.light secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .theme-choice-swatch.light {
+  background: linear-gradient(135deg, #dfeceb, #caece7 52%, #a9ddd3);
+}
+/* ACIKLAMA: html[data-theme="dark"] .theme-choice-swatch.dark secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .theme-choice-swatch.dark {
+  background: linear-gradient(135deg, #0e1720, #173041 52%, #26506d);
+}
+
+html[data-theme="dark"] .auth-form input,
+html[data-theme="dark"] .entry-form input,
+html[data-theme="dark"] .entry-form select,
+html[data-theme="dark"] .entry-form textarea,
+html[data-theme="dark"] .profile-form input,
+html[data-theme="dark"] .profile-form select,
+html[data-theme="dark"] .profile-form textarea,
+html[data-theme="dark"] .danger-zone input,
+html[data-theme="dark"] .range-filter input,
+html[data-theme="dark"] .filters input,
+html[data-theme="dark"] .filters select,
+html[data-theme="dark"] .date-filter select,
+html[data-theme="dark"] .sync-textarea,
+html[data-theme="dark"] .modal-card input,
+html[data-theme="dark"] .modal-card select,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .modal-card textarea {
+  background: linear-gradient(180deg, rgba(20,30,38,0.92), rgba(17,25,33,0.88)) !important;
+  color: #eefafd !important;
+  border: 1px solid rgba(151, 183, 199, 0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] textarea::placeholder {
+  color: #79909b !important;
+}
+
+html[data-theme="dark"] .modal-backdrop,
+/* ACIKLAMA: html[data-theme="dark"] .pdf-preview-overlay secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .pdf-preview-overlay {
+  background: rgba(4, 8, 12, 0.52) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card {
+  filter: saturate(1.12) brightness(1.02) contrast(1.05);
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: .theme-switcher secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .theme-switcher {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: .pdf-preview-toolbar span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .pdf-preview-toolbar span {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  /* ACIKLAMA: .pdf-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .pdf-preview-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .pdf-preview-actions button {
+    min-height: 48px;
+  }
+}
+
+
+
+button,
+input,
+select,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+textarea {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+strong,
+.panel-kicker,
+label,
+.nav-item,
+.primary-btn,
+.ghost-btn,
+.danger-btn,
+.success-btn,
+.logout-btn,
+.text-btn,
+.theme-choice-btn strong,
+.user-chip,
+/* ACIKLAMA: .auth-badge secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.auth-badge {
+  font-weight: var(--app-font-weight-strong, 700);
+}
+
+.panel-note,
+.transaction-meta,
+.theme-choice-btn small,
+.account-label,
+.sync-status,
+/* ACIKLAMA: .auth-status secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.auth-status {
+  font-weight: var(--app-font-weight, 500);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.settings-panel-main {
+  display: grid;
+  gap: 22px;
+}
+
+/* ACIKLAMA: .settings-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+  max-width: none;
+  width: 100%;
+}
+
+/* ACIKLAMA: .settings-block secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.settings-block {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+}
+
+/* ACIKLAMA: .compact-heading secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.compact-heading {
+  margin-bottom: 0;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.settings-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: none;
+}
+
+/* ACIKLAMA: .font-size-control secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.font-size-control {
+  display: grid;
+  gap: 12px;
+  max-width: 100%;
+}
+
+/* ACIKLAMA: .font-size-headline secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.font-size-headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* ACIKLAMA: .font-size-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.font-size-actions {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 72px;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.font-size-actions button {
+  min-height: 48px;
+}
+
+/* ACIKLAMA: #settingsFontSize secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#settingsFontSize {
+  width: 100%;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.settings-preview-card {
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.08), rgba(255, 255, 255, 0.84));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.settings-preview-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.settings-actions > button {
+  width: 100%;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.notification-settings-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(204, 251, 241, 0.48), rgba(255, 255, 255, 0.80)),
+    rgba(255, 255, 255, 0.70);
+}
+
+.notification-settings-card strong,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.notification-settings-card small {
+  display: block;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.notification-settings-card small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: var(--app-font-weight, 500);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.notification-settings-card button {
+  min-width: 170px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.notification-settings-card .ios-switch {
+  min-width: 0;
+  width: auto;
+}
+
+/* ACIKLAMA: .ios-switch secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.ios-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-weight: 900;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+/* ACIKLAMA: .ios-switch-track secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.ios-switch-track {
+  position: relative;
+  width: 58px;
+  height: 34px;
+  flex: 0 0 58px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  background: #cbd5e1;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.18);
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+/* ACIKLAMA: .ios-switch-thumb secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.ios-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.24);
+  transition: transform 180ms ease;
+}
+
+/* ACIKLAMA: .ios-switch.is-on .ios-switch-track secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.ios-switch.is-on .ios-switch-track {
+  border-color: rgba(16, 185, 129, 0.42);
+  background: linear-gradient(135deg, #2dd4bf, #10b981);
+}
+
+/* ACIKLAMA: .ios-switch.is-on .ios-switch-thumb secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.ios-switch.is-on .ios-switch-thumb {
+  transform: translateX(24px);
+}
+
+/* ACIKLAMA: .ios-switch-text secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.ios-switch-text {
+  min-width: 58px;
+  text-align: left;
+}
+
+/* ACIKLAMA: .ios-switch:disabled secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.ios-switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.64;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#categoryManageModal .modal-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  padding-top: 16px;
+  margin-top: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.96) 28%, rgba(255,255,255,0.98) 100%);
+}
+
+html[data-theme="dark"] .category-topline,
+html[data-theme="dark"] .category-topline span,
+html[data-theme="dark"] .category-breakdown strong,
+html[data-theme="dark"] .wealth-legend-row strong,
+html[data-theme="dark"] .wealth-legend-row span,
+html[data-theme="dark"] #summaryView .panel > p,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] #summaryView .panel span {
+  color: #eaf7fb !important;
+}
+
+/* ACIKLAMA: html[data-theme="dark"] .category-bar secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .category-bar {
+  background: rgba(228, 241, 245, 0.18);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .settings-preview-card {
+  background: linear-gradient(135deg, rgba(32, 176, 159, 0.12), rgba(18, 26, 34, 0.92));
+  border-color: rgba(151, 183, 199, 0.16);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .notification-settings-card {
+  border-color: rgba(94, 224, 209, 0.18);
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.13), rgba(15, 23, 32, 0.88)),
+    rgba(17, 24, 34, 0.84);
+}
+
+/* ACIKLAMA: html[data-theme="dark"] .ios-switch secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .ios-switch {
+  color: #f0fafc;
+}
+
+/* ACIKLAMA: html[data-theme="dark"] .ios-switch-track secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .ios-switch-track {
+  border-color: rgba(151, 183, 199, 0.20);
+  background: #334155;
+}
+
+/* ACIKLAMA: html[data-theme="dark"] .ios-switch.is-on .ios-switch-track secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .ios-switch.is-on .ios-switch-track {
+  border-color: rgba(94, 224, 209, 0.40);
+  background: linear-gradient(135deg, #2dd4bf, #059669);
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+html[data-theme="dark"] #categoryManageModal .modal-actions {
+  background: linear-gradient(180deg, rgba(18,26,34,0), rgba(18,26,34,0.94) 30%, rgba(18,26,34,0.98) 100%);
+}
+
+html[data-theme="dark"] .category-row,
+html[data-theme="dark"] .category-breakdown,
+html[data-theme="dark"] .summary-card,
+html[data-theme="dark"] .history-panel,
+/* ACIKLAMA: html[data-theme="dark"] .user-chip secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .user-chip {
+  color: #d9ebf1;
+}
+
+html[data-theme="dark"] .ghost-btn,
+html[data-theme="dark"] .logout-btn,
+html[data-theme="dark"] .text-btn,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="dark"] .theme-choice-btn {
+  color: #f0fafc !important;
+}
+
+html[data-theme="dark"] .danger-lite-btn,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="dark"] .danger-btn {
+  color: #fff8f6 !important;
+}
+
+html[data-theme="dark"] .transaction-amount.income,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card-amount.income {
+  color: #7cf0cc !important;
+}
+
+html[data-theme="dark"] .transaction-amount.expense,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card-amount.expense {
+  color: #ff9a86 !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 900px) {
+  .settings-grid,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .settings-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ACIKLAMA: .font-size-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .font-size-actions {
+    grid-template-columns: 1fr;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .notification-settings-card {
+    grid-template-columns: 1fr;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .notification-settings-card button {
+    width: 100%;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .notification-settings-card .ios-switch {
+    justify-content: space-between;
+  }
+}
+
+
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+html[data-theme="dark"] .topbar {
+  background: linear-gradient(135deg, rgba(17, 25, 33, 0.92), rgba(12, 19, 28, 0.88)) !important;
+  border: 1px solid rgba(136, 168, 183, 0.18) !important;
+  box-shadow: 0 18px 42px rgba(3, 8, 14, 0.34), inset 0 1px 0 rgba(255,255,255,0.03) !important;
+}
+
+html[data-theme="dark"] .topbar h1,
+html[data-theme="dark"] .topbar strong,
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+html[data-theme="dark"] .topbar #pageTitle {
+  color: #f2fbff !important;
+}
+
+html[data-theme="dark"] .topbar p,
+html[data-theme="dark"] .topbar #pageSubtitle,
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+html[data-theme="dark"] .topbar #pageKicker {
+  color: #b9d0da !important;
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+html[data-theme="dark"] .topbar .panel-kicker {
+  color: #77ead8 !important;
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+html[data-theme="dark"] .topbar .user-chip {
+  background: linear-gradient(135deg, rgba(32, 176, 159, 0.28), rgba(64, 131, 197, 0.22)) !important;
+  border: 1px solid rgba(138, 206, 195, 0.28) !important;
+  color: #eafcff !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 26px rgba(0,0,0,0.18) !important;
+}
+
+html[data-theme="dark"] #paymentAccountModal .modal-actions,
+html[data-theme="dark"] #paymentAccountPayModal .modal-actions,
+html[data-theme="dark"] #assetEditModal .modal-actions,
+html[data-theme="dark"] #categoryAddModal .modal-actions,
+html[data-theme="dark"] #transactionEditModal .modal-actions,
+html[data-theme="dark"] #besModal .modal-actions,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+html[data-theme="dark"] #paymentAccountRecordsModal .modal-actions {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+html[data-theme="dark"] #paymentAccountModal .modal-actions > button,
+html[data-theme="dark"] #paymentAccountPayModal .modal-actions > button,
+html[data-theme="dark"] #assetEditModal .modal-actions > button,
+html[data-theme="dark"] #categoryAddModal .modal-actions > button,
+html[data-theme="dark"] #transactionEditModal .modal-actions > button,
+html[data-theme="dark"] #besModal .modal-actions > button,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+html[data-theme="dark"] #paymentAccountRecordsModal .modal-actions > button {
+  min-height: 52px !important;
+  width: 100% !important;
+}
+
+html[data-theme="dark"] #paymentAccountModal .ghost-btn,
+html[data-theme="dark"] #paymentAccountPayModal .ghost-btn,
+html[data-theme="dark"] #assetEditModal .ghost-btn,
+html[data-theme="dark"] #categoryAddModal .ghost-btn,
+html[data-theme="dark"] #transactionEditModal .ghost-btn,
+html[data-theme="dark"] #besModal .ghost-btn,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="dark"] #paymentAccountRecordsModal .ghost-btn {
+  background: linear-gradient(135deg, rgba(69, 81, 96, 0.92), rgba(50, 61, 75, 0.96)) !important;
+  border: 1px solid rgba(141, 162, 181, 0.22) !important;
+  color: #f3fbff !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+}
+
+html[data-theme="dark"] #paymentAccountModal .primary-btn,
+html[data-theme="dark"] #paymentAccountPayModal .primary-btn,
+html[data-theme="dark"] #assetEditModal .primary-btn,
+html[data-theme="dark"] #categoryAddModal .primary-btn,
+html[data-theme="dark"] #transactionEditModal .primary-btn,
+html[data-theme="dark"] #besModal .primary-btn,
+html[data-theme="dark"] #paymentAccountRecordsModal .primary-btn,
+html[data-theme="dark"] #paymentAccountModal .success-btn,
+html[data-theme="dark"] #paymentAccountPayModal .success-btn,
+html[data-theme="dark"] #assetEditModal .success-btn,
+html[data-theme="dark"] #categoryAddModal .success-btn,
+html[data-theme="dark"] #transactionEditModal .success-btn,
+html[data-theme="dark"] #besModal .success-btn,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="dark"] #paymentAccountRecordsModal .success-btn {
+  color: #07332e !important;
+}
+
+html[data-theme="dark"] #paymentAccountModal .modal-card .panel-heading p,
+html[data-theme="dark"] #paymentAccountModal .modal-card .panel-heading h2,
+html[data-theme="dark"] #paymentAccountModal .modal-card .panel-note,
+html[data-theme="dark"] #paymentAccountPayModal .modal-card .panel-heading p,
+html[data-theme="dark"] #paymentAccountPayModal .modal-card .panel-heading h2,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] #paymentAccountPayModal .modal-card .panel-note {
+  color: #e9f7fb !important;
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar-toggle.topbar-menu {
+    top: max(16px, env(safe-area-inset-top)) !important;
+    left: max(16px, env(safe-area-inset-left)) !important;
+    width: 54px !important;
+    height: 54px !important;
+    padding: 12px !important;
+    border-radius: 18px !important;
+    background: linear-gradient(180deg, rgba(26, 56, 82, 0.92), rgba(16, 38, 58, 0.96)) !important;
+    border: 1px solid rgba(255,255,255,0.16) !important;
+    box-shadow: 0 14px 30px rgba(8, 22, 35, 0.26), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    overflow: visible !important;
+  }
+
+  .topbar-menu span,
+  .topbar-menu.sidebar-toggle span,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar-toggle.topbar-menu span {
+    width: 24px !important;
+    height: 2.5px !important;
+    margin: 2.5px 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.02);
+  }
+
+  #entryModal .modal-card,
+  #besModal .modal-card,
+  #transactionEditModal .modal-card,
+  #paymentAccountModal .modal-card,
+  #paymentAccountPayModal .modal-card,
+  #paymentAccountRecordsModal .modal-card,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #assetEditModal .modal-card {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  #entryModal #entryFormMount,
+  #besModal #besFormMount,
+  #transactionEditModal form,
+  #paymentAccountModal form,
+  #paymentAccountPayModal form,
+  #paymentAccountRecordsModal .profile-form,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #assetEditModal form {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 4px;
+    padding-bottom: 136px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #entryModal .entry-form > button.primary-btn,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #besModal .profile-form > button.primary-btn {
+    position: sticky !important;
+    bottom: 68px !important;
+    z-index: 6 !important;
+    margin-top: 12px !important;
+  }
+
+  #entryModal .modal-actions,
+  #besModal .modal-actions,
+  #transactionEditModal .auth-actions,
+  #paymentAccountModal .auth-actions,
+  #paymentAccountPayModal .auth-actions,
+  #paymentAccountRecordsModal .modal-actions,
+  /* ACIKLAMA: Varlik/portfoy ekranindaki kart ve liste gorunumunu ayarlar. */
+  #assetEditModal .auth-actions {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 7 !important;
+    margin-top: 14px !important;
+    padding-top: 12px !important;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom)) !important;
+    background: linear-gradient(180deg, rgba(245,249,248,0), rgba(245,249,248,0.96) 24%, rgba(245,249,248,0.99) 100%) !important;
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  #entryModal .modal-actions > button,
+  #besModal .modal-actions > button,
+  #transactionEditModal .auth-actions > button,
+  #paymentAccountModal .auth-actions > button,
+  #paymentAccountPayModal .auth-actions > button,
+  #paymentAccountRecordsModal .modal-actions > button,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #assetEditModal .auth-actions > button {
+    min-height: 52px !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  html[data-theme="dark"] .topbar-menu,
+  html[data-theme="dark"] .topbar-menu.sidebar-toggle,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  html[data-theme="dark"] .sidebar-toggle.topbar-menu {
+    background: linear-gradient(180deg, rgba(16, 29, 43, 0.94), rgba(10, 20, 31, 0.98)) !important;
+    border-color: rgba(151, 183, 199, 0.18) !important;
+    box-shadow: 0 16px 34px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  }
+
+  html[data-theme="dark"] #entryModal .modal-actions,
+  html[data-theme="dark"] #besModal .modal-actions,
+  html[data-theme="dark"] #transactionEditModal .auth-actions,
+  html[data-theme="dark"] #paymentAccountModal .auth-actions,
+  html[data-theme="dark"] #paymentAccountPayModal .auth-actions,
+  html[data-theme="dark"] #paymentAccountRecordsModal .modal-actions,
+  /* ACIKLAMA: Varlik/portfoy ekranindaki kart ve liste gorunumunu ayarlar. */
+  html[data-theme="dark"] #assetEditModal .auth-actions {
+    background: linear-gradient(180deg, rgba(11,18,26,0), rgba(11,18,26,0.94) 24%, rgba(11,18,26,0.98) 100%) !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .brand-block #mobileMenuButton.sidebar-toggle {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    margin-right: 12px !important;
+    padding: 12px !important;
+    border-radius: 16px !important;
+    overflow: visible !important;
+  }
+
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .brand-block #mobileMenuButton.sidebar-toggle span {
+    width: 22px !important;
+    height: 2.5px !important;
+    margin: 2.5px 0 !important;
+  }
+
+  #entryModal .modal-card,
+  #besModal .modal-card,
+  #transactionEditModal .modal-card,
+  #assetEditModal .modal-card,
+  #paymentAccountModal .modal-card,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #paymentAccountPayModal .modal-card {
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  #entryModal #entryFormMount,
+  #besModal #besFormMount,
+  #transactionEditModal #transactionEditForm,
+  #assetEditModal #assetEditForm,
+  #paymentAccountModal #paymentAccountForm,
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  #paymentAccountPayModal #paymentAccountPayForm {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-bottom: 148px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #entryModal .modal-actions,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #besModal .modal-actions {
+    position: absolute !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    z-index: 20 !important;
+    margin-top: 0 !important;
+    padding: 10px 0 0 !important;
+    background: linear-gradient(180deg, rgba(245,249,248,0), rgba(245,249,248,0.96) 26%, rgba(245,249,248,0.99) 100%) !important;
+  }
+
+  #transactionEditModal .auth-actions,
+  #assetEditModal .auth-actions,
+  #paymentAccountModal .auth-actions,
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  #paymentAccountPayModal .auth-actions {
+    position: sticky !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 18 !important;
+    margin-top: 16px !important;
+    padding-top: 14px !important;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom)) !important;
+    background: linear-gradient(180deg, rgba(245,249,248,0), rgba(245,249,248,0.96) 26%, rgba(245,249,248,0.99) 100%) !important;
+  }
+
+  #entryModal .modal-actions > button,
+  #besModal .modal-actions > button,
+  #transactionEditModal .auth-actions > button,
+  #assetEditModal .auth-actions > button,
+  #paymentAccountModal .auth-actions > button,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #paymentAccountPayModal .auth-actions > button {
+    min-height: 52px !important;
+    width: 100% !important;
+  }
+
+  #entryModal .modal-actions > button + button,
+  #besModal .modal-actions > button + button,
+  #transactionEditModal .auth-actions > button + button,
+  #assetEditModal .auth-actions > button + button,
+  #paymentAccountModal .auth-actions > button + button,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #paymentAccountPayModal .auth-actions > button + button {
+    margin-top: 10px !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  html[data-theme="dark"] #entryModal .modal-actions,
+  html[data-theme="dark"] #besModal .modal-actions,
+  html[data-theme="dark"] #transactionEditModal .auth-actions,
+  html[data-theme="dark"] #assetEditModal .auth-actions,
+  html[data-theme="dark"] #paymentAccountModal .auth-actions,
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  html[data-theme="dark"] #paymentAccountPayModal .auth-actions {
+    background: linear-gradient(180deg, rgba(11,18,26,0), rgba(11,18,26,0.94) 26%, rgba(11,18,26,0.985) 100%) !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  #entryModal .modal-card,
+  #besModal .modal-card,
+  #transactionEditModal .modal-card,
+  #assetEditModal .modal-card,
+  #paymentAccountModal .modal-card,
+  #paymentAccountPayModal .modal-card,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #paymentAccountRecordsModal .modal-card {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  #entryModal #entryFormMount,
+  #besModal #besFormMount,
+  #transactionEditModal #transactionEditForm,
+  #assetEditModal #assetEditForm,
+  #paymentAccountModal #paymentAccountForm,
+  #paymentAccountPayModal #paymentAccountPayForm,
+  #paymentAccountRecordsModal .modal-card > .profile-form,
+  #paymentAccountRecordsModal .modal-card > .panel,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #paymentAccountRecordsModal .modal-card > div:not(.modal-actions) {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-bottom: 156px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #entryModal .modal-actions,
+  #besModal .modal-actions,
+  #transactionEditModal .auth-actions,
+  #assetEditModal .auth-actions,
+  #paymentAccountModal .auth-actions,
+  #paymentAccountPayModal .auth-actions,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #paymentAccountRecordsModal .modal-actions {
+    position: absolute !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    z-index: 30 !important;
+    margin: 0 !important;
+    padding: 12px 0 0 !important;
+    background: linear-gradient(180deg, rgba(245,249,248,0), rgba(245,249,248,0.96) 26%, rgba(245,249,248,0.99) 100%) !important;
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  #entryModal .modal-actions > button,
+  #besModal .modal-actions > button,
+  #transactionEditModal .auth-actions > button,
+  #assetEditModal .auth-actions > button,
+  #paymentAccountModal .auth-actions > button,
+  #paymentAccountPayModal .auth-actions > button,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #paymentAccountRecordsModal .modal-actions > button {
+    width: 100% !important;
+    min-height: 52px !important;
+  }
+
+  #entryModal .modal-actions > button + button,
+  #besModal .modal-actions > button + button,
+  #transactionEditModal .auth-actions > button + button,
+  #assetEditModal .auth-actions > button + button,
+  #paymentAccountModal .auth-actions > button + button,
+  #paymentAccountPayModal .auth-actions > button + button,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #paymentAccountRecordsModal .modal-actions > button + button {
+    margin-top: 10px !important;
+  }
+
+  #transactionEditModal #transactionEditStatus,
+  #assetEditModal #assetEditStatus,
+  #paymentAccountModal #paymentAccountStatus,
+  #paymentAccountPayModal #paymentAccountPayStatus,
+  /* ACIKLAMA: #entryModal #entryFormStatus secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #entryModal #entryFormStatus {
+    padding-bottom: 8px !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  html[data-theme="dark"] #entryModal .modal-actions,
+html[data-theme="dark"] #besModal .modal-actions,
+html[data-theme="dark"] #transactionEditModal .auth-actions,
+html[data-theme="dark"] #assetEditModal .auth-actions,
+html[data-theme="dark"] #paymentAccountModal .auth-actions,
+html[data-theme="dark"] #paymentAccountPayModal .auth-actions,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+html[data-theme="dark"] #paymentAccountRecordsModal .modal-actions {
+    background: linear-gradient(180deg, rgba(11,18,26,0), rgba(11,18,26,0.94) 26%, rgba(11,18,26,0.985) 100%) !important;
+  }
+}
+
+
+
+/* ACIKLAMA: html[data-theme="dark"] secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] select,
+html[data-theme="dark"] select option,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] select optgroup {
+  background-color: #0f1922 !important;
+  color: #eaf7fb !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] select {
+  border-color: rgba(93, 126, 145, 0.34) !important;
+  box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.06) !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] select:focus {
+  border-color: rgba(74, 222, 207, 0.68) !important;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.16) !important;
+}
+
+
+.modal-card .auth-actions,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions {
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  margin: 16px auto 0 !important;
+}
+
+.modal-card .auth-actions:has(> button:only-child),
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions:has(> button:only-child) {
+  grid-template-columns: 1fr !important;
+}
+
+.modal-card .auth-actions > button,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions > button {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 52px !important;
+  margin: 0 !important;
+  justify-content: center !important;
+}
+
+.modal-card .auth-actions > button + button,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions > button + button {
+  margin-top: 0 !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .modal-backdrop {
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    padding:
+      max(12px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(12px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left)) !important;
+  }
+
+  .modal-card,
+  .delete-modal,
+  .confirm-modal,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .wide-modal {
+    display: flex !important;
+    flex-direction: column !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    min-height: 0 !important;
+    margin: auto !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .modal-card > .panel-heading,
+  .modal-card form > .panel-heading,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .profile-form > .panel-heading {
+    flex: 0 0 auto !important;
+    margin-bottom: 12px !important;
+  }
+
+  
+  #entryModal #entryFormMount,
+  /* ACIKLAMA: BES ekrani ve BES kayit kartlarinin gorunumunu ayarlar. */
+  #besModal #besFormMount {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0 4px 12px 0 !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #entryModal #entryForm,
+  /* ACIKLAMA: BES ekrani ve BES kayit kartlarinin gorunumunu ayarlar. */
+  #besModal #besForm {
+    padding-bottom: 0 !important;
+  }
+
+  #entryModal .modal-actions,
+  #besModal .modal-actions,
+  #genericConfirmModal .modal-actions,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #categoryManageModal .modal-actions {
+    position: relative !important;
+    inset: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    flex: 0 0 auto !important;
+    z-index: 3 !important;
+    margin: 12px 0 0 !important;
+    padding: 12px 0 calc(2px + env(safe-area-inset-bottom)) !important;
+    background: linear-gradient(180deg, rgba(245,249,248,0), rgba(245,249,248,0.96) 28%, rgba(245,249,248,0.99) 100%) !important;
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  
+  #assetEditModal .modal-card > form,
+#categoryAddModal .modal-card > form,
+#transactionEditModal .modal-card > form,
+#paymentAccountModal .modal-card > form,
+#paymentAccountPayModal .modal-card > form,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#deleteAccountModal .modal-card > form {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0 4px 0 0 !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #assetEditModal .auth-actions,
+#categoryAddModal .auth-actions,
+#transactionEditModal .auth-actions,
+#paymentAccountModal .auth-actions,
+#paymentAccountPayModal .auth-actions,
+#deleteAccountModal .auth-actions,
+#confirmDeleteAccountModal .auth-actions,
+/* ACIKLAMA: #confirmPaymentAccountDeleteModal .auth-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#confirmPaymentAccountDeleteModal .auth-actions {
+    position: sticky !important;
+    inset: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: 0 !important;
+    grid-column: 1 / -1 !important;
+    z-index: 8 !important;
+    margin: 14px 0 0 !important;
+    padding: 12px 0 calc(2px + env(safe-area-inset-bottom)) !important;
+    background: linear-gradient(180deg, rgba(245,249,248,0), rgba(245,249,248,0.96) 28%, rgba(245,249,248,0.99) 100%) !important;
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  #paymentAccountRecordsModal .modal-card > .profile-form,
+  #confirmDeleteAccountModal .modal-card > .profile-form,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #confirmPaymentAccountDeleteModal .modal-card > .profile-form {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    width: 100% !important;
+  }
+
+  #paymentAccountRecordsModal .account-records-list,
+  /* ACIKLAMA: #categoryManageModal .category-manage-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #categoryManageModal .category-manage-list {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0 4px 12px 0 !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #paymentAccountRecordsModal .auth-actions,
+  #confirmDeleteAccountModal .auth-actions,
+  /* ACIKLAMA: #confirmPaymentAccountDeleteModal .auth-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #confirmPaymentAccountDeleteModal .auth-actions {
+    position: relative !important;
+    inset: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    flex: 0 0 auto !important;
+    margin: 12px 0 0 !important;
+    padding: 12px 0 calc(2px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .modal-card .auth-actions,
+  .modal-card .modal-actions,
+  .modal-card .auth-actions:has(> button:only-child),
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .modal-actions:has(> button:only-child) {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .modal-card .auth-actions > button,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .modal-actions > button {
+    min-height: 52px !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  html[data-theme="dark"] #entryModal .modal-actions,
+html[data-theme="dark"] #besModal .modal-actions,
+html[data-theme="dark"] #genericConfirmModal .modal-actions,
+html[data-theme="dark"] #categoryManageModal .modal-actions,
+html[data-theme="dark"] #assetEditModal .auth-actions,
+html[data-theme="dark"] #categoryAddModal .auth-actions,
+html[data-theme="dark"] #transactionEditModal .auth-actions,
+html[data-theme="dark"] #paymentAccountModal .auth-actions,
+html[data-theme="dark"] #paymentAccountPayModal .auth-actions,
+html[data-theme="dark"] #deleteAccountModal .auth-actions,
+html[data-theme="dark"] #confirmDeleteAccountModal .auth-actions,
+html[data-theme="dark"] #confirmPaymentAccountDeleteModal .auth-actions,
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+html[data-theme="dark"] #paymentAccountRecordsModal .auth-actions {
+    background: linear-gradient(180deg, rgba(11,18,26,0), rgba(11,18,26,0.94) 28%, rgba(11,18,26,0.985) 100%) !important;
+  }
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Kok degiskenler; renk, font ve golge gibi tema degerlerini merkezi olarak tutar. */
+  :root {
+    --modal-footer-gap: 10px;
+    --modal-footer-space: 158px;
+    --modal-footer-single-space: 94px;
+    --modal-side-padding: 18px;
+  }
+
+  .modal-card,
+  .delete-modal,
+  .confirm-modal,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .wide-modal {
+    position: relative !important;
+  }
+
+  
+  #entryModal .modal-actions,
+  #besModal .modal-actions,
+  #categoryManageModal .modal-actions,
+  #paymentAccountRecordsModal .auth-actions,
+  #assetEditModal .auth-actions,
+  #categoryAddModal .auth-actions,
+  #transactionEditModal .auth-actions,
+  #paymentAccountModal .auth-actions,
+  #paymentAccountPayModal .auth-actions,
+  /* ACIKLAMA: #deleteAccountModal .auth-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #deleteAccountModal .auth-actions {
+    position: absolute !important;
+    left: var(--modal-side-padding) !important;
+    right: var(--modal-side-padding) !important;
+    bottom: 0 !important;
+    inset: auto var(--modal-side-padding) 0 var(--modal-side-padding) !important;
+    width: auto !important;
+    max-width: none !important;
+    z-index: 50 !important;
+    margin: 0 !important;
+    padding: 12px 0 max(8px, env(safe-area-inset-bottom)) !important;
+    grid-template-columns: 1fr !important;
+    gap: var(--modal-footer-gap) !important;
+    background: linear-gradient(180deg, rgba(245,249,248,0), rgba(245,249,248,0.96) 24%, rgba(245,249,248,1) 100%) !important;
+    border-radius: 0 0 18px 18px;
+    backdrop-filter: blur(16px) saturate(145%);
+    -webkit-backdrop-filter: blur(16px) saturate(145%);
+  }
+
+  #entryModal .modal-actions:has(> button:only-child),
+  #besModal .modal-actions:has(> button:only-child),
+  #categoryManageModal .modal-actions:has(> button:only-child),
+  #paymentAccountRecordsModal .auth-actions:has(> button:only-child),
+  #assetEditModal .auth-actions:has(> button:only-child),
+  #categoryAddModal .auth-actions:has(> button:only-child),
+  #transactionEditModal .auth-actions:has(> button:only-child),
+  #paymentAccountModal .auth-actions:has(> button:only-child),
+  #paymentAccountPayModal .auth-actions:has(> button:only-child),
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #deleteAccountModal .auth-actions:has(> button:only-child) {
+    grid-template-columns: 1fr !important;
+  }
+
+  #entryModal .modal-actions > button,
+  #besModal .modal-actions > button,
+  #categoryManageModal .modal-actions > button,
+  #paymentAccountRecordsModal .auth-actions > button,
+  #assetEditModal .auth-actions > button,
+  #categoryAddModal .auth-actions > button,
+  #transactionEditModal .auth-actions > button,
+  #paymentAccountModal .auth-actions > button,
+  #paymentAccountPayModal .auth-actions > button,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #deleteAccountModal .auth-actions > button {
+    min-height: 52px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  
+  #entryModal #entryFormMount,
+  #besModal #besFormMount,
+  #assetEditModal .modal-card > form,
+  #categoryAddModal .modal-card > form,
+  #transactionEditModal .modal-card > form,
+  #paymentAccountModal .modal-card > form,
+  #paymentAccountPayModal .modal-card > form,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #deleteAccountModal .modal-card > form {
+    padding-bottom: var(--modal-footer-space) !important;
+  }
+
+  #categoryManageModal .category-manage-list,
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  #paymentAccountRecordsModal .account-records-list {
+    padding-bottom: var(--modal-footer-single-space) !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #paymentAccountRecordsModal .modal-card > .profile-form {
+    padding-bottom: var(--modal-footer-single-space) !important;
+  }
+
+  html[data-theme="dark"] #entryModal .modal-actions,
+  html[data-theme="dark"] #besModal .modal-actions,
+  html[data-theme="dark"] #categoryManageModal .modal-actions,
+  html[data-theme="dark"] #paymentAccountRecordsModal .auth-actions,
+  html[data-theme="dark"] #assetEditModal .auth-actions,
+  html[data-theme="dark"] #categoryAddModal .auth-actions,
+  html[data-theme="dark"] #transactionEditModal .auth-actions,
+  html[data-theme="dark"] #paymentAccountModal .auth-actions,
+  html[data-theme="dark"] #paymentAccountPayModal .auth-actions,
+  /* ACIKLAMA: html[data-theme="dark"] #deleteAccountModal .auth-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  html[data-theme="dark"] #deleteAccountModal .auth-actions {
+    background: linear-gradient(180deg, rgba(11,18,26,0), rgba(11,18,26,0.94) 24%, rgba(11,18,26,0.99) 100%) !important;
+  }
+}
+
+
+/* ACIKLAMA: Kok degiskenler; renk, font ve golge gibi tema degerlerini merkezi olarak tutar. */

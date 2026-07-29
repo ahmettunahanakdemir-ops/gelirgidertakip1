@@ -1,0 +1,2811 @@
+/* ACIKLAMA: Splash animasyonlari, odeme kartlari, varlik/BES ekranlari ve mobil iyilestirmeler.
+   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
+
+.app-splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(20, 184, 166, 0.18), transparent 22%),
+    radial-gradient(circle at 92% 92%, rgba(20, 184, 166, 0.20), transparent 26%),
+    radial-gradient(circle at 0% 100%, rgba(245, 184, 77, 0.18), transparent 22%),
+    linear-gradient(135deg, #fbfffe 0%, #eefaf7 100%);
+  transition: opacity 0.65s ease, visibility 0.65s ease;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.app-splash-screen.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-bg-shape {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(0.2px);
+  opacity: 0.75;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-bg-shape.shape-one {
+  width: 360px;
+  height: 360px;
+  right: -110px;
+  bottom: -80px;
+  background: rgba(20, 184, 166, 0.14);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-bg-shape.shape-two {
+  width: 210px;
+  height: 210px;
+  left: -65px;
+  top: -60px;
+  background: rgba(20, 184, 166, 0.10);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-bg-shape.shape-three {
+  width: 140px;
+  height: 140px;
+  left: -40px;
+  bottom: -35px;
+  background: rgba(245, 184, 77, 0.16);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-finance-mark {
+  position: absolute;
+  color: rgba(20, 184, 166, 0.22);
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.chart-mark {
+  left: 10%;
+  top: 38%;
+  display: inline-flex;
+  align-items: end;
+  gap: 8px;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.chart-mark i {
+  display: block;
+  width: 22px;
+  border-radius: 8px;
+  background: currentColor;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.chart-mark i:nth-child(1) { height: 42px; }
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.chart-mark i:nth-child(2) { height: 66px; }
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.chart-mark i:nth-child(3) { height: 92px; }
+
+/* ACIKLAMA: .wallet-mark secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.wallet-mark {
+  right: 10%;
+  bottom: 36%;
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(20, 184, 166, 0.08);
+  font-size: 58px;
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-content {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 520px);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  color: #10231f;
+  animation: splashPop 0.7s ease both;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-logo {
+  position: relative;
+  width: 164px;
+  height: 164px;
+  margin-bottom: 28px;
+  border-radius: 38px;
+  background: linear-gradient(135deg, #007a65 0%, #14b8a6 100%);
+  box-shadow: 0 28px 48px rgba(15, 118, 110, 0.22);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.splash-card-back {
+  position: absolute;
+  width: 88px;
+  height: 58px;
+  left: 45px;
+  top: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.08));
+  transform: rotate(-12deg);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-wallet {
+  position: absolute;
+  left: 26px;
+  right: 26px;
+  bottom: 34px;
+  height: 66px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 0 0 2px rgba(20, 184, 166, 0.16);
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.splash-wallet-button {
+  position: absolute;
+  right: -9px;
+  top: 20px;
+  width: 46px;
+  height: 32px;
+  border-radius: 14px;
+  background: #13a894;
+  box-shadow: 0 8px 18px rgba(10, 80, 72, 0.22);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-coin {
+  position: absolute;
+  right: 30px;
+  top: 46px;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f9d878, #d9a42d);
+  color: #fff4c7;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-content h1 {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2.6rem, 10vw, 4.6rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-content h1 span {
+  color: #12a892;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-content p {
+  margin: 18px 0 0;
+  color: #7a8d8a;
+  font-size: clamp(1.05rem, 4vw, 1.45rem);
+  font-weight: 800;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-loader {
+  width: 124px;
+  height: 7px;
+  margin-top: 90px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(17, 57, 52, 0.10);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-loader span {
+  display: block;
+  width: 58%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #14b8a6, #04796b);
+  animation: splashLoad 1.45s ease-in-out infinite alternate;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-content small {
+  margin-top: 18px;
+  color: #8ca09c;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+/* ACIKLAMA: Bu animasyon adimlari ilgili hareket/efekt icin kullanilir. */
+@keyframes splashPop {
+  /* ACIKLAMA: from secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  from { transform: translateY(14px) scale(0.98); opacity: 0; }
+  /* ACIKLAMA: to secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ACIKLAMA: Bu animasyon adimlari ilgili hareket/efekt icin kullanilir. */
+@keyframes splashLoad {
+  /* ACIKLAMA: from secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  from { transform: translateX(-35%); }
+  /* ACIKLAMA: to secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  to { transform: translateX(75%); }
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.payment-account-list {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 430px));
+}
+
+.payment-card,
+.payment-card.bank_account,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card.cash {
+  max-width: 430px;
+  aspect-ratio: 1.586 / 1;
+  min-height: unset;
+  padding: 17px 17px 16px;
+  gap: 7px;
+}
+
+.payment-card-top,
+.payment-card-chip-line,
+.payment-card-number,
+.payment-card-details,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-bottom {
+  width: calc(100% - 116px);
+  max-width: calc(100% - 116px);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-top {
+  min-height: 46px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card h3 {
+  max-width: 17ch;
+  font-size: clamp(1rem, 2vw, 1.26rem);
+  line-height: 1.04;
+}
+
+.payment-card-bank,
+.payment-card-small,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-details span {
+  font-size: 0.58rem;
+  letter-spacing: 0.075em;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-logo {
+  position: absolute;
+  right: 18px;
+  top: 19px;
+  width: 46px;
+  height: 28px;
+}
+
+.payment-card-logo::before,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-logo::after {
+  width: 25px;
+  height: 25px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-chip-line {
+  justify-content: flex-start;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-chip {
+  width: 40px;
+  height: 30px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-contactless i {
+  width: 6px;
+  height: 14px;
+}
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-contactless i:nth-child(2) { height: 19px; }
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-contactless i:nth-child(3) { height: 24px; }
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-badge {
+  display: none;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-number {
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: clamp(0.98rem, 2.25vw, 1.28rem);
+  letter-spacing: 0.09em;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-details {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px 8px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-details strong {
+  font-size: 0.72rem;
+  line-height: 1.1;
+  white-space: normal;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-bottom {
+  margin-top: 0;
+  align-items: flex-end;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-amount {
+  font-size: clamp(0.96rem, 2vw, 1.24rem);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-note {
+  max-width: 120px;
+  font-size: 0.6rem;
+  line-height: 1.18;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-actions {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  bottom: auto;
+  width: 96px;
+  transform: translateY(-38%);
+  display: grid;
+  gap: 8px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-actions button {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 520px) {
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .payment-account-list {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card.cash {
+    max-width: 100%;
+    aspect-ratio: auto;
+    min-height: 248px;
+    padding: 16px;
+  }
+
+  .payment-card-top,
+  .payment-card-chip-line,
+  .payment-card-number,
+  .payment-card-details,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-bottom {
+    width: calc(100% - 92px);
+    max-width: calc(100% - 92px);
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-actions {
+    right: 12px;
+    width: 78px;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-actions button {
+    min-height: 34px;
+    padding: 8px 9px;
+    font-size: 0.72rem;
+  }
+}
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-details {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 0.85fr) minmax(0, 1.3fr);
+  align-items: start;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-details strong {
+  font-size: clamp(0.62rem, 1.65vw, 0.72rem);
+  line-height: 1.12;
+  white-space: pre-line;
+  word-break: keep-all;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-bottom {
+  padding-top: 2px;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 520px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-details {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px 6px;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-details strong {
+    font-size: 0.62rem;
+  }
+}
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-filters {
+  width: min(920px, 100%);
+  gap: 8px;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.history-filters select,
+.history-filters input,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.history-filters .range-filter input {
+  min-height: 40px;
+  padding: 9px 11px;
+  font-size: 0.84rem;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.history-filters select {
+  flex: 0 0 138px;
+  width: 138px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-filters #filterPaymentAccount {
+  flex-basis: 170px;
+  width: 170px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-filters #searchInput {
+  flex: 0 0 152px;
+  width: 152px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-filters .range-filter {
+  flex: 0 0 118px;
+  width: 118px;
+  gap: 5px;
+  font-size: 0.74rem;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.history-filters button {
+  flex: 0 0 106px;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  .history-filters select,
+  .history-filters #filterPaymentAccount,
+  .history-filters #searchInput,
+  .history-filters .range-filter,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .history-filters button {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+  }
+}
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.history-panel {
+  overflow: hidden;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading > div:first-child {
+  flex: 0 1 190px;
+  min-width: 0;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading > .history-filters {
+  flex: 1 1 760px;
+  min-width: 0;
+  width: 100% !important;
+  max-width: 1040px;
+  margin-left: auto;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 8px;
+  align-items: end;
+  justify-content: end;
+}
+
+.history-heading > .history-filters select,
+.history-heading > .history-filters input,
+.history-heading > .history-filters .range-filter,
+.history-heading > .history-filters button,
+.history-heading > .history-filters #filterPaymentAccount,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading > .history-filters #searchInput {
+  flex: none !important;
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.history-heading > .history-filters select,
+.history-heading > .history-filters input,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.history-heading > .history-filters .range-filter input {
+  min-height: 40px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading > .history-filters .range-filter {
+  gap: 5px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.history-heading > .history-filters button {
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-item {
+  min-width: 0;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-item > div:first-child {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.transaction-title,
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading {
+    display: flex;
+  }
+
+  .history-panel .transaction-list,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .history-panel .pagination-controls {
+    max-width: 100%;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 980px) {
+  .history-heading > div:first-child,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters {
+    flex: 1 1 100%;
+    max-width: 100%;
+    margin-left: 0;
+  }
+}
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading {
+  gap: 16px;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: flex-start !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > div:first-child {
+    flex: 0 0 190px !important;
+    min-width: 190px;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0;
+    margin-left: auto;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .history-heading > .history-filters select,
+  .history-heading > .history-filters input,
+  .history-heading > .history-filters .range-filter,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .history-heading > .history-filters button {
+    flex: 0 0 auto !important;
+    max-width: none !important;
+    min-width: 0;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #filterType {
+    width: 116px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #filterPaymentMethod {
+    width: 124px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #filterPaymentAccount {
+    width: 142px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #searchInput {
+    width: 120px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .range-filter {
+    width: 112px !important;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .history-heading > .history-filters .range-filter input {
+    width: 112px !important;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .history-heading > .history-filters button {
+    width: 104px !important;
+  }
+
+  .history-heading > .history-filters #exportExcelButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #exportPdfButton {
+    width: 96px !important;
+  }
+}
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .action-panel {
+  align-items: center;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .action-panel > .primary-btn {
+  flex: 0 0 min(360px, 100%);
+  width: min(360px, 100%);
+  min-height: 50px;
+  border-radius: 10px;
+  font-size: 0.96rem;
+  letter-spacing: 0.01em;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .bank-import-panel .storage-actions {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch !important;
+  gap: 10px;
+  width: 100%;
+}
+
+#entryView .bank-import-panel .file-trigger,
+#entryView .bank-import-panel .primary-btn,
+#entryView .bank-import-panel .success-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .bank-import-panel .danger-btn {
+  width: 100% !important;
+  min-width: 0;
+  min-height: 50px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .bank-import-panel .bank-upload-trigger {
+  width: 100% !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 900px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #entryView .action-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #entryView .action-panel > .primary-btn {
+    width: 100%;
+    justify-self: stretch;
+    flex-basis: auto;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 640px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #entryView .bank-import-panel .storage-actions {
+    grid-template-columns: 1fr;
+  }
+
+  #entryView .bank-import-panel .file-trigger,
+  #entryView .bank-import-panel .primary-btn,
+  #entryView .bank-import-panel .success-btn,
+  #entryView .bank-import-panel .danger-btn,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #entryView .action-panel > .primary-btn {
+    min-height: 48px;
+    font-size: 0.94rem;
+  }
+}
+
+
+
+.modal-card .auth-actions,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions {
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  max-width: min(820px, 86%);
+}
+
+.modal-card .auth-actions:has(> button:only-child),
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions:has(> button:only-child) {
+  grid-template-columns: 1fr;
+  max-width: min(560px, 76%);
+}
+
+.modal-card .auth-actions:has(> button:only-child) > button,
+.modal-card .modal-actions:has(> button:only-child) > button,
+.modal-card .entry-form > button.primary-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .compact-form > button.primary-btn {
+  width: 100%;
+  max-width: none;
+}
+
+.modal-card .entry-form > button.primary-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .compact-form > button.primary-btn {
+  justify-self: center;
+  width: min(560px, 76%);
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 540px) {
+  .modal-card .auth-actions,
+  .modal-card .modal-actions,
+  .modal-card .auth-actions:has(> button:only-child),
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .modal-actions:has(> button:only-child) {
+    max-width: 100%;
+  }
+
+  .modal-card .entry-form > button.primary-btn,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .compact-form > button.primary-btn {
+    width: 100%;
+  }
+}
+
+
+
+.login-screen[hidden],
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.app-shell[hidden] {
+  display: none !important;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+.splash-loader span {
+  animation-duration: 2.2s;
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .bank-import-panel .storage-actions > * {
+  width: 100% !important;
+}
+
+#entryView .bank-import-panel .bank-upload-trigger,
+#entryView .bank-import-panel .success-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .bank-import-panel .danger-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 640px) {
+  #entryView .bank-import-panel .bank-upload-trigger,
+  #entryView .bank-import-panel .success-btn,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #entryView .bank-import-panel .danger-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+.modal-card .auth-actions,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions {
+  max-width: min(920px, 92%);
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+}
+
+.modal-card .auth-actions:has(> button:only-child),
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions:has(> button:only-child) {
+  max-width: min(680px, 88%);
+}
+
+.modal-card .entry-form > button.primary-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .compact-form > button.primary-btn {
+  width: min(680px, 88%);
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 540px) {
+  .modal-card .auth-actions,
+  .modal-card .modal-actions,
+  .modal-card .auth-actions:has(> button:only-child),
+  .modal-card .modal-actions:has(> button:only-child),
+  .modal-card .entry-form > button.primary-btn,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .compact-form > button.primary-btn {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+
+
+/* ACIKLAMA: html secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html {
+  touch-action: pan-y;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body {
+  touch-action: pan-y;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 10px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .history-heading > .history-filters select,
+  .history-heading > .history-filters input,
+  .history-heading > .history-filters .range-filter,
+  .history-heading > .history-filters .range-filter input,
+  .history-heading > .history-filters button,
+  .history-heading > .history-filters #filterType,
+  .history-heading > .history-filters #filterPaymentMethod,
+  .history-heading > .history-filters #filterPaymentAccount,
+  .history-heading > .history-filters #searchInput,
+  .history-heading > .history-filters #exportExcelButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #exportPdfButton {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .history-heading > .history-filters button {
+    min-height: 48px;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .range-filter {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#besView .panel-heading {
+  align-items: center;
+}
+
+/* ACIKLAMA: #openBesModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#openBesModalButton {
+  min-width: 150px;
+  min-height: 50px;
+  padding: 0 20px;
+  border-radius: 12px;
+  align-self: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #besView .panel-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  /* ACIKLAMA: #openBesModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #openBesModalButton {
+    width: 100%;
+    min-width: 0;
+    align-self: stretch;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .payment-account-list {
+    justify-content: center;
+    justify-items: center;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card.cash {
+    width: min(100%, 410px);
+    max-width: 410px;
+    margin-inline: auto;
+    justify-self: center;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 520px) {
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .payment-account-list {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card.cash {
+    width: min(calc(100vw - 44px), 410px);
+    max-width: min(calc(100vw - 44px), 410px);
+    min-height: 258px;
+    padding: 16px 16px 15px;
+    margin-inline: auto;
+  }
+
+  .payment-card-top,
+  .payment-card-chip-line,
+  .payment-card-number,
+  .payment-card-details,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-bottom {
+    width: calc(100% - 94px);
+    max-width: calc(100% - 94px);
+  }
+}
+
+/* Son responsive standart: ana kabuk, kayit filtreleri ve giris ekrani tum cihazlarda yatay tasmasiz kalir. */
+html,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.modal-backdrop {
+  overflow-x: hidden;
+  justify-items: center;
+  box-sizing: border-box;
+}
+
+.modal-card,
+.delete-modal,
+.confirm-modal,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.wide-modal {
+  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
+  margin-inline: auto;
+  transform: none;
+  overscroll-behavior: contain;
+}
+
+.modal-card form,
+.modal-card .entry-form,
+.modal-card .compact-form,
+.modal-card input,
+.modal-card select,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card textarea {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .modal-backdrop {
+    place-items: end center;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  .modal-card,
+  .delete-modal,
+  .confirm-modal,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .wide-modal {
+    width: 100% !important;
+    max-width: calc(100vw - 24px) !important;
+    left: auto;
+    right: auto;
+  }
+
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .wide-modal {
+    max-height: min(88dvh, 720px);
+  }
+}
+
+
+
+html,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-shell,
+.workspace,
+/* ACIKLAMA: .view-section.active secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.view-section.active {
+  overflow-y: visible;
+  touch-action: pan-y;
+}
+
+body.pdf-preview-open,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body.modal-open {
+  overflow-y: hidden !important;
+}
+
+.modal-card,
+.delete-modal,
+.confirm-modal,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.wide-modal {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* ACIKLAMA: html secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body {
+  position: relative;
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
+  touch-action: auto;
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.app-shell {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+  align-items: stretch;
+  touch-action: auto;
+}
+
+.workspace,
+.view-section,
+/* ACIKLAMA: .view-section.active secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.view-section.active {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  touch-action: auto;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    max-height: 100vh;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 980px) {
+  .app-shell,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .app-shell.sidebar-expanded {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .workspace {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+  }
+
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto !important;
+    touch-action: pan-y;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  .app-shell,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .app-shell.sidebar-expanded {
+    align-items: stretch;
+  }
+
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar {
+    position: relative !important;
+    top: auto !important;
+    align-self: stretch !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+html, body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  .app-shell,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .app-shell.sidebar-expanded {
+    min-height: 100vh !important;
+    overflow: visible !important;
+    align-items: start !important;
+  }
+
+  .workspace,
+  .view-section,
+  /* ACIKLAMA: .view-section.active secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .view-section.active {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    align-self: start !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  .app-shell,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .app-shell.sidebar-expanded {
+    display: block !important;
+    min-height: 100vh !important;
+    padding-left: 246px !important;
+  }
+
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .app-shell:not(.sidebar-expanded) {
+    padding-left: 66px !important;
+  }
+
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 246px !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .app-shell:not(.sidebar-expanded) .sidebar {
+    width: 66px !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .workspace {
+    margin-left: 0 !important;
+    min-width: 0;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  html,
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  body {
+    max-width: 100%;
+    overflow-x: hidden !important;
+  }
+
+  .modal-overlay,
+  .app-modal,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .modal-backdrop {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding-left: max(10px, env(safe-area-inset-left)) !important;
+    padding-right: max(10px, env(safe-area-inset-right)) !important;
+    box-sizing: border-box !important;
+  }
+
+  .modal-card,
+  .modal-content,
+  .dialog-card,
+  .payment-modal-card,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .transaction-modal-card {
+    width: 100% !important;
+    max-width: calc(100vw - 20px) !important;
+    min-width: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .modal-card form,
+  .modal-card .entry-form,
+  .modal-card .compact-form,
+  .modal-card .form-grid,
+  .modal-card .modal-form,
+  .modal-card label,
+  .modal-card input,
+  .modal-card select,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .modal-card .entry-form,
+  .modal-card .compact-form,
+  .modal-card .form-grid,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .modal-form {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-card .auth-actions,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .modal-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-card .auth-actions > button,
+  .modal-card .modal-actions > button,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card button {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-actions button {
+  min-height: 32px;
+  padding: 7px 10px;
+  font-size: 0.76rem;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.payment-account-records-modal .profile-form {
+  gap: 16px;
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.account-records-list {
+  max-height: min(58vh, 560px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.account-record-item .transaction-side {
+  min-width: 118px;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 520px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-actions {
+    width: 82px;
+    gap: 6px;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-actions button {
+    min-height: 30px;
+    padding: 7px 8px;
+    font-size: 0.68rem;
+  }
+
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .account-records-list {
+    max-height: 56vh;
+  }
+
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .account-record-item {
+    align-items: flex-start;
+  }
+
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  .account-record-item .transaction-side {
+    min-width: 0;
+  }
+}
+
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-search-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.history-search-group #searchInput,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-search-group #historySearchButton {
+  width: 100%;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-search-group #historySearchButton {
+  min-height: 42px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading > .history-filters .history-search-group {
+  width: 150px;
+  max-width: 150px;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .history-search-group {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading {
+    display: grid !important;
+    grid-template-columns: 190px minmax(0, 1fr);
+    align-items: start !important;
+    column-gap: 16px;
+    row-gap: 10px;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: 116px 124px 142px 150px 112px 112px 104px 96px 96px;
+    gap: 10px;
+    align-items: end !important;
+    justify-content: end !important;
+    overflow: visible !important;
+    padding-bottom: 0 !important;
+  }
+
+  .history-heading > .history-filters > select,
+  .history-heading > .history-filters > .range-filter,
+  .history-heading > .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters > .history-search-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .history-search-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    width: 150px !important;
+    max-width: 150px !important;
+    align-self: end;
+  }
+
+  .history-heading > .history-filters #searchInput,
+  .history-heading > .history-filters #historySearchButton,
+  .history-heading > .history-filters select,
+  .history-heading > .history-filters .range-filter input,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .history-heading > .history-filters button {
+    min-height: 40px;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .range-filter {
+    width: 112px !important;
+    gap: 4px;
+    font-size: 0.74rem;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .history-heading > .history-filters button {
+    white-space: nowrap;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading {
+    grid-template-columns: 220px minmax(0, 1fr) !important;
+    align-items: end !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > div:first-child {
+    align-self: end;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters {
+    grid-template-columns: 1.15fr 1.15fr 1.4fr 2.1fr 1.1fr 1.1fr 1.1fr 1fr 1fr !important;
+    gap: 12px !important;
+    align-items: end !important;
+  }
+
+  .history-heading > .history-filters > select,
+  .history-heading > .history-filters > .range-filter,
+  .history-heading > .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters > .history-search-group {
+    align-self: end;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .history-search-group {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 10px;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    align-items: end;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #searchInput {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #historySearchButton {
+    width: 104px !important;
+    min-width: 104px !important;
+    margin: 0 !important;
+    align-self: end;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .range-filter {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .history-heading > .history-filters .range-filter input,
+  .history-heading > .history-filters select,
+  .history-heading > .history-filters button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters #searchInput {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 42px;
+  }
+}
+
+
+
+/* ACIKLAMA: .entry-primary-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.entry-primary-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  width: min(1040px, 100%);
+  max-width: 100%;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .action-panel > .entry-primary-actions > button {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  white-space: normal;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.category-manage-type-label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* ACIKLAMA: .category-manage-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.category-manage-list {
+  display: grid;
+  gap: 12px;
+  max-height: 58vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* ACIKLAMA: .category-manage-row secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.category-manage-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 92px;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.category-manage-row input {
+  width: 100%;
+}
+
+/* ACIKLAMA: Bu medya sorgusu dar masaustu ve laptoplarda aksiyon butonlarini dengeli iki sutuna indirir. */
+@media (max-width: 1200px) {
+  #entryView .action-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .entry-primary-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 900px) {
+  /* ACIKLAMA: .entry-primary-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .entry-primary-actions {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 640px) {
+  /* ACIKLAMA: .category-manage-row secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .category-manage-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.modal-backdrop {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.modal-card,
+.delete-modal,
+.confirm-modal,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.wide-modal {
+  position: relative;
+  width: min(760px, calc(100vw - 32px)) !important;
+  max-width: min(760px, calc(100vw - 32px)) !important;
+  margin: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.wide-modal {
+  width: min(860px, calc(100vw - 32px)) !important;
+  max-width: min(860px, calc(100vw - 32px)) !important;
+  max-height: min(88vh, 820px) !important;
+}
+
+.modal-card .panel-heading,
+.modal-card .profile-form,
+.modal-card .entry-form,
+.modal-card .compact-form,
+.modal-card .sync-status,
+.modal-card .auth-actions,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions {
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+
+.modal-card .profile-form,
+.modal-card .entry-form,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .compact-form {
+  align-items: start !important;
+}
+
+.modal-card .profile-form > *,
+.modal-card .entry-form > *,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .compact-form > * {
+  min-width: 0;
+}
+
+.modal-card .profile-form .panel-heading,
+.modal-card .profile-form .sync-status,
+.modal-card .profile-form .auth-actions,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .profile-form .modal-actions {
+  grid-column: 1 / -1;
+}
+
+.modal-card label,
+.modal-card input,
+.modal-card select,
+.modal-card textarea,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card button {
+  box-sizing: border-box !important;
+}
+
+.modal-card .auth-actions,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  justify-content: center !important;
+  align-items: stretch !important;
+  width: min(560px, 100%) !important;
+  max-width: 100% !important;
+}
+
+.modal-card .auth-actions:has(> button:only-child),
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .modal-actions:has(> button:only-child) {
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: min(360px, 100%) !important;
+}
+
+.modal-card .auth-actions > button,
+.modal-card .modal-actions > button,
+.modal-card .entry-form > button.primary-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .compact-form > button.primary-btn {
+  width: 100% !important;
+  max-width: 100% !important;
+  justify-self: stretch !important;
+}
+
+#transactionEditModal .modal-card,
+#entryModal .modal-card,
+#besModal .modal-card,
+#categoryManageModal .modal-card,
+#paymentAccountRecordsModal .modal-card,
+#paymentAccountPayModal .modal-card,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#paymentAccountModal .modal-card {
+  width: min(860px, calc(100vw - 32px)) !important;
+  max-width: min(860px, calc(100vw - 32px)) !important;
+}
+
+#categoryAddModal .modal-card,
+#confirmPaymentAccountDeleteModal .modal-card,
+#confirmDeleteAccountModal .modal-card,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#deleteAccountModal .modal-card {
+  width: min(520px, calc(100vw - 32px)) !important;
+  max-width: min(520px, calc(100vw - 32px)) !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .modal-backdrop {
+    align-items: center !important;
+    justify-content: center !important;
+    padding:
+      max(12px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(12px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left)) !important;
+  }
+
+  .modal-card,
+  .delete-modal,
+  .confirm-modal,
+  .wide-modal,
+  #transactionEditModal .modal-card,
+  #entryModal .modal-card,
+  #besModal .modal-card,
+  #categoryManageModal .modal-card,
+  #paymentAccountRecordsModal .modal-card,
+  #paymentAccountPayModal .modal-card,
+  #paymentAccountModal .modal-card,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #categoryAddModal .modal-card {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: min(88dvh, 820px) !important;
+    margin: auto !important;
+  }
+
+  .modal-card .profile-form,
+  .modal-card .entry-form,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .compact-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-card .auth-actions,
+  .modal-card .modal-actions,
+  .modal-card .auth-actions:has(> button:only-child),
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .modal-actions:has(> button:only-child) {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: [hidden] secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+[hidden] {
+  display: none !important;
+}
+
+.modal-backdrop[hidden],
+.modal-card[hidden],
+.delete-modal[hidden],
+.confirm-modal[hidden],
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.wide-modal[hidden] {
+  display: none !important;
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#categoryManageModal .modal-card {
+  padding-bottom: 22px !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#categoryManageModal .modal-actions {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: 18px !important;
+  padding-top: 4px;
+}
+
+/* ACIKLAMA: #categoryManageModal #closeCategoryManageModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#categoryManageModal #closeCategoryManageModalButton {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 50px !important;
+  justify-self: stretch !important;
+  margin: 0 !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #categoryManageModal .modal-card {
+    padding-bottom: 18px !important;
+  }
+
+  #categoryManageModal .modal-actions,
+  /* ACIKLAMA: #categoryManageModal #closeCategoryManageModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #categoryManageModal #closeCategoryManageModalButton {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.payment-account-toolbar-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.payment-account-toolbar-actions > button {
+  min-height: 48px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryModal .modal-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ACIKLAMA: #entryModal #entryFormMount secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#entryModal #entryFormMount {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#entryModal .entry-form {
+  width: min(760px, 100%);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+  margin-inline: auto;
+}
+
+#entryModal .entry-form label:nth-child(1),
+#entryModal .entry-form label:nth-child(2),
+#entryModal .entry-form label:nth-child(3),
+#entryModal .entry-form label:nth-child(4),
+#entryModal .entry-form label:nth-child(5),
+#entryModal .entry-form label:nth-child(6),
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#entryModal .entry-form label:nth-child(7) {
+  width: 100%;
+}
+
+#entryModal .entry-form label:nth-child(8),
+#entryModal .entry-form > button.primary-btn,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#entryModal .entry-form > .sync-status {
+  grid-column: 1 / -1;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#entryModal .entry-form > button.primary-btn {
+  width: min(620px, 100%) !important;
+}
+
+#entryModal .modal-actions,
+#paymentAccountModal .modal-actions,
+#paymentAccountPayModal .modal-actions,
+#categoryAddModal .modal-actions,
+#categoryManageModal .modal-actions,
+#paymentAccountRecordsModal .modal-actions,
+#transactionEditModal .modal-actions,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#besModal .modal-actions {
+  width: min(620px, 100%) !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#categoryManageModal .modal-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ACIKLAMA: #categoryManageModal .category-manage-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#categoryManageModal .category-manage-list {
+  flex: 1 1 auto;
+  max-height: min(52vh, 520px);
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-bottom: 8px;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#categoryManageModal .modal-actions {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  padding-top: 12px;
+  padding-bottom: 2px;
+}
+
+/* ACIKLAMA: #categoryManageModal #closeCategoryManageModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#categoryManageModal #closeCategoryManageModalButton {
+  min-height: 52px !important;
+}
+
+.modal-card .auth-actions > button,
+.modal-card .modal-actions > button,
+.category-manage-row > button,
+.modal-card .entry-form > button.primary-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card .compact-form > button.primary-btn {
+  min-height: 50px !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 900px) {
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .payment-account-toolbar-actions {
+    grid-template-columns: 1fr;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .payment-account-toolbar-actions > button {
+    width: 100%;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #entryModal .entry-form{
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  /* ACIKLAMA: #categoryManageModal .category-manage-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #categoryManageModal .category-manage-list {
+    max-height: min(54dvh, 480px);
+  }
+
+  #entryModal .entry-form > button.primary-btn,
+#entryModal .modal-actions,
+#paymentAccountModal .modal-actions,
+#paymentAccountPayModal .modal-actions,
+#categoryAddModal .modal-actions,
+#categoryManageModal .modal-actions,
+#paymentAccountRecordsModal .modal-actions,
+#transactionEditModal .modal-actions,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#besModal .modal-actions {
+    width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#entryModal .entry-form {
+  width: min(780px, 100%) !important;
+  margin-inline: auto !important;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#entryModal .entry-form > button.primary-btn {
+  width: min(640px, 100%) !important;
+  max-width: 100% !important;
+  justify-self: center !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#entryModal .modal-actions {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  width: min(640px, 100%) !important;
+  max-width: 100% !important;
+  margin: 12px auto 0 !important;
+}
+
+/* ACIKLAMA: #entryModal #closeEntryModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#entryModal #closeEntryModalButton {
+  width: 100% !important;
+  min-height: 50px !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+/* ACIKLAMA: #entryModal .sync-status secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#entryModal .sync-status {
+  width: min(640px, 100%);
+  margin-inline: auto;
+}
+
+/* ACIKLAMA: #categoryManageModal .category-manage-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#categoryManageModal .category-manage-list {
+  padding-bottom: 12px !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#categoryManageModal .modal-actions {
+  width: calc(100% - 2px) !important;
+  margin-top: 10px !important;
+  padding-top: 12px !important;
+  padding-bottom: 4px !important;
+}
+
+/* ACIKLAMA: #categoryManageModal #closeCategoryManageModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#categoryManageModal #closeCategoryManageModalButton {
+  width: 100% !important;
+  min-height: 52px !important;
+  max-width: 100% !important;
+}
+
+#paymentAccountModal .modal-actions,
+#paymentAccountPayModal .modal-actions,
+#besModal .modal-actions,
+#transactionEditModal .modal-actions,
+#categoryAddModal .modal-actions,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#paymentAccountRecordsModal .modal-actions {
+  width: min(640px, 100%) !important;
+  margin-inline: auto !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #entryModal .entry-form{
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  #entryModal .entry-form > button.primary-btn,
+#entryModal .modal-actions,
+#paymentAccountModal .modal-actions,
+#paymentAccountPayModal .modal-actions,
+#besModal .modal-actions,
+#transactionEditModal .modal-actions,
+#categoryAddModal .modal-actions,
+#categoryManageModal .modal-actions,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#paymentAccountRecordsModal .modal-actions {
+    width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#categoryAddModal .modal-card {
+  width: min(620px, calc(100vw - 32px)) !important;
+  max-width: min(620px, calc(100vw - 32px)) !important;
+}
+
+/* ACIKLAMA: #categoryAddModal #categoryAddForm secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#categoryAddModal #categoryAddForm {
+  width: min(560px, 100%);
+  margin-inline: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 16px;
+}
+
+#categoryAddModal #categoryAddForm .panel-heading,
+#categoryAddModal #categoryAddForm .sync-status,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#categoryAddModal #categoryAddForm .modal-actions {
+  grid-column: 1 / -1;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#categoryAddModal .modal-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#categoryAddModal .modal-actions > button {
+  width: 100% !important;
+  min-height: 52px !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryModal .modal-card {
+  width: min(900px, calc(100vw - 32px)) !important;
+  max-width: min(900px, calc(100vw - 32px)) !important;
+}
+
+/* ACIKLAMA: #entryModal #entryFormMount secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#entryModal #entryFormMount {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#entryModal .entry-form {
+  width: min(780px, 100%) !important;
+  margin-inline: auto !important;
+  gap: 18px 18px !important;
+}
+
+#entryModal .entry-form > button.primary-btn,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#entryModal .modal-actions {
+  width: min(640px, 100%) !important;
+  max-width: 100% !important;
+  justify-self: center !important;
+  margin-inline: auto !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#entryModal .modal-actions {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+#entryModal .modal-actions > button,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#entryModal .entry-form > button.primary-btn {
+  min-height: 52px !important;
+}
+
+/* ACIKLAMA: Varlik/portfoy ekranindaki kart ve liste gorunumunu ayarlar. */
+#assetsView .storage-actions {
+  width: 100%;
+  align-items: stretch;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#assetsView .storage-actions > button {
+  min-height: 48px;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#assetsView .transaction-side {
+  align-items: stretch;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: #categoryAddModal #categoryAddForm secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #categoryAddModal #categoryAddForm {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #categoryAddModal .modal-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  #entryModal .entry-form,
+  #entryModal .entry-form > button.primary-btn,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #entryModal .modal-actions {
+    width: 100% !important;
+  }
+}
+
+
+
+#assetEditModal .modal-card,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#categoryAddModal .modal-card {
+  width: min(700px, calc(100vw - 32px)) !important;
+  max-width: min(700px, calc(100vw - 32px)) !important;
+}
+
+#assetEditModal .profile-form,
+#categoryAddModal #categoryAddForm,
+#entryModal .entry-form,
+#paymentAccountModal .profile-form,
+#paymentAccountPayModal .profile-form,
+#besModal .profile-form,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#transactionEditModal .profile-form {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+#assetEditModal .profile-form,
+/* ACIKLAMA: #categoryAddModal #categoryAddForm secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#categoryAddModal #categoryAddForm {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 16px;
+}
+
+#assetEditModal .panel-heading,
+#assetEditModal .sync-status,
+#assetEditModal .modal-actions,
+#categoryAddModal .panel-heading,
+#categoryAddModal .sync-status,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#categoryAddModal .modal-actions {
+  grid-column: 1 / -1;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 769px) {
+  .modal-card .modal-actions,
+  .modal-card .auth-actions,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #entryModal .entry-form > button.primary-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: auto !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card .modal-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  #entryModal .modal-actions,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #categoryManageModal .modal-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  #entryModal .entry-form > button.primary-btn,
+  .modal-card .modal-actions > button,
+  .modal-card .auth-actions > button,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #assetsView .storage-actions > button {
+    min-height: 52px !important;
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Varlik/portfoy ekranindaki kart ve liste gorunumunu ayarlar. */
+  #assetsView .storage-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 12px;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  #assetEditModal .profile-form,
+  /* ACIKLAMA: #categoryAddModal #categoryAddForm secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #categoryAddModal #categoryAddForm {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-card .modal-actions,
+  .modal-card .auth-actions,
+  /* ACIKLAMA: Varlik/portfoy ekranindaki kart ve liste gorunumunu ayarlar. */
+  #assetsView .storage-actions {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#assetsView .transaction-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#assetsView .transaction-side {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  align-items: center;
+  justify-content: end;
+  gap: 10px;
+  min-width: max-content;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#assetsView .transaction-amount {
+  min-width: 140px;
+  text-align: right;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#assetsView .transaction-side .ghost-btn {
+  min-width: 86px;
+  min-height: 40px;
+  padding-inline: 14px;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#entryModal .entry-form {
+  width: min(800px, 100%) !important;
+}
+
+#entryModal .entry-form > button.primary-btn,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#entryModal .modal-actions {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#entryModal .modal-actions {
+  grid-template-columns: 1fr !important;
+}
+
+#entryModal .modal-actions > button,
+#entryModal .entry-form > button.primary-btn,
+/* ACIKLAMA: #entryModal #closeEntryModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#entryModal #closeEntryModalButton {
+  width: 100% !important;
+  min-height: 52px !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#paymentAccountModal .modal-card {
+  width: min(920px, calc(100vw - 32px)) !important;
+  max-width: min(920px, calc(100vw - 32px)) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#paymentAccountModal .payment-account-form {
+  width: 100% !important;
+  max-width: 100% !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+  max-height: min(86vh, 820px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+}
+
+#paymentAccountModal .payment-account-form .panel-heading,
+#paymentAccountModal .payment-account-form .sync-status,
+#paymentAccountModal .payment-account-form .auth-actions,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#paymentAccountModal .payment-account-form label:last-of-type {
+  grid-column: 1 / -1;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#paymentAccountModal .payment-account-form .auth-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  padding-top: 12px;
+  padding-bottom: 4px;
+  margin-top: 6px;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#paymentAccountModal .payment-account-form .auth-actions > button {
+  width: 100% !important;
+  min-height: 52px !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  #assetsView .transaction-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  #assetsView .transaction-side {
+    width: 100%;
+    grid-auto-flow: row;
+    grid-auto-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  #assetsView .transaction-amount,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #assetsView .transaction-side .ghost-btn {
+    width: 100%;
+    text-align: left;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #paymentAccountModal .payment-account-form {
+    grid-template-columns: 1fr;
+    max-height: min(86dvh, 820px);
+    padding-right: 2px;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #paymentAccountModal .payment-account-form .auth-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+
+#entryModal #entryFormMount,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#entryModal .modal-actions {
+  width: min(800px, 100%) !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#entryModal .entry-form {
+  width: 100% !important;
+}
+
+#entryModal .entry-form > button.primary-btn,
+/* ACIKLAMA: #entryModal #closeEntryModalButton secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#entryModal #closeEntryModalButton {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 52px !important;
+}
+
+/* ACIKLAMA: Varlik/portfoy ekranindaki kart ve liste gorunumunu ayarlar. */
+#assetsView .asset-toolbar-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: min(700px, 100%);
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#assetsView .asset-toolbar-actions > button {
+  width: 100%;
+  min-height: 52px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#assetEditModal .modal-card {
+  width: min(760px, calc(100vw - 32px)) !important;
+  max-width: min(760px, calc(100vw - 32px)) !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#assetEditModal .profile-form {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Varlik/portfoy ekranindaki kart ve liste gorunumunu ayarlar. */
+  #assetsView .asset-toolbar-actions {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  #entryModal #entryFormMount,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #entryModal .modal-actions {
+    width: 100% !important;
+  }
+}
+
+
+
+#besModal #besFormMount,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#besModal .modal-actions {
+  width: min(820px, 100%) !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#besModal .entry-form {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#besModal #besSubmitButton,
+/* ACIKLAMA: BES ekrani ve BES kayit kartlarinin gorunumunu ayarlar. */
+#besModal #closeBesModalButton {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 52px !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+#besModal .modal-actions {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  #besModal #besFormMount,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  #besModal .modal-actions {
+    width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#assetsView .transaction-item {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px 18px;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#assetsView .transaction-item > div:first-child {
+  min-width: 0;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#assetsView .transaction-side {
+  display: grid !important;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  align-items: center;
+  justify-content: end;
+  gap: 10px;
+  min-width: max-content;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#assetsView .transaction-amount {
+  min-width: 140px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#assetsView .transaction-side .ghost-btn {
+  min-width: 88px;
+  min-height: 40px;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  #assetsView .transaction-item {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    align-items: start !important;
+  }
+
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  #assetsView .transaction-item > div:first-child {
+    width: 100%;
+  }
+
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  #assetsView .transaction-side {
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-auto-flow: row !important;
+    grid-auto-columns: 1fr !important;
+    justify-content: stretch !important;
+    gap: 10px !important;
+  }
+
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  #assetsView .transaction-amount {
+    width: 100% !important;
+    min-width: 0 !important;
+    text-align: left !important;
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #assetsView .transaction-side .ghost-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    padding-inline: 14px !important;
+  }
+
+  #assetsView .transaction-title,
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  #assetsView .transaction-meta {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: initial !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Kok degiskenler; renk, font ve golge gibi tema degerlerini merkezi olarak tutar. */

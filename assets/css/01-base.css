@@ -1,0 +1,94 @@
+/* ACIKLAMA: Kok degiskenler, global sayfa zemini ve temel form/button ayarlari.
+   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
+
+/* ACIKLAMA NOTU: Bu CSS dosyasinda selector bloklarinin yaninda ne ise yaradiklarini anlatan yorumlar vardir. */
+﻿/* ACIKLAMA: Kok degiskenler; renk, font ve golge gibi tema degerlerini merkezi olarak tutar. */
+﻿:root {
+  --bg: #f3f6f4;
+  --surface: #ffffff;
+  --surface-soft: #f7faf8;
+  --sidebar: #173f5f;
+  --sidebar-deep: #102f48;
+  --sidebar-active: #235b82;
+  --stroke: #dfe6e2;
+  --text: #18241f;
+  --muted: #64746d;
+  --income: #17805f;
+  --expense: #c74e39;
+  --accent: #14b8a6;
+  --accent-soft: #d9fbf7;
+  --warning: #d89414;
+  --shadow: 0 16px 38px rgba(17, 35, 28, 0.1);
+  --app-font-size: 16px;
+  --app-font-family: "Manrope", sans-serif;
+  --app-font-weight: 500;
+  --app-font-weight-strong: 700;
+}
+
+/* ACIKLAMA: Tum elemanlarda olcu hesaplamasini tutarli hale getirir. */
+* {
+  box-sizing: border-box;
+}
+
+/* ACIKLAMA: html secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html {
+  min-height: 100%;
+  background: var(--bg);
+  font-size: var(--app-font-size, 16px);
+}
+
+/* ACIKLAMA: [hidden] secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+[hidden] {
+  display: none !important;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--app-font-family, "Manrope", sans-serif);
+  font-weight: var(--app-font-weight, 500);
+  color: var(--text);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  overflow-x: hidden;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.72)),
+    url("../../login-pattern.svg") center top / min(680px, 92vw) auto repeat,
+    linear-gradient(rgba(20, 184, 166, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.08) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, min(680px, 92vw) auto, 28px 28px, 28px 28px, auto;
+}
+
+/* ACIKLAMA: Bu blok tarayicinin destekledigi ozellige gore ek CSS kurali uygular. */
+@supports (min-height: 100dvh) {
+  body,
+  .login-screen,
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .app-shell {
+    min-height: 100dvh;
+  }
+}
+
+button,
+input,
+select,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+textarea {
+  font: inherit;
+}
+
+input,
+select,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+textarea {
+  font-size: 16px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}

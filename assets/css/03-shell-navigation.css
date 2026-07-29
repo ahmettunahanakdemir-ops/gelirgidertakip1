@@ -1,0 +1,373 @@
+/* ACIKLAMA: Uygulama iskeleti, sidebar, topbar, ekran bolumleri ve ana grid duzeni.
+   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  transition: grid-template-columns 180ms ease;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.app-shell.sidebar-expanded {
+  grid-template-columns: 246px minmax(0, 1fr);
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--sidebar), var(--sidebar-deep));
+  color: #f3fbff;
+  box-shadow: 8px 0 28px rgba(16, 47, 72, 0.18);
+  z-index: 20;
+  overflow: hidden;
+}
+
+/* ACIKLAMA: .brand-block secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.app-shell:not(.sidebar-expanded) .brand-block {
+  justify-content: center;
+  padding: 14px 8px;
+}
+
+.app-shell:not(.sidebar-expanded) .brand-block > div,
+.app-shell:not(.sidebar-expanded) .sidebar-account,
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.app-shell:not(.sidebar-expanded) .sidebar-footer {
+  display: none;
+}
+
+.brand-block p,
+/* ACIKLAMA: .brand-block strong secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.brand-block strong {
+  display: block;
+  margin: 0;
+}
+
+/* ACIKLAMA: .brand-block p secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.brand-block p {
+  color: rgba(243, 251, 255, 0.72);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* ACIKLAMA: .brand-block strong secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.brand-block strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.35rem;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  margin: 2px 0;
+  border-radius: 2px;
+  background: #fff;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.side-nav {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  flex: 1;
+  padding: 14px 10px;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(243, 251, 255, 0.86);
+  text-align: left;
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.app-shell:not(.sidebar-expanded) .side-nav {
+  padding: 12px 8px;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.app-shell:not(.sidebar-expanded) .nav-item {
+  justify-content: center;
+  gap: 0;
+  padding: 10px;
+  font-size: 0;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.app-shell:not(.sidebar-expanded) .nav-icon {
+  font-size: 1rem;
+}
+
+.nav-item:hover,
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.nav-item.active {
+  background: var(--sidebar-active);
+  color: #fff;
+}
+
+/* ACIKLAMA: .nav-icon secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.nav-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.13);
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-account {
+  display: grid;
+  gap: 8px;
+  margin: 12px 10px 4px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-account:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.account-label {
+  color: rgba(243, 251, 255, 0.62);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.auth-badge,
+/* ACIKLAMA: .user-chip secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  max-width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  color: #07362f;
+  background: var(--accent-soft);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-account .auth-badge {
+  min-height: 42px;
+  justify-content: center;
+  color: #052f2a;
+  background: #c7fbf4;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-account .logout-btn {
+  display: none;
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.account-hint {
+  color: rgba(243, 251, 255, 0.7);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.user-actions-panel {
+  max-width: none;
+  width: 100%;
+}
+
+/* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+.sidebar-footer {
+  margin-top: auto;
+  padding: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.logout-btn {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.workspace {
+  min-width: 0;
+  max-width: 100%;
+  padding: 22px;
+  overflow-x: hidden;
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.topbar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 28px rgba(17, 35, 28, 0.06);
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.topbar-menu {
+  display: none;
+  flex: 0 0 auto;
+  background: var(--sidebar);
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.topbar h1 {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  line-height: 1.1;
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.topbar p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+.topbar-side {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.date-filter-group {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(96px, 1fr));
+  gap: 10px;
+  width: min(460px, 100%);
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.date-filter {
+  min-width: 0;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.compact-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+.compact-form textarea,
+.compact-form .storage-actions,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.compact-form > .primary-btn {
+  grid-column: 1 / -1;
+}
+
+.panel-kicker,
+/* ACIKLAMA: .eyebrow secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel-kicker.danger-kicker {
+  color: var(--expense);
+}
+
+/* ACIKLAMA: .view-section secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.view-section {
+  display: none;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* ACIKLAMA: .view-section.active secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.view-section.active {
+  display: block;
+}
+
+/* ACIKLAMA: .content-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.content-grid {
+  display: grid;
+  gap: 18px;
+}
+
+/* ACIKLAMA: .entry-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.entry-grid {
+  grid-template-columns: minmax(320px, 0.9fr) minmax(280px, 1fr);
+}
+
+/* ACIKLAMA: #entryView .entry-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#entryView .entry-grid {
+  display: none;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.action-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
