@@ -484,6 +484,10 @@ function getBulkEntryFields(row) {
     category: row?.querySelector('[data-bulk-field="category"]'),
     paymentMethod: row?.querySelector('[data-bulk-field="paymentMethod"]'),
     paymentAccount: row?.querySelector('[data-bulk-field="paymentAccount"]'),
+    paymentAccountLabel: row?.querySelector("[data-bulk-payment-account-label]"),
+    transferAccount: row?.querySelector('[data-bulk-field="transferAccount"]'),
+    transferFee: row?.querySelector('[data-bulk-field="transferFee"]'),
+    transferFields: Array.from(row?.querySelectorAll("[data-bulk-transfer-field]") || []),
     date: row?.querySelector('[data-bulk-field="date"]'),
     note: row?.querySelector('[data-bulk-field="note"]'),
     error: row?.querySelector("[data-bulk-row-error]"),
@@ -506,6 +510,7 @@ function createBulkEntryRow() {
       <select data-bulk-field="type">
         <option value="income">Gelir</option>
         <option value="expense">Gider</option>
+        <option value="transfer">Hesaplar arası transfer</option>
       </select>
     </label>
     <label>
@@ -527,8 +532,16 @@ function createBulkEntryRow() {
       </select>
     </label>
     <label>
-      Kart / hesap
+      <span data-bulk-payment-account-label>Kart / hesap</span>
       <select data-bulk-field="paymentAccount"></select>
+    </label>
+    <label class="bulk-entry-transfer-field" data-bulk-transfer-field hidden>
+      Hedef kart / hesap
+      <select data-bulk-field="transferAccount"></select>
+    </label>
+    <label class="bulk-entry-transfer-field" data-bulk-transfer-field hidden>
+      Transfer ücreti
+      <input data-bulk-field="transferFee" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" />
     </label>
     <label>
       Tarih
@@ -550,8 +563,13 @@ function createBulkEntryRow() {
 // ACIKLAMA: bindBulkEntryRow fonksiyonunun Turkce karsiligi "coklu kayit satirini bagla"; satirdaki degisim ve silme olaylarini baglar.
 function bindBulkEntryRow(row) {
   const fields = getBulkEntryFields(row);
-  fields.type?.addEventListener("change", () => updateBulkEntryCategoryOptions(row, { reset: true }));
+  fields.type?.addEventListener("change", () => {
+    updateBulkEntryCategoryOptions(row, { reset: true });
+    syncBulkEntryTransferFields(row);
+  });
   fields.paymentMethod?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
+  fields.paymentAccount?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
+  fields.transferAccount?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
   row.querySelector('[data-bulk-action="remove"]')?.addEventListener("click", () => removeBulkEntryRow(row));
 }
 
@@ -608,12 +626,14 @@ function resetBulkEntryRow(row) {
   if (fields.title) fields.title.value = "";
   if (fields.amount) fields.amount.value = "";
   if (fields.note) fields.note.value = "";
+  if (fields.transferFee) fields.transferFee.value = "";
+  if (fields.transferAccount) fields.transferAccount.value = "";
   if (fields.type) fields.type.value = "income";
   if (fields.paymentMethod) fields.paymentMethod.value = "cash";
   if (fields.date) fields.date.value = getTurkeyTodayISO();
   setBulkEntryRowError(row, "");
   updateBulkEntryCategoryOptions(row);
-  updateBulkEntryPaymentAccountOptions(row);
+  syncBulkEntryTransferFields(row);
 }
 
 // ACIKLAMA: updateBulkEntryRowNumbers fonksiyonunun Turkce karsiligi "coklu kayit satir numaralarini guncelle"; satir numaralarini ekrana yeniden yazar.
@@ -630,7 +650,7 @@ function updateBulkEntryRowNumbers() {
 function refreshBulkEntryRows() {
   getBulkEntryRows().forEach((row) => {
     updateBulkEntryCategoryOptions(row);
-    updateBulkEntryPaymentAccountOptions(row);
+    syncBulkEntryTransferFields(row);
   });
   updateBulkEntryRowNumbers();
 }
@@ -656,11 +676,53 @@ function updateBulkEntryPaymentAccountOptions(row) {
     return;
   }
 
+  if (fields.type?.value === "transfer") {
+    updateAnyPaymentAccountSelect(fields.paymentAccount, fields.paymentAccount.value, {
+      excludeId: fields.transferAccount?.value || "",
+      placeholder: "Kaynak kart / hesap seç",
+    });
+    updateAnyPaymentAccountSelect(fields.transferAccount, fields.transferAccount?.value || "", {
+      excludeId: fields.paymentAccount.value,
+      placeholder: "Hedef kart / hesap seç",
+    });
+    return;
+  }
+
   updatePaymentAccountSelect(
     fields.paymentAccount,
     fields.paymentMethod?.value || "cash",
     fields.paymentAccount.value
   );
+}
+
+// ACIKLAMA: Coklu kayit satirinda transfer alanlarini tipe gore gosterir ve hesap secimlerini hazirlar.
+function syncBulkEntryTransferFields(row) {
+  const fields = getBulkEntryFields(row);
+  const isTransfer = fields.type?.value === "transfer";
+
+  fields.transferFields.forEach((field) => {
+    field.hidden = !isTransfer;
+  });
+
+  if (fields.paymentAccountLabel) {
+    fields.paymentAccountLabel.textContent = isTransfer ? "Kaynak kart / hesap" : "Kart / hesap";
+  }
+
+  if (fields.paymentMethod) {
+    fields.paymentMethod.disabled = isTransfer;
+    fields.paymentMethod.value = isTransfer
+      ? "transfer"
+      : fields.paymentMethod.value === "transfer"
+        ? "cash"
+        : normalizePaymentMethod(fields.paymentMethod.value || "cash");
+  }
+
+  if (!isTransfer) {
+    if (fields.transferAccount) fields.transferAccount.value = "";
+    if (fields.transferFee) fields.transferFee.value = "";
+  }
+
+  updateBulkEntryPaymentAccountOptions(row);
 }
 
 // ACIKLAMA: setBulkEntryRowError fonksiyonunun Turkce karsiligi "coklu kayit satir hatasini yaz"; satira ait hata mesajini gosterir veya temizler.
@@ -679,6 +741,8 @@ function isBulkEntryRowEmpty(row) {
     fields.amount?.value,
     fields.note?.value,
     fields.paymentAccount?.value,
+    fields.transferAccount?.value,
+    fields.transferFee?.value,
   ].some((value) => String(value || "").trim());
 }
 
@@ -699,6 +763,8 @@ function readBulkEntryTransaction(row, index, now) {
       category: fields.category?.value || "",
       paymentMethod: fields.paymentMethod?.value || "cash",
       paymentAccountId: fields.paymentAccount?.value || "",
+      transferAccountId: fields.transferAccount?.value || "",
+      transferFee: fields.transferFee?.value || "",
       date: fields.date?.value || "",
       note: fields.note?.value || "",
     },

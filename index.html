@@ -24,33 +24,33 @@
       rel="stylesheet"
     />
     <!-- ACIKLAMA: PWA kurulum bilgilerini ve uygulama ikonlarini tarayiciya tanitir. -->
-    <link rel="manifest" href="manifest.json?v=274" />
+    <link rel="manifest" href="manifest.json?v=275" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <!-- ACIKLAMA: CSS yuklenmeden once kayitli tema tercihini uygulayan kucuk JS dosyasi. -->
-    <script src="assets/js/00-theme-preload.js?v=274"></script>
+    <script src="assets/js/00-theme-preload.js?v=275"></script>
     <!-- ACIKLAMA: Kok degiskenler, global sayfa zemini ve temel form/button ayarlari. -->
-    <link rel="stylesheet" href="assets/css/01-base.css?v=274" />
+    <link rel="stylesheet" href="assets/css/01-base.css?v=275" />
     <!-- ACIKLAMA: Giris/kayit/parola ekranlari, ortak formlar, butonlar ve tehlikeli islem alanlari. -->
-    <link rel="stylesheet" href="assets/css/02-auth-forms.css?v=274" />
+    <link rel="stylesheet" href="assets/css/02-auth-forms.css?v=275" />
     <!-- ACIKLAMA: Uygulama iskeleti, sidebar, topbar, ekran bolumleri ve ana grid duzeni. -->
-    <link rel="stylesheet" href="assets/css/03-shell-navigation.css?v=274" />
+    <link rel="stylesheet" href="assets/css/03-shell-navigation.css?v=275" />
     <!-- ACIKLAMA: Ana sayfa ozetleri, PDF/print onizleme, kayit gecmisi, banka import temel kartlari ve sayfalama. -->
-    <link rel="stylesheet" href="assets/css/04-dashboard-history-export.css?v=274" />
+    <link rel="stylesheet" href="assets/css/04-dashboard-history-export.css?v=275" />
     <!-- ACIKLAMA: Modallar, odeme kartlari, acilis ekrani ve ilk responsive kart kurallari. -->
-    <link rel="stylesheet" href="assets/css/05-modals-payment-splash.css?v=274" />
+    <link rel="stylesheet" href="assets/css/05-modals-payment-splash.css?v=275" />
     <!-- ACIKLAMA: Splash animasyonlari, odeme kartlari, varlik/BES ekranlari ve mobil iyilestirmeler. -->
-    <link rel="stylesheet" href="assets/css/06-mobile-payment-assets.css?v=274" />
+    <link rel="stylesheet" href="assets/css/06-mobile-payment-assets.css?v=275" />
     <!-- ACIKLAMA: Tema degiskenleri, acik/koyu tema, ayarlar ekrani ve genel kontrol gorselleri. -->
-    <link rel="stylesheet" href="assets/css/07-theme-settings.css?v=274" />
+    <link rel="stylesheet" href="assets/css/07-theme-settings.css?v=275" />
     <!-- ACIKLAMA: Modal alt aksiyonlari, filtreler, ana sayfa mini listeleri ve bank-import modal duzeni. -->
-    <link rel="stylesheet" href="assets/css/08-modal-filters-home.css?v=274" />
+    <link rel="stylesheet" href="assets/css/08-modal-filters-home.css?v=275" />
     <!-- ACIKLAMA: Banka import ayrintilari, odeme hesabi filtreleri, genis ekran ve arama duzenleri. -->
-    <link rel="stylesheet" href="assets/css/09-bank-import-filters-wide.css?v=274" />
+    <link rel="stylesheet" href="assets/css/09-bank-import-filters-wide.css?v=275" />
     <!-- ACIKLAMA: Mobil/PWA, yedekleme, auth, kart ve form responsive duzeltmeleri. -->
-    <link rel="stylesheet" href="assets/css/10-responsive-pwa-overrides.css?v=274" />
+    <link rel="stylesheet" href="assets/css/10-responsive-pwa-overrides.css?v=275" />
     <!-- ACIKLAMA: Coklu gelir/gider modali, son kayitlar penceresi ve son katman mobil duzeltmeleri. -->
-    <link rel="stylesheet" href="assets/css/11-bulk-recent-final.css?v=274" />
+    <link rel="stylesheet" href="assets/css/11-bulk-recent-final.css?v=275" />
   </head>
   <body>
 
@@ -414,7 +414,7 @@
               <!-- ACIKLAMA: openEntryModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <button id="openEntryModalButton" class="primary-btn" type="button">Gelir / Gider Ekle</button>
               <!-- ACIKLAMA: openBulkEntryModalButton coklu gelir/gider penceresini acmak icin kullanilir. -->
-              <button id="openBulkEntryModalButton" class="success-btn" type="button">Çoklu Gelir / Gider Ekle</button>
+              <button id="openBulkEntryModalButton" class="success-btn" type="button">Çoklu Gelir / Gider / Transfer Ekle</button>
               <!-- ACIKLAMA: openCategoryAddModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
               <button id="openCategoryAddModalButton" class="ghost-btn" type="button">Kategori Ekle</button>
               <!-- ACIKLAMA: openCategoryManageModalButton acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
@@ -1288,7 +1288,7 @@
           <div>
             <p class="panel-kicker">Toplu Kayıt</p>
             <!-- ACIKLAMA: bulkEntryModalTitle coklu gelir/gider penceresinin basligini tutar. -->
-            <h2 id="bulkEntryModalTitle">Birden fazla gelir / gider ekle</h2>
+            <h2 id="bulkEntryModalTitle">Birden fazla gelir / gider / transfer ekle</h2>
             <p class="panel-note">Dolu satırları tek seferde kaydet; boş satırlar otomatik yok sayılır.</p>
           </div>
         </div>
@@ -1860,7 +1860,7 @@
     </template>
 
     <!-- ACIKLAMA: Firebase proje ayarlarini app.js tarafindan okunacak sekilde yukler. -->
-    <script src="firebase-config.js?v=274"></script>
+    <script src="firebase-config.js?v=275"></script>
     <!-- ACIKLAMA: Firebase cekirdek kutuphanesini yukleyerek bulut baglantisini hazirlar. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <!-- ACIKLAMA: Firebase giris/kayit/parola islemleri icin auth kutuphanesini yukler. -->
@@ -1868,26 +1868,26 @@
     <!-- ACIKLAMA: Firestore veritabani okuma/yazma islemleri icin kutuphaneyi yukler. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <!-- ACIKLAMA: Sabitler, varsayilan veriler ve HTML elemanlarinin DOM referanslari. -->
-    <script src="assets/js/01-config-dom.js?v=274"></script>
+    <script src="assets/js/01-config-dom.js?v=275"></script>
     <!-- ACIKLAMA: Tema, yazi tipi, kart odeme hatirlaticilari, genel onay penceresi ve mobil kaydirma yardimcilari. -->
-    <script src="assets/js/02-ui-preferences-reminders.js?v=274"></script>
+    <script src="assets/js/02-ui-preferences-reminders.js?v=275"></script>
     <!-- ACIKLAMA: Uygulama baslatma fonksiyonu, olay baglantilari, gelir/gider ve coklu kayit formlari. -->
-    <script src="assets/js/03-init-entry-forms.js?v=274"></script>
+    <script src="assets/js/03-init-entry-forms.js?v=275"></script>
     <!-- ACIKLAMA: Yerel depolama, silinmis kayit izleri, kategori listeleri ve ana sayfa render islemleri. -->
-    <script src="assets/js/04-storage-home-render.js?v=274"></script>
+    <script src="assets/js/04-storage-home-render.js?v=275"></script>
     <!-- ACIKLAMA: Varliklar, odeme hesaplari, kredi karti borclari, BES hesaplari ve piyasa fiyatlari. -->
-    <script src="assets/js/05-assets-payments-bes-market.js?v=274"></script>
+    <script src="assets/js/05-assets-payments-bes-market.js?v=275"></script>
     <!-- ACIKLAMA: Ozet kategori dagilimi, kayit gecmisi, filtreler, kategori yonetimi, ekran gecisi ve yan menu. -->
-    <script src="assets/js/06-summary-history-categories-navigation.js?v=274"></script>
+    <script src="assets/js/06-summary-history-categories-navigation.js?v=275"></script>
     <!-- ACIKLAMA: Yedekleme, PDF/Excel disari aktarma, dosyadan ice aktarma ve paylasim kodu islemleri. -->
-    <script src="assets/js/07-backup-export-import-sync.js?v=274"></script>
+    <script src="assets/js/07-backup-export-import-sync.js?v=275"></script>
     <!-- ACIKLAMA: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir. -->
-    <script src="assets/js/08-auth-firebase-cloud.js?v=274"></script>
+    <script src="assets/js/08-auth-firebase-cloud.js?v=275"></script>
     <!-- ACIKLAMA: Banka hareketi ice aktarma, AI/OCR dosya okuma ve metinden hareket ayrisitirma fonksiyonlari. -->
-    <script src="assets/js/09-bank-import-ocr-parsers.js?v=274"></script>
+    <script src="assets/js/09-bank-import-ocr-parsers.js?v=275"></script>
     <!-- ACIKLAMA: Acilis ekrani ve service worker kaydi yardimcilari. -->
-    <script src="assets/js/10-startup-pwa.js?v=274"></script>
+    <script src="assets/js/10-startup-pwa.js?v=275"></script>
     <!-- ACIKLAMA: Uygulama durum degiskenlerini yukler ve tum dosyalar hazir olduktan sonra uygulamayi baslatir. En son yuklenmelidir. -->
-    <script src="assets/js/11-state-startup.js?v=274"></script>
+    <script src="assets/js/11-state-startup.js?v=275"></script>
   </body>
 </html>
