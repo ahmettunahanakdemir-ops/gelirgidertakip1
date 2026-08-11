@@ -1452,6 +1452,7 @@ function switchView(viewId) {
   }
 
   renderView();
+  refreshUserProfileFromServer();
 
   if (activeView === "cardsView") {
     refreshAllPaymentAccountsFromRecords({ silent: false, syncCloud: true });

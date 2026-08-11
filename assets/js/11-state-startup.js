@@ -19,6 +19,10 @@ let cloudTransactionsSyncVersion = 0;
 let cloudTransactionsSyncInFlight = false;
 // ACIKLAMA: cloudProfileSyncVersion degiskeninin Turkce karsiligi "bulut profil esitle version"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 let cloudProfileSyncVersion = 0;
+// ACIKLAMA: Sunucudan profil yenileme isteklerinin ust uste binmesini engeller.
+let cloudProfileRefreshPromise = null;
+// ACIKLAMA: Cok hizli menu gecislerinde gereksiz Firestore okumalarini sinirlar.
+let lastCloudProfileRefreshAt = 0;
 // ACIKLAMA: firestorePersistenceEnabled degiskeninin Turkce karsiligi "Firestore persistence enabled"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 let firestorePersistenceEnabled = false;
 // ACIKLAMA: activeView uygulamadaki ilgili ekran/gorunum alanini temsil eder.

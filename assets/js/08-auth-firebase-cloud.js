@@ -703,7 +703,8 @@ async function handleAuthStateChanged(user) {
 
   try {
     // ACIKLAMA: cloudProfile degiskeninin Turkce karsiligi "bulut profil"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const cloudProfile = await fetchCloudProfile(user.uid);
+    const cloudProfile = await fetchCloudProfile(user.uid, { source: "server" })
+      .catch(() => fetchCloudProfile(user.uid));
     updateCloudBackupStatus(cloudProfile);
     applyDeletedTransactionState(readCloudDeletedTransactionState(cloudProfile), anonymousDeletedTransactionState);
     applyDeletedProfileRecordState(
@@ -900,12 +901,78 @@ function renderAuthState() {
 }
 
 // ACIKLAMA: fetchCloudProfile fonksiyonunun Turkce karsiligi "getir bulut profil"; bulut ve yerel veri esitleme akisini yonetir.
-function fetchCloudProfile(userId) {
+function fetchCloudProfile(userId, options = {}) {
+  const getOptions = options.source ? { source: options.source } : undefined;
   return firebaseDb
     .collection("users")
     .doc(userId)
-    .get()
+    .get(getOptions)
     .then((doc) => (doc.exists ? doc.data() || {} : {}));
+}
+
+// ACIKLAMA: Sunucudan gelen varlik ve BES verisini zaman damgalarina gore yerel durumla birlestirir.
+function applyCloudAssetAndBesProfile(data = {}, options = {}) {
+  const { renderAfterApply = true } = options;
+  applyDeletedProfileRecordState(readCloudDeletedProfileRecordState(data));
+
+  if (Array.isArray(data.assets) || Array.isArray(data.deletedAssetTombstones)) {
+    assets = applyDeletedProfileTombstones(
+      mergeVersionedRecordsById(readCloudAssets(data.assets), assets),
+      deletedAssetTombstones
+    );
+    persistAssets({ syncCloud: false });
+  }
+
+  if (Array.isArray(data.besAccounts) || Array.isArray(data.deletedBesTombstones)) {
+    besAccounts = applyDeletedProfileTombstones(
+      mergeVersionedRecordsById(readCloudBesAccounts(data.besAccounts), besAccounts),
+      deletedBesTombstones
+    );
+    persistBesAccounts({ syncCloud: false });
+  }
+
+  if (renderAfterApply) {
+    renderAssets();
+    renderBesAccounts();
+    renderHome();
+  }
+}
+
+// ACIKLAMA: Sayfa yenileme, uygulamaya donme ve menu gecislerinde profili dogrudan sunucudan kontrol eder.
+function refreshUserProfileFromServer(options = {}) {
+  const { force = false } = options;
+
+  if (!currentUser || !firebaseDb || !navigator.onLine) {
+    return Promise.resolve(false);
+  }
+
+  if (cloudProfileRefreshPromise) {
+    return cloudProfileRefreshPromise;
+  }
+
+  const now = Date.now();
+  if (!force && now - lastCloudProfileRefreshAt < 750) {
+    return Promise.resolve(false);
+  }
+
+  const userId = currentUser.uid;
+  lastCloudProfileRefreshAt = now;
+  cloudProfileRefreshPromise = fetchCloudProfile(userId, { source: "server" })
+    .then((data) => {
+      if (!currentUser || currentUser.uid !== userId) {
+        return false;
+      }
+
+      applyCloudAssetAndBesProfile(data);
+      updateCloudBackupStatus(data);
+      return true;
+    })
+    .catch(() => false)
+    .finally(() => {
+      cloudProfileRefreshPromise = null;
+    });
+
+  return cloudProfileRefreshPromise;
 }
 
 // ACIKLAMA: subscribeCloudProfile fonksiyonunun Turkce karsiligi "abonelik baslat bulut profil"; bulut ve yerel veri esitleme akisini yonetir.
@@ -919,23 +986,7 @@ function subscribeCloudProfile(userId) {
         // ACIKLAMA: data degiskeninin Turkce karsiligi "veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
         const data = doc.data() || {};
         updateCloudBackupStatus(data);
-        applyDeletedProfileRecordState(readCloudDeletedProfileRecordState(data));
-
-        if (Array.isArray(data.assets) || Array.isArray(data.deletedAssetTombstones)) {
-          assets = applyDeletedProfileTombstones(
-            mergeVersionedRecordsById(readCloudAssets(data.assets), assets),
-            deletedAssetTombstones
-          );
-          persistAssets({ syncCloud: false });
-        }
-
-        if (Array.isArray(data.besAccounts) || Array.isArray(data.deletedBesTombstones)) {
-          besAccounts = applyDeletedProfileTombstones(
-            mergeVersionedRecordsById(readCloudBesAccounts(data.besAccounts), besAccounts),
-            deletedBesTombstones
-          );
-          persistBesAccounts({ syncCloud: false });
-        }
+        applyCloudAssetAndBesProfile(data, { renderAfterApply: false });
 
         if (Array.isArray(data.paymentAccounts)) {
           paymentAccounts = readCloudPaymentAccounts(data.paymentAccounts);
@@ -1384,18 +1435,30 @@ function bindPendingCloudSyncEvents() {
 
   window.__akisBudgetPendingCloudSyncBound = true;
 
-  window.addEventListener("online", () => {
-    retryPendingTransactionsCloudSync();
-    retryPendingUserProfileCloudSync();
-  });
-  window.addEventListener("focus", () => {
-    retryPendingTransactionsCloudSync();
-    retryPendingUserProfileCloudSync();
-  });
+  let resumeRefreshPromise = null;
+  const refreshAfterResume = () => {
+    if (resumeRefreshPromise) {
+      return resumeRefreshPromise;
+    }
+
+    resumeRefreshPromise = refreshUserProfileFromServer({ force: true })
+      .then(() => Promise.allSettled([
+        retryPendingTransactionsCloudSync(),
+        retryPendingUserProfileCloudSync(),
+      ]))
+      .finally(() => {
+        resumeRefreshPromise = null;
+      });
+
+    return resumeRefreshPromise;
+  };
+
+  window.addEventListener("online", refreshAfterResume);
+  window.addEventListener("focus", refreshAfterResume);
+  window.addEventListener("pageshow", refreshAfterResume);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
-      retryPendingTransactionsCloudSync();
-      retryPendingUserProfileCloudSync();
+      refreshAfterResume();
     }
   });
 }
