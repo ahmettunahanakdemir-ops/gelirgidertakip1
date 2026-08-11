@@ -54,6 +54,147 @@ function loadDeletedTransferTombstones() {
   return (Array.isArray(values) ? values : []).map(normalizeDeletedTransferTombstone).filter(Boolean);
 }
 
+// ACIKLAMA: Varlik veya BES silme izini guvenli ve ortak bir formata cevirir.
+function normalizeDeletedProfileTombstone(item) {
+  if (!item) {
+    return null;
+  }
+
+  if (typeof item === "string") {
+    return item ? { id: item, deletedAt: "" } : null;
+  }
+
+  if (typeof item !== "object") {
+    return null;
+  }
+
+  const id = String(item.id || "");
+  if (!id) {
+    return null;
+  }
+
+  return {
+    id,
+    deletedAt: String(item.deletedAt || ""),
+  };
+}
+
+// ACIKLAMA: Ayni kayda ait silme izlerinden en yeni olani korur.
+function mergeDeletedProfileTombstones(...sources) {
+  const byId = new Map();
+
+  sources
+    .flat()
+    .map(normalizeDeletedProfileTombstone)
+    .filter(Boolean)
+    .forEach((item) => {
+      const existing = byId.get(item.id);
+      if (!existing || getRecordTimestamp(item.deletedAt) > getRecordTimestamp(existing.deletedAt)) {
+        byId.set(item.id, item);
+      }
+    });
+
+  return Array.from(byId.values())
+    .sort((left, right) => getRecordTimestamp(left.deletedAt) - getRecordTimestamp(right.deletedAt))
+    .slice(-MAX_DELETED_PROFILE_TOMBSTONES);
+}
+
+function loadDeletedAssetTombstones() {
+  return mergeDeletedProfileTombstones(loadJsonState(DELETED_ASSET_TOMBSTONES_STORAGE_KEY, []));
+}
+
+function loadDeletedBesTombstones() {
+  return mergeDeletedProfileTombstones(loadJsonState(DELETED_BES_TOMBSTONES_STORAGE_KEY, []));
+}
+
+// ACIKLAMA: Silme izi kayittan yeni veya kayit tarihsizse kaydi listeden cikarir.
+function applyDeletedProfileTombstones(records, tombstones) {
+  const deletedById = new Map(
+    mergeDeletedProfileTombstones(tombstones).map((item) => [item.id, item])
+  );
+
+  return (Array.isArray(records) ? records : []).filter((item) => {
+    const tombstone = deletedById.get(String(item?.id || ""));
+    if (!tombstone) {
+      return true;
+    }
+
+    const deletedAt = getRecordTimestamp(tombstone.deletedAt);
+    const recordUpdatedAt = getRecordTimestamp(item?.updatedAt) || getRecordTimestamp(item?.createdAt);
+    return deletedAt > 0 && recordUpdatedAt > deletedAt;
+  });
+}
+
+function getDeletedProfileRecordStateSnapshot() {
+  return {
+    assetTombstones: mergeDeletedProfileTombstones(deletedAssetTombstones),
+    besTombstones: mergeDeletedProfileTombstones(deletedBesTombstones),
+  };
+}
+
+function readCloudDeletedProfileRecordState(data = {}) {
+  return {
+    assetTombstones: Array.isArray(data.deletedAssetTombstones) ? data.deletedAssetTombstones : [],
+    besTombstones: Array.isArray(data.deletedBesTombstones) ? data.deletedBesTombstones : [],
+  };
+}
+
+function mergeDeletedProfileRecordStates(...states) {
+  return {
+    assetTombstones: mergeDeletedProfileTombstones(
+      ...states.map((state) => state?.assetTombstones || state?.deletedAssetTombstones || [])
+    ),
+    besTombstones: mergeDeletedProfileTombstones(
+      ...states.map((state) => state?.besTombstones || state?.deletedBesTombstones || [])
+    ),
+  };
+}
+
+function persistDeletedProfileTombstones() {
+  deletedAssetTombstones = mergeDeletedProfileTombstones(deletedAssetTombstones);
+  deletedBesTombstones = mergeDeletedProfileTombstones(deletedBesTombstones);
+  localStorage.setItem(
+    getStorageKey(DELETED_ASSET_TOMBSTONES_STORAGE_KEY),
+    JSON.stringify(deletedAssetTombstones)
+  );
+  localStorage.setItem(
+    getStorageKey(DELETED_BES_TOMBSTONES_STORAGE_KEY),
+    JSON.stringify(deletedBesTombstones)
+  );
+}
+
+function applyDeletedProfileRecordState(...states) {
+  const merged = mergeDeletedProfileRecordStates(getDeletedProfileRecordStateSnapshot(), ...states);
+  deletedAssetTombstones = merged.assetTombstones;
+  deletedBesTombstones = merged.besTombstones;
+  persistDeletedProfileTombstones();
+  return merged;
+}
+
+function getCloudDeletedProfileRecordPayload(state = getDeletedProfileRecordStateSnapshot()) {
+  const normalized = mergeDeletedProfileRecordStates(state);
+  return {
+    deletedAssetTombstones: normalized.assetTombstones,
+    deletedBesTombstones: normalized.besTombstones,
+  };
+}
+
+function markAssetDeleted(assetId, deletedAt = getTurkeyNowDateTime()) {
+  deletedAssetTombstones = mergeDeletedProfileTombstones(
+    deletedAssetTombstones,
+    { id: String(assetId || ""), deletedAt }
+  );
+  persistDeletedProfileTombstones();
+}
+
+function markBesAccountDeleted(accountId, deletedAt = getTurkeyNowDateTime()) {
+  deletedBesTombstones = mergeDeletedProfileTombstones(
+    deletedBesTombstones,
+    { id: String(accountId || ""), deletedAt }
+  );
+  persistDeletedProfileTombstones();
+}
+
 // ACIKLAMA: limitMarkerArray fonksiyonunun Turkce karsiligi "limit isaret dizi"; ilgili uygulama islemini calistirir.
 function limitMarkerArray(values, max = MAX_DELETED_TRANSACTION_MARKERS) {
   return Array.from(values || [])
@@ -364,12 +505,12 @@ function isTransactionDeleted(transactionOrId) {
 
 // ACIKLAMA: loadAssets fonksiyonunun Turkce karsiligi "yukle varliklar"; ilgili uygulama islemini calistirir.
 function loadAssets() {
-  return loadJsonState(ASSETS_STORAGE_KEY, []);
+  return applyDeletedProfileTombstones(loadJsonState(ASSETS_STORAGE_KEY, []), deletedAssetTombstones);
 }
 
 // ACIKLAMA: loadBesAccounts fonksiyonunun Turkce karsiligi "yukle BES hesaplar"; ilgili uygulama islemini calistirir.
 function loadBesAccounts() {
-  return loadJsonState(BES_STORAGE_KEY, []);
+  return applyDeletedProfileTombstones(loadJsonState(BES_STORAGE_KEY, []), deletedBesTombstones);
 }
 
 // ACIKLAMA: loadPaymentAccounts fonksiyonunun Turkce karsiligi "yukle odeme hesaplar"; ilgili uygulama islemini calistirir.
@@ -698,6 +839,8 @@ function persistTransactions(options = {}) {
 function persistAssets(options = {}) {
   const { syncCloud = true } = options;
 
+  assets = applyDeletedProfileTombstones(assets, deletedAssetTombstones);
+  persistDeletedProfileTombstones();
   localStorage.setItem(getStorageKey(ASSETS_STORAGE_KEY), JSON.stringify(assets));
 
   if (syncCloud) {
@@ -709,6 +852,8 @@ function persistAssets(options = {}) {
 function persistBesAccounts(options = {}) {
   const { syncCloud = true } = options;
 
+  besAccounts = applyDeletedProfileTombstones(besAccounts, deletedBesTombstones);
+  persistDeletedProfileTombstones();
   localStorage.setItem(getStorageKey(BES_STORAGE_KEY), JSON.stringify(besAccounts));
 
   if (syncCloud) {

@@ -8,6 +8,10 @@ const STORAGE_KEY = "akis-budget-tracker";
 const ASSETS_STORAGE_KEY = "akis-budget-assets";
 // ACIKLAMA: BES_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
 const BES_STORAGE_KEY = "akis-budget-bes";
+// ACIKLAMA: Silinen varliklarin baska cihazlarda yeniden gorunmesini engelleyen izleri saklar.
+const DELETED_ASSET_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-asset-tombstones";
+// ACIKLAMA: Silinen BES kayitlarinin baska cihazlarda yeniden gorunmesini engelleyen izleri saklar.
+const DELETED_BES_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-bes-tombstones";
 // ACIKLAMA: MARKET_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
 const MARKET_STORAGE_KEY = "akis-budget-market-prices";
 // ACIKLAMA: PAYMENT_ACCOUNTS_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
@@ -36,6 +40,8 @@ const DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-transfer-to
 const TRANSACTIONS_STATE_UPDATED_STORAGE_KEY = "akis-budget-transactions-state-updated";
 // ACIKLAMA: TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
 const TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY = "akis-budget-transactions-cloud-dirty";
+// ACIKLAMA: Cevrimdisi profil degisikliklerinin baglanti gelince buluta yeniden gonderilmesini saglar.
+const PROFILE_CLOUD_DIRTY_STORAGE_KEY = "akis-budget-profile-cloud-dirty";
 // ACIKLAMA: TRANSACTIONS_CLOUD_FULL_SYNC_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
 const TRANSACTIONS_CLOUD_FULL_SYNC_STORAGE_KEY = "akis-budget-transactions-cloud-full-sync";
 // ACIKLAMA: RECENT_ADDED_TRANSACTION_DAYS degiskeninin Turkce karsiligi "son eklenen islem days"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -44,6 +50,8 @@ const RECENT_ADDED_TRANSACTION_DAYS = 3;
 const MAX_DELETED_TRANSACTION_MARKERS = 5000;
 // ACIKLAMA: MAX_DELETED_TRANSFER_TOMBSTONES degiskeninin Turkce karsiligi "max silinmis aktarim silme izleri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 const MAX_DELETED_TRANSFER_TOMBSTONES = 2000;
+// ACIKLAMA: Varlik ve BES silme izlerinin yerel depolamada sinirsiz buyumesini onler.
+const MAX_DELETED_PROFILE_TOMBSTONES = 2000;
 // ACIKLAMA: MAX_PROFILE_TRANSACTIONS_BACKUP_BYTES gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
 const MAX_PROFILE_TRANSACTIONS_BACKUP_BYTES = 850 * 1024;
 // ACIKLAMA: CLOUD_WRITE_TIMEOUT_MS asenkron islemlerin bekleme suresini sinirlar.

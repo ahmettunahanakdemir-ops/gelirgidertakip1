@@ -490,6 +490,9 @@ function clearUserLocalData(userId) {
     DELETED_TRANSACTIONS_STORAGE_KEY,
     DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY,
     DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY,
+    DELETED_ASSET_TOMBSTONES_STORAGE_KEY,
+    DELETED_BES_TOMBSTONES_STORAGE_KEY,
+    PROFILE_CLOUD_DIRTY_STORAGE_KEY,
   ].forEach((baseKey) => {
     localStorage.removeItem(`${baseKey}-${userId}`);
   });
@@ -623,6 +626,8 @@ async function handleAuthStateChanged(user) {
     deletedTransactionIds = loadDeletedTransactionIds();
     deletedTransactionSignatures = loadDeletedTransactionSignatures();
     deletedTransferTombstones = loadDeletedTransferTombstones();
+    deletedAssetTombstones = loadDeletedAssetTombstones();
+    deletedBesTombstones = loadDeletedBesTombstones();
     refreshCardReminderSettingsForCurrentUser();
     transactions = loadTransactions();
     assets = loadAssets();
@@ -650,13 +655,18 @@ async function handleAuthStateChanged(user) {
   const anonymousLocalCategories = normalizeCategoryState(transactionCategories);
   // ACIKLAMA: anonymousDeletedTransactionState gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const anonymousDeletedTransactionState = getDeletedTransactionStateSnapshot();
+  // ACIKLAMA: Giris oncesindeki varlik ve BES silme izleri kullanici hesabiyla birlestirilir.
+  const anonymousDeletedProfileRecordState = getDeletedProfileRecordStateSnapshot();
   // ACIKLAMA: anonymousLocalTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const anonymousLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
   currentUser = user;
   deletedTransactionIds = loadDeletedTransactionIds();
   deletedTransactionSignatures = loadDeletedTransactionSignatures();
   deletedTransferTombstones = loadDeletedTransferTombstones();
+  deletedAssetTombstones = loadDeletedAssetTombstones();
+  deletedBesTombstones = loadDeletedBesTombstones();
   applyDeletedTransactionState(anonymousDeletedTransactionState, getDeletedTransactionStateSnapshot());
+  applyDeletedProfileRecordState(anonymousDeletedProfileRecordState, getDeletedProfileRecordStateSnapshot());
   refreshCardReminderSettingsForCurrentUser();
   // ACIKLAMA: userLocalTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const userLocalTransactions = getCloudReadyTransactions(loadTransactions());
@@ -671,8 +681,14 @@ async function handleAuthStateChanged(user) {
   // ACIKLAMA: userLocalCategories degiskeninin Turkce karsiligi "kullanici yerel kategoriler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const userLocalCategories = loadTransactionCategories();
   transactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions);
-  assets = mergeRecordsById(userLocalAssets, anonymousLocalAssets);
-  besAccounts = mergeRecordsById(userLocalBesAccounts, anonymousLocalBesAccounts);
+  assets = applyDeletedProfileTombstones(
+    mergeVersionedRecordsById(userLocalAssets, anonymousLocalAssets),
+    deletedAssetTombstones
+  );
+  besAccounts = applyDeletedProfileTombstones(
+    mergeVersionedRecordsById(userLocalBesAccounts, anonymousLocalBesAccounts),
+    deletedBesTombstones
+  );
   paymentAccounts = mergeRecordsById(userLocalPaymentAccounts, anonymousLocalPaymentAccounts);
   transactionCategories = mergeCategoryStates(
     userLocalCategories,
@@ -690,6 +706,10 @@ async function handleAuthStateChanged(user) {
     const cloudProfile = await fetchCloudProfile(user.uid);
     updateCloudBackupStatus(cloudProfile);
     applyDeletedTransactionState(readCloudDeletedTransactionState(cloudProfile), anonymousDeletedTransactionState);
+    applyDeletedProfileRecordState(
+      readCloudDeletedProfileRecordState(cloudProfile),
+      anonymousDeletedProfileRecordState
+    );
     // ACIKLAMA: cloudProfileTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
     const cloudProfileTransactions = readCloudTransactionBackupArray(cloudProfile.transactionsBackup);
     // ACIKLAMA: cloudCollectionTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
@@ -718,11 +738,17 @@ async function handleAuthStateChanged(user) {
       getTransactionsNewestMutationTimestamp(cloudTransactions);
 
     transactions = mergeTransactions(cloudTransactions, localTransactions);
-    assets = mergeRecordsById(readCloudAssets(cloudProfile.assets), userLocalAssets, anonymousLocalAssets);
-    besAccounts = mergeRecordsById(
-      readCloudBesAccounts(cloudProfile.besAccounts),
-      userLocalBesAccounts,
-      anonymousLocalBesAccounts
+    assets = applyDeletedProfileTombstones(
+      mergeVersionedRecordsById(readCloudAssets(cloudProfile.assets), userLocalAssets, anonymousLocalAssets),
+      deletedAssetTombstones
+    );
+    besAccounts = applyDeletedProfileTombstones(
+      mergeVersionedRecordsById(
+        readCloudBesAccounts(cloudProfile.besAccounts),
+        userLocalBesAccounts,
+        anonymousLocalBesAccounts
+      ),
+      deletedBesTombstones
     );
     paymentAccounts = mergeRecordsById(
       readCloudPaymentAccounts(cloudProfile.paymentAccounts),
@@ -893,14 +919,21 @@ function subscribeCloudProfile(userId) {
         // ACIKLAMA: data degiskeninin Turkce karsiligi "veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
         const data = doc.data() || {};
         updateCloudBackupStatus(data);
+        applyDeletedProfileRecordState(readCloudDeletedProfileRecordState(data));
 
-        if (Array.isArray(data.assets)) {
-          assets = readCloudAssets(data.assets);
+        if (Array.isArray(data.assets) || Array.isArray(data.deletedAssetTombstones)) {
+          assets = applyDeletedProfileTombstones(
+            mergeVersionedRecordsById(readCloudAssets(data.assets), assets),
+            deletedAssetTombstones
+          );
           persistAssets({ syncCloud: false });
         }
 
-        if (Array.isArray(data.besAccounts)) {
-          besAccounts = readCloudBesAccounts(data.besAccounts);
+        if (Array.isArray(data.besAccounts) || Array.isArray(data.deletedBesTombstones)) {
+          besAccounts = applyDeletedProfileTombstones(
+            mergeVersionedRecordsById(readCloudBesAccounts(data.besAccounts), besAccounts),
+            deletedBesTombstones
+          );
           persistBesAccounts({ syncCloud: false });
         }
 
@@ -1351,13 +1384,41 @@ function bindPendingCloudSyncEvents() {
 
   window.__akisBudgetPendingCloudSyncBound = true;
 
-  window.addEventListener("online", () => retryPendingTransactionsCloudSync());
-  window.addEventListener("focus", () => retryPendingTransactionsCloudSync());
+  window.addEventListener("online", () => {
+    retryPendingTransactionsCloudSync();
+    retryPendingUserProfileCloudSync();
+  });
+  window.addEventListener("focus", () => {
+    retryPendingTransactionsCloudSync();
+    retryPendingUserProfileCloudSync();
+  });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       retryPendingTransactionsCloudSync();
+      retryPendingUserProfileCloudSync();
     }
   });
+}
+
+function markUserProfileCloudDirty() {
+  if (currentUser) {
+    localStorage.setItem(getStorageKey(PROFILE_CLOUD_DIRTY_STORAGE_KEY), String(Date.now()));
+  }
+}
+
+function clearUserProfileCloudDirty() {
+  if (currentUser) {
+    localStorage.removeItem(getStorageKey(PROFILE_CLOUD_DIRTY_STORAGE_KEY));
+  }
+}
+
+function retryPendingUserProfileCloudSync() {
+  if (!currentUser || !firebaseDb || !navigator.onLine) {
+    return Promise.resolve();
+  }
+
+  const dirtyAt = Number(localStorage.getItem(getStorageKey(PROFILE_CLOUD_DIRTY_STORAGE_KEY)) || 0);
+  return dirtyAt > 0 ? syncUserProfileToCloud() : Promise.resolve();
 }
 
 // ACIKLAMA: syncUserProfileToCloud fonksiyonunun Turkce karsiligi "esitle kullanici profil ile bulut"; bulut ve yerel veri esitleme akisini yonetir.
@@ -1368,6 +1429,7 @@ function syncUserProfileToCloud() {
 
   // ACIKLAMA: user degiskeninin Turkce karsiligi "kullanici"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const user = currentUser;
+  markUserProfileCloudDirty();
   // ACIKLAMA: syncVersion degiskeninin Turkce karsiligi "esitle version"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const syncVersion = ++cloudProfileSyncVersion;
   // ACIKLAMA: safeAssets varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
@@ -1380,26 +1442,64 @@ function syncUserProfileToCloud() {
   const safeTransactionCategories = normalizeCategoryState(transactionCategories);
   // ACIKLAMA: deletedPayload aktarim veya API istegi icin hazirlanan veri paketini tutar.
   const deletedPayload = getCloudDeletedTransactionPayload();
+  const localDeletedProfileState = getDeletedProfileRecordStateSnapshot();
+  const userRef = firebaseDb.collection("users").doc(user.uid);
+  let committedAssets = safeAssets;
+  let committedBesAccounts = safeBesAccounts;
+  let committedDeletedProfileState = localDeletedProfileState;
 
   // ACIKLAMA: syncPromise degiskeninin Turkce karsiligi "esitle promise"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const syncPromise = firebaseDb
-    .collection("users")
-    .doc(user.uid)
-    .set(
-      {
-        email: user.email || "",
-        username: getUserDisplayName(user),
-        assets: safeAssets,
-        besAccounts: safeBesAccounts,
-        paymentAccounts: safePaymentAccounts,
-        transactionCategories: safeTransactionCategories,
-        ...deletedPayload,
-        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    )
+    .runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(userRef);
+      const remoteProfile = snapshot.exists ? snapshot.data() || {} : {};
+
+      committedDeletedProfileState = mergeDeletedProfileRecordStates(
+        readCloudDeletedProfileRecordState(remoteProfile),
+        localDeletedProfileState
+      );
+      committedAssets = applyDeletedProfileTombstones(
+        mergeVersionedRecordsById(readCloudAssets(remoteProfile.assets), safeAssets),
+        committedDeletedProfileState.assetTombstones
+      );
+      committedBesAccounts = applyDeletedProfileTombstones(
+        mergeVersionedRecordsById(readCloudBesAccounts(remoteProfile.besAccounts), safeBesAccounts),
+        committedDeletedProfileState.besTombstones
+      );
+
+      transaction.set(
+        userRef,
+        {
+          email: user.email || "",
+          username: getUserDisplayName(user),
+          assets: committedAssets,
+          besAccounts: committedBesAccounts,
+          paymentAccounts: safePaymentAccounts,
+          transactionCategories: safeTransactionCategories,
+          ...deletedPayload,
+          ...getCloudDeletedProfileRecordPayload(committedDeletedProfileState),
+          updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    })
     .then(() => {
+      applyDeletedProfileRecordState(committedDeletedProfileState);
+      assets = applyDeletedProfileTombstones(
+        mergeVersionedRecordsById(committedAssets, assets),
+        deletedAssetTombstones
+      );
+      besAccounts = applyDeletedProfileTombstones(
+        mergeVersionedRecordsById(committedBesAccounts, besAccounts),
+        deletedBesTombstones
+      );
+      persistAssets({ syncCloud: false });
+      persistBesAccounts({ syncCloud: false });
+      renderAssets();
+      renderBesAccounts();
+      renderHome();
       if (syncVersion === cloudProfileSyncVersion) {
+        clearUserProfileCloudDirty();
         cloudStatus.textContent = "Kart, hesap, varlık, BES ve kategori bilgileri buluta kaydedildi.";
       }
     })
@@ -1519,12 +1619,12 @@ function getCloudReadyTransactions(source) {
 
 // ACIKLAMA: getCloudReadyAssets fonksiyonunun Turkce karsiligi "al bulut hazir varliklar"; bulut ve yerel veri esitleme akisini yonetir.
 function getCloudReadyAssets(source) {
-  return readCloudAssets(source);
+  return applyDeletedProfileTombstones(readCloudAssets(source), deletedAssetTombstones);
 }
 
 // ACIKLAMA: getCloudReadyBesAccounts fonksiyonunun Turkce karsiligi "al bulut hazir BES hesaplar"; bulut ve yerel veri esitleme akisini yonetir.
 function getCloudReadyBesAccounts(source) {
-  return readCloudBesAccounts(source);
+  return applyDeletedProfileTombstones(readCloudBesAccounts(source), deletedBesTombstones);
 }
 
 // ACIKLAMA: getCloudReadyPaymentAccounts fonksiyonunun Turkce karsiligi "al bulut hazir odeme hesaplar"; bulut ve yerel veri esitleme akisini yonetir.
@@ -1687,6 +1787,28 @@ function normalizePaymentAccount(item) {
     createdAt: String(item.createdAt || ""),
     updatedAt: String(item.updatedAt || ""),
   };
+}
+
+// ACIKLAMA: Ayni varlik veya BES kaydi birden fazla cihazda varsa en yeni surumu korur.
+function mergeVersionedRecordsById(...sources) {
+  const merged = new Map();
+
+  sources
+    .flat()
+    .filter((item) => item && typeof item.id === "string")
+    .forEach((item) => {
+      const existing = merged.get(item.id);
+      const itemTimestamp = getRecordTimestamp(item.updatedAt) || getRecordTimestamp(item.createdAt);
+      const existingTimestamp = existing
+        ? getRecordTimestamp(existing.updatedAt) || getRecordTimestamp(existing.createdAt)
+        : 0;
+
+      if (!existing || itemTimestamp > existingTimestamp) {
+        merged.set(item.id, item);
+      }
+    });
+
+  return Array.from(merged.values());
 }
 
 // ACIKLAMA: mergeRecordsById fonksiyonunun Turkce karsiligi "birlestir kayitlar tarafindan kimlik"; ilgili uygulama islemini calistirir.

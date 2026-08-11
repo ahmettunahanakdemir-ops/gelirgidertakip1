@@ -608,6 +608,7 @@ function requestAssetDelete(item) {
     `${title} silinsin mi?`,
     "Bu varlık listeden kaldırılacak. İşlem geri alınamaz.",
     () => {
+      markAssetDeleted(item.id);
       assets = assets.filter((asset) => asset.id !== item.id);
       if (editingAssetId === item.id) {
         closeAssetEditModal();
@@ -625,6 +626,7 @@ function requestBesDelete(item) {
     `${item.provider} silinsin mi?`,
     "Bu BES kaydı listeden kaldırılacak. İşlem geri alınamaz.",
     () => {
+      markBesAccountDeleted(item.id);
       besAccounts = besAccounts.filter((account) => account.id !== item.id);
       persistBesAccounts();
       renderBesAccounts();

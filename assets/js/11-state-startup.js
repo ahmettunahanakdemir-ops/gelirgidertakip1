@@ -73,6 +73,10 @@ let deletedTransactionIds = loadDeletedTransactionIds();
 let deletedTransactionSignatures = loadDeletedTransactionSignatures();
 // ACIKLAMA: deletedTransferTombstones degiskeninin Turkce karsiligi "silinmis aktarim silme izleri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 let deletedTransferTombstones = loadDeletedTransferTombstones();
+// ACIKLAMA: Cihazlar arasinda silinen varlik kayitlarini kalici olarak takip eder.
+let deletedAssetTombstones = loadDeletedAssetTombstones();
+// ACIKLAMA: Cihazlar arasinda silinen BES kayitlarini kalici olarak takip eder.
+let deletedBesTombstones = loadDeletedBesTombstones();
 // ACIKLAMA: transactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
 let transactions = loadTransactions();
 // ACIKLAMA: assets varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.

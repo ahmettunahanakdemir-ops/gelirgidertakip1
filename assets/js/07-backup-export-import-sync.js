@@ -35,7 +35,7 @@ function getCloudBackupSummary() {
 // ACIKLAMA: buildCloudBackupPayload fonksiyonunun Turkce karsiligi "olustur bulut yedekle veri paketi"; bulut ve yerel veri esitleme akisini yonetir.
 function buildCloudBackupPayload(createdAt = getTurkeyNowDateTime()) {
   return {
-    version: 4,
+    version: 5,
     createdAt,
     summary: getCloudBackupSummary(),
     transactions: getCloudReadyTransactions(transactions),
@@ -44,6 +44,7 @@ function buildCloudBackupPayload(createdAt = getTurkeyNowDateTime()) {
     paymentAccounts: getCloudReadyPaymentAccounts(paymentAccounts),
     transactionCategories: normalizeCategoryState(transactionCategories),
     deletedTransactionState: getDeletedTransactionStateSnapshot(),
+    deletedProfileRecordState: getDeletedProfileRecordStateSnapshot(),
   };
 }
 
@@ -160,7 +161,7 @@ async function backupCurrentDataToCloud() {
 // ACIKLAMA: buildLocalDataBackupPayload fonksiyonunun Turkce karsiligi "olustur yerel veri yedekle veri paketi"; kullanilacak veri yapisini veya HTML elemanini olusturur.
 function buildLocalDataBackupPayload(createdAt = getTurkeyNowDateTime()) {
   return {
-    version: 5,
+    version: 6,
     backupType: "local-file",
     app: "Akış Bütçe",
     createdAt,
@@ -179,6 +180,7 @@ function buildLocalDataBackupPayload(createdAt = getTurkeyNowDateTime()) {
     paymentAccounts: getCloudReadyPaymentAccounts(paymentAccounts),
     transactionCategories: normalizeCategoryState(transactionCategories),
     deletedTransactionState: getDeletedTransactionStateSnapshot(),
+    deletedProfileRecordState: getDeletedProfileRecordStateSnapshot(),
     uiSettings,
     cardReminderSettings,
     marketData,
@@ -256,13 +258,13 @@ function applyLocalDataBackup(parsed) {
   // ACIKLAMA: sourceAssets varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
   const sourceAssets = getBackupArrayField(parsed, "assets");
   if (sourceAssets.length) {
-    assets = mergeRecordsById(readCloudAssets(sourceAssets), assets);
+    assets = mergeVersionedRecordsById(readCloudAssets(sourceAssets), assets);
   }
 
   // ACIKLAMA: sourceBesAccounts degiskeninin Turkce karsiligi "kaynak BES hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const sourceBesAccounts = getBackupArrayField(parsed, "besAccounts");
   if (sourceBesAccounts.length) {
-    besAccounts = mergeRecordsById(readCloudBesAccounts(sourceBesAccounts), besAccounts);
+    besAccounts = mergeVersionedRecordsById(readCloudBesAccounts(sourceBesAccounts), besAccounts);
   }
 
   // ACIKLAMA: sourcePaymentAccounts kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
@@ -280,6 +282,12 @@ function applyLocalDataBackup(parsed) {
 
   if (parsed?.deletedTransactionState) {
     applyDeletedTransactionState(parsed.deletedTransactionState);
+  }
+
+  if (parsed?.deletedProfileRecordState) {
+    applyDeletedProfileRecordState(parsed.deletedProfileRecordState);
+    assets = applyDeletedProfileTombstones(assets, deletedAssetTombstones);
+    besAccounts = applyDeletedProfileTombstones(besAccounts, deletedBesTombstones);
   }
 
   if (parsed?.uiSettings && typeof parsed.uiSettings === "object") {
@@ -891,13 +899,17 @@ function importTransactions(event) {
 
       transactions = mergeTransactions(sourceTransactions.filter(isValidTransaction));
 
+      if (parsed?.deletedProfileRecordState) {
+        applyDeletedProfileRecordState(parsed.deletedProfileRecordState);
+      }
+
       if (Array.isArray(parsed.assets)) {
-        assets = mergeRecordsById(readCloudAssets(parsed.assets), assets);
+        assets = mergeVersionedRecordsById(readCloudAssets(parsed.assets), assets);
         persistAssets();
       }
 
       if (Array.isArray(parsed.besAccounts)) {
-        besAccounts = mergeRecordsById(readCloudBesAccounts(parsed.besAccounts), besAccounts);
+        besAccounts = mergeVersionedRecordsById(readCloudBesAccounts(parsed.besAccounts), besAccounts);
         persistBesAccounts();
       }
 
@@ -930,13 +942,14 @@ function importTransactions(event) {
 function generateSyncCode() {
   // ACIKLAMA: payload aktarim veya API istegi icin hazirlanan veri paketini tutar.
   const payload = {
-    version: 3,
+    version: 4,
     createdAt: getTurkeyNowDateTime(),
     transactions,
-    assets,
-    besAccounts,
+    assets: getCloudReadyAssets(assets),
+    besAccounts: getCloudReadyBesAccounts(besAccounts),
     paymentAccounts,
     transactionCategories,
+    deletedProfileRecordState: getDeletedProfileRecordStateSnapshot(),
   };
   syncPayload.value = JSON.stringify(payload);
   syncStatus.textContent = "Paylaşım kodu hazır. Diğer telefonda bu kodu yapıştırabilirsin.";
@@ -986,13 +999,17 @@ function importSyncCode() {
 
     transactions = mergeTransactions(validTransactions);
 
+    if (parsed?.deletedProfileRecordState) {
+      applyDeletedProfileRecordState(parsed.deletedProfileRecordState);
+    }
+
     if (Array.isArray(parsed.assets)) {
-      assets = mergeRecordsById(readCloudAssets(parsed.assets), assets);
+      assets = mergeVersionedRecordsById(readCloudAssets(parsed.assets), assets);
       persistAssets();
     }
 
     if (Array.isArray(parsed.besAccounts)) {
-      besAccounts = mergeRecordsById(readCloudBesAccounts(parsed.besAccounts), besAccounts);
+      besAccounts = mergeVersionedRecordsById(readCloudBesAccounts(parsed.besAccounts), besAccounts);
       persistBesAccounts();
     }
 
