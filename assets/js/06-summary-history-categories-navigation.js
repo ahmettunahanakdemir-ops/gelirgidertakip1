@@ -1427,6 +1427,11 @@ function resetViewTransientState(viewId) {
     return;
   }
 
+  if (viewId === "debtsView") {
+    borcAlacakGeciciDurumunuSifirla();
+    return;
+  }
+
   if (viewId === "summaryView") {
     clearHomeSummaryFilter();
     if (summaryCategoryTypeFilter) {
@@ -1461,6 +1466,10 @@ function switchView(viewId) {
 
   if (activeView === "historyView") {
     renderTransactions();
+  }
+
+  if (activeView === "debtsView") {
+    borcAlacaklariEkranaBas();
   }
 }
 

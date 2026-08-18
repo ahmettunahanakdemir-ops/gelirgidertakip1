@@ -442,6 +442,7 @@ async function deleteCurrentUserAccount() {
     transactions = [];
     assets = [];
     besAccounts = [];
+    borcAlacakKayitlari = [];
     paymentAccounts = [];
     render();
     closeDeleteAccountModal();
@@ -486,12 +487,14 @@ function clearUserLocalData(userId) {
     STORAGE_KEY,
     ASSETS_STORAGE_KEY,
     BES_STORAGE_KEY,
+    BORC_ALACAK_STORAGE_KEY,
     PAYMENT_ACCOUNTS_STORAGE_KEY,
     DELETED_TRANSACTIONS_STORAGE_KEY,
     DELETED_TRANSACTION_SIGNATURES_STORAGE_KEY,
     DELETED_TRANSFER_TOMBSTONES_STORAGE_KEY,
     DELETED_ASSET_TOMBSTONES_STORAGE_KEY,
     DELETED_BES_TOMBSTONES_STORAGE_KEY,
+    SILINEN_BORC_ALACAK_STORAGE_KEY,
     PROFILE_CLOUD_DIRTY_STORAGE_KEY,
   ].forEach((baseKey) => {
     localStorage.removeItem(`${baseKey}-${userId}`);
@@ -628,10 +631,12 @@ async function handleAuthStateChanged(user) {
     deletedTransferTombstones = loadDeletedTransferTombstones();
     deletedAssetTombstones = loadDeletedAssetTombstones();
     deletedBesTombstones = loadDeletedBesTombstones();
+    silinenBorcAlacakIzleri = silinenBorcAlacakIzleriniYukle();
     refreshCardReminderSettingsForCurrentUser();
     transactions = loadTransactions();
     assets = loadAssets();
     besAccounts = loadBesAccounts();
+    borcAlacakKayitlari = borcAlacakKayitlariniYukle();
     paymentAccounts = loadPaymentAccounts();
     transactionCategories = loadTransactionCategories();
     syncCategorySelects();
@@ -649,6 +654,7 @@ async function handleAuthStateChanged(user) {
   const anonymousLocalAssets = getCloudReadyAssets(assets);
   // ACIKLAMA: anonymousLocalBesAccounts degiskeninin Turkce karsiligi "anonymous yerel BES hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const anonymousLocalBesAccounts = getCloudReadyBesAccounts(besAccounts);
+  const anonymousLocalDebtRecords = bulutaHazirBorcAlacakKayitlari(borcAlacakKayitlari);
   // ACIKLAMA: anonymousLocalPaymentAccounts kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
   const anonymousLocalPaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
   // ACIKLAMA: anonymousLocalCategories degiskeninin Turkce karsiligi "anonymous yerel kategoriler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -665,6 +671,7 @@ async function handleAuthStateChanged(user) {
   deletedTransferTombstones = loadDeletedTransferTombstones();
   deletedAssetTombstones = loadDeletedAssetTombstones();
   deletedBesTombstones = loadDeletedBesTombstones();
+  silinenBorcAlacakIzleri = silinenBorcAlacakIzleriniYukle();
   applyDeletedTransactionState(anonymousDeletedTransactionState, getDeletedTransactionStateSnapshot());
   applyDeletedProfileRecordState(anonymousDeletedProfileRecordState, getDeletedProfileRecordStateSnapshot());
   refreshCardReminderSettingsForCurrentUser();
@@ -676,6 +683,7 @@ async function handleAuthStateChanged(user) {
   const userLocalAssets = getCloudReadyAssets(loadAssets());
   // ACIKLAMA: userLocalBesAccounts degiskeninin Turkce karsiligi "kullanici yerel BES hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const userLocalBesAccounts = getCloudReadyBesAccounts(loadBesAccounts());
+  const userLocalDebtRecords = bulutaHazirBorcAlacakKayitlari(borcAlacakKayitlariniYukle());
   // ACIKLAMA: userLocalPaymentAccounts kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
   const userLocalPaymentAccounts = getCloudReadyPaymentAccounts(loadPaymentAccounts());
   // ACIKLAMA: userLocalCategories degiskeninin Turkce karsiligi "kullanici yerel kategoriler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -688,6 +696,10 @@ async function handleAuthStateChanged(user) {
   besAccounts = applyDeletedProfileTombstones(
     mergeVersionedRecordsById(userLocalBesAccounts, anonymousLocalBesAccounts),
     deletedBesTombstones
+  );
+  borcAlacakKayitlari = applyDeletedProfileTombstones(
+    mergeVersionedRecordsById(userLocalDebtRecords, anonymousLocalDebtRecords),
+    silinenBorcAlacakIzleri
   );
   paymentAccounts = mergeRecordsById(userLocalPaymentAccounts, anonymousLocalPaymentAccounts);
   transactionCategories = mergeCategoryStates(
@@ -751,6 +763,14 @@ async function handleAuthStateChanged(user) {
       ),
       deletedBesTombstones
     );
+    borcAlacakKayitlari = applyDeletedProfileTombstones(
+      mergeVersionedRecordsById(
+        buluttanBorcAlacakKayitlariniOku(cloudProfile.debtReceivables),
+        userLocalDebtRecords,
+        anonymousLocalDebtRecords
+      ),
+      silinenBorcAlacakIzleri
+    );
     paymentAccounts = mergeRecordsById(
       readCloudPaymentAccounts(cloudProfile.paymentAccounts),
       userLocalPaymentAccounts,
@@ -777,6 +797,7 @@ async function handleAuthStateChanged(user) {
     persistTransactions({ syncCloud: false });
     persistAssets({ syncCloud: false });
     persistBesAccounts({ syncCloud: false });
+    borcAlacakKayitlariniKaliciKaydet({ syncCloud: false });
     persistPaymentAccounts({ syncCloud: false });
     persistTransactionCategories({ syncCloud: false });
     syncCategorySelects();
@@ -910,7 +931,7 @@ function fetchCloudProfile(userId, options = {}) {
     .then((doc) => (doc.exists ? doc.data() || {} : {}));
 }
 
-// ACIKLAMA: Sunucudan gelen varlik ve BES verisini zaman damgalarina gore yerel durumla birlestirir.
+// ACIKLAMA: Sunucudan gelen varlik, BES ve borc/alacak verisini zaman damgalarina gore yerel durumla birlestirir.
 function applyCloudAssetAndBesProfile(data = {}, options = {}) {
   const { renderAfterApply = true } = options;
   applyDeletedProfileRecordState(readCloudDeletedProfileRecordState(data));
@@ -931,9 +952,21 @@ function applyCloudAssetAndBesProfile(data = {}, options = {}) {
     persistBesAccounts({ syncCloud: false });
   }
 
+  if (Array.isArray(data.debtReceivables) || Array.isArray(data.deletedDebtReceivableTombstones)) {
+    borcAlacakKayitlari = applyDeletedProfileTombstones(
+      mergeVersionedRecordsById(
+        buluttanBorcAlacakKayitlariniOku(data.debtReceivables),
+        borcAlacakKayitlari
+      ),
+      silinenBorcAlacakIzleri
+    );
+    borcAlacakKayitlariniKaliciKaydet({ syncCloud: false });
+  }
+
   if (renderAfterApply) {
     renderAssets();
     renderBesAccounts();
+    borcAlacaklariEkranaBas();
     renderHome();
   }
 }
@@ -1024,6 +1057,7 @@ function subscribeCloudProfile(userId) {
         renderAssets();
         renderPaymentAccounts();
         renderBesAccounts();
+        borcAlacaklariEkranaBas();
         renderHome();
       },
       (error) => {
@@ -1499,6 +1533,7 @@ function syncUserProfileToCloud() {
   const safeAssets = getCloudReadyAssets(assets);
   // ACIKLAMA: safeBesAccounts degiskeninin Turkce karsiligi "guvenli BES hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const safeBesAccounts = getCloudReadyBesAccounts(besAccounts);
+  const safeDebtRecords = bulutaHazirBorcAlacakKayitlari(borcAlacakKayitlari);
   // ACIKLAMA: safePaymentAccounts kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
   const safePaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
   // ACIKLAMA: safeTransactionCategories degiskeninin Turkce karsiligi "guvenli islem kategoriler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -1509,6 +1544,7 @@ function syncUserProfileToCloud() {
   const userRef = firebaseDb.collection("users").doc(user.uid);
   let committedAssets = safeAssets;
   let committedBesAccounts = safeBesAccounts;
+  let committedDebtRecords = safeDebtRecords;
   let committedDeletedProfileState = localDeletedProfileState;
 
   // ACIKLAMA: syncPromise degiskeninin Turkce karsiligi "esitle promise"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -1529,6 +1565,13 @@ function syncUserProfileToCloud() {
         mergeVersionedRecordsById(readCloudBesAccounts(remoteProfile.besAccounts), safeBesAccounts),
         committedDeletedProfileState.besTombstones
       );
+      committedDebtRecords = applyDeletedProfileTombstones(
+        mergeVersionedRecordsById(
+          buluttanBorcAlacakKayitlariniOku(remoteProfile.debtReceivables),
+          safeDebtRecords
+        ),
+        committedDeletedProfileState.debtTombstones
+      );
 
       transaction.set(
         userRef,
@@ -1537,6 +1580,7 @@ function syncUserProfileToCloud() {
           username: getUserDisplayName(user),
           assets: committedAssets,
           besAccounts: committedBesAccounts,
+          debtReceivables: committedDebtRecords,
           paymentAccounts: safePaymentAccounts,
           transactionCategories: safeTransactionCategories,
           ...deletedPayload,
@@ -1556,14 +1600,20 @@ function syncUserProfileToCloud() {
         mergeVersionedRecordsById(committedBesAccounts, besAccounts),
         deletedBesTombstones
       );
+      borcAlacakKayitlari = applyDeletedProfileTombstones(
+        mergeVersionedRecordsById(committedDebtRecords, borcAlacakKayitlari),
+        silinenBorcAlacakIzleri
+      );
       persistAssets({ syncCloud: false });
       persistBesAccounts({ syncCloud: false });
+      borcAlacakKayitlariniKaliciKaydet({ syncCloud: false });
       renderAssets();
       renderBesAccounts();
+      borcAlacaklariEkranaBas();
       renderHome();
       if (syncVersion === cloudProfileSyncVersion) {
         clearUserProfileCloudDirty();
-        cloudStatus.textContent = "Kart, hesap, varlık, BES ve kategori bilgileri buluta kaydedildi.";
+        cloudStatus.textContent = "Kart, hesap, varlık, BES, borç/alacak ve kategori bilgileri buluta kaydedildi.";
       }
     })
     .catch((error) => {

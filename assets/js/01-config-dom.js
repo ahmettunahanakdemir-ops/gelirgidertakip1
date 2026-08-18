@@ -8,10 +8,14 @@ const STORAGE_KEY = "akis-budget-tracker";
 const ASSETS_STORAGE_KEY = "akis-budget-assets";
 // ACIKLAMA: BES_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
 const BES_STORAGE_KEY = "akis-budget-bes";
+// ACIKLAMA: Borc ve alacak kayitlarinin kullaniciya ozel yerel depolama anahtari.
+const BORC_ALACAK_STORAGE_KEY = "akis-budget-debt-receivables";
 // ACIKLAMA: Silinen varliklarin baska cihazlarda yeniden gorunmesini engelleyen izleri saklar.
 const DELETED_ASSET_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-asset-tombstones";
 // ACIKLAMA: Silinen BES kayitlarinin baska cihazlarda yeniden gorunmesini engelleyen izleri saklar.
 const DELETED_BES_TOMBSTONES_STORAGE_KEY = "akis-budget-deleted-bes-tombstones";
+// ACIKLAMA: Silinen borc/alacak kayitlarinin baska cihazlarda geri gelmesini engelleyen izlerin anahtari.
+const SILINEN_BORC_ALACAK_STORAGE_KEY = "akis-budget-deleted-debt-receivable-tombstones";
 // ACIKLAMA: MARKET_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
 const MARKET_STORAGE_KEY = "akis-budget-market-prices";
 // ACIKLAMA: PAYMENT_ACCOUNTS_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
@@ -394,6 +398,11 @@ const viewMeta = {
     kicker: "BES",
     title: "BES bilgileri",
     subtitle: "BES birikimi, devlet katkısı, fon getirisi ve sözleşme bilgilerini takip et.",
+  },
+  debtsView: {
+    kicker: "Borçlarım",
+    title: "Borç ve alacak takibi",
+    subtitle: "Başkalarına olan borçlarını ve tahsil edeceğin alacaklarını tek ekranda izle.",
   },
   summaryView: {
     kicker: "Özet",

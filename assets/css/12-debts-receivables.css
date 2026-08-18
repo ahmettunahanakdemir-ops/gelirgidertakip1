@@ -1,0 +1,205 @@
+/* ACIKLAMA: Borc ve alacak takip ekraninin ozet, filtre, liste, modal ve mobil duzenleri. */
+
+.debt-view-stack {
+  gap: 18px;
+}
+
+.debt-stat-card strong {
+  overflow-wrap: anywhere;
+}
+
+.debt-stat-owed strong,
+.debt-kind-debt .debt-record-amount {
+  color: var(--expense);
+}
+
+.debt-stat-receivable strong,
+.debt-kind-receivable .debt-record-amount {
+  color: var(--income);
+}
+
+.debt-panel-heading {
+  align-items: center;
+  gap: 16px;
+}
+
+.debt-panel-heading > button {
+  flex: 0 0 auto;
+}
+
+.debt-filter-bar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 260px));
+  gap: 12px;
+  margin: 18px 0 8px;
+}
+
+.debt-filter-bar label,
+.debt-form-grid label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.debt-filter-bar select,
+.debt-form-grid input,
+.debt-form-grid select,
+.debt-form-grid textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.debt-record-list,
+.debt-related-transaction-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.debt-record-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(33, 92, 82, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.debt-record-item.is-closed {
+  opacity: 0.72;
+}
+
+.debt-record-main {
+  min-width: 0;
+}
+
+.debt-record-topline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: baseline;
+}
+
+.debt-record-topline h3 {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.debt-record-amount {
+  margin-left: auto;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.debt-record-meta,
+.debt-record-note {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.debt-record-note {
+  color: var(--text-soft, var(--muted));
+}
+
+.debt-record-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(82px, 1fr));
+  gap: 8px;
+  min-width: 280px;
+}
+
+.debt-record-actions button {
+  min-width: 0;
+  padding-inline: 10px;
+}
+
+.debt-status-text {
+  font-weight: 800;
+}
+
+.debt-status-overdue {
+  color: var(--expense);
+}
+
+.debt-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.debt-note-field {
+  grid-column: 1 / -1;
+}
+
+.debt-related-transaction-list .transaction-item {
+  margin: 0;
+}
+
+html[data-theme="dark"] .debt-record-item {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.68);
+}
+
+html[data-theme="dark"] .debt-filter-bar select,
+html[data-theme="dark"] .debt-form-grid input,
+html[data-theme="dark"] .debt-form-grid select,
+html[data-theme="dark"] .debt-form-grid textarea {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(148, 163, 184, 0.24);
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .debt-panel-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .debt-panel-heading > div {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .debt-panel-heading > button,
+  .debt-filter-bar {
+    width: 100%;
+  }
+
+  .debt-filter-bar,
+  .debt-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .debt-note-field {
+    grid-column: auto;
+  }
+
+  .debt-record-item {
+    grid-template-columns: 1fr;
+  }
+
+  .debt-record-amount {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .debt-record-actions {
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+}

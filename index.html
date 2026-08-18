@@ -24,33 +24,35 @@
       rel="stylesheet"
     />
     <!-- ACIKLAMA: PWA kurulum bilgilerini ve uygulama ikonlarini tarayiciya tanitir. -->
-    <link rel="manifest" href="manifest.json?v=275" />
+    <link rel="manifest" href="manifest.json?v=276" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <!-- ACIKLAMA: CSS yuklenmeden once kayitli tema tercihini uygulayan kucuk JS dosyasi. -->
-    <script src="assets/js/00-theme-preload.js?v=275"></script>
+    <script src="assets/js/00-theme-preload.js?v=276"></script>
     <!-- ACIKLAMA: Kok degiskenler, global sayfa zemini ve temel form/button ayarlari. -->
-    <link rel="stylesheet" href="assets/css/01-base.css?v=275" />
+    <link rel="stylesheet" href="assets/css/01-base.css?v=276" />
     <!-- ACIKLAMA: Giris/kayit/parola ekranlari, ortak formlar, butonlar ve tehlikeli islem alanlari. -->
-    <link rel="stylesheet" href="assets/css/02-auth-forms.css?v=275" />
+    <link rel="stylesheet" href="assets/css/02-auth-forms.css?v=276" />
     <!-- ACIKLAMA: Uygulama iskeleti, sidebar, topbar, ekran bolumleri ve ana grid duzeni. -->
-    <link rel="stylesheet" href="assets/css/03-shell-navigation.css?v=275" />
+    <link rel="stylesheet" href="assets/css/03-shell-navigation.css?v=276" />
     <!-- ACIKLAMA: Ana sayfa ozetleri, PDF/print onizleme, kayit gecmisi, banka import temel kartlari ve sayfalama. -->
-    <link rel="stylesheet" href="assets/css/04-dashboard-history-export.css?v=275" />
+    <link rel="stylesheet" href="assets/css/04-dashboard-history-export.css?v=276" />
     <!-- ACIKLAMA: Modallar, odeme kartlari, acilis ekrani ve ilk responsive kart kurallari. -->
-    <link rel="stylesheet" href="assets/css/05-modals-payment-splash.css?v=275" />
+    <link rel="stylesheet" href="assets/css/05-modals-payment-splash.css?v=276" />
     <!-- ACIKLAMA: Splash animasyonlari, odeme kartlari, varlik/BES ekranlari ve mobil iyilestirmeler. -->
-    <link rel="stylesheet" href="assets/css/06-mobile-payment-assets.css?v=275" />
+    <link rel="stylesheet" href="assets/css/06-mobile-payment-assets.css?v=276" />
     <!-- ACIKLAMA: Tema degiskenleri, acik/koyu tema, ayarlar ekrani ve genel kontrol gorselleri. -->
-    <link rel="stylesheet" href="assets/css/07-theme-settings.css?v=275" />
+    <link rel="stylesheet" href="assets/css/07-theme-settings.css?v=276" />
     <!-- ACIKLAMA: Modal alt aksiyonlari, filtreler, ana sayfa mini listeleri ve bank-import modal duzeni. -->
-    <link rel="stylesheet" href="assets/css/08-modal-filters-home.css?v=275" />
+    <link rel="stylesheet" href="assets/css/08-modal-filters-home.css?v=276" />
     <!-- ACIKLAMA: Banka import ayrintilari, odeme hesabi filtreleri, genis ekran ve arama duzenleri. -->
-    <link rel="stylesheet" href="assets/css/09-bank-import-filters-wide.css?v=275" />
+    <link rel="stylesheet" href="assets/css/09-bank-import-filters-wide.css?v=276" />
     <!-- ACIKLAMA: Mobil/PWA, yedekleme, auth, kart ve form responsive duzeltmeleri. -->
-    <link rel="stylesheet" href="assets/css/10-responsive-pwa-overrides.css?v=275" />
+    <link rel="stylesheet" href="assets/css/10-responsive-pwa-overrides.css?v=276" />
     <!-- ACIKLAMA: Coklu gelir/gider modali, son kayitlar penceresi ve son katman mobil duzeltmeleri. -->
-    <link rel="stylesheet" href="assets/css/11-bulk-recent-final.css?v=275" />
+    <link rel="stylesheet" href="assets/css/11-bulk-recent-final.css?v=276" />
+    <!-- ACIKLAMA: Borc ve alacak takip ekrani, kayit satirlari, filtreler ve mobil yerlesim. -->
+    <link rel="stylesheet" href="assets/css/12-debts-receivables.css?v=276" />
   </head>
   <body>
 
@@ -285,6 +287,10 @@
           <button class="nav-item" type="button" data-view-target="besView">
             <span class="nav-icon">%</span>
             BES
+          </button>
+          <button class="nav-item" type="button" data-view-target="debtsView">
+            <span class="nav-icon">&#8644;</span>
+            Borçlarım
           </button>
           <button class="nav-item" type="button" data-view-target="summaryView">
             <span class="nav-icon">₺</span>
@@ -824,6 +830,74 @@
               </div>
               <!-- ACIKLAMA: besList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
               <div id="besList" class="transaction-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ACIKLAMA: debtsView borc ve alacak kayitlarinin yonetildigi ana ekran bolumudur. -->
+        <section id="debtsView" class="view-section" data-view>
+          <div class="summary-stack debt-view-stack">
+            <section class="stats-grid debt-stats-grid">
+              <article class="panel stat-card debt-stat-card debt-stat-owed">
+                <span>Açık Borcum</span>
+                <strong id="debtOwedTotal">₺0,00</strong>
+              </article>
+              <article class="panel stat-card debt-stat-card debt-stat-receivable">
+                <span>Açık Alacağım</span>
+                <strong id="debtReceivableTotal">₺0,00</strong>
+              </article>
+              <article class="panel stat-card debt-stat-card">
+                <span>Net Durum</span>
+                <strong id="debtNetTotal">₺0,00</strong>
+              </article>
+              <article class="panel stat-card debt-stat-card">
+                <span>Açık Kayıt</span>
+                <strong id="debtOpenCount">0</strong>
+              </article>
+            </section>
+
+            <section class="panel debt-management-panel">
+              <div class="panel-heading debt-panel-heading">
+                <div>
+                  <p class="panel-kicker">Borç / Alacak Takibi</p>
+                  <h2>Borç ve alacak kayıtlarım</h2>
+                  <p class="panel-note">Kişi veya kurum bazında açık ve kapanmış kayıtlarını takip et.</p>
+                </div>
+                <button id="openDebtModalButton" class="primary-btn" type="button">Yeni Kayıt</button>
+              </div>
+
+              <div class="debt-filter-bar" aria-label="Borç ve alacak filtreleri">
+                <label>
+                  Kayıt türü
+                  <select id="debtTypeFilter">
+                    <option value="all">Tümü</option>
+                    <option value="debt">Borçlarım</option>
+                    <option value="receivable">Alacaklarım</option>
+                  </select>
+                </label>
+                <label>
+                  Durum
+                  <select id="debtStatusFilter">
+                    <option value="open">Açık kayıtlar</option>
+                    <option value="closed">Kapanmış kayıtlar</option>
+                    <option value="all">Tüm durumlar</option>
+                  </select>
+                </label>
+              </div>
+
+              <p id="debtListStatus" class="sync-status"></p>
+              <div id="debtRecordList" class="debt-record-list"></div>
+            </section>
+
+            <section class="panel debt-related-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="panel-kicker">İlgili Kayıtlar</p>
+                  <h2>Gelir / gider hareketlerindeki borç ve alacaklar</h2>
+                  <p class="panel-note">Başlık, kategori veya notunda borç ya da alacak geçen hareketler burada görünür.</p>
+                </div>
+              </div>
+              <div id="debtRelatedTransactionList" class="transaction-list debt-related-transaction-list"></div>
             </section>
           </div>
         </section>
@@ -1556,6 +1630,55 @@
       </section>
     </div>
 
+    <!-- ACIKLAMA: debtModal yeni borc/alacak ekleme ve mevcut kaydi duzenleme penceresidir. -->
+    <div id="debtModal" class="modal-backdrop" hidden>
+      <section class="modal-card wide-modal debt-modal-card" role="dialog" aria-modal="true" aria-labelledby="debtModalTitle">
+        <form id="debtForm" class="profile-form debt-form">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-kicker">Borç / Alacak</p>
+              <h2 id="debtModalTitle">Yeni kayıt ekle</h2>
+              <p class="panel-note">Borcunu veya birinden olan alacağını ayrı bir kayıt olarak takip et.</p>
+            </div>
+          </div>
+          <div class="debt-form-grid">
+            <label>
+              Kayıt türü
+              <select id="debtKindInput" required>
+                <option value="debt">Benim borcum</option>
+                <option value="receivable">Benim alacağım</option>
+              </select>
+            </label>
+            <label>
+              Kişi / kurum
+              <input id="debtPersonInput" type="text" maxlength="60" autocomplete="off" placeholder="Ad veya kurum adı" required />
+            </label>
+            <label>
+              Tutar
+              <input id="debtAmountInput" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0" required />
+            </label>
+            <label>
+              Başlangıç tarihi
+              <input id="debtStartDateInput" type="date" required />
+            </label>
+            <label>
+              Vade tarihi
+              <input id="debtDueDateInput" type="date" />
+            </label>
+            <label class="debt-note-field">
+              Not
+              <textarea id="debtNoteInput" rows="3" maxlength="180" placeholder="Ödeme planı veya kısa açıklama"></textarea>
+            </label>
+          </div>
+          <p id="debtFormStatus" class="sync-status"></p>
+          <div class="auth-actions modal-actions">
+            <button id="debtSubmitButton" class="primary-btn" type="submit">Kaydet</button>
+            <button id="closeDebtModalButton" class="ghost-btn" type="button">İptal</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
     <!-- ACIKLAMA: transactionEditModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="transactionEditModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal" role="dialog" aria-modal="true" aria-labelledby="transactionEditTitle">
@@ -1860,7 +1983,7 @@
     </template>
 
     <!-- ACIKLAMA: Firebase proje ayarlarini app.js tarafindan okunacak sekilde yukler. -->
-    <script src="firebase-config.js?v=275"></script>
+    <script src="firebase-config.js?v=276"></script>
     <!-- ACIKLAMA: Firebase cekirdek kutuphanesini yukleyerek bulut baglantisini hazirlar. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <!-- ACIKLAMA: Firebase giris/kayit/parola islemleri icin auth kutuphanesini yukler. -->
@@ -1868,26 +1991,28 @@
     <!-- ACIKLAMA: Firestore veritabani okuma/yazma islemleri icin kutuphaneyi yukler. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <!-- ACIKLAMA: Sabitler, varsayilan veriler ve HTML elemanlarinin DOM referanslari. -->
-    <script src="assets/js/01-config-dom.js?v=275"></script>
+    <script src="assets/js/01-config-dom.js?v=276"></script>
     <!-- ACIKLAMA: Tema, yazi tipi, kart odeme hatirlaticilari, genel onay penceresi ve mobil kaydirma yardimcilari. -->
-    <script src="assets/js/02-ui-preferences-reminders.js?v=275"></script>
+    <script src="assets/js/02-ui-preferences-reminders.js?v=276"></script>
     <!-- ACIKLAMA: Uygulama baslatma fonksiyonu, olay baglantilari, gelir/gider ve coklu kayit formlari. -->
-    <script src="assets/js/03-init-entry-forms.js?v=275"></script>
+    <script src="assets/js/03-init-entry-forms.js?v=276"></script>
     <!-- ACIKLAMA: Yerel depolama, silinmis kayit izleri, kategori listeleri ve ana sayfa render islemleri. -->
-    <script src="assets/js/04-storage-home-render.js?v=275"></script>
+    <script src="assets/js/04-storage-home-render.js?v=276"></script>
     <!-- ACIKLAMA: Varliklar, odeme hesaplari, kredi karti borclari, BES hesaplari ve piyasa fiyatlari. -->
-    <script src="assets/js/05-assets-payments-bes-market.js?v=275"></script>
+    <script src="assets/js/05-assets-payments-bes-market.js?v=276"></script>
     <!-- ACIKLAMA: Ozet kategori dagilimi, kayit gecmisi, filtreler, kategori yonetimi, ekran gecisi ve yan menu. -->
-    <script src="assets/js/06-summary-history-categories-navigation.js?v=275"></script>
+    <script src="assets/js/06-summary-history-categories-navigation.js?v=276"></script>
     <!-- ACIKLAMA: Yedekleme, PDF/Excel disari aktarma, dosyadan ice aktarma ve paylasim kodu islemleri. -->
-    <script src="assets/js/07-backup-export-import-sync.js?v=275"></script>
+    <script src="assets/js/07-backup-export-import-sync.js?v=276"></script>
     <!-- ACIKLAMA: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir. -->
-    <script src="assets/js/08-auth-firebase-cloud.js?v=275"></script>
+    <script src="assets/js/08-auth-firebase-cloud.js?v=276"></script>
     <!-- ACIKLAMA: Banka hareketi ice aktarma, AI/OCR dosya okuma ve metinden hareket ayrisitirma fonksiyonlari. -->
-    <script src="assets/js/09-bank-import-ocr-parsers.js?v=275"></script>
+    <script src="assets/js/09-bank-import-ocr-parsers.js?v=276"></script>
+    <!-- ACIKLAMA: Borc/alacak kayitlari, filtreler, ilgili hareketler ve ekran islemleri. -->
+    <script src="assets/js/10-debts-receivables.js?v=276"></script>
     <!-- ACIKLAMA: Acilis ekrani ve service worker kaydi yardimcilari. -->
-    <script src="assets/js/10-startup-pwa.js?v=275"></script>
+    <script src="assets/js/10-startup-pwa.js?v=276"></script>
     <!-- ACIKLAMA: Uygulama durum degiskenlerini yukler ve tum dosyalar hazir olduktan sonra uygulamayi baslatir. En son yuklenmelidir. -->
-    <script src="assets/js/11-state-startup.js?v=275"></script>
+    <script src="assets/js/11-state-startup.js?v=276"></script>
   </body>
 </html>

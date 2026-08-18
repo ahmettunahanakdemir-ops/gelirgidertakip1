@@ -43,6 +43,8 @@ let editingAssetId = null;
 let editingTransactionId = "";
 // ACIKLAMA: editingBesId degiskeninin Turkce karsiligi "editing BES kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 let editingBesId = "";
+// ACIKLAMA: Borc/alacak penceresinde duzenlenen kaydin kimligini tutar.
+let duzenlenenBorcAlacakId = "";
 // ACIKLAMA: editingPaymentAccountId kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
 let editingPaymentAccountId = "";
 // ACIKLAMA: payingPaymentAccountId kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
@@ -81,12 +83,16 @@ let deletedTransferTombstones = loadDeletedTransferTombstones();
 let deletedAssetTombstones = loadDeletedAssetTombstones();
 // ACIKLAMA: Cihazlar arasinda silinen BES kayitlarini kalici olarak takip eder.
 let deletedBesTombstones = loadDeletedBesTombstones();
+// ACIKLAMA: Cihazlar arasinda silinen borc/alacak kayitlarini kalici olarak takip eder.
+let silinenBorcAlacakIzleri = silinenBorcAlacakIzleriniYukle();
 // ACIKLAMA: transactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
 let transactions = loadTransactions();
 // ACIKLAMA: assets varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
 let assets = loadAssets();
 // ACIKLAMA: besAccounts degiskeninin Turkce karsiligi "BES hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 let besAccounts = loadBesAccounts();
+// ACIKLAMA: Kullaniciya ait borc ve alacak kayitlarini tutar.
+let borcAlacakKayitlari = borcAlacakKayitlariniYukle();
 // ACIKLAMA: homeAssetPage varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
 let homeAssetPage = 1;
 // ACIKLAMA: homeBesPage degiskeninin Turkce karsiligi "ana sayfa BES sayfa"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.

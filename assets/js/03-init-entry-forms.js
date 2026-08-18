@@ -22,6 +22,7 @@ function init() {
   syncEntryTransferVisibility();
   syncBankImportAccountSelects();
   setupBulkEntryForm();
+  setupBorcAlacakTakibi();
   render();
   initHistoryCustomFilterSelects();
   bindHistoryResponsiveLayout();

@@ -129,6 +129,7 @@ function getDeletedProfileRecordStateSnapshot() {
   return {
     assetTombstones: mergeDeletedProfileTombstones(deletedAssetTombstones),
     besTombstones: mergeDeletedProfileTombstones(deletedBesTombstones),
+    debtTombstones: mergeDeletedProfileTombstones(silinenBorcAlacakIzleri),
   };
 }
 
@@ -136,6 +137,7 @@ function readCloudDeletedProfileRecordState(data = {}) {
   return {
     assetTombstones: Array.isArray(data.deletedAssetTombstones) ? data.deletedAssetTombstones : [],
     besTombstones: Array.isArray(data.deletedBesTombstones) ? data.deletedBesTombstones : [],
+    debtTombstones: Array.isArray(data.deletedDebtReceivableTombstones) ? data.deletedDebtReceivableTombstones : [],
   };
 }
 
@@ -147,12 +149,16 @@ function mergeDeletedProfileRecordStates(...states) {
     besTombstones: mergeDeletedProfileTombstones(
       ...states.map((state) => state?.besTombstones || state?.deletedBesTombstones || [])
     ),
+    debtTombstones: mergeDeletedProfileTombstones(
+      ...states.map((state) => state?.debtTombstones || state?.deletedDebtReceivableTombstones || [])
+    ),
   };
 }
 
 function persistDeletedProfileTombstones() {
   deletedAssetTombstones = mergeDeletedProfileTombstones(deletedAssetTombstones);
   deletedBesTombstones = mergeDeletedProfileTombstones(deletedBesTombstones);
+  silinenBorcAlacakIzleri = mergeDeletedProfileTombstones(silinenBorcAlacakIzleri);
   localStorage.setItem(
     getStorageKey(DELETED_ASSET_TOMBSTONES_STORAGE_KEY),
     JSON.stringify(deletedAssetTombstones)
@@ -161,12 +167,17 @@ function persistDeletedProfileTombstones() {
     getStorageKey(DELETED_BES_TOMBSTONES_STORAGE_KEY),
     JSON.stringify(deletedBesTombstones)
   );
+  localStorage.setItem(
+    getStorageKey(SILINEN_BORC_ALACAK_STORAGE_KEY),
+    JSON.stringify(silinenBorcAlacakIzleri)
+  );
 }
 
 function applyDeletedProfileRecordState(...states) {
   const merged = mergeDeletedProfileRecordStates(getDeletedProfileRecordStateSnapshot(), ...states);
   deletedAssetTombstones = merged.assetTombstones;
   deletedBesTombstones = merged.besTombstones;
+  silinenBorcAlacakIzleri = merged.debtTombstones;
   persistDeletedProfileTombstones();
   return merged;
 }
@@ -176,6 +187,7 @@ function getCloudDeletedProfileRecordPayload(state = getDeletedProfileRecordStat
   return {
     deletedAssetTombstones: normalized.assetTombstones,
     deletedBesTombstones: normalized.besTombstones,
+    deletedDebtReceivableTombstones: normalized.debtTombstones,
   };
 }
 
@@ -929,6 +941,7 @@ function render() {
   }
   renderPaymentAccounts();
   renderBesAccounts();
+  borcAlacaklariEkranaBas();
   renderHome();
   renderCategoryBreakdown();
   renderTransactions();
