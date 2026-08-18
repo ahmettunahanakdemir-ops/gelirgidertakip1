@@ -558,6 +558,16 @@ const entryInstallmentCheckbox = document.getElementById("entryInstallmentCheckb
 const entryInstallmentCountField = document.getElementById("entryInstallmentCountField");
 // ACIKLAMA: Tekli kayitta olusturulacak toplam taksit sayisini alir.
 const entryInstallmentCountInput = document.getElementById("entryInstallmentCountInput");
+// ACIKLAMA: Yeni gelir/gider kaydinin mevcut bir borc odemesi veya alacak tahsilati olup olmadigini belirler.
+const entryDebtPaymentCheckbox = document.getElementById("entryDebtPaymentCheckbox");
+// ACIKLAMA: Borc/alacak odemesi secildiginde hedef kayit alanlarini birlikte gosterir.
+const entryDebtPaymentOptions = document.getElementById("entryDebtPaymentOptions");
+// ACIKLAMA: Gelir veya gider turune uygun acik borc/alacak kaydini sectirir.
+const entryDebtPaymentTarget = document.getElementById("entryDebtPaymentTarget");
+// ACIKLAMA: Hedef secim alaninin gelir veya gider turune gore degisen basligini tutar.
+const entryDebtPaymentTargetLabel = document.getElementById("entryDebtPaymentTargetLabel");
+// ACIKLAMA: Secilen borc/alacak kaydinin kalan tutarini ve secim durumunu aciklar.
+const entryDebtPaymentHint = document.getElementById("entryDebtPaymentHint");
 // ACIKLAMA: entryFormStatus kullaniciya durum, hata veya basari mesaji gostermek icin kullanilir.
 const entryFormStatus = document.getElementById("entryFormStatus");
 // ACIKLAMA: openBulkEntryModalButton coklu gelir/gider penceresini acan butondur.

@@ -676,6 +676,9 @@ function requestTransactionDelete(item) {
         const transaction = transactions.find((record) => record.id === transactionId) || (transactionId === item.id ? item : null);
         if (transaction) {
           changedPaymentAccount = applyTransactionPaymentEffect(transaction, -1) || changedPaymentAccount;
+          if (typeof borcAlacakGelirGiderOdemesiniGeriAl === "function") {
+            borcAlacakGelirGiderOdemesiniGeriAl(transaction);
+          }
           markTransactionDeleted(transactionId, transaction);
         } else {
           markTransactionDeleted(transactionId);

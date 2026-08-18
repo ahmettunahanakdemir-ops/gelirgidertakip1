@@ -298,6 +298,55 @@
   min-width: 0;
 }
 
+.entry-debt-payment-settings {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(33, 92, 82, 0.05);
+}
+
+.entry-form .entry-debt-payment-toggle {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.entry-form .entry-debt-payment-toggle input,
+#entryDebtPaymentCheckbox {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  margin: 0;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  -webkit-appearance: checkbox !important;
+  appearance: auto !important;
+  accent-color: var(--accent);
+}
+
+.entry-debt-payment-options {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.entry-debt-payment-options[hidden] {
+  display: none !important;
+}
+
+.entry-debt-payment-options .panel-note {
+  margin: 0;
+}
+
 .entry-form .transaction-installment-toggle,
 .profile-form .transaction-installment-toggle {
   display: grid;
@@ -377,6 +426,11 @@
 }
 
 html[data-theme="dark"] .transaction-follow-settings {
+  background: rgba(15, 23, 42, 0.58);
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+html[data-theme="dark"] .entry-debt-payment-settings {
   background: rgba(15, 23, 42, 0.58);
   border-color: rgba(148, 163, 184, 0.24);
 }

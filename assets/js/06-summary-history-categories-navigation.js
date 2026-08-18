@@ -1001,9 +1001,20 @@ function saveTransactionEdit(event) {
     transactionAt,
     updatedAt: getTurkeyNowDateTime(),
   };
+  if (previousTransaction?.debtPaymentId) {
+    nextTransaction.debtAppliedAmount = amount;
+  }
 
   if (!validateTransactionPayment(nextTransaction, transactionEditStatus)) {
     return;
+  }
+
+  if (typeof borcAlacakGelirGiderDuzenlemesiniDogrula === "function") {
+    const odemeDuzenlemeHatasi = borcAlacakGelirGiderDuzenlemesiniDogrula(previousTransaction, nextTransaction);
+    if (odemeDuzenlemeHatasi) {
+      transactionEditStatus.textContent = odemeDuzenlemeHatasi;
+      return;
+    }
   }
 
   if (typeof borcAlacakIslemDuzenlemeTakibiniDogrula === "function") {
@@ -1053,6 +1064,9 @@ function saveTransactionEdit(event) {
       dueDate: takipVadeTarihi,
       installmentCount: takipTaksitSayisi,
     });
+  }
+  if (typeof borcAlacakGelirGiderDuzenlemesiniUygula === "function") {
+    borcAlacakGelirGiderDuzenlemesiniUygula(previousTransaction, nextTransaction);
   }
 
   if (revertedPaymentAccount || appliedPaymentAccount || cleanedPaymentAccount) {
@@ -1387,6 +1401,9 @@ function resetEntryForm() {
   }
   updateEntryTransferAccountSelect("");
   syncEntryTransferVisibility();
+  if (entryDebtPaymentCheckbox) entryDebtPaymentCheckbox.checked = false;
+  if (entryDebtPaymentTarget) entryDebtPaymentTarget.value = "";
+  if (typeof tekliBorcAlacakOdemeAlanlariniGuncelle === "function") tekliBorcAlacakOdemeAlanlariniGuncelle();
   if (entryInstallmentCountInput) entryInstallmentCountInput.value = "2";
   if (typeof tekliTaksitAlanlariniGuncelle === "function") tekliTaksitAlanlariniGuncelle();
 
@@ -1632,6 +1649,9 @@ function renderView() {
 // ACIKLAMA: toggleSidebar fonksiyonunun Turkce karsiligi "ac kapat sidebar"; ilgili uygulama islemini calistirir.
 function toggleSidebar() {
   if (window.matchMedia("(min-width: 981px)").matches) {
+    if (sidebar.classList.contains("open") || appShell.classList.contains("menu-open")) {
+      setMobileSidebarOpen(false);
+    }
     appShell.classList.toggle("sidebar-expanded");
     return;
   }
@@ -1643,4 +1663,8 @@ function toggleSidebar() {
 function setMobileSidebarOpen(open) {
   sidebar.classList.toggle("open", open);
   appShell.classList.toggle("menu-open", open);
+  document.documentElement.classList.toggle("mobile-menu-open", open);
+  document.body.classList.toggle("mobile-menu-open", open);
+  mobileMenuButton?.setAttribute("aria-expanded", open ? "true" : "false");
+  topbarMenuButton?.setAttribute("aria-expanded", open ? "true" : "false");
 }

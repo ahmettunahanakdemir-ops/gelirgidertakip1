@@ -794,6 +794,165 @@ function borcAlacakOdemeYonteminiHesaptanBul(hesap) {
   return "bank_account";
 }
 
+// ACIKLAMA: Ana gelir/gider formundaki islemin secilen acik borc veya alacaga uygulanabilirligini denetler.
+function borcAlacakGelirGiderOdemesiniDogrula(islem, kayitId, options = {}) {
+  const kayit = borcAlacakKayitlari.find((item) => item.id === String(kayitId || ""));
+  const oncekiOdeme = options.previousPayment || null;
+  const ayrilanTutar = Math.max(0, Number(options.reservedAmount || 0));
+  if (!kayit || (!oncekiOdeme && (kayit.status !== "open" || Number(kayit.amount || 0) <= 0))) {
+    return "Ödeme veya tahsilat için açık bir borç/alacak kaydı seçmelisin.";
+  }
+  if (islem?.type === "transfer" || Boolean(islem?.isInstallment)) {
+    return "Borç ödemesi veya alacak tahsilatı tek bir gelir/gider kaydı olmalı.";
+  }
+  const beklenenTur = kayit.kind === "receivable" ? "income" : "expense";
+  if (islem?.type !== beklenenTur) {
+    return kayit.kind === "receivable"
+      ? "Alacak tahsilatı için işlem tipini Gelir seçmelisin."
+      : "Borç veya taksit ödemesi için işlem tipini Gider seçmelisin.";
+  }
+  const tutar = Math.abs(roundMoney(Number(islem?.amount || 0)));
+  const azamiTutar = Math.max(0, roundMoney(
+    Number(kayit.amount || 0) + Number(oncekiOdeme?.amount || 0) - ayrilanTutar
+  ));
+  if (!tutar || tutar > azamiTutar) {
+    return `Bu kayıttan en fazla ${currency.format(azamiTutar)} düşebilirsin.`;
+  }
+  const hesap = paymentAccounts.find((item) => item.id === String(islem?.paymentAccountId || ""));
+  if (!hesap) {
+    return "Ödeme veya tahsilat için Kartlar / Hesaplar bölümünde tanımlı bir hesap seçmelisin.";
+  }
+  if (kayit.kind === "receivable" && hesap.type === "credit_card") {
+    return "Alacak tahsilatı için nakit veya banka hesabı seçmelisin.";
+  }
+  return "";
+}
+
+// ACIKLAMA: Yeni gelir/gider hareketine borc/alacak odeme baglantisini ve tekil odeme kimligini ekler.
+function borcAlacakGelirGiderOdemesiniHazirla(islem, kayitId) {
+  const kayit = borcAlacakKayitlari.find((item) => item.id === String(kayitId || ""));
+  if (!kayit) return islem;
+  const odemeId = crypto.randomUUID();
+  return {
+    ...islem,
+    isInstallment: false,
+    installmentGroupId: "",
+    installmentNumber: 0,
+    installmentCount: 0,
+    installmentCompleted: false,
+    installmentCompletedAt: "",
+    debtReceivableId: kayit.id,
+    debtPaymentId: odemeId,
+    debtInstallmentId: "",
+    debtAction: kayit.kind === "receivable" ? "collection" : "payment",
+    debtAppliedAmount: Number(islem.amount || 0),
+  };
+}
+
+// ACIKLAMA: Bagli gelir/gider hareketini secilen borc veya alacagin odeme gecmisine ekler.
+function borcAlacakGelirGiderOdemesiniUygula(islem, options = {}) {
+  const { persist = true, renderLists = true } = options;
+  const kayit = borcAlacakKayitlari.find((item) => item.id === String(islem?.debtReceivableId || ""));
+  if (!kayit || !islem?.debtPaymentId) return false;
+  if (kayit.payments.some((item) => item.id === islem.debtPaymentId || item.transactionId === islem.id)) return true;
+
+  const odeme = borcAlacakOdemeKaydiniNormalizeEt({
+    id: islem.debtPaymentId,
+    amount: islem.amount,
+    date: islem.date,
+    note: islem.note,
+    transactionId: islem.id,
+    allocations: [],
+    createdAt: islem.createdAt || getTurkeyNowDateTime(),
+  });
+  if (!odeme) return false;
+  const simdi = getTurkeyNowDateTime();
+  const guncellenenKayit = borcAlacakKaydiniNormalizeEt({
+    ...kayit,
+    payments: [...kayit.payments, odeme],
+    manualClosed: false,
+    closedAt: Number(islem.amount || 0) >= Number(kayit.amount || 0) ? simdi : "",
+    updatedAt: simdi,
+  });
+  if (!guncellenenKayit) return false;
+  borcAlacakKayitlari = borcAlacakKayitlari.map((item) => item.id === kayit.id ? guncellenenKayit : item);
+  if (persist) borcAlacakKayitlariniKaliciKaydet();
+  if (renderLists) borcAlacaklariEkranaBas();
+  return true;
+}
+
+// ACIKLAMA: Bagli bir odeme hareketi silindiginde borc/alacak odeme gecmisindeki karsiligini da geri alir.
+function borcAlacakGelirGiderOdemesiniGeriAl(islem) {
+  const kayit = borcAlacakKayitlari.find((item) => item.id === String(islem?.debtReceivableId || ""));
+  if (!kayit) return false;
+  const kalanOdemeler = kayit.payments.filter((item) => {
+    if (islem?.debtPaymentId && item.id === islem.debtPaymentId) return false;
+    return item.transactionId !== String(islem?.id || "");
+  });
+  if (kalanOdemeler.length === kayit.payments.length) return false;
+  const simdi = getTurkeyNowDateTime();
+  const guncellenenKayit = borcAlacakKaydiniNormalizeEt({
+    ...kayit,
+    payments: kalanOdemeler,
+    manualClosed: false,
+    closedAt: "",
+    updatedAt: simdi,
+  });
+  if (!guncellenenKayit) return false;
+  borcAlacakKayitlari = borcAlacakKayitlari.map((item) => item.id === kayit.id ? guncellenenKayit : item);
+  borcAlacakKayitlariniKaliciKaydet();
+  borcAlacaklariEkranaBas();
+  return true;
+}
+
+// ACIKLAMA: Bagli bir odeme hareketi duzenlenirken yeni tutarin kalan kaydi asmadigini dogrular.
+function borcAlacakGelirGiderDuzenlemesiniDogrula(oncekiIslem, sonrakiIslem) {
+  if (!oncekiIslem?.debtReceivableId || !oncekiIslem?.debtPaymentId) return "";
+  const kayit = borcAlacakKayitlari.find((item) => item.id === String(oncekiIslem.debtReceivableId));
+  const oncekiOdeme = kayit?.payments.find((item) => (
+    item.id === oncekiIslem.debtPaymentId || item.transactionId === oncekiIslem.id
+  ));
+  if (!kayit || !oncekiOdeme) {
+    return "Bağlı borç/alacak ödeme kaydı bulunamadı. Borçlarım bölümünü yenileyip tekrar dene.";
+  }
+  return borcAlacakGelirGiderOdemesiniDogrula(sonrakiIslem, kayit.id, { previousPayment: oncekiOdeme });
+}
+
+// ACIKLAMA: Bagli gelir/gider hareketindeki tutar, tarih veya not degisikligini odeme gecmisine uygular.
+function borcAlacakGelirGiderDuzenlemesiniUygula(oncekiIslem, sonrakiIslem) {
+  if (!oncekiIslem?.debtReceivableId || !oncekiIslem?.debtPaymentId) return false;
+  const kayit = borcAlacakKayitlari.find((item) => item.id === String(oncekiIslem.debtReceivableId));
+  if (!kayit) return false;
+  const oncekiOdeme = kayit.payments.find((item) => (
+    item.id === oncekiIslem.debtPaymentId || item.transactionId === oncekiIslem.id
+  ));
+  if (!oncekiOdeme) return false;
+  const sonrakiOdeme = borcAlacakOdemeKaydiniNormalizeEt({
+    ...oncekiOdeme,
+    id: oncekiIslem.debtPaymentId,
+    amount: sonrakiIslem.amount,
+    date: sonrakiIslem.date,
+    note: sonrakiIslem.note,
+    transactionId: sonrakiIslem.id,
+    createdAt: oncekiOdeme.createdAt || sonrakiIslem.createdAt,
+  });
+  if (!sonrakiOdeme) return false;
+  const simdi = getTurkeyNowDateTime();
+  const odemeler = kayit.payments.map((item) => item.id === oncekiOdeme.id ? sonrakiOdeme : item);
+  const guncellenenKayit = borcAlacakKaydiniNormalizeEt({
+    ...kayit,
+    payments: odemeler,
+    manualClosed: false,
+    closedAt: "",
+    updatedAt: simdi,
+  });
+  if (!guncellenenKayit) return false;
+  borcAlacakKayitlari = borcAlacakKayitlari.map((item) => item.id === kayit.id ? guncellenenKayit : item);
+  borcAlacakKayitlariniKaliciKaydet();
+  borcAlacaklariEkranaBas();
+  return true;
+}
+
 function borcAlacakOdemePenceresiniAc(kayitId, taksitId = "") {
   aktifBorcAlacakOdemeKayitId = String(kayitId || "");
   aktifBorcAlacakOdemeTaksitId = String(taksitId || "");
@@ -1192,6 +1351,10 @@ function borcAlacakOdemeGecmisiHtml(kayit) {
 
 function borcAlacaklariEkranaBas() {
   if (!borcKayitListesi) return;
+  if (entryDebtPaymentCheckbox?.checked && typeof tekliBorcAlacakOdemeKayitlariniDoldur === "function") {
+    tekliBorcAlacakOdemeKayitlariniDoldur(entryDebtPaymentTarget?.value || "");
+    tekliBorcAlacakOdemeSecimNotunuGuncelle();
+  }
   const acikKayitlar = borcAlacakKayitlari.filter((item) => item.amount > 0);
   const isaretliTaksitler = borcAlacakIsaretliTaksitIslemleri();
   const toplamBorc = acikKayitlar.filter((item) => item.listType === "debt").reduce((sum, item) => sum + item.amount, 0);

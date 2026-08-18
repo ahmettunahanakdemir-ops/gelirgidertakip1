@@ -20,6 +20,7 @@ function init() {
   updatePaymentAccountFormVisibility();
   updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput?.value || "cash");
   syncEntryTransferVisibility();
+  tekliBorcAlacakOdemeAlanlariniGuncelle();
   tekliTaksitAlanlariniGuncelle();
   syncBankImportAccountSelects();
   setupBulkEntryForm();
@@ -40,9 +41,15 @@ function init() {
   typeInput.addEventListener("change", () => {
     updateCategoryOptions(typeInput.value);
     syncEntryTransferVisibility();
+    tekliBorcAlacakOdemeAlanlariniGuncelle();
     tekliTaksitAlanlariniGuncelle();
   });
   entryInstallmentCheckbox?.addEventListener("change", tekliTaksitAlanlariniGuncelle);
+  entryDebtPaymentCheckbox?.addEventListener("change", () => {
+    tekliBorcAlacakOdemeAlanlariniGuncelle();
+    tekliTaksitAlanlariniGuncelle();
+  });
+  entryDebtPaymentTarget?.addEventListener("change", tekliBorcAlacakOdemeSecimNotunuGuncelle);
   paymentMethodInput?.addEventListener("change", () => {
     updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput.value);
   });
@@ -359,6 +366,8 @@ function init() {
       note: formData.get("note"),
       isInstallment: formData.get("isInstallment") === "on",
       installmentCount: formData.get("installmentCount"),
+      isDebtPayment: formData.get("isDebtPayment") === "on",
+      debtReceivableId: formData.get("debtReceivableId"),
     };
     const taksitSayisi = Number(values.installmentCount);
     if (values.isInstallment && (!Number.isInteger(taksitSayisi) || taksitSayisi < 2 || taksitSayisi > 60)) {
@@ -367,6 +376,15 @@ function init() {
       return;
     }
     const entries = gelirGiderTaksitSerisiniOlustur(values, now, getTurkeyNowTime());
+    if (values.isDebtPayment && typeof borcAlacakGelirGiderOdemesiniDogrula === "function") {
+      const baglantiHatasi = borcAlacakGelirGiderOdemesiniDogrula(entries[0], values.debtReceivableId);
+      if (baglantiHatasi) {
+        if (entryFormStatus) entryFormStatus.textContent = baglantiHatasi;
+        if (!values.debtReceivableId) entryDebtPaymentTarget?.focus();
+        return;
+      }
+      entries[0] = borcAlacakGelirGiderOdemesiniHazirla(entries[0], values.debtReceivableId);
+    }
     const entry = entries[0];
 
     if (!entry.title || !entry.amount || !entry.date) {
@@ -383,6 +401,9 @@ function init() {
       changedPaymentAccount = applyTransactionPaymentEffect(item, 1) || changedPaymentAccount;
     });
     transactions = [...entries, ...transactions].sort(compareTransactionsNewestFirst);
+    if (entry.debtPaymentId && typeof borcAlacakGelirGiderOdemesiniUygula === "function") {
+      borcAlacakGelirGiderOdemesiniUygula(entry);
+    }
     if (changedPaymentAccount) {
       refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
       persistPaymentAccounts();
@@ -401,6 +422,7 @@ function init() {
     if (transferFeeInput) transferFeeInput.value = "";
     updateEntryTransferAccountSelect("");
     syncEntryTransferVisibility();
+    tekliBorcAlacakOdemeAlanlariniGuncelle();
     tekliTaksitAlanlariniGuncelle();
     if (entryFormStatus) {
       entryFormStatus.textContent = "";
@@ -503,11 +525,12 @@ function gelirGiderTaksitSerisiniOlustur(values = {}, now = getTurkeyNowDateTime
 // ACIKLAMA: Tekli formda taksit sayisi alanini kutu ve islem tipine gore gosterir.
 function tekliTaksitAlanlariniGuncelle() {
   const transferMi = typeInput?.value === "transfer";
+  const borcAlacakOdemesiMi = !transferMi && Boolean(entryDebtPaymentCheckbox?.checked);
   if (entryInstallmentCheckbox) {
-    entryInstallmentCheckbox.disabled = transferMi;
-    if (transferMi) entryInstallmentCheckbox.checked = false;
+    entryInstallmentCheckbox.disabled = transferMi || borcAlacakOdemesiMi;
+    if (transferMi || borcAlacakOdemesiMi) entryInstallmentCheckbox.checked = false;
   }
-  const taksitSecili = !transferMi && Boolean(entryInstallmentCheckbox?.checked);
+  const taksitSecili = !transferMi && !borcAlacakOdemesiMi && Boolean(entryInstallmentCheckbox?.checked);
   if (entryInstallmentCountField) entryInstallmentCountField.hidden = !taksitSecili;
   if (entryInstallmentCountInput) {
     entryInstallmentCountInput.disabled = !taksitSecili;
@@ -516,6 +539,77 @@ function tekliTaksitAlanlariniGuncelle() {
       entryInstallmentCountInput.value = "2";
     }
   }
+}
+
+// ACIKLAMA: Gelir/gider turune uygun acik borc veya alacak kayitlarini ana formdaki secime doldurur.
+function tekliBorcAlacakOdemeKayitlariniDoldur(seciliKayitId = "") {
+  if (!entryDebtPaymentTarget) return;
+  const islemTuru = typeInput?.value || "income";
+  const alacakMi = islemTuru === "income";
+  const uygunKayitlar = (typeof borcAlacakKayitlari !== "undefined" ? borcAlacakKayitlari : [])
+    .filter((item) => item.status === "open" && Number(item.amount || 0) > 0)
+    .filter((item) => alacakMi ? item.kind === "receivable" : item.kind === "debt")
+    .sort((left, right) => {
+      const leftDate = left.dueDate || left.startDate || "9999-12-31";
+      const rightDate = right.dueDate || right.startDate || "9999-12-31";
+      return leftDate.localeCompare(rightDate) || String(left.person || "").localeCompare(String(right.person || ""), "tr");
+    });
+
+  entryDebtPaymentTarget.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = uygunKayitlar.length
+    ? (alacakMi ? "Tahsil edilecek alacağı seç" : "Ödenecek borç veya taksiti seç")
+    : (alacakMi ? "Kalan alacak kaydı bulunmuyor" : "Kalan borç veya taksit kaydı bulunmuyor");
+  entryDebtPaymentTarget.append(placeholder);
+
+  uygunKayitlar.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = `${item.person} · ${borcAlacakListeTuruEtiketi(item.listType)} · Kalan ${currency.format(item.amount)}`;
+    entryDebtPaymentTarget.append(option);
+  });
+  entryDebtPaymentTarget.value = uygunKayitlar.some((item) => item.id === String(seciliKayitId || ""))
+    ? String(seciliKayitId)
+    : "";
+}
+
+// ACIKLAMA: Secilen borc veya alacagin kalan tutarini formun altinda gosterir.
+function tekliBorcAlacakOdemeSecimNotunuGuncelle() {
+  if (!entryDebtPaymentHint) return;
+  const kayit = typeof borcAlacakKayitlari !== "undefined"
+    ? borcAlacakKayitlari.find((item) => item.id === String(entryDebtPaymentTarget?.value || ""))
+    : null;
+  if (kayit) {
+    entryDebtPaymentHint.textContent = `${kayit.person} kaydında kalan ${currency.format(kayit.amount)} tutardan düşülecek.`;
+    return;
+  }
+  entryDebtPaymentHint.textContent = typeInput?.value === "income"
+    ? "Yalnızca kalan alacak kayıtları gösterilir."
+    : "Yalnızca kalan borç ve taksit kayıtları gösterilir.";
+}
+
+// ACIKLAMA: Ana formdaki borc/alacak odeme secimini islem turu ve taksit secenegiyle uyumlu tutar.
+function tekliBorcAlacakOdemeAlanlariniGuncelle() {
+  const transferMi = typeInput?.value === "transfer";
+  if (entryDebtPaymentCheckbox) {
+    entryDebtPaymentCheckbox.disabled = transferMi;
+    if (transferMi) entryDebtPaymentCheckbox.checked = false;
+  }
+  const secili = !transferMi && Boolean(entryDebtPaymentCheckbox?.checked);
+  const oncekiKayitId = entryDebtPaymentTarget?.value || "";
+  if (entryDebtPaymentOptions) entryDebtPaymentOptions.hidden = !secili;
+  if (entryDebtPaymentTarget) {
+    entryDebtPaymentTarget.disabled = !secili;
+    entryDebtPaymentTarget.required = secili;
+  }
+  if (entryDebtPaymentTargetLabel) {
+    entryDebtPaymentTargetLabel.textContent = typeInput?.value === "income"
+      ? "Tahsil edilecek alacak"
+      : "Ödenecek borç / taksit";
+  }
+  tekliBorcAlacakOdemeKayitlariniDoldur(oncekiKayitId);
+  tekliBorcAlacakOdemeSecimNotunuGuncelle();
 }
 
 // ACIKLAMA: setupBulkEntryForm fonksiyonunun Turkce karsiligi "coklu kayit formunu kur"; coklu gelir/gider panelinin olaylarini ve ilk satirlarini hazirlar.
@@ -579,6 +673,11 @@ function getBulkEntryFields(row) {
     installment: row?.querySelector('[data-bulk-field="isInstallment"]'),
     installmentCount: row?.querySelector('[data-bulk-field="installmentCount"]'),
     installmentCountField: row?.querySelector("[data-bulk-installment-count-field]"),
+    debtPayment: row?.querySelector('[data-bulk-field="isDebtPayment"]'),
+    debtPaymentTarget: row?.querySelector('[data-bulk-field="debtReceivableId"]'),
+    debtPaymentOptions: row?.querySelector("[data-bulk-debt-payment-options]"),
+    debtPaymentTargetLabel: row?.querySelector("[data-bulk-debt-payment-label]"),
+    debtPaymentHint: row?.querySelector("[data-bulk-debt-payment-hint]"),
     error: row?.querySelector("[data-bulk-row-error]"),
   };
 }
@@ -640,14 +739,27 @@ function createBulkEntryRow() {
       <input data-bulk-field="isInstallment" type="checkbox" />
       <span>Taksit mi?</span>
     </label>
-    <label data-bulk-installment-count-field hidden>
-      Toplam taksit sayısı
-      <input data-bulk-field="installmentCount" type="number" min="2" max="60" step="1" inputmode="numeric" value="2" />
+    <label class="bulk-entry-debt-payment-toggle">
+      <input data-bulk-field="isDebtPayment" type="checkbox" />
+      <span>Borç ödemesi / alacak tahsilatı mı?</span>
     </label>
-    <label class="bulk-entry-note-field">
-      Not
-      <input data-bulk-field="note" type="text" maxlength="100" placeholder="Kısa not" />
-    </label>
+    <div class="bulk-entry-detail-fields">
+      <label data-bulk-installment-count-field hidden>
+        Toplam taksit sayısı
+        <input data-bulk-field="installmentCount" type="number" min="2" max="60" step="1" inputmode="numeric" value="2" />
+      </label>
+      <div class="bulk-entry-debt-payment-options" data-bulk-debt-payment-options hidden>
+        <label>
+          <span data-bulk-debt-payment-label>Bağlı kayıt</span>
+          <select data-bulk-field="debtReceivableId"></select>
+        </label>
+        <p data-bulk-debt-payment-hint></p>
+      </div>
+      <label class="bulk-entry-note-field">
+        Not
+        <input data-bulk-field="note" type="text" maxlength="100" placeholder="Kısa not" />
+      </label>
+    </div>
     <button class="ghost-btn bulk-entry-remove" data-bulk-action="remove" type="button" aria-label="Satırı sil">Sil</button>
     <p class="bulk-entry-row-error" data-bulk-row-error></p>
   `;
@@ -663,9 +775,15 @@ function bindBulkEntryRow(row) {
   fields.type?.addEventListener("change", () => {
     updateBulkEntryCategoryOptions(row, { reset: true });
     syncBulkEntryTransferFields(row);
+    cokluBorcAlacakOdemeAlanlariniGuncelle(row);
     cokluTaksitAlanlariniGuncelle(row);
   });
   fields.installment?.addEventListener("change", () => cokluTaksitAlanlariniGuncelle(row));
+  fields.debtPayment?.addEventListener("change", () => {
+    cokluBorcAlacakOdemeAlanlariniGuncelle(row);
+    cokluTaksitAlanlariniGuncelle(row);
+  });
+  fields.debtPaymentTarget?.addEventListener("change", () => cokluBorcAlacakOdemeSecimNotunuGuncelle(row));
   fields.paymentMethod?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
   fields.paymentAccount?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
   fields.transferAccount?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
@@ -732,9 +850,12 @@ function resetBulkEntryRow(row) {
   if (fields.date) fields.date.value = getTurkeyTodayISO();
   if (fields.installment) fields.installment.checked = false;
   if (fields.installmentCount) fields.installmentCount.value = "2";
+  if (fields.debtPayment) fields.debtPayment.checked = false;
+  if (fields.debtPaymentTarget) fields.debtPaymentTarget.value = "";
   setBulkEntryRowError(row, "");
   updateBulkEntryCategoryOptions(row);
   syncBulkEntryTransferFields(row);
+  cokluBorcAlacakOdemeAlanlariniGuncelle(row);
   cokluTaksitAlanlariniGuncelle(row);
 }
 
@@ -753,6 +874,7 @@ function refreshBulkEntryRows() {
   getBulkEntryRows().forEach((row) => {
     updateBulkEntryCategoryOptions(row);
     syncBulkEntryTransferFields(row);
+    cokluBorcAlacakOdemeAlanlariniGuncelle(row);
     cokluTaksitAlanlariniGuncelle(row);
   });
   updateBulkEntryRowNumbers();
@@ -832,11 +954,12 @@ function syncBulkEntryTransferFields(row) {
 function cokluTaksitAlanlariniGuncelle(row) {
   const fields = getBulkEntryFields(row);
   const transferMi = fields.type?.value === "transfer";
+  const borcAlacakOdemesiMi = !transferMi && Boolean(fields.debtPayment?.checked);
   if (fields.installment) {
-    fields.installment.disabled = transferMi;
-    if (transferMi) fields.installment.checked = false;
+    fields.installment.disabled = transferMi || borcAlacakOdemesiMi;
+    if (transferMi || borcAlacakOdemesiMi) fields.installment.checked = false;
   }
-  const taksitSecili = !transferMi && Boolean(fields.installment?.checked);
+  const taksitSecili = !transferMi && !borcAlacakOdemesiMi && Boolean(fields.installment?.checked);
   if (fields.installmentCountField) fields.installmentCountField.hidden = !taksitSecili;
   if (fields.installmentCount) {
     fields.installmentCount.disabled = !taksitSecili;
@@ -845,6 +968,79 @@ function cokluTaksitAlanlariniGuncelle(row) {
       fields.installmentCount.value = "2";
     }
   }
+}
+
+// ACIKLAMA: Coklu satirin gelir/gider turune uygun acik borc veya alacak kayitlarini secime doldurur.
+function cokluBorcAlacakOdemeKayitlariniDoldur(row, seciliKayitId = "") {
+  const fields = getBulkEntryFields(row);
+  if (!fields.debtPaymentTarget) return;
+  const alacakMi = fields.type?.value === "income";
+  const uygunKayitlar = (typeof borcAlacakKayitlari !== "undefined" ? borcAlacakKayitlari : [])
+    .filter((item) => item.status === "open" && Number(item.amount || 0) > 0)
+    .filter((item) => alacakMi ? item.kind === "receivable" : item.kind === "debt")
+    .sort((left, right) => {
+      const leftDate = left.dueDate || left.startDate || "9999-12-31";
+      const rightDate = right.dueDate || right.startDate || "9999-12-31";
+      return leftDate.localeCompare(rightDate) || String(left.person || "").localeCompare(String(right.person || ""), "tr");
+    });
+
+  fields.debtPaymentTarget.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = uygunKayitlar.length
+    ? (alacakMi ? "Tahsil edilecek alacağı seç" : "Ödenecek borç veya taksiti seç")
+    : (alacakMi ? "Kalan alacak kaydı bulunmuyor" : "Kalan borç veya taksit kaydı bulunmuyor");
+  fields.debtPaymentTarget.append(placeholder);
+
+  uygunKayitlar.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = `${item.person} · ${borcAlacakListeTuruEtiketi(item.listType)} · Kalan ${currency.format(item.amount)}`;
+    fields.debtPaymentTarget.append(option);
+  });
+  fields.debtPaymentTarget.value = uygunKayitlar.some((item) => item.id === String(seciliKayitId || ""))
+    ? String(seciliKayitId)
+    : "";
+}
+
+// ACIKLAMA: Coklu satirda secilen borc veya alacagin kalan tutarini gosterir.
+function cokluBorcAlacakOdemeSecimNotunuGuncelle(row) {
+  const fields = getBulkEntryFields(row);
+  if (!fields.debtPaymentHint) return;
+  const kayit = typeof borcAlacakKayitlari !== "undefined"
+    ? borcAlacakKayitlari.find((item) => item.id === String(fields.debtPaymentTarget?.value || ""))
+    : null;
+  if (kayit) {
+    fields.debtPaymentHint.textContent = `${kayit.person} kaydında kalan ${currency.format(kayit.amount)} tutardan düşülecek.`;
+    return;
+  }
+  fields.debtPaymentHint.textContent = fields.type?.value === "income"
+    ? "Yalnızca kalan alacak kayıtları gösterilir."
+    : "Yalnızca kalan borç ve taksit kayıtları gösterilir.";
+}
+
+// ACIKLAMA: Coklu satirdaki borc/alacak secimini transfer ve taksit secenekleriyle uyumlu tutar.
+function cokluBorcAlacakOdemeAlanlariniGuncelle(row) {
+  const fields = getBulkEntryFields(row);
+  const transferMi = fields.type?.value === "transfer";
+  if (fields.debtPayment) {
+    fields.debtPayment.disabled = transferMi;
+    if (transferMi) fields.debtPayment.checked = false;
+  }
+  const secili = !transferMi && Boolean(fields.debtPayment?.checked);
+  const oncekiKayitId = fields.debtPaymentTarget?.value || "";
+  if (fields.debtPaymentOptions) fields.debtPaymentOptions.hidden = !secili;
+  if (fields.debtPaymentTarget) {
+    fields.debtPaymentTarget.disabled = !secili;
+    fields.debtPaymentTarget.required = secili;
+  }
+  if (fields.debtPaymentTargetLabel) {
+    fields.debtPaymentTargetLabel.textContent = fields.type?.value === "income"
+      ? "Tahsil edilecek alacak"
+      : "Ödenecek borç / taksit";
+  }
+  cokluBorcAlacakOdemeKayitlariniDoldur(row, oncekiKayitId);
+  cokluBorcAlacakOdemeSecimNotunuGuncelle(row);
 }
 
 // ACIKLAMA: setBulkEntryRowError fonksiyonunun Turkce karsiligi "coklu kayit satir hatasini yaz"; satira ait hata mesajini gosterir veya temizler.
@@ -858,7 +1054,7 @@ function setBulkEntryRowError(row, message = "") {
 // ACIKLAMA: isBulkEntryRowEmpty fonksiyonunun Turkce karsiligi "coklu kayit satiri bos mu"; varsayilan tarih ve secimleri saymadan satirin dolu olup olmadigini kontrol eder.
 function isBulkEntryRowEmpty(row) {
   const fields = getBulkEntryFields(row);
-  if (fields.installment?.checked) {
+  if (fields.installment?.checked || fields.debtPayment?.checked) {
     return false;
   }
   return ![
@@ -872,7 +1068,7 @@ function isBulkEntryRowEmpty(row) {
 }
 
 // ACIKLAMA: readBulkEntryTransaction fonksiyonunun Turkce karsiligi "coklu kayit satirini oku"; satirdaki veriyi dogrulanmis gelir/gider kaydina cevirir.
-function readBulkEntryTransaction(row, index, now) {
+function readBulkEntryTransaction(row, index, now, ayrilanTutarlar = new Map()) {
   const fields = getBulkEntryFields(row);
   setBulkEntryRowError(row, "");
 
@@ -893,6 +1089,8 @@ function readBulkEntryTransaction(row, index, now) {
     note: fields.note?.value || "",
     isInstallment: Boolean(fields.installment?.checked),
     installmentCount: fields.installmentCount?.value || "",
+    isDebtPayment: Boolean(fields.debtPayment?.checked),
+    debtReceivableId: fields.debtPaymentTarget?.value || "",
   };
   const taksitSayisi = Number(values.installmentCount);
   if (values.isInstallment && (!Number.isInteger(taksitSayisi) || taksitSayisi < 2 || taksitSayisi > 60)) {
@@ -911,6 +1109,26 @@ function readBulkEntryTransaction(row, index, now) {
     return { status: "invalid" };
   }
 
+  if (values.isDebtPayment) {
+    if (typeof borcAlacakGelirGiderOdemesiniDogrula !== "function" || typeof borcAlacakGelirGiderOdemesiniHazirla !== "function") {
+      setBulkEntryRowError(row, `${index + 1}. satırda borç/alacak bağlantısı hazırlanamadı.`);
+      return { status: "invalid" };
+    }
+    const ayrilanTutar = Number(ayrilanTutarlar.get(values.debtReceivableId) || 0);
+    const baglantiHatasi = borcAlacakGelirGiderOdemesiniDogrula(entry, values.debtReceivableId, {
+      reservedAmount: ayrilanTutar,
+    });
+    if (baglantiHatasi) {
+      setBulkEntryRowError(row, `${index + 1}. satır: ${baglantiHatasi}`);
+      return { status: "invalid" };
+    }
+    entries[0] = borcAlacakGelirGiderOdemesiniHazirla(entry, values.debtReceivableId);
+    ayrilanTutarlar.set(
+      values.debtReceivableId,
+      roundMoney(ayrilanTutar + Number(entries[0].amount || 0))
+    );
+  }
+
   return { status: "ready", entries };
 }
 
@@ -921,9 +1139,10 @@ function addBulkTransactions(event) {
   const rows = getBulkEntryRows();
   const now = getTurkeyNowDateTime();
   const readyEntries = [];
+  const ayrilanBorcAlacakTutarlari = new Map();
 
   for (let index = 0; index < rows.length; index += 1) {
-    const result = readBulkEntryTransaction(rows[index], index, now);
+    const result = readBulkEntryTransaction(rows[index], index, now, ayrilanBorcAlacakTutarlari);
     if (result.status === "invalid") {
       if (bulkEntryStatus) {
         bulkEntryStatus.textContent = `${index + 1}. satırı kontrol et.`;
@@ -954,6 +1173,20 @@ function addBulkTransactions(event) {
 
   transactions = [...readyEntries, ...transactions].sort(compareTransactionsNewestFirst);
   currentHistoryPage = 1;
+
+  let borcAlacakOdemesiUygulandi = false;
+  readyEntries.forEach((entry) => {
+    if (entry.debtPaymentId && typeof borcAlacakGelirGiderOdemesiniUygula === "function") {
+      borcAlacakOdemesiUygulandi = borcAlacakGelirGiderOdemesiniUygula(entry, {
+        persist: false,
+        renderLists: false,
+      }) || borcAlacakOdemesiUygulandi;
+    }
+  });
+  if (borcAlacakOdemesiUygulandi) {
+    borcAlacakKayitlariniKaliciKaydet();
+    borcAlacaklariEkranaBas();
+  }
 
   if (changedPaymentAccount) {
     refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
