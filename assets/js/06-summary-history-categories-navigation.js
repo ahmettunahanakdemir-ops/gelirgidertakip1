@@ -189,7 +189,15 @@ function createTransactionListItem(item, options = {}) {
   }
 
   title.textContent = item.title;
-  meta.textContent = `${formatTransactionDateTime(item)} · ${item.category} · ${getTransactionPaymentInfo(item)}${item.note ? ` · ${item.note}` : ""}`;
+  const taksitSayisi = Math.max(0, Math.trunc(Number(item.installmentCount || 0)));
+  const taksitSirasi = Math.max(0, Math.trunc(Number(item.installmentNumber || 0)));
+  const taksitMetni = item.isInstallment
+    ? taksitSayisi > 1 && taksitSirasi > 0
+      ? ` · Taksit ${taksitSirasi}/${taksitSayisi}`
+      : " · Taksit"
+    : "";
+  const taksitDurumuMetni = item.isInstallment && item.installmentCompleted ? " · Tamamlandı" : "";
+  meta.textContent = `${formatTransactionDateTime(item)} · ${item.category} · ${getTransactionPaymentInfo(item)}${taksitMetni}${taksitDurumuMetni}${item.note ? ` · ${item.note}` : ""}`;
   amount.textContent = item.type === "transfer"
     ? `Transfer ${currency.format(item.amount)}${
         Number(item.transferFee || 0) > 0 ? ` + ücret ${currency.format(Number(item.transferFee || 0))}` : ""
@@ -802,6 +810,28 @@ function getHistoryFilterLabel() {
   return parts.join(" · ");
 }
 
+// ACIKLAMA: Islem duzenleme penceresindeki takip kutusu, tur ve taksit alanlarini birlikte yonetir.
+function syncTransactionTrackingFields() {
+  const secili = Boolean(transactionTrackCheckbox?.checked);
+  const listeTuru = ["debt", "installment", "receivable"].includes(transactionTrackTypeInput?.value)
+    ? transactionTrackTypeInput.value
+    : "debt";
+  if (transactionTrackOptions) transactionTrackOptions.hidden = !secili;
+  if (transactionTrackTypeInput) transactionTrackTypeInput.disabled = !secili;
+  if (transactionTrackDueDateInput) {
+    transactionTrackDueDateInput.disabled = !secili;
+    transactionTrackDueDateInput.required = secili && listeTuru === "installment";
+  }
+  if (transactionTrackDueDateLabel) transactionTrackDueDateLabel.hidden = !secili;
+  if (transactionTrackInstallmentCountLabel) {
+    transactionTrackInstallmentCountLabel.hidden = !secili || listeTuru !== "installment";
+  }
+  if (transactionTrackInstallmentCountInput) {
+    transactionTrackInstallmentCountInput.disabled = !secili || listeTuru !== "installment";
+    transactionTrackInstallmentCountInput.required = secili && listeTuru === "installment";
+  }
+}
+
 // ACIKLAMA: editTransaction fonksiyonunun Turkce karsiligi "duzenle islem"; ilgili uygulama islemini calistirir.
 function editTransaction(item) {
   editingTransactionId = item.id;
@@ -812,10 +842,23 @@ function editTransaction(item) {
   transactionDateInput.value = item.date;
   transactionTimeInput.value = (getTransactionTime(item) || "").slice(0, 5);
   transactionNoteInput.value = item.note || "";
+  if (transactionInstallmentCheckbox) transactionInstallmentCheckbox.checked = Boolean(item.isInstallment);
   transactionPaymentMethodInput.value = normalizePaymentMethod(item.paymentMethod || "cash");
   if (transactionTransferFeeInput) {
     transactionTransferFeeInput.value = item.type === "transfer" && Number(item.transferFee || 0) > 0 ? Number(item.transferFee) : "";
   }
+  const takipKaydi = typeof borcAlacakIslemTakipKaydiniBul === "function"
+    ? borcAlacakIslemTakipKaydiniBul(item.id)
+    : null;
+  if (transactionTrackCheckbox) transactionTrackCheckbox.checked = Boolean(takipKaydi);
+  if (transactionTrackTypeInput) {
+    transactionTrackTypeInput.value = takipKaydi?.listType || (item.type === "income" ? "receivable" : "debt");
+  }
+  if (transactionTrackDueDateInput) transactionTrackDueDateInput.value = takipKaydi?.dueDate || "";
+  if (transactionTrackInstallmentCountInput) {
+    transactionTrackInstallmentCountInput.value = String(takipKaydi?.installmentCount || 2);
+  }
+  syncTransactionTrackingFields();
   if (transactionTypeInput.value === "transfer") {
     updateAnyPaymentAccountSelect(transactionPaymentAccountInput, item.paymentAccountId || "", {
       excludeId: item.transferAccountId || "",
@@ -843,6 +886,12 @@ function closeTransactionEditModal() {
   editingTransactionId = "";
   transactionEditStatus.textContent = "";
   transactionEditForm.reset();
+  if (transactionInstallmentCheckbox) transactionInstallmentCheckbox.checked = false;
+  if (transactionTrackCheckbox) transactionTrackCheckbox.checked = false;
+  if (transactionTrackTypeInput) transactionTrackTypeInput.value = "debt";
+  if (transactionTrackDueDateInput) transactionTrackDueDateInput.value = "";
+  if (transactionTrackInstallmentCountInput) transactionTrackInstallmentCountInput.value = "2";
+  syncTransactionTrackingFields();
   updatePaymentAccountSelect(transactionPaymentAccountInput, "cash", "");
   updateTransactionTransferAccountSelect("");
   if (transactionTransferAccountLabel) {
@@ -883,10 +932,20 @@ function saveTransactionEdit(event) {
   const date = transactionDateInput.value;
   // ACIKLAMA: note degiskeninin Turkce karsiligi "note"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const note = transactionNoteInput.value.trim().slice(0, 100);
+  const isInstallment = Boolean(transactionInstallmentCheckbox?.checked);
   // ACIKLAMA: time degiskeninin Turkce karsiligi "saat"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const time = transactionTimeInput.value ? `${transactionTimeInput.value}:00` : "";
   // ACIKLAMA: transactionAt degiskeninin Turkce karsiligi "islem at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const transactionAt = buildTransactionDateTime(date, time || "00:00:00");
+  const takipSecili = Boolean(transactionTrackCheckbox?.checked);
+  const takipListeTuru = ["debt", "installment", "receivable"].includes(transactionTrackTypeInput?.value)
+    ? transactionTrackTypeInput.value
+    : "debt";
+  const takipVadeTarihi = String(transactionTrackDueDateInput?.value || "");
+  const takipTaksitSayisi = Math.max(
+    2,
+    Math.min(60, Math.trunc(Number(transactionTrackInstallmentCountInput?.value || 2)))
+  );
 
   if (!["income", "expense", "transfer"].includes(type)) {
     transactionEditStatus.textContent = "İşlem tipi geçerli değil.";
@@ -934,12 +993,33 @@ function saveTransactionEdit(event) {
     transferFee,
     date,
     note,
+    isInstallment,
+    installmentCompleted: isInstallment ? Boolean(previousTransaction?.installmentCompleted) : false,
+    installmentCompletedAt: isInstallment && previousTransaction?.installmentCompleted
+      ? String(previousTransaction.installmentCompletedAt || getTurkeyNowDateTime())
+      : "",
     transactionAt,
     updatedAt: getTurkeyNowDateTime(),
   };
 
   if (!validateTransactionPayment(nextTransaction, transactionEditStatus)) {
     return;
+  }
+
+  if (typeof borcAlacakIslemDuzenlemeTakibiniDogrula === "function") {
+    const takipHatasi = borcAlacakIslemDuzenlemeTakibiniDogrula(nextTransaction, {
+      selected: takipSecili,
+      listType: takipListeTuru,
+      dueDate: takipVadeTarihi,
+      installmentCount: takipTaksitSayisi,
+    });
+    if (takipHatasi) {
+      transactionEditStatus.textContent = takipHatasi;
+      if (takipSecili && takipListeTuru === "installment" && !takipVadeTarihi) {
+        transactionTrackDueDateInput?.focus();
+      }
+      return;
+    }
   }
 
   // ACIKLAMA: revertedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
@@ -965,6 +1045,15 @@ function saveTransactionEdit(event) {
     .filter((transaction) => !cleanupIds.has(transaction.id))
     .map((transaction) => (transaction.id === editingTransactionId ? nextTransaction : transaction))
     .sort(compareTransactionsNewestFirst);
+
+  if (typeof borcAlacakIslemDuzenlemesiniTakibeUygula === "function") {
+    borcAlacakIslemDuzenlemesiniTakibeUygula(nextTransaction, {
+      selected: takipSecili,
+      listType: takipListeTuru,
+      dueDate: takipVadeTarihi,
+      installmentCount: takipTaksitSayisi,
+    });
+  }
 
   if (revertedPaymentAccount || appliedPaymentAccount || cleanedPaymentAccount) {
     refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
@@ -1049,7 +1138,7 @@ function handleCategoryAdd(event) {
     return;
   }
 
-  transactionCategories[type] = [...(transactionCategories[type] || []), name];
+  transactionCategories[type] = [name, ...(transactionCategories[type] || [])];
   transactionCategories = normalizeCategoryState(transactionCategories);
   persistTransactionCategories();
   syncCategorySelects();
@@ -1104,7 +1193,7 @@ function renderCategoryManageList() {
     return;
   }
 
-  items.forEach((name) => {
+  items.forEach((name, index) => {
     // ACIKLAMA: row degiskeninin Turkce karsiligi "satir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const row = document.createElement("div");
     row.className = "category-manage-row";
@@ -1115,6 +1204,27 @@ function renderCategoryManageList() {
     input.value = name;
     input.maxLength = 32;
     input.autocomplete = "off";
+
+    const orderActions = document.createElement("div");
+    orderActions.className = "category-order-actions";
+    const moveUpButton = document.createElement("button");
+    moveUpButton.type = "button";
+    moveUpButton.className = "ghost-btn category-order-button";
+    moveUpButton.textContent = "↑";
+    moveUpButton.title = "Yukarı taşı";
+    moveUpButton.setAttribute("aria-label", `${name} kategorisini yukarı taşı`);
+    moveUpButton.disabled = index === 0;
+    moveUpButton.addEventListener("click", () => moveManagedCategory(type, name, -1));
+
+    const moveDownButton = document.createElement("button");
+    moveDownButton.type = "button";
+    moveDownButton.className = "ghost-btn category-order-button";
+    moveDownButton.textContent = "↓";
+    moveDownButton.title = "Aşağı taşı";
+    moveDownButton.setAttribute("aria-label", `${name} kategorisini aşağı taşı`);
+    moveDownButton.disabled = index === items.length - 1;
+    moveDownButton.addEventListener("click", () => moveManagedCategory(type, name, 1));
+    orderActions.append(moveUpButton, moveDownButton);
 
     // ACIKLAMA: saveButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
     const saveButton = document.createElement("button");
@@ -1130,9 +1240,30 @@ function renderCategoryManageList() {
     deleteButton.textContent = "Sil";
     deleteButton.addEventListener("click", () => deleteManagedCategory(type, name));
 
-    row.append(input, saveButton, deleteButton);
+    row.append(input, orderActions, saveButton, deleteButton);
     categoryManageList.append(row);
   });
+}
+
+// ACIKLAMA: Kategoriyi secilen yonde bir sira tasir ve yeni sirayi yerel/bulut profile kaydeder.
+function moveManagedCategory(type, name, direction) {
+  const categoryList = [...(transactionCategories[type] || [])];
+  const currentIndex = categoryList.findIndex((item) => item === name);
+  const nextIndex = currentIndex + (direction < 0 ? -1 : 1);
+  if (currentIndex < 0 || nextIndex < 0 || nextIndex >= categoryList.length) {
+    return;
+  }
+
+  [categoryList[currentIndex], categoryList[nextIndex]] = [categoryList[nextIndex], categoryList[currentIndex]];
+  transactionCategories[type] = categoryList;
+  transactionCategories = normalizeCategoryState(transactionCategories);
+  persistTransactionCategories();
+  syncCategorySelects();
+  renderCategoryManageList();
+  render();
+  if (categoryManageStatus) {
+    categoryManageStatus.textContent = `${name} kategorisinin sırası güncellendi.`;
+  }
 }
 
 // ACIKLAMA: renameManagedCategory fonksiyonunun Turkce karsiligi "rename managed kategori"; ilgili uygulama islemini calistirir.
@@ -1256,6 +1387,8 @@ function resetEntryForm() {
   }
   updateEntryTransferAccountSelect("");
   syncEntryTransferVisibility();
+  if (entryInstallmentCountInput) entryInstallmentCountInput.value = "2";
+  if (typeof tekliTaksitAlanlariniGuncelle === "function") tekliTaksitAlanlariniGuncelle();
 
   if (entryFormStatus) {
     entryFormStatus.textContent = "";

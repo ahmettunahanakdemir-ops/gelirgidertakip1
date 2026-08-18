@@ -45,6 +45,10 @@ let editingTransactionId = "";
 let editingBesId = "";
 // ACIKLAMA: Borc/alacak penceresinde duzenlenen kaydin kimligini tutar.
 let duzenlenenBorcAlacakId = "";
+// ACIKLAMA: Borc odeme penceresinde secili kayit, taksit ve aktif manuel liste durumlari.
+let aktifBorcAlacakOdemeKayitId = "";
+let aktifBorcAlacakOdemeTaksitId = "";
+let aktifBorcAlacakSekmesi = "debts";
 // ACIKLAMA: editingPaymentAccountId kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
 let editingPaymentAccountId = "";
 // ACIKLAMA: payingPaymentAccountId kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.

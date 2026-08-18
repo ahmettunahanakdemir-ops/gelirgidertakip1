@@ -36,7 +36,7 @@ function getCloudBackupSummary() {
 // ACIKLAMA: buildCloudBackupPayload fonksiyonunun Turkce karsiligi "olustur bulut yedekle veri paketi"; bulut ve yerel veri esitleme akisini yonetir.
 function buildCloudBackupPayload(createdAt = getTurkeyNowDateTime()) {
   return {
-    version: 6,
+    version: 7,
     createdAt,
     summary: getCloudBackupSummary(),
     transactions: getCloudReadyTransactions(transactions),
@@ -163,7 +163,7 @@ async function backupCurrentDataToCloud() {
 // ACIKLAMA: buildLocalDataBackupPayload fonksiyonunun Turkce karsiligi "olustur yerel veri yedekle veri paketi"; kullanilacak veri yapisini veya HTML elemanini olusturur.
 function buildLocalDataBackupPayload(createdAt = getTurkeyNowDateTime()) {
   return {
-    version: 7,
+    version: 8,
     backupType: "local-file",
     app: "Akış Bütçe",
     createdAt,
@@ -420,7 +420,7 @@ function exportTransactions() {
   // ACIKLAMA: payload aktarim veya API istegi icin hazirlanan veri paketini tutar.
   const payload = JSON.stringify(
     {
-      version: 4,
+      version: 5,
       createdAt: getTurkeyNowDateTime(),
       transactions,
       assets,
@@ -968,7 +968,7 @@ function importTransactions(event) {
 function generateSyncCode() {
   // ACIKLAMA: payload aktarim veya API istegi icin hazirlanan veri paketini tutar.
   const payload = {
-    version: 5,
+    version: 6,
     createdAt: getTurkeyNowDateTime(),
     transactions,
     assets: getCloudReadyAssets(assets),

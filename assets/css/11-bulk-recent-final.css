@@ -80,6 +80,36 @@
   word-break: normal;
 }
 
+.bulk-entry-row .bulk-entry-installment-toggle {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  align-self: end;
+  gap: 9px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: rgba(33, 92, 82, 0.05);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.bulk-entry-row .bulk-entry-installment-toggle input[type="checkbox"] {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  margin: 0;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  -webkit-appearance: checkbox !important;
+  appearance: auto !important;
+  accent-color: var(--accent);
+}
+
 /* ACIKLAMA: .bulk-entry-title-field ve .bulk-entry-note-field uzun metin alanlarina daha fazla yatay alan verir. */
 .bulk-entry-title-field,
 .bulk-entry-note-field {
@@ -156,6 +186,11 @@
 html[data-theme="dark"] .bulk-entry-row {
   border-color: rgba(148, 163, 184, 0.2);
   background: rgba(15, 23, 42, 0.68);
+}
+
+html[data-theme="dark"] .bulk-entry-row .bulk-entry-installment-toggle {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.58);
 }
 
 /* ACIKLAMA: Koyu temada coklu kayit input ve select alanlarinin kontrastini korur. */
@@ -1232,6 +1267,136 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     padding-inline: 14px !important;
     justify-content: center !important;
     text-align: center !important;
+  }
+}
+
+/* ACIKLAMA: Ana kayitlar listesindeki uzun aciklamalar, Duzenle ve Sil butonlarini 100% tarayici olceginde sikistiramaz. */
+#transactionList .transaction-item {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 14px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+#transactionList .transaction-item > div:first-child {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+#transactionList .transaction-title,
+#transactionList .transaction-meta {
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+#transactionList .transaction-side {
+  display: grid !important;
+  grid-template-columns: max-content 92px 58px !important;
+  align-items: center !important;
+  justify-content: end !important;
+  justify-items: stretch !important;
+  justify-self: end !important;
+  gap: 10px !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: none !important;
+}
+
+#transactionList .transaction-side .transaction-amount {
+  min-width: 104px !important;
+  margin-right: 0 !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+}
+
+#transactionList .transaction-side .edit-transaction-btn,
+#transactionList .transaction-side .delete-transaction-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+}
+
+#transactionList .transaction-side .edit-transaction-btn {
+  min-width: 92px !important;
+}
+
+#transactionList .transaction-side .delete-transaction-btn {
+  min-width: 58px !important;
+}
+
+@media (max-width: 900px) {
+  #transactionList .transaction-item {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+
+  #transactionList .transaction-side {
+    grid-template-columns: minmax(0, 1fr) 92px 58px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    justify-content: stretch !important;
+    justify-self: stretch !important;
+  }
+
+  #transactionList .transaction-side .transaction-amount {
+    min-width: 0 !important;
+    text-align: left !important;
+  }
+}
+
+@media (max-width: 600px) {
+  #transactionList .transaction-side {
+    grid-template-columns: minmax(82px, 1fr) 58px !important;
+  }
+
+  #transactionList .transaction-side .transaction-amount {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    white-space: normal !important;
+  }
+
+  #transactionList .transaction-side .edit-transaction-btn,
+  #transactionList .transaction-side .delete-transaction-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* ACIKLAMA: Son kayitlar penceresinde tutar, Duzenle ve Sil komutlarini ayni hizada tutar. */
+#recentTransactionsList .transaction-side,
+.recent-transactions-modal #recentTransactionsList .transaction-side {
+  grid-template-columns: max-content 92px 58px !important;
+}
+
+@media (max-width: 700px) {
+  #recentTransactionsList .transaction-side,
+  .recent-transactions-modal #recentTransactionsList .transaction-side {
+    grid-template-columns: minmax(82px, 1fr) 58px !important;
+  }
+
+  #recentTransactionsList .transaction-side .transaction-amount {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+
+  #recentTransactionsList .transaction-side .edit-transaction-btn,
+  #recentTransactionsList .transaction-side .delete-transaction-btn {
+    width: 100% !important;
+    min-width: 0 !important;
   }
 }
 

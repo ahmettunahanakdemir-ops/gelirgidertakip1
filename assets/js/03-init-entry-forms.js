@@ -20,6 +20,7 @@ function init() {
   updatePaymentAccountFormVisibility();
   updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput?.value || "cash");
   syncEntryTransferVisibility();
+  tekliTaksitAlanlariniGuncelle();
   syncBankImportAccountSelects();
   setupBulkEntryForm();
   setupBorcAlacakTakibi();
@@ -39,7 +40,9 @@ function init() {
   typeInput.addEventListener("change", () => {
     updateCategoryOptions(typeInput.value);
     syncEntryTransferVisibility();
+    tekliTaksitAlanlariniGuncelle();
   });
+  entryInstallmentCheckbox?.addEventListener("change", tekliTaksitAlanlariniGuncelle);
   paymentMethodInput?.addEventListener("change", () => {
     updatePaymentAccountSelect(paymentAccountSelect, paymentMethodInput.value);
   });
@@ -280,6 +283,8 @@ function init() {
     }
   });
   transactionEditForm.addEventListener("submit", saveTransactionEdit);
+  transactionTrackCheckbox?.addEventListener("change", syncTransactionTrackingFields);
+  transactionTrackTypeInput?.addEventListener("change", syncTransactionTrackingFields);
   transactionTypeInput?.addEventListener("change", () => {
     updateCategorySelect(transactionCategoryInput, transactionTypeInput.value);
     syncTransactionTransferVisibility();
@@ -341,39 +346,48 @@ function init() {
     // ACIKLAMA: now degiskeninin Turkce karsiligi "su anki"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const now = getTurkeyNowDateTime();
     // ACIKLAMA: entry degiskeninin Turkce karsiligi "entry"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const entry = createEntryTransaction(
-      {
-        type: formData.get("type"),
-        title: formData.get("title"),
-        amount: formData.get("amount"),
-        category: formData.get("category"),
-        paymentMethod: formData.get("paymentMethod"),
-        paymentAccountId: formData.get("paymentAccount"),
-        transferAccountId: formData.get("transferAccount"),
-        transferFee: formData.get("transferFee"),
-        date: formData.get("date"),
-        note: formData.get("note"),
-      },
-      now,
-      getTurkeyNowTime()
-    );
+    const values = {
+      type: formData.get("type"),
+      title: formData.get("title"),
+      amount: formData.get("amount"),
+      category: formData.get("category"),
+      paymentMethod: formData.get("paymentMethod"),
+      paymentAccountId: formData.get("paymentAccount"),
+      transferAccountId: formData.get("transferAccount"),
+      transferFee: formData.get("transferFee"),
+      date: formData.get("date"),
+      note: formData.get("note"),
+      isInstallment: formData.get("isInstallment") === "on",
+      installmentCount: formData.get("installmentCount"),
+    };
+    const taksitSayisi = Number(values.installmentCount);
+    if (values.isInstallment && (!Number.isInteger(taksitSayisi) || taksitSayisi < 2 || taksitSayisi > 60)) {
+      if (entryFormStatus) entryFormStatus.textContent = "Taksit sayısı 2 ile 60 arasında olmalı.";
+      entryInstallmentCountInput?.focus();
+      return;
+    }
+    const entries = gelirGiderTaksitSerisiniOlustur(values, now, getTurkeyNowTime());
+    const entry = entries[0];
 
     if (!entry.title || !entry.amount || !entry.date) {
       return;
     }
 
-    if (!validateTransactionPayment(entry, entryFormStatus)) {
+    if (!entries.every((item) => validateTransactionPayment(item, entryFormStatus))) {
       return;
     }
 
     // ACIKLAMA: changedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
-    const changedPaymentAccount = applyTransactionPaymentEffect(entry, 1);
-    transactions = [entry, ...transactions].sort(compareTransactionsNewestFirst);
+    let changedPaymentAccount = false;
+    entries.forEach((item) => {
+      changedPaymentAccount = applyTransactionPaymentEffect(item, 1) || changedPaymentAccount;
+    });
+    transactions = [...entries, ...transactions].sort(compareTransactionsNewestFirst);
     if (changedPaymentAccount) {
       refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false });
       persistPaymentAccounts();
     }
-    persistTransactions({ cloudUpserts: [entry] }).catch((error) => {
+    persistTransactions({ cloudUpserts: entries }).catch((error) => {
       if (entryFormStatus) {
         entryFormStatus.textContent = `Firebase'e kaydedilemedi: ${error.message}`;
       }
@@ -387,6 +401,7 @@ function init() {
     if (transferFeeInput) transferFeeInput.value = "";
     updateEntryTransferAccountSelect("");
     syncEntryTransferVisibility();
+    tekliTaksitAlanlariniGuncelle();
     if (entryFormStatus) {
       entryFormStatus.textContent = "";
     }
@@ -413,6 +428,13 @@ function mountModalForms() {
 function createEntryTransaction(values = {}, now = getTurkeyNowDateTime(), time = getTurkeyNowTime()) {
   const entryType = values.type === "transfer" ? "transfer" : values.type === "income" ? "income" : "expense";
   const amount = Math.abs(roundMoney(readSignedNumber(values.amount, 0)));
+  const isInstallment = entryType !== "transfer" && Boolean(values.isInstallment);
+  const installmentCount = isInstallment
+    ? Math.max(1, Math.min(60, Math.trunc(Number(values.installmentCount || 1))))
+    : 0;
+  const installmentNumber = isInstallment
+    ? Math.max(1, Math.min(installmentCount || 1, Math.trunc(Number(values.installmentNumber || 1))))
+    : 0;
   return {
     id: crypto.randomUUID(),
     type: entryType,
@@ -427,10 +449,73 @@ function createEntryTransaction(values = {}, now = getTurkeyNowDateTime(), time 
     transferFee: entryType === "transfer" ? Math.max(0, roundMoney(readSignedNumber(values.transferFee, 0))) : 0,
     date: String(values.date || ""),
     note: String(values.note || "").trim(),
+    isInstallment,
+    installmentGroupId: isInstallment ? String(values.installmentGroupId || "") : "",
+    installmentNumber,
+    installmentCount,
+    installmentCompleted: isInstallment && Boolean(values.installmentCompleted),
+    installmentCompletedAt: isInstallment && values.installmentCompleted
+      ? String(values.installmentCompletedAt || now)
+      : "",
     transactionAt: buildTransactionDateTime(values.date, time),
     createdAt: now,
     updatedAt: now,
   };
+}
+
+// ACIKLAMA: Ay sonu tasmasini onleyerek bir ISO tarihini istenen ay kadar ileri alir.
+function gelirGiderTarihiniAyaEkle(value, monthOffset) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))) {
+    return "";
+  }
+
+  const [year, month, day] = String(value).split("-").map(Number);
+  const monthStart = new Date(Date.UTC(year, month - 1 + monthOffset, 1));
+  const targetYear = monthStart.getUTCFullYear();
+  const targetMonth = monthStart.getUTCMonth();
+  const lastDay = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+  const targetDay = Math.min(day, lastDay);
+  return `${targetYear}-${String(targetMonth + 1).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}`;
+}
+
+// ACIKLAMA: Secilen aylik taksit sayisina gore ayni tutar ve baslikla bagimsiz gelir/gider kayitlari olusturur.
+function gelirGiderTaksitSerisiniOlustur(values = {}, now = getTurkeyNowDateTime(), time = getTurkeyNowTime()) {
+  const isInstallment = values.type !== "transfer" && Boolean(values.isInstallment);
+  const installmentCount = isInstallment
+    ? Math.max(2, Math.min(60, Math.trunc(Number(values.installmentCount || 2))))
+    : 1;
+  const installmentGroupId = isInstallment ? crypto.randomUUID() : "";
+
+  return Array.from({ length: installmentCount }, (_, index) => createEntryTransaction(
+    {
+      ...values,
+      date: gelirGiderTarihiniAyaEkle(values.date, index),
+      isInstallment,
+      installmentGroupId,
+      installmentNumber: isInstallment ? index + 1 : 0,
+      installmentCount: isInstallment ? installmentCount : 0,
+    },
+    now,
+    time
+  ));
+}
+
+// ACIKLAMA: Tekli formda taksit sayisi alanini kutu ve islem tipine gore gosterir.
+function tekliTaksitAlanlariniGuncelle() {
+  const transferMi = typeInput?.value === "transfer";
+  if (entryInstallmentCheckbox) {
+    entryInstallmentCheckbox.disabled = transferMi;
+    if (transferMi) entryInstallmentCheckbox.checked = false;
+  }
+  const taksitSecili = !transferMi && Boolean(entryInstallmentCheckbox?.checked);
+  if (entryInstallmentCountField) entryInstallmentCountField.hidden = !taksitSecili;
+  if (entryInstallmentCountInput) {
+    entryInstallmentCountInput.disabled = !taksitSecili;
+    entryInstallmentCountInput.required = taksitSecili;
+    if (taksitSecili && Number(entryInstallmentCountInput.value || 0) < 2) {
+      entryInstallmentCountInput.value = "2";
+    }
+  }
 }
 
 // ACIKLAMA: setupBulkEntryForm fonksiyonunun Turkce karsiligi "coklu kayit formunu kur"; coklu gelir/gider panelinin olaylarini ve ilk satirlarini hazirlar.
@@ -491,6 +576,9 @@ function getBulkEntryFields(row) {
     transferFields: Array.from(row?.querySelectorAll("[data-bulk-transfer-field]") || []),
     date: row?.querySelector('[data-bulk-field="date"]'),
     note: row?.querySelector('[data-bulk-field="note"]'),
+    installment: row?.querySelector('[data-bulk-field="isInstallment"]'),
+    installmentCount: row?.querySelector('[data-bulk-field="installmentCount"]'),
+    installmentCountField: row?.querySelector("[data-bulk-installment-count-field]"),
     error: row?.querySelector("[data-bulk-row-error]"),
   };
 }
@@ -548,6 +636,14 @@ function createBulkEntryRow() {
       Tarih
       <input data-bulk-field="date" type="date" />
     </label>
+    <label class="bulk-entry-installment-toggle">
+      <input data-bulk-field="isInstallment" type="checkbox" />
+      <span>Taksit mi?</span>
+    </label>
+    <label data-bulk-installment-count-field hidden>
+      Toplam taksit sayısı
+      <input data-bulk-field="installmentCount" type="number" min="2" max="60" step="1" inputmode="numeric" value="2" />
+    </label>
     <label class="bulk-entry-note-field">
       Not
       <input data-bulk-field="note" type="text" maxlength="100" placeholder="Kısa not" />
@@ -567,7 +663,9 @@ function bindBulkEntryRow(row) {
   fields.type?.addEventListener("change", () => {
     updateBulkEntryCategoryOptions(row, { reset: true });
     syncBulkEntryTransferFields(row);
+    cokluTaksitAlanlariniGuncelle(row);
   });
+  fields.installment?.addEventListener("change", () => cokluTaksitAlanlariniGuncelle(row));
   fields.paymentMethod?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
   fields.paymentAccount?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
   fields.transferAccount?.addEventListener("change", () => updateBulkEntryPaymentAccountOptions(row));
@@ -632,9 +730,12 @@ function resetBulkEntryRow(row) {
   if (fields.type) fields.type.value = "income";
   if (fields.paymentMethod) fields.paymentMethod.value = "cash";
   if (fields.date) fields.date.value = getTurkeyTodayISO();
+  if (fields.installment) fields.installment.checked = false;
+  if (fields.installmentCount) fields.installmentCount.value = "2";
   setBulkEntryRowError(row, "");
   updateBulkEntryCategoryOptions(row);
   syncBulkEntryTransferFields(row);
+  cokluTaksitAlanlariniGuncelle(row);
 }
 
 // ACIKLAMA: updateBulkEntryRowNumbers fonksiyonunun Turkce karsiligi "coklu kayit satir numaralarini guncelle"; satir numaralarini ekrana yeniden yazar.
@@ -652,6 +753,7 @@ function refreshBulkEntryRows() {
   getBulkEntryRows().forEach((row) => {
     updateBulkEntryCategoryOptions(row);
     syncBulkEntryTransferFields(row);
+    cokluTaksitAlanlariniGuncelle(row);
   });
   updateBulkEntryRowNumbers();
 }
@@ -726,6 +828,25 @@ function syncBulkEntryTransferFields(row) {
   updateBulkEntryPaymentAccountOptions(row);
 }
 
+// ACIKLAMA: Coklu kayit satirinda taksit kutusunu ve toplam taksit sayisi alanini birlikte yonetir.
+function cokluTaksitAlanlariniGuncelle(row) {
+  const fields = getBulkEntryFields(row);
+  const transferMi = fields.type?.value === "transfer";
+  if (fields.installment) {
+    fields.installment.disabled = transferMi;
+    if (transferMi) fields.installment.checked = false;
+  }
+  const taksitSecili = !transferMi && Boolean(fields.installment?.checked);
+  if (fields.installmentCountField) fields.installmentCountField.hidden = !taksitSecili;
+  if (fields.installmentCount) {
+    fields.installmentCount.disabled = !taksitSecili;
+    fields.installmentCount.required = taksitSecili;
+    if (taksitSecili && Number(fields.installmentCount.value || 0) < 2) {
+      fields.installmentCount.value = "2";
+    }
+  }
+}
+
 // ACIKLAMA: setBulkEntryRowError fonksiyonunun Turkce karsiligi "coklu kayit satir hatasini yaz"; satira ait hata mesajini gosterir veya temizler.
 function setBulkEntryRowError(row, message = "") {
   const error = getBulkEntryFields(row).error;
@@ -737,6 +858,9 @@ function setBulkEntryRowError(row, message = "") {
 // ACIKLAMA: isBulkEntryRowEmpty fonksiyonunun Turkce karsiligi "coklu kayit satiri bos mu"; varsayilan tarih ve secimleri saymadan satirin dolu olup olmadigini kontrol eder.
 function isBulkEntryRowEmpty(row) {
   const fields = getBulkEntryFields(row);
+  if (fields.installment?.checked) {
+    return false;
+  }
   return ![
     fields.title?.value,
     fields.amount?.value,
@@ -756,33 +880,38 @@ function readBulkEntryTransaction(row, index, now) {
     return { status: "empty" };
   }
 
-  const entry = createEntryTransaction(
-    {
-      type: fields.type?.value || "expense",
-      title: fields.title?.value || "",
-      amount: fields.amount?.value || "",
-      category: fields.category?.value || "",
-      paymentMethod: fields.paymentMethod?.value || "cash",
-      paymentAccountId: fields.paymentAccount?.value || "",
-      transferAccountId: fields.transferAccount?.value || "",
-      transferFee: fields.transferFee?.value || "",
-      date: fields.date?.value || "",
-      note: fields.note?.value || "",
-    },
-    now,
-    getTurkeyNowTime()
-  );
+  const values = {
+    type: fields.type?.value || "expense",
+    title: fields.title?.value || "",
+    amount: fields.amount?.value || "",
+    category: fields.category?.value || "",
+    paymentMethod: fields.paymentMethod?.value || "cash",
+    paymentAccountId: fields.paymentAccount?.value || "",
+    transferAccountId: fields.transferAccount?.value || "",
+    transferFee: fields.transferFee?.value || "",
+    date: fields.date?.value || "",
+    note: fields.note?.value || "",
+    isInstallment: Boolean(fields.installment?.checked),
+    installmentCount: fields.installmentCount?.value || "",
+  };
+  const taksitSayisi = Number(values.installmentCount);
+  if (values.isInstallment && (!Number.isInteger(taksitSayisi) || taksitSayisi < 2 || taksitSayisi > 60)) {
+    setBulkEntryRowError(row, `${index + 1}. satırda taksit sayısı 2 ile 60 arasında olmalı.`);
+    return { status: "invalid" };
+  }
+  const entries = gelirGiderTaksitSerisiniOlustur(values, now, getTurkeyNowTime());
+  const entry = entries[0];
 
   if (!entry.title || !entry.amount || !entry.date) {
     setBulkEntryRowError(row, `${index + 1}. satırda başlık, tutar ve tarih zorunlu.`);
     return { status: "invalid" };
   }
 
-  if (!validateTransactionPayment(entry, fields.error)) {
+  if (!entries.every((item) => validateTransactionPayment(item, fields.error))) {
     return { status: "invalid" };
   }
 
-  return { status: "ready", entry };
+  return { status: "ready", entries };
 }
 
 // ACIKLAMA: addBulkTransactions fonksiyonunun Turkce karsiligi "coklu gelir gider kaydet"; dolu satirlarin tamamini tek seferde kayitlara ekler.
@@ -803,7 +932,7 @@ function addBulkTransactions(event) {
       return;
     }
     if (result.status === "ready") {
-      readyEntries.push(result.entry);
+      readyEntries.push(...result.entries);
     }
   }
 

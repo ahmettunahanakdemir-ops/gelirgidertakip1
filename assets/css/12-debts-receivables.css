@@ -13,6 +13,10 @@
   color: var(--expense);
 }
 
+.debt-stat-installment strong {
+  color: var(--warning, #b56b00);
+}
+
 .debt-stat-receivable strong,
 .debt-kind-receivable .debt-record-amount {
   color: var(--income);
@@ -27,9 +31,45 @@
   flex: 0 0 auto;
 }
 
+.debt-view-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: var(--surface-soft, rgba(255, 255, 255, 0.62));
+}
+
+.debt-view-tab {
+  min-height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.debt-view-tab.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 8px 18px rgba(31, 78, 68, 0.1);
+}
+
+.debt-tab-panel[hidden] {
+  display: none !important;
+}
+
+.debt-management-panel {
+  display: grid;
+  gap: 18px;
+}
+
 .debt-filter-bar {
   display: grid;
-  grid-template-columns: repeat(2, minmax(180px, 260px));
+  grid-template-columns: minmax(180px, 260px);
   gap: 12px;
   margin: 18px 0 8px;
 }
@@ -46,6 +86,7 @@
 }
 
 .debt-filter-bar select,
+.debt-filter-bar input,
 .debt-form-grid input,
 .debt-form-grid select,
 .debt-form-grid textarea {
@@ -59,8 +100,7 @@
   font: inherit;
 }
 
-.debt-record-list,
-.debt-related-transaction-list {
+.debt-record-list {
   display: grid;
   gap: 10px;
   margin-top: 12px;
@@ -116,16 +156,79 @@
   color: var(--text-soft, var(--muted));
 }
 
+.debt-record-finance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.debt-record-finance strong {
+  color: var(--text);
+}
+
+.debt-progress-track {
+  height: 7px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(33, 92, 82, 0.12);
+}
+
+.debt-progress-value {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--income);
+}
+
+.debt-payment-history {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.debt-payment-history summary {
+  width: fit-content;
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.debt-payment-history-list {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.debt-payment-history-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 5px 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(33, 92, 82, 0.07);
+}
+
 .debt-record-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(82px, 1fr));
+  grid-template-columns: repeat(2, minmax(112px, 1fr));
   gap: 8px;
-  min-width: 280px;
+  min-width: 232px;
 }
 
 .debt-record-actions button {
   min-width: 0;
   padding-inline: 10px;
+}
+
+.debt-record-actions .debt-payment-action {
+  border-color: rgba(12, 155, 111, 0.36);
+  color: var(--income);
 }
 
 .debt-status-text {
@@ -146,8 +249,361 @@
   grid-column: 1 / -1;
 }
 
-.debt-related-transaction-list .transaction-item {
+.debt-amount-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.debt-amount-input-row button {
+  min-width: 92px;
+}
+
+.debt-payment-note-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.debt-payment-note-field textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.transaction-follow-settings {
+  min-width: 0;
+  margin: 2px 0;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(33, 92, 82, 0.05);
+}
+
+.entry-installment-settings {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.entry-installment-settings > label {
+  min-width: 0;
+}
+
+.entry-form .transaction-installment-toggle,
+.profile-form .transaction-installment-toggle {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(33, 92, 82, 0.05);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.entry-form .transaction-installment-toggle input,
+.profile-form .transaction-installment-toggle input {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
   margin: 0;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  -webkit-appearance: checkbox !important;
+  appearance: auto !important;
+  accent-color: var(--accent);
+}
+
+.profile-form .transaction-follow-toggle {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.profile-form .transaction-follow-toggle input {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  margin: 0;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  -webkit-appearance: checkbox !important;
+  appearance: auto !important;
+  accent-color: var(--accent);
+}
+
+#entryInstallmentCheckbox,
+#transactionInstallmentCheckbox,
+#transactionTrackCheckbox {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  padding: 0 !important;
+  align-self: center;
+}
+
+.transaction-follow-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.transaction-follow-options[hidden] {
+  display: none !important;
+}
+
+html[data-theme="dark"] .transaction-follow-settings {
+  background: rgba(15, 23, 42, 0.58);
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+html[data-theme="dark"] .transaction-installment-toggle {
+  background: rgba(15, 23, 42, 0.58);
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.scheduled-installment-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--stroke);
+}
+
+.scheduled-installment-section h3,
+.scheduled-installment-month h4 {
+  margin: 0;
+}
+
+.scheduled-installment-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.scheduled-installment-month {
+  min-width: 0;
+}
+
+.scheduled-installment-month h4 {
+  margin-bottom: 9px;
+  color: var(--text);
+}
+
+.scheduled-installment-pagination {
+  justify-content: flex-start;
+  margin-top: 4px;
+}
+
+.scheduled-installment-pagination[hidden] {
+  display: none;
+}
+
+.scheduled-installment-transactions {
+  display: grid;
+  gap: 8px;
+}
+
+.scheduled-installment-transactions .transaction-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(33, 92, 82, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.scheduled-installment-transactions .transaction-side {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 118px 92px 58px !important;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scheduled-installment-transactions .transaction-side button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 40px;
+  padding-inline: 10px;
+  white-space: nowrap;
+}
+
+.scheduled-installment-transactions .transaction-item.is-installment-completed {
+  opacity: 0.72;
+}
+
+.scheduled-installment-transactions .transaction-item.is-installment-completed .transaction-title {
+  text-decoration: line-through;
+}
+
+html[data-theme="dark"] .scheduled-installment-transactions .transaction-item {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.68);
+}
+
+html[data-theme="dark"] .scheduled-installment-month h4 {
+  color: #ffffff;
+}
+
+.debt-linked-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: rgba(12, 155, 111, 0.1);
+  color: var(--income);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.debt-installment-filter-field {
+  display: flex;
+  min-width: 220px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.debt-installment-filter-field select {
+  min-height: 42px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  padding: 9px 11px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.debt-installment-group-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.debt-installment-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.debt-installment-group {
+  overflow: hidden;
+  border: 1px solid rgba(33, 92, 82, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.debt-installment-group-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 13px 14px;
+  border-bottom: 1px solid rgba(33, 92, 82, 0.1);
+}
+
+.debt-installment-group-actions {
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.debt-installment-group-actions button {
+  min-width: 72px;
+  min-height: 38px;
+  padding: 8px 10px;
+  white-space: nowrap;
+}
+
+.debt-installment-group-header h3,
+.debt-installment-group-header p {
+  margin: 0;
+}
+
+.debt-installment-group-header p {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.debt-installment-row {
+  display: grid;
+  grid-template-columns: 56px minmax(130px, 0.8fr) minmax(180px, 1fr) minmax(130px, auto);
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(33, 92, 82, 0.08);
+}
+
+.debt-installment-row:last-child {
+  border-bottom: 0;
+}
+
+.debt-installment-number {
+  font-weight: 900;
+}
+
+.debt-installment-money {
+  display: grid;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.debt-installment-money strong {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.debt-installment-state {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.debt-installment-row.is-overdue .debt-installment-state {
+  color: var(--expense);
+}
+
+.debt-installment-row.is-paid {
+  opacity: 0.68;
+}
+
+.debt-installment-row button {
+  width: 100%;
 }
 
 html[data-theme="dark"] .debt-record-item {
@@ -156,11 +612,25 @@ html[data-theme="dark"] .debt-record-item {
 }
 
 html[data-theme="dark"] .debt-filter-bar select,
+html[data-theme="dark"] .debt-filter-bar input,
 html[data-theme="dark"] .debt-form-grid input,
 html[data-theme="dark"] .debt-form-grid select,
 html[data-theme="dark"] .debt-form-grid textarea {
   background: rgba(15, 23, 42, 0.88);
   border-color: rgba(148, 163, 184, 0.24);
+  color: var(--text);
+}
+
+html[data-theme="dark"] .debt-view-tabs,
+html[data-theme="dark"] .debt-installment-group {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.58);
+}
+
+html[data-theme="dark"] .debt-payment-note-field textarea,
+html[data-theme="dark"] .debt-installment-filter-field select {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.88);
   color: var(--text);
 }
 
@@ -178,6 +648,35 @@ html[data-theme="dark"] .debt-form-grid textarea {
   .debt-panel-heading > button,
   .debt-filter-bar {
     width: 100%;
+  }
+
+  .debt-installment-group-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .debt-view-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-follow-options {
+    grid-template-columns: 1fr;
+  }
+
+  .scheduled-installment-list {
+    grid-template-columns: 1fr;
+  }
+
+  .scheduled-installment-transactions .transaction-side {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 0.65fr) !important;
+  }
+
+  .scheduled-installment-transactions .transaction-side button {
+    padding-inline: 8px !important;
+  }
+
+  .scheduled-installment-transactions .transaction-amount {
+    grid-column: 1 / -1;
   }
 
   .debt-filter-bar,
@@ -201,5 +700,38 @@ html[data-theme="dark"] .debt-form-grid textarea {
   .debt-record-actions {
     grid-template-columns: 1fr;
     min-width: 0;
+  }
+
+  .debt-payment-history-list li,
+  .debt-installment-group-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .debt-installment-filter-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .debt-installment-row {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .debt-installment-money,
+  .debt-installment-row button,
+  .debt-installment-row > .debt-linked-badge {
+    grid-column: 1 / -1;
+  }
+
+  .debt-installment-row > .debt-linked-badge {
+    justify-self: start;
+  }
+
+  .debt-amount-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .debt-amount-input-row button {
+    width: 100%;
   }
 }

@@ -552,6 +552,12 @@ const transferAccountSelect = document.getElementById("transferAccount");
 const transferFeeLabel = document.getElementById("transferFeeLabel");
 // ACIKLAMA: transferFeeInput kullanicidan veri alan input elemaninin DOM referansidir.
 const transferFeeInput = document.getElementById("transferFee");
+// ACIKLAMA: Tekli gelir/gider kaydinin aylik taksit serisi olarak olusturulup olusturulmayacagini belirler.
+const entryInstallmentCheckbox = document.getElementById("entryInstallmentCheckbox");
+// ACIKLAMA: Taksit secildiginde toplam kac aylik kayit olusturulacagini alan etiketiyle birlikte tutar.
+const entryInstallmentCountField = document.getElementById("entryInstallmentCountField");
+// ACIKLAMA: Tekli kayitta olusturulacak toplam taksit sayisini alir.
+const entryInstallmentCountInput = document.getElementById("entryInstallmentCountInput");
 // ACIKLAMA: entryFormStatus kullaniciya durum, hata veya basari mesaji gostermek icin kullanilir.
 const entryFormStatus = document.getElementById("entryFormStatus");
 // ACIKLAMA: openBulkEntryModalButton coklu gelir/gider penceresini acan butondur.
@@ -828,6 +834,15 @@ const transactionTransferAccountInput = document.getElementById("transactionTran
 const transactionTransferFeeLabel = document.getElementById("transactionTransferFeeLabel");
 // ACIKLAMA: transactionTransferFeeInput kullanicidan veri alan input elemaninin DOM referansidir.
 const transactionTransferFeeInput = document.getElementById("transactionTransferFeeInput");
+const transactionInstallmentCheckbox = document.getElementById("transactionInstallmentCheckbox");
+// ACIKLAMA: Gelir/gider duzenleme penceresindeki manuel borc, taksit veya alacak takibi alanlari.
+const transactionTrackCheckbox = document.getElementById("transactionTrackCheckbox");
+const transactionTrackOptions = document.getElementById("transactionTrackOptions");
+const transactionTrackTypeInput = document.getElementById("transactionTrackTypeInput");
+const transactionTrackDueDateLabel = document.getElementById("transactionTrackDueDateLabel");
+const transactionTrackDueDateInput = document.getElementById("transactionTrackDueDateInput");
+const transactionTrackInstallmentCountLabel = document.getElementById("transactionTrackInstallmentCountLabel");
+const transactionTrackInstallmentCountInput = document.getElementById("transactionTrackInstallmentCountInput");
 // ACIKLAMA: transactionEditStatus kullaniciya durum, hata veya basari mesaji gostermek icin kullanilir.
 const transactionEditStatus = document.getElementById("transactionEditStatus");
 // ACIKLAMA: closeTransactionEditButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
