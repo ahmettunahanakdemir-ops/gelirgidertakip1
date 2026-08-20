@@ -347,6 +347,91 @@
   margin: 0;
 }
 
+/* ACIKLAMA: Tekli gelir/gider formunu masaustunde istenen bes satirli duzene ayirir. */
+#entryModal .entry-form {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+
+#entryModal .entry-form-row {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+#entryModal .entry-form-main-row,
+#entryModal .entry-form-category-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#entryModal .entry-form-payment-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#entryModal .entry-form-choice-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+/* ACIKLAMA: Secilen taksit veya borc/alacak yarisi kendi icinde iki esit alana bolunur. */
+#entryModal .entry-choice-group {
+  display: grid;
+  grid-column: auto;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+#entryModal .entry-choice-group.is-active {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#entryModal .entry-choice-group > .transaction-installment-toggle,
+#entryModal .entry-choice-group > .entry-debt-payment-toggle {
+  grid-column: 1 / -1;
+}
+
+#entryModal .entry-choice-group.is-active > .transaction-installment-toggle,
+#entryModal .entry-choice-group.is-active > .entry-debt-payment-toggle {
+  grid-column: 1;
+}
+
+#entryModal .entry-choice-group > #entryInstallmentCountField,
+#entryModal .entry-choice-group > .entry-debt-payment-options {
+  grid-column: 2;
+  align-self: start;
+  margin: 0;
+}
+
+#entryModal .entry-form .transaction-installment-toggle,
+#entryModal .entry-form .entry-debt-payment-toggle {
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: rgba(33, 92, 82, 0.05);
+}
+
+#entryModal .entry-note-field,
+#entryModal .entry-form > .sync-status {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+}
+
+html[data-theme="dark"] #entryModal .entry-form .transaction-installment-toggle,
+html[data-theme="dark"] #entryModal .entry-form .entry-debt-payment-toggle {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.58);
+}
+
 .entry-form .transaction-installment-toggle,
 .profile-form .transaction-installment-toggle {
   display: grid;
@@ -689,6 +774,24 @@ html[data-theme="dark"] .debt-installment-filter-field select {
 }
 
 @media (max-width: 760px) {
+  #entryModal .entry-form-main-row,
+  #entryModal .entry-form-category-row,
+  #entryModal .entry-form-payment-row,
+  #entryModal .entry-form-choice-row,
+  #entryModal .entry-choice-group,
+  #entryModal .entry-choice-group.is-active {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #entryModal .entry-choice-group > .transaction-installment-toggle,
+  #entryModal .entry-choice-group > .entry-debt-payment-toggle,
+  #entryModal .entry-choice-group.is-active > .transaction-installment-toggle,
+  #entryModal .entry-choice-group.is-active > .entry-debt-payment-toggle,
+  #entryModal .entry-choice-group > #entryInstallmentCountField,
+  #entryModal .entry-choice-group > .entry-debt-payment-options {
+    grid-column: 1 !important;
+  }
+
   .debt-panel-heading {
     flex-direction: column;
     align-items: stretch;

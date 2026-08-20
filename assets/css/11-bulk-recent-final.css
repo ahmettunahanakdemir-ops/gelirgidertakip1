@@ -44,15 +44,69 @@
 /* ACIKLAMA: .bulk-entry-row tek bir coklu gelir/gider satirinin responsive grid yerlesimini ayarlar. */
 .bulk-entry-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
-  align-items: end;
+  align-items: stretch;
   width: 100%;
   min-width: 0;
   padding: 12px;
   border: 1px solid rgba(33, 92, 82, 0.14);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
+}
+
+/* ACIKLAMA: Masaustunde her coklu kaydi istenen bes yatay satira ayiran ana gruplar. */
+.bulk-entry-main-row,
+.bulk-entry-account-row,
+.bulk-entry-choice-row {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.bulk-entry-main-row {
+  grid-template-columns: 30px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+}
+
+.bulk-entry-account-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+}
+
+.bulk-entry-choice-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+/* ACIKLAMA: Secilen taksit veya borc yarisi kendi icinde iki esit alana bolunur. */
+.bulk-entry-choice-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.bulk-entry-choice-group.is-active {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bulk-entry-choice-group > .bulk-entry-installment-toggle,
+.bulk-entry-choice-group > .bulk-entry-debt-payment-toggle {
+  grid-column: 1 / -1;
+}
+
+.bulk-entry-choice-group.is-active > .bulk-entry-installment-toggle,
+.bulk-entry-choice-group.is-active > .bulk-entry-debt-payment-toggle {
+  grid-column: 1;
+}
+
+.bulk-entry-choice-group > [data-bulk-installment-count-field],
+.bulk-entry-choice-group > .bulk-entry-debt-payment-options {
+  grid-column: 2;
 }
 
 /* ACIKLAMA: .bulk-entry-row-number coklu kayit satir numarasini sabit boyutta gosterir. */
@@ -114,38 +168,16 @@
   accent-color: var(--accent);
 }
 
-/* ACIKLAMA: .bulk-entry-title-field ve .bulk-entry-note-field uzun metin alanlarina daha fazla yatay alan verir. */
-.bulk-entry-title-field,
-.bulk-entry-debt-payment-toggle {
-  grid-column: span 2;
-}
-
-.bulk-entry-detail-fields {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 10px;
-  min-width: 0;
-}
-
-.bulk-entry-detail-fields > [data-bulk-installment-count-field] {
-  grid-column: 1;
-  align-self: start;
-  width: 100%;
-}
-
 .bulk-entry-debt-payment-options {
   display: grid;
-  grid-column: 1;
   align-self: start;
   gap: 6px;
   min-width: 0;
 }
 
-/* ACIKLAMA: Bagli kayit alani acildiginda yanindaki not alaninin alta kaymasini onler. */
+/* ACIKLAMA: Not alani dorduncu satirin tamamini kaplar. */
 .bulk-entry-note-field {
-  grid-column: 2;
+  grid-column: 1 / -1;
   align-self: start;
   width: 100%;
 }
@@ -181,15 +213,15 @@
   border-color: rgba(9, 166, 129, 0.55);
 }
 
-/* ACIKLAMA: .bulk-entry-remove satir silme butonunu kompakt ve sabit genislikte tutar. */
+/* ACIKLAMA: .bulk-entry-remove besinci satirin tamamini kaplar ve metni ortalar. */
 .bulk-entry-remove {
   display: inline-flex;
   grid-column: 1 / -1;
   align-items: center;
   justify-content: center;
-  justify-self: center;
+  justify-self: stretch;
   min-width: 0;
-  width: calc(50% - 5px);
+  width: 100%;
   padding-inline: 10px;
   text-align: center;
 }
@@ -258,38 +290,44 @@ html[data-theme="dark"] .bulk-entry-form select {
   color: var(--text);
 }
 
-/* ACIKLAMA: Bu medya sorgusu orta genisliklerde coklu kayit satirlarini daha az sutuna dusurur. */
-@media (max-width: 1100px) {
-  .bulk-entry-row {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+/* ACIKLAMA: Masaustunde bagli kayit aciklamasi ucuncu satirin yuksekligini degistirmez. */
+@media (min-width: 721px) {
+  .bulk-entry-debt-payment-options p {
+    display: none;
   }
 }
 
 /* ACIKLAMA: Bu medya sorgusu tablet ve telefonlarda coklu kayit satirlarini tek sutuna indirir. */
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .bulk-entry-panel {
     margin-top: 14px;
   }
 
-  .bulk-entry-row {
-    grid-template-columns: 1fr;
-    padding: 10px;
+  .bulk-entry-main-row,
+  .bulk-entry-account-row,
+  .bulk-entry-choice-row,
+  .bulk-entry-choice-group,
+  .bulk-entry-choice-group.is-active {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 
-  .bulk-entry-title-field,
-  .bulk-entry-debt-payment-toggle,
-  .bulk-entry-row-error {
-    grid-column: auto;
-  }
-
-  .bulk-entry-detail-fields {
-    grid-template-columns: 1fr;
-  }
-
-  .bulk-entry-detail-fields > [data-bulk-installment-count-field],
+  .bulk-entry-choice-group > .bulk-entry-installment-toggle,
+  .bulk-entry-choice-group > .bulk-entry-debt-payment-toggle,
+  .bulk-entry-choice-group.is-active > .bulk-entry-installment-toggle,
+  .bulk-entry-choice-group.is-active > .bulk-entry-debt-payment-toggle,
+  .bulk-entry-choice-group > [data-bulk-installment-count-field],
   .bulk-entry-debt-payment-options,
-  .bulk-entry-note-field {
-    grid-column: 1;
+  .bulk-entry-note-field,
+  .bulk-entry-row-error {
+    grid-column: 1 !important;
+  }
+
+  #bulkEntryModal .bulk-entry-choice-group.is-active > .bulk-entry-installment-toggle,
+  #bulkEntryModal .bulk-entry-choice-group.is-active > .bulk-entry-debt-payment-toggle,
+  #bulkEntryModal .bulk-entry-choice-group > [data-bulk-installment-count-field],
+  #bulkEntryModal .bulk-entry-choice-group > .bulk-entry-debt-payment-options {
+    grid-column: 1 !important;
+    width: 100%;
   }
 
   .bulk-entry-row-number {
@@ -312,6 +350,22 @@ html[data-theme="dark"] .bulk-entry-form select {
 
   #bulkEntryModal .bulk-entry-actions {
     grid-template-columns: 1fr;
+  }
+
+  /* ACIKLAMA: Telefonda gelir/gider ana islem dugmelerini kompakt ve standart iki sutunlu kutulara donusturur. */
+  #entryView .entry-primary-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  #entryView .action-panel > .entry-primary-actions > button {
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 6px 8px !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    font-size: 0.8rem !important;
+    line-height: 1.15 !important;
   }
 }
 

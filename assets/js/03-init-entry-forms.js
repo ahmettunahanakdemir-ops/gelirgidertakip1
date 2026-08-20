@@ -531,6 +531,7 @@ function tekliTaksitAlanlariniGuncelle() {
     if (transferMi || borcAlacakOdemesiMi) entryInstallmentCheckbox.checked = false;
   }
   const taksitSecili = !transferMi && !borcAlacakOdemesiMi && Boolean(entryInstallmentCheckbox?.checked);
+  entryInstallmentCheckbox?.closest(".entry-choice-group")?.classList.toggle("is-active", taksitSecili);
   if (entryInstallmentCountField) entryInstallmentCountField.hidden = !taksitSecili;
   if (entryInstallmentCountInput) {
     entryInstallmentCountInput.disabled = !taksitSecili;
@@ -597,6 +598,7 @@ function tekliBorcAlacakOdemeAlanlariniGuncelle() {
     if (transferMi) entryDebtPaymentCheckbox.checked = false;
   }
   const secili = !transferMi && Boolean(entryDebtPaymentCheckbox?.checked);
+  entryDebtPaymentCheckbox?.closest(".entry-choice-group")?.classList.toggle("is-active", secili);
   const oncekiKayitId = entryDebtPaymentTarget?.value || "";
   if (entryDebtPaymentOptions) entryDebtPaymentOptions.hidden = !secili;
   if (entryDebtPaymentTarget) {
@@ -673,9 +675,11 @@ function getBulkEntryFields(row) {
     installment: row?.querySelector('[data-bulk-field="isInstallment"]'),
     installmentCount: row?.querySelector('[data-bulk-field="installmentCount"]'),
     installmentCountField: row?.querySelector("[data-bulk-installment-count-field]"),
+    installmentGroup: row?.querySelector("[data-bulk-installment-group]"),
     debtPayment: row?.querySelector('[data-bulk-field="isDebtPayment"]'),
     debtPaymentTarget: row?.querySelector('[data-bulk-field="debtReceivableId"]'),
     debtPaymentOptions: row?.querySelector("[data-bulk-debt-payment-options]"),
+    debtPaymentGroup: row?.querySelector("[data-bulk-debt-payment-group]"),
     debtPaymentTargetLabel: row?.querySelector("[data-bulk-debt-payment-label]"),
     debtPaymentHint: row?.querySelector("[data-bulk-debt-payment-hint]"),
     error: row?.querySelector("[data-bulk-row-error]"),
@@ -688,78 +692,86 @@ function createBulkEntryRow() {
   row.className = "bulk-entry-row";
   row.dataset.bulkEntryRow = "true";
   row.innerHTML = `
-    <span class="bulk-entry-row-number" data-bulk-row-number>1</span>
-    <label class="bulk-entry-title-field">
-      Başlık
-      <input data-bulk-field="title" type="text" maxlength="40" placeholder="Maaş, market..." />
-    </label>
-    <label>
-      Tip
-      <select data-bulk-field="type">
-        <option value="income">Gelir</option>
-        <option value="expense">Gider</option>
-        <option value="transfer">Hesaplar arası transfer</option>
-      </select>
-    </label>
-    <label>
-      Tutar
-      <input data-bulk-field="amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" />
-    </label>
-    <label>
-      Kategori
-      <select data-bulk-field="category"></select>
-    </label>
-    <label>
-      Ödeme
-      <select data-bulk-field="paymentMethod">
-        <option value="cash">Nakit</option>
-        <option value="credit_card">Kredi Kartı</option>
-        <option value="bank_account">Banka Hesabı / Kartı</option>
-        <option value="transfer">Havale / EFT</option>
-        <option value="other">Diğer</option>
-      </select>
-    </label>
-    <label>
-      <span data-bulk-payment-account-label>Kart / hesap</span>
-      <select data-bulk-field="paymentAccount"></select>
-    </label>
-    <label class="bulk-entry-transfer-field" data-bulk-transfer-field hidden>
-      Hedef kart / hesap
-      <select data-bulk-field="transferAccount"></select>
-    </label>
-    <label class="bulk-entry-transfer-field" data-bulk-transfer-field hidden>
-      Transfer ücreti
-      <input data-bulk-field="transferFee" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" />
-    </label>
-    <label>
-      Tarih
-      <input data-bulk-field="date" type="date" />
-    </label>
-    <label class="bulk-entry-installment-toggle">
-      <input data-bulk-field="isInstallment" type="checkbox" />
-      <span>Taksit mi?</span>
-    </label>
-    <label class="bulk-entry-debt-payment-toggle">
-      <input data-bulk-field="isDebtPayment" type="checkbox" />
-      <span>Borç ödemesi / alacak tahsilatı mı?</span>
-    </label>
-    <div class="bulk-entry-detail-fields">
-      <label data-bulk-installment-count-field hidden>
-        Toplam taksit sayısı
-        <input data-bulk-field="installmentCount" type="number" min="2" max="60" step="1" inputmode="numeric" value="2" />
+    <div class="bulk-entry-main-row">
+      <span class="bulk-entry-row-number" data-bulk-row-number>1</span>
+      <label class="bulk-entry-title-field">
+        Başlık
+        <input data-bulk-field="title" type="text" maxlength="40" placeholder="Maaş, market..." />
       </label>
-      <div class="bulk-entry-debt-payment-options" data-bulk-debt-payment-options hidden>
-        <label>
-          <span data-bulk-debt-payment-label>Bağlı kayıt</span>
-          <select data-bulk-field="debtReceivableId"></select>
-        </label>
-        <p data-bulk-debt-payment-hint></p>
-      </div>
-      <label class="bulk-entry-note-field">
-        Not
-        <input data-bulk-field="note" type="text" maxlength="100" placeholder="Kısa not" />
+      <label>
+        Tutar
+        <input data-bulk-field="amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" />
+      </label>
+      <label>
+        Tip
+        <select data-bulk-field="type">
+          <option value="income">Gelir</option>
+          <option value="expense">Gider</option>
+          <option value="transfer">Hesaplar arası transfer</option>
+        </select>
       </label>
     </div>
+    <div class="bulk-entry-account-row">
+      <label>
+        Kategori
+        <select data-bulk-field="category"></select>
+      </label>
+      <label>
+        Ödeme
+        <select data-bulk-field="paymentMethod">
+          <option value="cash">Nakit</option>
+          <option value="credit_card">Kredi Kartı</option>
+          <option value="bank_account">Banka Hesabı / Kartı</option>
+          <option value="transfer">Havale / EFT</option>
+          <option value="other">Diğer</option>
+        </select>
+      </label>
+      <label>
+        <span data-bulk-payment-account-label>Kart / hesap</span>
+        <select data-bulk-field="paymentAccount"></select>
+      </label>
+      <label>
+        Tarih
+        <input data-bulk-field="date" type="date" />
+      </label>
+      <label class="bulk-entry-transfer-field" data-bulk-transfer-field hidden>
+        Hedef kart / hesap
+        <select data-bulk-field="transferAccount"></select>
+      </label>
+      <label class="bulk-entry-transfer-field" data-bulk-transfer-field hidden>
+        Transfer ücreti
+        <input data-bulk-field="transferFee" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" />
+      </label>
+    </div>
+    <div class="bulk-entry-choice-row">
+      <div class="bulk-entry-choice-group bulk-entry-installment-group" data-bulk-installment-group>
+        <label class="bulk-entry-installment-toggle">
+          <input data-bulk-field="isInstallment" type="checkbox" />
+          <span>Taksit mi?</span>
+        </label>
+        <label data-bulk-installment-count-field hidden>
+          Toplam taksit sayısı
+          <input data-bulk-field="installmentCount" type="number" min="2" max="60" step="1" inputmode="numeric" value="2" />
+        </label>
+      </div>
+      <div class="bulk-entry-choice-group bulk-entry-debt-payment-group" data-bulk-debt-payment-group>
+        <label class="bulk-entry-debt-payment-toggle">
+          <input data-bulk-field="isDebtPayment" type="checkbox" />
+          <span>Borç ödemesi / alacak tahsilatı mı?</span>
+        </label>
+        <div class="bulk-entry-debt-payment-options" data-bulk-debt-payment-options hidden>
+          <label>
+            <span data-bulk-debt-payment-label>Bağlı kayıt</span>
+            <select data-bulk-field="debtReceivableId"></select>
+          </label>
+          <p data-bulk-debt-payment-hint></p>
+        </div>
+      </div>
+    </div>
+    <label class="bulk-entry-note-field">
+      Not
+      <input data-bulk-field="note" type="text" maxlength="100" placeholder="Kısa not" />
+    </label>
     <button class="ghost-btn bulk-entry-remove" data-bulk-action="remove" type="button" aria-label="Satırı sil">Sil</button>
     <p class="bulk-entry-row-error" data-bulk-row-error></p>
   `;
@@ -960,6 +972,7 @@ function cokluTaksitAlanlariniGuncelle(row) {
     if (transferMi || borcAlacakOdemesiMi) fields.installment.checked = false;
   }
   const taksitSecili = !transferMi && !borcAlacakOdemesiMi && Boolean(fields.installment?.checked);
+  fields.installmentGroup?.classList.toggle("is-active", taksitSecili);
   if (fields.installmentCountField) fields.installmentCountField.hidden = !taksitSecili;
   if (fields.installmentCount) {
     fields.installmentCount.disabled = !taksitSecili;
@@ -1028,6 +1041,7 @@ function cokluBorcAlacakOdemeAlanlariniGuncelle(row) {
     if (transferMi) fields.debtPayment.checked = false;
   }
   const secili = !transferMi && Boolean(fields.debtPayment?.checked);
+  fields.debtPaymentGroup?.classList.toggle("is-active", secili);
   const oncekiKayitId = fields.debtPaymentTarget?.value || "";
   if (fields.debtPaymentOptions) fields.debtPaymentOptions.hidden = !secili;
   if (fields.debtPaymentTarget) {
