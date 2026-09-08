@@ -2591,3 +2591,1253 @@ html.modern-budget #historySearchModal .entry-modal-save:active {
     font-size: 17px !important;
   }
 }
+
+
+/* v377 - Ust sabit cubukta ustteki icerik gozukmesin. */
+html.modern-budget .shell-toolbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 88 !important;
+  padding-top: calc(env(safe-area-inset-top) + 10px) !important;
+  margin-top: 0 !important;
+  background: transparent !important;
+}
+
+html.modern-budget .shell-toolbar::before {
+  content: "" !important;
+  position: absolute !important;
+  left: -12px !important;
+  right: -12px !important;
+  top: calc(-1 * (env(safe-area-inset-top) + 14px)) !important;
+  bottom: -2px !important;
+  z-index: -1 !important;
+  background: color-mix(in srgb, var(--bg) 97%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 70%, transparent) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  pointer-events: none !important;
+}
+
+@media(max-width:980px) {
+  html.modern-budget .shell-toolbar {
+    top: 0 !important;
+    margin-bottom: 6px !important;
+  }
+
+  html.modern-budget .shell-toolbar::before {
+    left: -16px !important;
+    right: -16px !important;
+    top: calc(-1 * (env(safe-area-inset-top) + 16px)) !important;
+  }
+}
+
+@media(min-width:981px) {
+  html.modern-budget .shell-toolbar {
+    top: 0 !important;
+    padding-top: 10px !important;
+  }
+
+  html.modern-budget .shell-toolbar::before {
+    left: -20px !important;
+    right: -20px !important;
+    top: -12px !important;
+  }
+}
+
+
+/* v378 - Masaustu ust ikon cubugunu da sayfa kaydirilirken sabit tut. */
+@media (min-width: 981px) {
+  html.modern-budget body #appShell.app-shell > .workspace,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+
+  html.modern-budget .shell-toolbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 88 !important;
+    padding-top: 10px !important;
+  }
+
+  html.modern-budget .shell-toolbar::before {
+    left: -32px !important;
+    right: -32px !important;
+    top: -12px !important;
+    bottom: -2px !important;
+    background: color-mix(in srgb, var(--bg) 97%, transparent) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+  }
+}
+
+/* v380 - v379 fixed yerlesimi kullanilmadan, masaustu ust ikon cubugu akis icinde sticky tutulur.
+   AppShell/workspace yatay tasma icin scroll container olusturmaz; boylece sticky viewport'a gore calisir. */
+@media (min-width: 981px) {
+  html.modern-budget body #appShell.app-shell,
+  html.modern-budget body #appShell.app-shell:not([hidden]),
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+    padding-top: 28px !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar {
+    position: sticky !important;
+    top: 0 !important;
+    left: auto !important;
+    right: auto !important;
+    z-index: 120 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 0 6px 0 !important;
+    padding: 10px 0 18px !important;
+    box-sizing: border-box !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar::before,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar::before {
+    content: "" !important;
+    position: absolute !important;
+    left: -32px !important;
+    right: -32px !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    z-index: -1 !important;
+    background: color-mix(in srgb, var(--bg) 97%, transparent) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--stroke) 70%, transparent) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    pointer-events: none !important;
+  }
+}
+
+/* v381 - Ust arac cubugunu güvenli sticky yap.
+   v380'deki overflow-x: clip, sticky davranisini bozuyordu.
+   Bu override ile app-shell/workspace eksen tasmalari sticky'yi engellemeyecek,
+   shell-toolbar kendi arka planini tasiyacak ve icerigi kesmeden ekranda kalacak. */
+html.modern-budget body #appShell.app-shell,
+html.modern-budget body #appShell.app-shell:not([hidden]),
+html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]),
+html.modern-budget body #appShell.app-shell > .workspace,
+html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
+  overflow: visible !important;
+}
+
+html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar,
+html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 140 !important;
+  width: 100% !important;
+  margin: 0 0 8px 0 !important;
+  padding: 10px 0 18px !important;
+  box-sizing: border-box !important;
+  background: color-mix(in srgb, var(--bg) 96%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 78%, transparent) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  isolation: isolate !important;
+}
+
+html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar::before,
+html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar::before {
+  content: none !important;
+}
+
+@media (max-width: 980px) {
+  html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar {
+    top: 0 !important;
+    padding-top: calc(env(safe-area-inset-top) + 8px) !important;
+  }
+}
+
+@media (min-width: 981px) {
+  html.modern-budget body #appShell.app-shell > .workspace,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
+    padding-top: 20px !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar {
+    top: 0 !important;
+    padding-top: 10px !important;
+  }
+}
+
+/* v382 - Masaustunde ustteki sag ikon alani dahil toolbar'i JS destekli sabitle. */
+.shell-toolbar-placeholder {
+  display: block;
+  width: 100%;
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 981px) {
+  html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar.is-desktop-fixed,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar.is-desktop-fixed {
+    position: fixed !important;
+    top: var(--shell-toolbar-fixed-top, 0px) !important;
+    left: var(--shell-toolbar-fixed-left, 0px) !important;
+    width: var(--shell-toolbar-fixed-width, 100%) !important;
+    max-width: none !important;
+    margin: 0 !important;
+    z-index: 220 !important;
+    padding: 10px 0 18px !important;
+    box-sizing: border-box !important;
+    background: color-mix(in srgb, var(--bg) 96%, transparent) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--stroke) 78%, transparent) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    isolation: isolate !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar.is-desktop-fixed::before,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar.is-desktop-fixed::before {
+    content: none !important;
+  }
+
+  html.modern-budget .shell-toolbar.is-desktop-fixed .shell-toolbar-actions {
+    position: relative;
+    z-index: 1;
+  }
+
+  html.modern-budget .shell-toolbar.is-desktop-fixed .shell-quick-actions {
+    top: calc(100% - 6px);
+    right: 0;
+  }
+}
+
+
+/* v391 - Çoklu kayıt penceresinde üst buton çubuğu sabit, yalnız içerik kaydırılır. */
+html.modern-budget #bulkEntryModal .bulk-entry-modal {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+html.modern-budget #bulkEntryModal .bulk-entry-modal-nav {
+  position: relative !important;
+  top: auto !important;
+  flex: 0 0 auto !important;
+  z-index: 20 !important;
+  margin-bottom: 0 !important;
+}
+
+html.modern-budget #bulkEntryModal .bulk-entry-modal-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  padding-top: 10px !important;
+  padding-right: 4px !important;
+  box-sizing: border-box !important;
+}
+
+html.modern-budget #bulkEntryModal .bulk-entry-modal-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+html.modern-budget #bulkEntryModal .bulk-entry-modal-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 38%, transparent);
+  border-radius: 999px;
+}
+
+@media (max-width: 640px) {
+  html.modern-budget #bulkEntryModal .bulk-entry-modal {
+    max-height: calc(100dvh - 12px) !important;
+  }
+
+  html.modern-budget #bulkEntryModal .bulk-entry-modal-nav {
+    margin: -16px -16px 0 !important;
+    padding-top: max(12px, env(safe-area-inset-top)) !important;
+  }
+
+  html.modern-budget #bulkEntryModal .bulk-entry-modal-scroll {
+    padding-top: 10px !important;
+    padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+
+/* v392 - Kart hareketi içe aktar üst barını tek satırda hizala: solda İptal, sağda Görsel Yükle / Yapay Zeka ile Ekle / Ekle. */
+#bankImportModal .bank-import-modal-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+  overflow: visible !important;
+}
+
+#bankImportModal .bank-import-modal-nav > h2#bankImportModalTitle,
+#bankImportModal #bankImportModalTitle {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  flex: 0 0 0 !important;
+}
+
+#bankImportModal .bank-import-modal-nav .entry-modal-cancel {
+  flex: 0 0 auto !important;
+  margin-right: auto !important;
+}
+
+#bankImportModal .bank-import-modal-nav-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+  margin-left: auto !important;
+  flex: 0 1 auto !important;
+}
+
+html.modern-budget #bankImportModal .bank-import-modal-nav-actions > * {
+  flex: 0 0 auto !important;
+}
+
+html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 0 14px !important;
+  gap: 8px !important;
+}
+
+#bankImportModal .bank-upload-nav-trigger svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+#bankImportModal .bank-upload-nav-trigger .bank-upload-label {
+  display: inline-block;
+  font-weight: 650;
+}
+
+html.modern-budget #bankImportModal #closeBankImportModalButton {
+  width: auto !important;
+  min-width: 86px !important;
+  max-width: none !important;
+  padding: 0 16px !important;
+}
+
+html.modern-budget #bankImportModal #bankImportAddButton {
+  min-width: 174px !important;
+  padding: 0 18px !important;
+}
+
+html.modern-budget #bankImportModal #bankImportLocalButton {
+  min-width: 92px !important;
+  padding: 0 18px !important;
+  border-color: color-mix(in srgb, var(--accent) 64%, var(--stroke)) !important;
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(15, 125, 120, 0.18) !important;
+}
+
+html.modern-budget #bankImportModal #bankImportLocalButton:hover,
+html.modern-budget #bankImportModal #bankImportLocalButton:focus-visible {
+  background: color-mix(in srgb, var(--accent) 88%, #ffffff) !important;
+  color: #ffffff !important;
+}
+
+html.modern-budget #bankImportModal #bankImportLocalButton:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+  #bankImportModal .bank-import-modal-nav {
+    gap: 8px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav-actions {
+    gap: 8px !important;
+  }
+
+  html.modern-budget #bankImportModal #closeBankImportModalButton {
+    min-width: 76px !important;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+  }
+
+  html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+    min-width: 44px !important;
+    padding: 0 12px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportAddButton {
+    min-width: 142px !important;
+    padding: 0 14px !important;
+    font-size: 13px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportLocalButton {
+    min-width: 74px !important;
+    padding: 0 14px !important;
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  #bankImportModal .bank-upload-nav-trigger .bank-upload-label {
+    display: none !important;
+  }
+
+  html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    padding: 0 !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportAddButton {
+    min-width: 134px !important;
+    font-size: 12px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportLocalButton {
+    min-width: 68px !important;
+    font-size: 12px !important;
+  }
+}
+
+
+/* v393 - Banka hareketi içe aktarma üst bar düzeltmesi */
+#bankImportModal .bank-import-modal-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+}
+
+#bankImportModal .bank-import-modal-nav h2,
+#bankImportModal #bankImportModalTitle {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  flex: 0 0 0 !important;
+}
+
+#bankImportModal .bank-import-modal-nav .entry-modal-cancel {
+  flex: 0 0 auto !important;
+  margin-right: auto !important;
+}
+
+#bankImportModal .bank-import-modal-nav-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  margin-left: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+html.modern-budget #bankImportModal .bank-import-modal-nav-actions > * {
+  flex: 0 0 auto !important;
+}
+
+html.modern-budget #bankImportModal .entry-modal-nav-button,
+html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+  min-height: 40px !important;
+  max-height: 40px !important;
+  font-size: 13px !important;
+  padding: 0 12px !important;
+}
+
+html.modern-budget #bankImportModal #closeBankImportModalButton {
+  width: auto !important;
+  min-width: 82px !important;
+  padding: 0 14px !important;
+}
+
+html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+  width: auto !important;
+  min-width: 92px !important;
+  max-width: none !important;
+  gap: 6px !important;
+  padding: 0 12px !important;
+}
+
+#bankImportModal .bank-upload-nav-trigger svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+#bankImportModal .bank-upload-nav-trigger .bank-upload-label {
+  display: inline-block !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+}
+
+html.modern-budget #bankImportModal #bankImportAddButton {
+  min-width: 148px !important;
+  padding: 0 14px !important;
+  font-size: 13px !important;
+}
+
+html.modern-budget #bankImportModal #bankImportLocalButton {
+  min-width: 76px !important;
+  padding: 0 14px !important;
+  font-size: 13px !important;
+}
+
+@media (max-width: 700px) {
+  #bankImportModal .bank-import-modal-nav {
+    gap: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav-actions {
+    gap: 6px !important;
+  }
+
+  html.modern-budget #bankImportModal .entry-modal-nav-button,
+  html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+    min-height: 38px !important;
+    max-height: 38px !important;
+    font-size: 12px !important;
+    padding: 0 10px !important;
+  }
+
+  html.modern-budget #bankImportModal #closeBankImportModalButton {
+    min-width: 72px !important;
+  }
+
+  html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+    min-width: 44px !important;
+    width: 44px !important;
+    max-width: 44px !important;
+    padding: 0 !important;
+  }
+
+  #bankImportModal .bank-upload-nav-trigger .bank-upload-label {
+    display: none !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportAddButton {
+    min-width: 124px !important;
+    padding: 0 12px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportLocalButton {
+    min-width: 64px !important;
+    padding: 0 12px !important;
+  }
+}
+
+
+/* v395 - Kart hareketleri içe aktarma: solda İptal, sağda üç nokta menüsü. */
+#bankImportModal .bank-import-menu-nav {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  overflow:visible !important;
+}
+
+#bankImportModal .bank-import-menu-wrap {
+  position:relative !important;
+  flex:0 0 auto !important;
+  margin-left:auto !important;
+}
+
+html.modern-budget #bankImportModal #closeBankImportModalButton {
+  margin-left:0 !important;
+  margin-right:auto !important;
+  width:auto !important;
+  min-width:82px !important;
+  max-width:none !important;
+  height:42px !important;
+  min-height:42px !important;
+  max-height:42px !important;
+  padding:0 16px !important;
+}
+
+html.modern-budget #bankImportModal .bank-import-menu-button {
+  width:48px !important;
+  min-width:48px !important;
+  max-width:48px !important;
+  height:42px !important;
+  min-height:42px !important;
+  max-height:42px !important;
+  padding:0 !important;
+  font-size:20px !important;
+  letter-spacing:2px !important;
+  line-height:1 !important;
+}
+
+#bankImportModal .bank-import-menu-button > span {
+  transform:translateY(-2px);
+}
+
+#bankImportModal .bank-import-menu {
+  position:absolute !important;
+  top:calc(100% + 10px) !important;
+  right:0 !important;
+  left:auto !important;
+  z-index:80 !important;
+  width:min(260px, calc(100vw - 40px)) !important;
+  padding:10px !important;
+  border:1px solid color-mix(in srgb, var(--stroke) 84%, transparent) !important;
+  border-radius:18px !important;
+  background:color-mix(in srgb, var(--surface) 97%, white 3%) !important;
+  box-shadow:0 18px 40px rgba(18,45,45,.18) !important;
+  backdrop-filter:blur(16px) !important;
+  -webkit-backdrop-filter:blur(16px) !important;
+  display:grid !important;
+  gap:6px !important;
+}
+
+#bankImportModal .bank-import-menu[hidden] { display:none !important; }
+
+#bankImportModal .bank-import-menu-item {
+  width:100% !important;
+  min-height:50px !important;
+  margin:0 !important;
+  padding:0 14px !important;
+  border:1px solid transparent !important;
+  border-radius:14px !important;
+  background:transparent !important;
+  color:var(--text) !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  text-align:left !important;
+  font-size:14px !important;
+  font-weight:700 !important;
+  cursor:pointer !important;
+  transition:background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease !important;
+}
+
+#bankImportModal .bank-import-menu-item + .bank-import-menu-item {
+  margin-top:2px !important;
+}
+
+#bankImportModal .bank-import-menu-item:hover,
+#bankImportModal .bank-import-menu-item:focus-visible {
+  background:color-mix(in srgb, var(--accent-soft) 82%, white 18%) !important;
+  border-color:color-mix(in srgb, var(--accent) 16%, transparent) !important;
+  color:var(--accent) !important;
+  outline:none !important;
+  transform:translateY(-1px) !important;
+}
+
+#bankImportModal .bank-import-menu-item svg,
+#bankImportModal .bank-import-menu-item-icon {
+  width:20px !important;
+  height:20px !important;
+  flex:0 0 20px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  color:var(--accent) !important;
+}
+
+#bankImportModal .bank-import-menu-item svg {
+  padding:0 !important;
+}
+
+#bankImportModal .bank-import-menu-item-icon {
+  font-size:20px !important;
+  line-height:1 !important;
+}
+
+#bankImportModal .bank-import-menu-ai {
+  color:#7a5700 !important;
+}
+
+#bankImportModal .bank-import-menu-ai:hover,
+#bankImportModal .bank-import-menu-ai:focus-visible {
+  background:rgba(246,195,57,.18) !important;
+  border-color:rgba(214,158,10,.22) !important;
+  color:#6a4b00 !important;
+}
+
+@media (max-width:640px) {
+  #bankImportModal .bank-import-menu-nav {
+    padding-left:10px !important;
+    padding-right:10px !important;
+  }
+
+  html.modern-budget #bankImportModal #closeBankImportModalButton {
+    min-width:74px !important;
+    height:40px !important;
+    min-height:40px !important;
+    max-height:40px !important;
+    padding:0 14px !important;
+    font-size:13px !important;
+  }
+
+  html.modern-budget #bankImportModal .bank-import-menu-button {
+    width:44px !important;
+    min-width:44px !important;
+    max-width:44px !important;
+    height:40px !important;
+    min-height:40px !important;
+    max-height:40px !important;
+  }
+
+  #bankImportModal .bank-import-menu {
+    width:min(240px, calc(100vw - 28px)) !important;
+    padding:8px !important;
+  }
+
+  #bankImportModal .bank-import-menu-item {
+    min-height:46px !important;
+    padding:0 12px !important;
+    font-size:13px !important;
+  }
+}
+
+
+
+/* v397 - Banka içe aktarma menüsündeki tüm seçenekler ikonlu ve tamamen sade görünümde. */
+#bankImportModal .bank-import-menu-item,
+#bankImportModal .bank-import-menu-item.bank-import-menu-ai,
+#bankImportModal #bankImportLocalButton,
+#bankImportModal #bankImportAddButton {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+#bankImportModal .bank-import-menu-item:hover,
+#bankImportModal .bank-import-menu-item:focus-visible,
+#bankImportModal .bank-import-menu-item.bank-import-menu-ai:hover,
+#bankImportModal .bank-import-menu-item.bank-import-menu-ai:focus-visible,
+#bankImportModal #bankImportLocalButton:hover,
+#bankImportModal #bankImportLocalButton:focus-visible,
+#bankImportModal #bankImportAddButton:hover,
+#bankImportModal #bankImportAddButton:focus-visible {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border-color: color-mix(in srgb, var(--accent) 14%, transparent) !important;
+  box-shadow: none !important;
+}
+
+#bankImportModal .bank-import-menu-item svg {
+  width:20px !important;
+  height:20px !important;
+  flex:0 0 20px !important;
+  color:var(--accent) !important;
+}
+
+
+/* v397 - Banka içe aktarma açılır menüsündeki seçenekler her zaman sade, ikonlu ve tek tip görünür. */
+#bankImportModal .bank-import-menu-item,
+#bankImportModal .bank-import-menu-item.bank-import-menu-ai,
+#bankImportModal #bankImportLocalButton,
+#bankImportModal #bankImportAddButton {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  color: var(--text) !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+}
+
+#bankImportModal .bank-import-menu-item > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+}
+
+#bankImportModal .bank-import-menu-item:hover,
+#bankImportModal .bank-import-menu-item:focus-visible,
+#bankImportModal .bank-import-menu-item.bank-import-menu-ai:hover,
+#bankImportModal .bank-import-menu-item.bank-import-menu-ai:focus-visible,
+#bankImportModal #bankImportLocalButton:hover,
+#bankImportModal #bankImportLocalButton:focus-visible,
+#bankImportModal #bankImportAddButton:hover,
+#bankImportModal #bankImportAddButton:focus-visible {
+  background-color: var(--accent-soft) !important;
+  background-image: none !important;
+  color: var(--accent) !important;
+  border-color: color-mix(in srgb, var(--accent) 14%, transparent) !important;
+  box-shadow: none !important;
+}
+
+
+/* v397.1 - Önceki dolu buton stillerini ez ve tüm seçenekleri ikonlu sade menü öğesine çevir. */
+html.modern-budget #bankImportModal #bankImportLocalButton,
+html.modern-budget #bankImportModal #bankImportAddButton,
+html.modern-budget[data-theme="dark"] #bankImportModal #bankImportLocalButton,
+html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton,
+html:not([data-theme="dark"]) #bankImportLocalButton,
+body:not([data-theme="dark"]) #bankImportLocalButton,
+html[data-theme="dark"] #bankImportLocalButton,
+body[data-theme="dark"] #bankImportLocalButton {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  color: var(--text) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.modern-budget #bankImportModal #bankImportLocalButton:hover,
+html.modern-budget #bankImportModal #bankImportAddButton:hover,
+html.modern-budget #bankImportModal #bankImportLocalButton:focus-visible,
+html.modern-budget #bankImportModal #bankImportAddButton:focus-visible,
+html.modern-budget[data-theme="dark"] #bankImportModal #bankImportLocalButton:hover,
+html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton:hover,
+html.modern-budget[data-theme="dark"] #bankImportModal #bankImportLocalButton:focus-visible,
+html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton:focus-visible {
+  background: var(--accent-soft) !important;
+  background-color: var(--accent-soft) !important;
+  background-image: none !important;
+  color: var(--accent) !important;
+  border-color: color-mix(in srgb, var(--accent) 14%, transparent) !important;
+  box-shadow: none !important;
+}
+
+
+/* v398 - Banka içe aktarma üç nokta menüsündeki seçenekleri şablon içinde ortala. */
+#bankImportModal .bank-import-menu-item {
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+#bankImportModal .bank-import-menu-item > svg,
+#bankImportModal .bank-import-menu-item > .bank-import-menu-item-icon {
+  flex: 0 0 20px !important;
+}
+
+#bankImportModal .bank-import-menu-item > span {
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+
+/* v399 - Kart hareketleri açılır menüsü daraltıldı; sağ/sol boşluklar azaltıldı ve üç nokta butonu İptal ile aynı kapsül stile getirildi. */
+html.modern-budget #bankImportModal .bank-import-menu-button {
+  width:auto !important;
+  min-width:82px !important;
+  max-width:none !important;
+  height:42px !important;
+  min-height:42px !important;
+  max-height:42px !important;
+  padding:0 16px !important;
+  border:1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius:999px !important;
+  background:color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow:0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color:var(--accent) !important;
+  font-size:18px !important;
+  font-weight:650 !important;
+  letter-spacing:4px !important;
+  line-height:1 !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+#bankImportModal .bank-import-menu-button > span {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:auto !important;
+  transform:translateY(-1px) !important;
+}
+
+#bankImportModal .bank-import-menu {
+  width:fit-content !important;
+  min-width:0 !important;
+  max-width:calc(100vw - 24px) !important;
+  padding:8px 0 !important;
+  gap:0 !important;
+}
+
+#bankImportModal .bank-import-menu-item {
+  min-height:48px !important;
+  padding:0 18px !important;
+}
+
+#bankImportModal .bank-import-menu-item + .bank-import-menu-item {
+  margin-top:0 !important;
+}
+
+@media (max-width:640px) {
+  html.modern-budget #bankImportModal .bank-import-menu-button {
+    min-width:74px !important;
+    height:40px !important;
+    min-height:40px !important;
+    max-height:40px !important;
+    padding:0 14px !important;
+    font-size:16px !important;
+    letter-spacing:3px !important;
+  }
+
+  #bankImportModal .bank-import-menu {
+    max-width:calc(100vw - 20px) !important;
+    padding:6px 0 !important;
+  }
+
+  #bankImportModal .bank-import-menu-item {
+    min-height:44px !important;
+    padding:0 16px !important;
+  }
+}
+
+
+/* v403 - Tarih filtresinde Temizle butonu İptal'in yanında üst çubukta. */
+html.modern-budget .shell-summary-filter.is-active {
+  background: var(--accent-soft) !important;
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--stroke)) !important;
+  color: var(--accent) !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-modal-card {
+  width: min(680px, calc(100% - 28px)) !important;
+  max-width: 680px !important;
+  padding: 0 18px 20px !important;
+  overflow: hidden !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-modal-nav {
+  position: sticky !important;
+  top: -16px !important;
+  z-index: 8 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 104px !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: -16px -18px 18px !important;
+  padding: 14px 18px 12px !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  background: color-mix(in srgb, var(--surface-soft) 92%, transparent) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-modal-nav-start {
+  grid-column: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-modal-nav h2 {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  margin: 0 !important;
+  max-width: 180px !important;
+  overflow: hidden !important;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  text-align: center !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+
+html.modern-budget #summaryDateFilterModal .entry-modal-nav-button {
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+html.modern-budget #summaryDateFilterModal .entry-modal-nav-button:hover,
+html.modern-budget #summaryDateFilterModal .entry-modal-nav-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+}
+
+#summaryDateFilterModal .entry-modal-cancel {
+  width: 104px !important;
+  min-width: 104px !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-clear-nav {
+  width: 104px !important;
+  min-width: 104px !important;
+}
+
+#summaryDateFilterModal .entry-modal-save {
+  grid-column: 2 !important;
+  justify-self: end !important;
+  width: 104px !important;
+  min-width: 104px !important;
+}
+
+html.modern-budget #summaryDateFilterModal .entry-modal-save:disabled {
+  border-color: transparent !important;
+  background: color-mix(in srgb, var(--stroke) 35%, var(--surface)) !important;
+  box-shadow: none !important;
+  color: var(--muted) !important;
+  cursor: default !important;
+  opacity: 0.58 !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-modal-content {
+  display: grid !important;
+  gap: 16px !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-modal-content > .panel-note {
+  margin: 0 !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-grid label {
+  display: grid !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+  font-weight: 650 !important;
+  color: var(--muted) !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-grid input {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+}
+
+@media (min-width: 981px) {
+  #summaryDateFilterModal .summary-date-filter-modal-nav {
+    top: -20px !important;
+    margin: -20px -18px 18px !important;
+    padding: 20px 18px 14px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #summaryDateFilterModal .summary-date-filter-modal-card {
+    width: calc(100% - 18px) !important;
+    padding: 0 12px 16px !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-modal-nav {
+    margin: -12px -12px 16px !important;
+    padding: 12px !important;
+    grid-template-columns: minmax(0, 1fr) 86px !important;
+    gap: 8px !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-modal-nav-start {
+    gap: 6px !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-modal-nav h2 {
+    max-width: 100px !important;
+    font-size: 16px !important;
+  }
+
+  html.modern-budget #summaryDateFilterModal .entry-modal-nav-button {
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 11px !important;
+    font-size: 14px !important;
+  }
+
+  #summaryDateFilterModal .entry-modal-cancel,
+  #summaryDateFilterModal .summary-date-filter-clear-nav,
+  #summaryDateFilterModal .entry-modal-save {
+    width: 86px !important;
+    min-width: 86px !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 420px) {
+  #summaryDateFilterModal .summary-date-filter-modal-nav {
+    grid-template-columns: minmax(0, 1fr) 72px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 6px !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-modal-nav h2 {
+    max-width: 72px !important;
+    font-size: 13px !important;
+  }
+
+  html.modern-budget #summaryDateFilterModal .entry-modal-nav-button {
+    padding: 0 9px !important;
+    font-size: 13px !important;
+  }
+
+  #summaryDateFilterModal .entry-modal-cancel,
+  #summaryDateFilterModal .summary-date-filter-clear-nav,
+  #summaryDateFilterModal .entry-modal-save {
+    width: 72px !important;
+    min-width: 72px !important;
+  }
+}
+
+/* Özet sayfasında eski inline tarih filtresi gösterilmez. */
+#summaryView #summaryHomeSummaryFilterPanel,
+#summaryView .summary-filter-panel {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  #summaryDateFilterModal .summary-date-filter-modal-card {
+    width: calc(100% - 18px) !important;
+    padding: 0 12px 16px !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-modal-nav {
+    margin: 0 -12px 16px !important;
+    padding: 12px !important;
+    grid-template-columns: minmax(72px, auto) minmax(0, 1fr) minmax(72px, auto) !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-modal-nav h2 {
+    font-size: 16px !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* v404 - Tarih filtresi penceresine biraz daha ferah üst/alt boşluk ve boyut. */
+#summaryDateFilterModal .summary-date-filter-modal-card {
+  width: min(720px, calc(100% - 28px)) !important;
+  max-width: 720px !important;
+  padding: 0 20px 24px !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-modal-nav {
+  margin: 0 -20px 22px !important;
+  padding: 18px 20px 16px !important;
+}
+
+#summaryDateFilterModal .summary-date-filter-modal-content {
+  gap: 18px !important;
+}
+
+@media (min-width: 981px) {
+  #summaryDateFilterModal .summary-date-filter-modal-nav {
+    margin: 0 -20px 22px !important;
+    padding: 20px 20px 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #summaryDateFilterModal .summary-date-filter-modal-card {
+    width: calc(100% - 16px) !important;
+    padding: 0 14px 20px !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-modal-nav {
+    margin: 0 -14px 18px !important;
+    padding: 15px 14px 14px !important;
+  }
+}
+
+
+/* v405 - Mobil tarih filtresinde Kaydet butonunu pencerenin en sağına sabitle. */
+@media (max-width: 640px) {
+  #summaryDateFilterModal .summary-date-filter-modal-nav {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 86px !important;
+    align-items: center !important;
+    width: auto !important;
+  }
+
+  #summaryDateFilterModal .summary-date-filter-modal-nav-start {
+    grid-column: 1 !important;
+    justify-self: start !important;
+    width: auto !important;
+    margin: 0 !important;
+  }
+
+  #summaryDateFilterModal .entry-modal-save {
+    grid-column: 2 !important;
+    justify-self: end !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+}
+
+@media (max-width: 420px) {
+  #summaryDateFilterModal .summary-date-filter-modal-nav {
+    grid-template-columns: minmax(0, 1fr) 72px !important;
+  }
+}
+
+
+/* v406 - Mobil Özet kartlarını tek sütunda Tasarruf > Toplam Gelir > Toplam Gider sırasına getir. */
+@media (max-width: 980px) {
+  html.modern-budget #summaryView .stats-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+
+  html.modern-budget #summaryView .stats-grid > .summary-stat-savings { order: 1 !important; }
+  html.modern-budget #summaryView .stats-grid > .summary-stat-income { order: 2 !important; }
+  html.modern-budget #summaryView .stats-grid > .summary-stat-expense { order: 3 !important; }
+
+  html.modern-budget #summaryView .stats-grid > .stat-card {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}

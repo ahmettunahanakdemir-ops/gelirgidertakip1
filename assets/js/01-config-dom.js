@@ -46,6 +46,7 @@ const TRANSACTIONS_STATE_UPDATED_STORAGE_KEY = "akis-budget-transactions-state-u
 const TRANSACTIONS_CLOUD_DIRTY_STORAGE_KEY = "akis-budget-transactions-cloud-dirty";
 // ACIKLAMA: Cevrimdisi profil degisikliklerinin baglanti gelince buluta yeniden gonderilmesini saglar.
 const PROFILE_CLOUD_DIRTY_STORAGE_KEY = "akis-budget-profile-cloud-dirty";
+const PROFILE_CONTACT_STORAGE_KEY = "akis-budget-profile-contact";
 // ACIKLAMA: TRANSACTIONS_CLOUD_FULL_SYNC_STORAGE_KEY localStorage icinde ilgili verinin saklanacagi anahtardir.
 const TRANSACTIONS_CLOUD_FULL_SYNC_STORAGE_KEY = "akis-budget-transactions-cloud-full-sync";
 // ACIKLAMA: RECENT_ADDED_TRANSACTION_DAYS degiskeninin Turkce karsiligi "son eklenen islem days"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -744,6 +745,11 @@ const profileModal = document.getElementById("profileModal");
 const profileForm = document.getElementById("profileForm");
 // ACIKLAMA: profileUsername degiskeninin Turkce karsiligi "profil kullanici adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 const profileUsername = document.getElementById("profileUsername");
+const profileEmail = document.getElementById("profileEmail");
+const profileHomeAddress = document.getElementById("profileHomeAddress");
+const profileWorkAddress = document.getElementById("profileWorkAddress");
+const profilePasswordSettingsButton = document.getElementById("profilePasswordSettingsButton");
+const profilePasswordFields = document.getElementById("profilePasswordFields");
 // ACIKLAMA: profileCurrentPassword degiskeninin Turkce karsiligi "profil mevcut sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 const profileCurrentPassword = document.getElementById("profileCurrentPassword");
 // ACIKLAMA: profilePassword degiskeninin Turkce karsiligi "profil sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -796,6 +802,13 @@ const closeProfileButton = document.getElementById("closeProfileButton");
 const deleteUserButton = document.getElementById("deleteUserButton");
 // ACIKLAMA: deleteUserStatus kullaniciya durum, hata veya basari mesaji gostermek icin kullanilir.
 const deleteUserStatus = document.getElementById("deleteUserStatus");
+const deleteAccountCodeModal = document.getElementById("deleteAccountCodeModal");
+const deleteAccountCodeForm = document.getElementById("deleteAccountCodeForm");
+const deleteAccountCodeInput = document.getElementById("deleteAccountCodeInput");
+const deleteAccountCodeStatus = document.getElementById("deleteAccountCodeStatus");
+const deleteAccountCodeEmail = document.getElementById("deleteAccountCodeEmail");
+const closeDeleteAccountCodeButton = document.getElementById("closeDeleteAccountCodeButton");
+const resendDeleteAccountCodeButton = document.getElementById("resendDeleteAccountCodeButton");
 // ACIKLAMA: deleteAccountModal acilip kapanan modal/pencere elemaninin DOM referansidir.
 const deleteAccountModal = document.getElementById("deleteAccountModal");
 // ACIKLAMA: deleteAccountForm ilgili formun DOM referansidir; submit ve veri okuma islemlerinde kullanilir.

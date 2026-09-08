@@ -18,8 +18,8 @@ html.modern-budget #settingsView .preferences-subpage .preferences-header h2 {fo
  html.modern-budget .mobile-dock {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));left:max(4px,env(safe-area-inset-left));right:max(4px,env(safe-area-inset-right));padding:4px;gap:0;}
  html.modern-budget .mobile-dock button {width:100%;height:52px;min-height:52px;padding:4px 0;gap:2px;overflow:hidden;}
  html.modern-budget .mobile-dock button svg {width:22px;height:22px;flex-shrink:0;}
- html.modern-budget .mobile-dock button span {display:none;}
- html.modern-budget .mobile-dock button.active span {display:block;font-size:9px;line-height:12px;max-width:100%;white-space:normal;text-align:center;}
+ html.modern-budget .mobile-dock button span {display:none!important;}
+ html.modern-budget .mobile-dock button.active span {display:block!important;font-size:9px;line-height:12px;max-width:100%;white-space:normal;text-align:center;}
  html.modern-budget .mobile-dock {--dock-count:7;--dock-index:0;isolation:isolate;background:rgba(248,249,250,.78);border:1px solid rgba(255,255,255,.8);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);box-shadow:0 8px 28px rgba(0,0,0,.1);}
  html.modern-budget .mobile-dock::before {content:"";position:absolute;z-index:0;left:4px;top:4px;bottom:4px;width:calc((100% - 8px)/var(--dock-count));border-radius:24px;background:rgba(55,65,68,.12);opacity:0;transform:translateX(calc(var(--dock-index)*100%));transition:transform 260ms cubic-bezier(.22,.8,.25,1),opacity 140ms ease;pointer-events:none;}
  html.modern-budget .mobile-dock.has-active-item::before {opacity:1;}
@@ -37,7 +37,7 @@ html.modern-budget #settingsView .preferences-subpage .preferences-header h2 {fo
 }
 
 /* ACIKLAMA: Ayar alt ekranlari ana ayar listesinin olcu ve yuzey dilini kullanir. */
-html.modern-budget #settingsView .preferences-subpage > .preferences-content {max-width:680px;margin:20px auto 0;padding:0;background:transparent;border-radius:0;}
+html.modern-budget #settingsView .preferences-subpage > .preferences-content {width:min(100%,1200px);max-width:1200px;margin:20px auto 0;padding:0;background:transparent;border-radius:0;}
 html.modern-budget #settingsView .preferences-subpage .preferences-content > :is(.panel,form) {display:block!important;width:100%;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;}
 html.modern-budget #settingsView .preferences-subpage :is(input:not([type="range"]):not([type="checkbox"]),select,textarea) {min-height:48px;border:1px solid var(--stroke);border-radius:14px;background:var(--surface-soft);color:var(--text);font-size:16px;}
 html.modern-budget #settingsView .preferences-subpage :is(.primary-btn,.ghost-btn,.danger-btn) {min-height:52px;border-radius:16px;font-size:16px;white-space:normal;}
@@ -63,9 +63,17 @@ html.modern-budget #settingsView [data-settings-page="notifications"] .sync-stat
 html.modern-budget #settingsView [data-settings-page="backup"] .sync-status {margin:0;padding:16px 20px;background:var(--surface);border-radius:0 0 22px 22px;font-size:15px;line-height:1.5;}
 html.modern-budget #settingsView [data-settings-page="backup"] .sync-status {margin-top:16px;border-radius:22px;}
 
-html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important;}
-html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls > label {display:grid;gap:8px;padding:16px 18px;background:var(--surface);border-radius:22px;font-size:16px;}
-html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls > button {width:100%;}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header {grid-template-columns:minmax(72px,auto) minmax(0,1fr) minmax(188px,auto)!important;}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-actions {display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save,
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-clear {min-width:88px;min-height:44px;padding:0 16px;border:1px solid color-mix(in srgb,var(--stroke) 72%,transparent);border-radius:999px;background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 4px 16px rgba(15,40,40,.06);color:var(--accent);font:inherit;font-weight:650;cursor:pointer;white-space:nowrap;}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save:hover,
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save:focus-visible,
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-clear:hover,
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-clear:focus-visible {background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 42%,var(--stroke));}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls {display:grid!important;grid-template-columns:1fr!important;gap:12px!important;align-items:stretch!important;}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls > label {display:grid;gap:8px;padding:16px 18px;background:var(--surface);border-radius:22px;font-size:16px;grid-column:1!important;}
+html.modern-budget #settingsView [data-settings-page="date-filter"] #applyHomeSummaryFilterButton {display:none!important;}
 html.modern-budget #settingsView [data-settings-page="categories"] .settings-category-actions {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important;padding:8px;background:var(--surface);border-radius:22px;}
 html.modern-budget #settingsView [data-settings-page="categories"] .settings-category-actions > button {width:100%;}
 
@@ -79,8 +87,13 @@ html.modern-budget #settingsView [data-settings-page="danger"] .danger-zone .aut
 
 @media(max-width:640px) {
  html.modern-budget #settingsView .preferences-subpage > .preferences-content {margin-top:16px;}
- html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls,
  html.modern-budget #settingsView [data-settings-page="categories"] .settings-category-actions {grid-template-columns:minmax(0,1fr)!important;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header {grid-template-columns:68px minmax(0,1fr) minmax(168px,auto)!important;gap:8px!important;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-actions {gap:6px!important;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save,
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-clear {min-width:80px;min-height:42px;padding:0 12px;font-size:14px;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls {grid-template-columns:1fr!important;gap:10px!important;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls > label {padding:14px 16px!important;}
  html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid > label {padding:8px 16px;font-size:16px;}
  html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid select {min-width:112px!important;max-width:62%!important;}
  html.modern-budget #settingsView [data-settings-page="notifications"] .notification-settings-card,
@@ -132,10 +145,14 @@ html.modern-budget .sidebar-app-icon {display:none;object-fit:contain;}
 }
 html.modern-budget[data-active-view="settingsView"] .shell-toolbar,
 html.modern-budget[data-active-view="settingsView"] .topbar {display:none!important;}
-html.modern-budget #settingsView .preferences-layout {max-width:820px;margin:0 auto;padding:0 4px 32px;}
-html.modern-budget #settingsView .preferences-header {display:grid;grid-template-columns:86px minmax(0,1fr) 86px;align-items:center;gap:8px;position:sticky;top:0;z-index:5;padding:16px 0 22px;background:var(--bg);}
+html.modern-budget #settingsView .preferences-layout {width:min(100%,1240px);max-width:1240px;margin:0 auto;padding:0 clamp(10px,2vw,24px) 32px;}
+html.modern-budget #settingsView .preferences-header {display:grid;grid-template-columns:minmax(72px,auto) minmax(0,1fr) minmax(148px,auto);align-items:center;gap:12px;position:sticky;top:0;z-index:5;padding:16px 0 22px;background:var(--bg);}
 html.modern-budget #settingsView .preferences-header h2 {text-align:center;font-size:22px!important;margin:0;}
 html.modern-budget #settingsView .preferences-close {min-height:44px;padding:8px 12px;border:1px solid var(--stroke);border-radius:24px;background:var(--surface);color:var(--accent);font-size:16px;}
+html.modern-budget #settingsView .preferences-header-actions {display:flex;justify-content:flex-end;align-items:center;min-width:0;}
+html.modern-budget #settingsView .preferences-header-reset {min-height:48px!important;padding:10px 18px!important;border-radius:24px!important;white-space:nowrap!important;flex:0 0 auto!important;font-size:15px!important;font-weight:600!important;min-width:148px!important;}
+html.modern-budget #settingsView .preferences-header-spacer {display:block;min-width:148px;min-height:1px;}
+
 html.modern-budget #settingsView .preferences-section {margin:18px 0 28px;}
 html.modern-budget #settingsView .preferences-section > h3 {font-size:17px!important;font-weight:600;color:var(--muted)!important;margin:0 16px 10px;}
 html.modern-budget #settingsView .preferences-rows {background:var(--surface);border-radius:22px;overflow:hidden;}
@@ -199,12 +216,720 @@ html.modern-budget .modal-card :is(input,select,textarea) {box-sizing:border-box
 html.modern-budget .modal-card :is(.transaction-title,.transaction-meta,.sync-status) {overflow-wrap:anywhere;}
 html.modern-budget .modal-card .transaction-side {flex-wrap:wrap;}
 @media(max-width:640px) {
-  html.modern-budget #settingsView .preferences-layout {padding:0 0 24px;}
+  html.modern-budget #settingsView .preferences-layout {padding:0 10px 24px;}
   html.modern-budget #settingsView .preferences-header {padding-top:max(12px,env(safe-area-inset-top));}
+  html.modern-budget #settingsView .preferences-header-reset {min-height:46px!important;min-width:138px!important;padding:10px 16px!important;font-size:14px!important;}
+
   html.modern-budget #settingsView .preferences-value-row,html.modern-budget #settingsView summary {padding:16px!important;font-size:16px!important;}
   html.modern-budget #settingsView .preferences-content {padding:0 16px 16px;}
   html.modern-budget #settingsView .settings-form-grid {grid-template-columns:minmax(0,1fr)!important;}
   html.modern-budget #historySearchModal .history-search-grid {grid-template-columns:minmax(0,1fr)!important;}
   html.modern-budget #historySearchModal #historySearchForm {padding:0 16px 16px!important;}
   html.modern-budget #historySearchModal .history-search-modal-nav {margin:0 -16px 16px!important;padding:12px!important;}
+}
+
+
+/* v375 - Mobil menünün altına/arkasına sayfa içeriğinin görünmesini engelle.
+   İçerik görsel olarak menünün başladığı noktada sona erer. */
+@media(max-width:980px) {
+  html.modern-budget body::after {
+    content: "" !important;
+    display: block !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    height: calc(72px + env(safe-area-inset-bottom)) !important;
+    background: var(--bg) !important;
+    z-index: 89 !important;
+    pointer-events: none !important;
+  }
+
+  html.auth-logged-out.modern-budget body::after {
+    display: none !important;
+  }
+
+  html.modern-budget .mobile-dock {
+    z-index: 90 !important;
+  }
+}
+
+
+/* v389 - Mobilde ana sayfa ve diğer sayfalar tekrar aşağı kaydırılabilsin.
+   v381 içindeki genel overflow: visible kuralı, telefonda workspace kaydırmasını bozuyordu.
+   Bu override ile mobilde kaydırma sorumluluğunu tekrar workspace alanına veriyoruz. */
+@media (max-width: 980px) {
+  html.modern-budget body #appShell.app-shell:not([hidden]),
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  @supports (height: 100dvh) {
+    html.modern-budget body #appShell.app-shell:not([hidden]),
+    html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) {
+      height: 100dvh !important;
+      min-height: 100dvh !important;
+      max-height: 100dvh !important;
+    }
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
+  }
+}
+
+/* v390 - Mobilde sabit ust ikon cubugunun ustunde kayan sayfa icerigi gorunmesin.
+   Workspace'in 16px ust boslugunu toolbar'in kendi ic bosluguna tasiyoruz;
+   boylece sticky toolbar ekranin en ustunden itibaren arka planla kapatir. */
+@media (max-width: 980px) {
+  html.modern-budget body #appShell.app-shell > .workspace,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
+    padding-top: 0 !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar {
+    top: 0 !important;
+    padding-top: calc(env(safe-area-inset-top) + 24px) !important;
+    background: var(--bg) !important;
+    box-shadow: 0 -24px 0 24px var(--bg) !important;
+  }
+}
+
+
+/* v407 - Profil ve şifre ekranını Ayarlar ana sayfası görünümüne yaklaştır. */
+html.modern-budget #settingsView [data-settings-page="profile"] .preferences-header {
+  grid-template-columns: minmax(72px,auto) minmax(0,1fr) minmax(96px,auto) !important;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .preferences-header-actions {
+  display:flex;align-items:center;justify-content:flex-end;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .preferences-header-save {
+  min-width:96px;min-height:44px;padding:0 16px;border:1px solid color-mix(in srgb,var(--stroke) 72%,transparent);border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 4px 16px rgba(15,40,40,.06);color:var(--accent);font:inherit;font-weight:650;cursor:pointer;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .preferences-header-save:hover,
+html.modern-budget #settingsView [data-settings-page="profile"] .preferences-header-save:focus-visible {background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 42%,var(--stroke));}
+
+html.modern-budget #settingsView [data-settings-page="profile"] #profileForm {display:grid!important;gap:18px!important;margin:0!important;}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-card,
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-password-card {overflow:hidden;background:var(--surface);border-radius:22px;box-shadow:none;}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-card > label,
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-fields > label {display:grid;grid-template-columns:minmax(120px,.38fr) minmax(0,1fr);align-items:center;gap:18px;margin:0;padding:16px 20px;border-bottom:1px solid var(--stroke);background:var(--surface);font-size:16px;color:var(--text);}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-card > label:last-child,
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-fields > label:last-child {border-bottom:0;}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-card input,
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-fields input {width:100%;min-height:44px;border:0!important;background:transparent!important;box-shadow:none!important;text-align:right;color:var(--text)!important;font:inherit;}
+html.modern-budget #settingsView [data-settings-page="profile"] #profileEmail {color:var(--muted)!important;}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-disclosure {width:100%!important;min-height:60px!important;margin:0!important;padding:0 20px!important;border:0!important;border-radius:22px!important;background:var(--surface)!important;display:grid!important;grid-template-columns:24px minmax(0,1fr) 24px!important;align-items:center!important;gap:12px!important;color:var(--text)!important;text-align:left!important;box-shadow:none!important;}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-disclosure-icon::before {content:"🔒";font-size:17px;}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-disclosure-chevron::before {content:"›";font-size:25px;color:var(--muted);line-height:1;display:block;transition:transform .18s ease;}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-disclosure.is-open {border-radius:22px 22px 0 0!important;border-bottom:1px solid var(--stroke)!important;}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-disclosure.is-open .profile-password-disclosure-chevron::before {transform:rotate(90deg);}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-fields {background:var(--surface);border-radius:0 0 22px 22px;overflow:hidden;}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-fields[hidden] {display:none!important;}
+html.modern-budget #settingsView [data-settings-page="profile"] #profileStatus {margin:0 4px!important;min-height:20px;}
+html.modern-budget #settingsView [data-settings-page="profile"] #profileForm > .auth-actions {display:none!important;}
+
+@media(max-width:640px){
+  html.modern-budget #settingsView [data-settings-page="profile"] .preferences-header {grid-template-columns:68px minmax(0,1fr) 82px!important;gap:8px!important;}
+  html.modern-budget #settingsView [data-settings-page="profile"] .preferences-header-save {min-width:82px;min-height:42px;padding:0 12px;font-size:14px;}
+  html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-card > label,
+  html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-fields > label {grid-template-columns:1fr!important;gap:8px!important;padding:15px 16px!important;}
+  html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-card input,
+  html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-fields input {text-align:left!important;min-height:46px!important;padding:0!important;}
+  html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-disclosure {padding:0 16px!important;min-height:62px!important;}
+}
+
+
+/* v408 - Gelir/gider tarih filtresi: üstte Kaydet, tarihler alt alta ve sağda Temizle. */
+@media(max-width:380px) {
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header {grid-template-columns:60px minmax(0,1fr) minmax(146px,auto)!important;gap:6px!important;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save,
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-clear {min-width:70px;min-height:40px;padding:0 9px;font-size:13px;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls {grid-template-columns:1fr!important;gap:8px!important;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls > label {padding:12px 14px!important;}
+}
+
+
+/* v411 - Yedekleme işlemlerini Ayarlar ana menüsündeki satır kartları gibi göster. */
+html.modern-budget #settingsView [data-settings-page="backup"] .cloud-backup-settings-block {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+  width:100%!important;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card,
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card:first-of-type,
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card:nth-last-of-type(1) {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 48px!important;
+  align-items:center!important;
+  gap:16px!important;
+  min-height:88px!important;
+  margin:0!important;
+  padding:16px 18px!important;
+  border:1px solid var(--stroke)!important;
+  border-radius:22px!important;
+  background:var(--surface)!important;
+  box-shadow:none!important;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card > div {
+  min-width:0!important;
+  display:grid!important;
+  gap:5px!important;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card strong {
+  display:block!important;
+  color:var(--text)!important;
+  font-size:16px!important;
+  font-weight:650!important;
+  line-height:1.3!important;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card small {
+  display:block!important;
+  margin:0!important;
+  color:var(--muted)!important;
+  font-size:13.5px!important;
+  line-height:1.45!important;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .backup-icon-button {
+  justify-self:end!important;
+  align-self:center!important;
+  width:46px!important;
+  min-width:46px!important;
+  max-width:46px!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid color-mix(in srgb,var(--stroke) 78%,transparent)!important;
+  border-radius:15px!important;
+  background:var(--surface-soft)!important;
+  box-shadow:none!important;
+  color:var(--accent)!important;
+  font-size:0!important;
+  line-height:0!important;
+  display:grid!important;
+  place-items:center!important;
+  cursor:pointer!important;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .backup-icon-button::before {
+  content:"";
+  width:22px;
+  height:22px;
+  display:block;
+  background:currentColor;
+  -webkit-mask-repeat:no-repeat;
+  mask-repeat:no-repeat;
+  -webkit-mask-position:center;
+  mask-position:center;
+  -webkit-mask-size:contain;
+  mask-size:contain;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] #cloudBackupButton::before {
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 13V4'/%3E%3Cpath d='m8 8 4-4 4 4'/%3E%3Cpath d='M20 17.5A4.5 4.5 0 0 0 15.5 13H15a7 7 0 1 0-6.4 9.8'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 13V4'/%3E%3Cpath d='m8 8 4-4 4 4'/%3E%3Cpath d='M20 17.5A4.5 4.5 0 0 0 15.5 13H15a7 7 0 1 0-6.4 9.8'/%3E%3C/svg%3E");
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] #localBackupDownloadButton::before {
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] #localBackupImportButton::before {
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21V9'/%3E%3Cpath d='m7 14 5-5 5 5'/%3E%3Cpath d='M5 3h14'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21V9'/%3E%3Cpath d='m7 14 5-5 5 5'/%3E%3Cpath d='M5 3h14'/%3E%3C/svg%3E");
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .backup-icon-button:hover,
+html.modern-budget #settingsView [data-settings-page="backup"] .backup-icon-button:focus-visible {
+  border-color:color-mix(in srgb,var(--accent) 36%,var(--stroke))!important;
+  background:var(--accent-soft)!important;
+  outline:none!important;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .backup-icon-button:disabled {
+  color:var(--muted)!important;
+  opacity:.6!important;
+  cursor:default!important;
+}
+
+html.modern-budget #settingsView [data-settings-page="backup"] .sync-status {
+  margin:2px 4px 0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--muted)!important;
+  font-size:13.5px!important;
+  line-height:1.45!important;
+}
+
+@media(max-width:640px){
+  html.modern-budget #settingsView [data-settings-page="backup"] .cloud-backup-settings-block {gap:10px!important;}
+  html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card,
+  html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card:first-of-type,
+  html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card:nth-last-of-type(1) {
+    grid-template-columns:minmax(0,1fr) 44px!important;
+    min-height:82px!important;
+    gap:12px!important;
+    padding:15px 16px!important;
+    border-radius:20px!important;
+  }
+  html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card strong {font-size:15.5px!important;}
+  html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card small {font-size:12.8px!important;}
+  html.modern-budget #settingsView [data-settings-page="backup"] .backup-icon-button {
+    width:44px!important;min-width:44px!important;max-width:44px!important;height:44px!important;min-height:44px!important;max-height:44px!important;border-radius:14px!important;
+  }
+  html.modern-budget #settingsView [data-settings-page="backup"] .backup-icon-button::before {width:21px;height:21px;}
+}
+
+
+/* v412 - Tarih işlemleri: yalnız Kaydet üstte, Varsayılana dön altta şablon satırı. */
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header {
+  grid-template-columns: 68px minmax(0,1fr) 96px !important;
+}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-actions {
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  gap:0!important;
+}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save {
+  min-width:88px!important;
+  min-height:44px!important;
+  padding:0 16px!important;
+  border:1px solid color-mix(in srgb,var(--stroke) 72%,transparent)!important;
+  border-radius:999px!important;
+  background:color-mix(in srgb,var(--surface) 82%,transparent)!important;
+  box-shadow:0 4px 16px rgba(15,40,40,.06)!important;
+  color:var(--accent)!important;
+  font:inherit!important;
+  font-weight:650!important;
+  cursor:pointer!important;
+  white-space:nowrap!important;
+}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save:hover,
+html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save:focus-visible {
+  background:var(--accent-soft)!important;
+  border-color:color-mix(in srgb,var(--accent) 42%,var(--stroke))!important;
+}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .date-filter-reset-card {
+  display:flex!important;
+  align-items:center!important;
+  gap:14px!important;
+  width:100%!important;
+  min-height:64px!important;
+  margin:16px 0 0!important;
+  padding:18px 20px!important;
+  border:0!important;
+  border-radius:22px!important;
+  background:var(--surface)!important;
+  box-shadow:none!important;
+  color:var(--text)!important;
+  font:inherit!important;
+  font-size:17px!important;
+  font-weight:500!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .date-filter-reset-card > span {
+  flex:1!important;
+  min-width:0!important;
+}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .date-filter-reset-card svg {
+  width:24px!important;
+  height:24px!important;
+  flex:0 0 24px!important;
+  color:var(--accent)!important;
+}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .date-filter-reset-card:hover,
+html.modern-budget #settingsView [data-settings-page="date-filter"] .date-filter-reset-card:focus-visible {
+  background:var(--accent-soft)!important;
+  outline:none!important;
+}
+@media(max-width:640px) {
+  html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header {
+    grid-template-columns:60px minmax(0,1fr) 82px!important;
+    gap:8px!important;
+  }
+  html.modern-budget #settingsView [data-settings-page="date-filter"] .preferences-header-save {
+    min-width:82px!important;
+    min-height:42px!important;
+    padding:0 12px!important;
+    font-size:14px!important;
+  }
+  html.modern-budget #settingsView [data-settings-page="date-filter"] .date-filter-reset-card {
+    min-height:60px!important;
+    padding:16px!important;
+    font-size:16px!important;
+  }
+}
+
+
+/* v413 - Hesabı sil bölümü Hesap bilgileri sayfasına taşındı. */
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-danger-card {
+  margin-top: 16px;
+  padding: 20px !important;
+  background: var(--surface) !important;
+  border-radius: 22px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-danger-card .auth-actions {
+  margin-top: 16px;
+}
+
+/* v414 - Hesap bilgileri: şifre işlemleri ayrı alt sayfa, hesap işlemleri sade satır. */
+html.modern-budget #settingsView [data-settings-page="password"] .preferences-header {
+  grid-template-columns:minmax(72px,auto) minmax(0,1fr) minmax(96px,auto) !important;
+}
+html.modern-budget #settingsView [data-settings-page="password"] .preferences-header-actions {
+  display:flex;align-items:center;justify-content:flex-end;
+}
+html.modern-budget #settingsView [data-settings-page="password"] .preferences-header-save {
+  min-width:96px;min-height:44px;padding:0 16px;border:1px solid color-mix(in srgb,var(--stroke) 72%,transparent);border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 4px 16px rgba(15,40,40,.06);color:var(--accent);font:inherit;font-weight:650;cursor:pointer;
+}
+html.modern-budget #settingsView [data-settings-page="password"] .preferences-header-save:hover,
+html.modern-budget #settingsView [data-settings-page="password"] .preferences-header-save:focus-visible {background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 42%,var(--stroke));}
+html.modern-budget #settingsView [data-settings-page="password"] .settings-profile-password-fields-card {
+  overflow:hidden;background:var(--surface);border-radius:22px;box-shadow:none;
+}
+html.modern-budget #settingsView [data-settings-page="password"] .profile-password-fields {display:block!important;background:var(--surface)!important;border-radius:22px!important;overflow:hidden!important;}
+html.modern-budget #settingsView [data-settings-page="password"] .profile-password-fields > label {
+  display:grid;grid-template-columns:minmax(140px,.34fr) minmax(0,1fr);align-items:center;gap:18px;margin:0;padding:16px 20px;border-bottom:1px solid var(--stroke);background:var(--surface);font-size:16px;color:var(--text);
+}
+html.modern-budget #settingsView [data-settings-page="password"] .profile-password-fields > label:last-child {border-bottom:0;}
+html.modern-budget #settingsView [data-settings-page="password"] .profile-password-fields input {
+  width:100%;min-height:44px;border:0!important;background:transparent!important;box-shadow:none!important;text-align:right;color:var(--text)!important;font:inherit;
+}
+
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-profile-password-card {
+  border-radius:22px!important;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-disclosure.is-open {
+  border-radius:22px!important;border-bottom:0!important;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .profile-password-disclosure.is-open .profile-password-disclosure-chevron::before {transform:none!important;}
+
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-account-operations {
+  display:grid!important;gap:10px!important;margin:0!important;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-account-operations > h3 {
+  margin:0 4px!important;color:var(--muted)!important;font-size:16px!important;font-weight:700!important;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-account-operation-rows {
+  overflow:hidden!important;border-radius:22px!important;background:var(--surface)!important;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-delete-account-row {
+  width:100%!important;min-height:62px!important;margin:0!important;padding:0 20px!important;border:0!important;border-radius:22px!important;background:var(--surface)!important;box-shadow:none!important;
+  display:grid!important;grid-template-columns:24px minmax(0,1fr) 24px!important;align-items:center!important;gap:12px!important;text-align:left!important;color:#d94a4a!important;font:inherit!important;font-weight:650!important;cursor:pointer!important;
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-delete-account-row:hover,
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-delete-account-row:focus-visible {background:color-mix(in srgb,#ff4d4d 7%,var(--surface))!important;outline:none!important;}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-delete-account-icon {display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;color:#d94a4a;}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-delete-account-chevron {font-size:25px;line-height:1;text-align:right;color:var(--muted);}
+html.modern-budget #settingsView [data-settings-page="profile"] #deleteUserStatus {margin:0 4px!important;min-height:0!important;}
+
+@media(max-width:640px){
+  html.modern-budget #settingsView [data-settings-page="password"] .preferences-header {grid-template-columns:68px minmax(0,1fr) 82px!important;gap:8px!important;}
+  html.modern-budget #settingsView [data-settings-page="password"] .preferences-header-save {min-width:82px;min-height:42px;padding:0 12px;font-size:14px;}
+  html.modern-budget #settingsView [data-settings-page="password"] .profile-password-fields > label {grid-template-columns:1fr!important;gap:8px!important;padding:15px 16px!important;}
+  html.modern-budget #settingsView [data-settings-page="password"] .profile-password-fields input {text-align:left!important;min-height:46px!important;padding:0!important;}
+  html.modern-budget #settingsView [data-settings-page="profile"] .settings-delete-account-row {padding:0 16px!important;min-height:62px!important;}
+}
+
+/* Hesap silme e-posta kodu modalı */
+html.modern-budget #deleteAccountCodeModal .delete-code-modal {
+  width:min(560px,calc(100% - 24px))!important;max-width:560px!important;padding:0 18px 20px!important;overflow:hidden!important;
+}
+html.modern-budget #deleteAccountCodeModal .delete-code-modal-nav {
+  display:grid!important;grid-template-columns:104px minmax(0,1fr) 132px!important;align-items:center!important;gap:10px!important;margin:-16px -18px 18px!important;padding:14px 18px 12px!important;border-bottom:1px solid var(--stroke)!important;background:color-mix(in srgb,var(--surface-soft) 94%,transparent)!important;
+}
+html.modern-budget #deleteAccountCodeModal .delete-code-modal-nav h2 {margin:0!important;text-align:center!important;font-size:18px!important;white-space:nowrap!important;}
+html.modern-budget #deleteAccountCodeModal .entry-modal-nav-button {min-height:44px!important;border-radius:999px!important;}
+html.modern-budget #deleteAccountCodeModal #resendDeleteAccountCodeButton {justify-self:end!important;min-width:132px!important;}
+html.modern-budget #deleteAccountCodeModal .delete-code-form {display:grid!important;gap:16px!important;margin:0!important;}
+html.modern-budget #deleteAccountCodeModal .delete-code-form > .panel-note {margin:0!important;line-height:1.55!important;}
+html.modern-budget #deleteAccountCodeModal .delete-code-field {display:grid!important;gap:8px!important;color:var(--muted)!important;font-weight:650!important;}
+html.modern-budget #deleteAccountCodeModal #deleteAccountCodeInput {min-height:56px!important;text-align:center!important;font-size:24px!important;font-weight:800!important;letter-spacing:.22em!important;}
+html.modern-budget #deleteAccountCodeModal .delete-code-verify {min-height:48px!important;border-radius:14px!important;}
+@media(max-width:640px){
+  html.modern-budget #deleteAccountCodeModal .delete-code-modal {width:calc(100% - 18px)!important;padding:0 12px 16px!important;}
+  html.modern-budget #deleteAccountCodeModal .delete-code-modal-nav {grid-template-columns:78px minmax(0,1fr) 112px!important;margin:-12px -12px 16px!important;padding:12px!important;gap:6px!important;}
+  html.modern-budget #deleteAccountCodeModal .delete-code-modal-nav h2 {font-size:16px!important;}
+  html.modern-budget #deleteAccountCodeModal .entry-modal-nav-button {min-height:42px!important;padding:0 10px!important;font-size:13px!important;}
+  html.modern-budget #deleteAccountCodeModal #resendDeleteAccountCodeButton {min-width:112px!important;}
+}
+html.modern-budget #settingsView [data-settings-page="profile"] .settings-delete-account-icon svg {width:20px;height:20px;display:block;}
+
+
+/* Hesap silme akışındaki onay pencerelerini büyüt ve metin görünürlüğünü artır */
+html.modern-budget #genericConfirmModal .confirm-modal,
+html.modern-budget #confirmDeleteAccountModal .confirm-modal,
+html.modern-budget #deleteAccountModal .delete-modal {
+  width: min(720px, calc(100% - 28px)) !important;
+  max-width: 720px !important;
+  padding: 28px 28px 24px !important;
+  border-radius: 24px !important;
+}
+
+html.modern-budget #genericConfirmModal .panel-heading,
+html.modern-budget #confirmDeleteAccountModal .panel-heading,
+html.modern-budget #deleteAccountModal .panel-heading {
+  margin: 0 0 14px !important;
+}
+
+html.modern-budget #genericConfirmModal .panel-kicker,
+html.modern-budget #confirmDeleteAccountModal .panel-kicker,
+html.modern-budget #deleteAccountModal .panel-kicker {
+  margin-bottom: 8px !important;
+}
+
+html.modern-budget #genericConfirmModal h2,
+html.modern-budget #confirmDeleteAccountModal h2,
+html.modern-budget #deleteAccountModal h2 {
+  margin: 0 !important;
+  font-size: clamp(22px, 2.4vw, 30px) !important;
+  line-height: 1.24 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+html.modern-budget #genericConfirmModal .panel-note,
+html.modern-budget #confirmDeleteAccountModal .panel-note,
+html.modern-budget #deleteAccountModal .panel-note {
+  margin: 10px 0 0 !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  white-space: normal !important;
+}
+
+html.modern-budget #genericConfirmModal .auth-actions,
+html.modern-budget #genericConfirmModal .modal-actions,
+html.modern-budget #confirmDeleteAccountModal .auth-actions,
+html.modern-budget #confirmDeleteAccountModal .modal-actions,
+html.modern-budget #deleteAccountModal .auth-actions,
+html.modern-budget #deleteAccountModal .modal-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 20px !important;
+  align-items: stretch !important;
+}
+
+html.modern-budget #genericConfirmModal .auth-actions > button,
+html.modern-budget #genericConfirmModal .modal-actions > button,
+html.modern-budget #confirmDeleteAccountModal .auth-actions > button,
+html.modern-budget #confirmDeleteAccountModal .modal-actions > button,
+html.modern-budget #deleteAccountModal .auth-actions > button,
+html.modern-budget #deleteAccountModal .modal-actions > button {
+  min-height: 52px !important;
+  padding: 0 18px !important;
+  white-space: normal !important;
+  line-height: 1.25 !important;
+}
+
+html.modern-budget #deleteAccountCodeModal .delete-code-modal {
+  width: min(620px, calc(100% - 28px)) !important;
+  max-width: 620px !important;
+  padding: 0 22px 24px !important;
+  border-radius: 24px !important;
+}
+
+@media (max-width: 640px) {
+  html.modern-budget #genericConfirmModal .confirm-modal,
+  html.modern-budget #confirmDeleteAccountModal .confirm-modal,
+  html.modern-budget #deleteAccountModal .delete-modal {
+    width: calc(100% - 18px) !important;
+    max-width: calc(100% - 18px) !important;
+    padding: 22px 16px 18px !important;
+    border-radius: 22px !important;
+  }
+
+  html.modern-budget #genericConfirmModal h2,
+  html.modern-budget #confirmDeleteAccountModal h2,
+  html.modern-budget #deleteAccountModal h2 {
+    font-size: 20px !important;
+    line-height: 1.28 !important;
+  }
+
+  html.modern-budget #genericConfirmModal .panel-note,
+  html.modern-budget #confirmDeleteAccountModal .panel-note,
+  html.modern-budget #deleteAccountModal .panel-note {
+    font-size: 15px !important;
+  }
+
+  html.modern-budget #genericConfirmModal .auth-actions,
+  html.modern-budget #genericConfirmModal .modal-actions,
+  html.modern-budget #confirmDeleteAccountModal .auth-actions,
+  html.modern-budget #confirmDeleteAccountModal .modal-actions,
+  html.modern-budget #deleteAccountModal .auth-actions,
+  html.modern-budget #deleteAccountModal .modal-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+  }
+
+  html.modern-budget #genericConfirmModal .auth-actions > button,
+  html.modern-budget #genericConfirmModal .modal-actions > button,
+  html.modern-budget #confirmDeleteAccountModal .auth-actions > button,
+  html.modern-budget #confirmDeleteAccountModal .modal-actions > button,
+  html.modern-budget #deleteAccountModal .auth-actions > button,
+  html.modern-budget #deleteAccountModal .modal-actions > button {
+    min-height: 48px !important;
+    padding: 0 12px !important;
+    font-size: 14px !important;
+  }
+
+  html.modern-budget #deleteAccountCodeModal .delete-code-modal {
+    width: calc(100% - 18px) !important;
+    max-width: calc(100% - 18px) !important;
+    padding: 0 14px 18px !important;
+  }
+}
+
+/* v416 - Silme ve son onay pencereleri gelir/gider ekleme penceresinin olcu dilini kullanir. */
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) > :is(.confirm-modal,.delete-modal) {
+  position: relative !important;
+  width: min(860px, calc(100% - 40px)) !important;
+  max-width: 860px !important;
+  min-height: 230px !important;
+  padding: 20px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--stroke) !important;
+  border-radius: 22px !important;
+  background: var(--surface-soft) !important;
+  box-shadow: 0 22px 56px rgba(15, 40, 40, 0.18) !important;
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-nav {
+  position: sticky !important;
+  top: -20px !important;
+  z-index: 12 !important;
+  grid-template-columns: 128px minmax(0, 1fr) 128px !important;
+  gap: 8px !important;
+  margin: -20px -20px 18px !important;
+  padding: 20px 20px 14px !important;
+  box-sizing: content-box !important;
+  background: color-mix(in srgb, var(--surface-soft) 92%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-title {
+  width: 100% !important;
+  max-width: 320px !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  overflow-wrap: normal !important;
+  text-overflow: clip !important;
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-nav-button {
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  padding: 0 8px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-danger {
+  border-color: color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  color: var(--accent) !important;
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-danger:hover,
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-danger:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .modal-fixed-heading {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .modal-body-scroll {
+  padding: 8px 4px 14px 0 !important;
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .panel-note {
+  margin: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+  color: var(--muted) !important;
+}
+
+html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .sync-status:empty {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) > :is(.confirm-modal,.delete-modal) {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+    min-height: 205px !important;
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-nav {
+    top: -16px !important;
+    grid-template-columns: minmax(96px, 1fr) minmax(0, auto) minmax(96px, 1fr) !important;
+    margin: -16px -16px 16px !important;
+    padding: 14px 8px 11px !important;
+  }
+
+  html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-title {
+    max-width: 100% !important;
+    font-size: 16px !important;
+  }
+
+  html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .unified-modal-nav-button {
+    width: auto !important;
+    min-width: 96px !important;
+    max-width: 104px !important;
+    padding: 0 4px !important;
+    font-size: 12px !important;
+  }
+
+  html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmPaymentAccountDeleteModal,#deleteAccountModal) .panel-note {
+    font-size: 14px !important;
+  }
 }

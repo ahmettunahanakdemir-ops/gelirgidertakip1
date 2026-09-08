@@ -1,6 +1,49 @@
 // ACIKLAMA: Banka hareketi ice aktarma, AI/OCR dosya okuma ve metinden hareket ayrisitirma fonksiyonlari.
 // ACIKLAMA: Bu dosya ayrilan JS yapisinin bir parcasidir; index.html icindeki yukleme sirasi onemlidir.
 
+
+const BANK_IMPORT_MENU_LABELS = {
+  upload: "Görsel Yükle",
+  local: "Kayıtlara Ekle",
+  ai: "Yapay Zeka ile Ekle",
+};
+
+function getBankImportActionIcon(type = "local") {
+  switch (type) {
+    case "upload":
+      return `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 16V7m0 0-3.5 3.5M12 7l3.5 3.5M5 17.5v1A2.5 2.5 0 0 0 7.5 21h9A2.5 2.5 0 0 0 19 18.5v-1" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        </svg>`;
+    case "ai":
+      return `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 3l1.1 3.1L16 7.2l-2.9 1.1L12 11.4l-1.1-3.1L8 7.2l2.9-1.1L12 3Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8"/>
+          <path d="M18 12l.8 2.2L21 15l-2.2.8L18 18l-.8-2.2L15 15l2.2-.8L18 12ZM7 13l1.2 3.3L11.5 17l-3.3 1.2L7 21.5l-1.2-3.3L2.5 17l3.3-1.2L7 13Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8"/>
+        </svg>`;
+    case "local":
+    default:
+      return `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <ellipse cx="12" cy="5" rx="7" ry="3" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3 1.4 0 2.7-.2 3.8-.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+          <path d="M18 15v6m-3-3h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+        </svg>`;
+  }
+}
+
+function setBankImportActionButton(button, type, label = "") {
+  if (!button) return;
+  const resolvedLabel = String(label || BANK_IMPORT_MENU_LABELS[type] || "").trim();
+  button.innerHTML = `${getBankImportActionIcon(type)}<span>${resolvedLabel}</span>`;
+  button.setAttribute("aria-label", resolvedLabel);
+  button.setAttribute("title", resolvedLabel);
+}
+
+function getBankImportActionButtonLabel(button, fallback = "") {
+  return button?.querySelector("span")?.textContent?.trim() || button?.textContent?.trim() || fallback;
+}
+
 function setBankImportLoading(isLoading) {
   bankImportStatus?.classList.toggle("is-loading", Boolean(isLoading));
   if (closeBankImportModalButton) closeBankImportModalButton.disabled = Boolean(isLoading);
@@ -43,10 +86,10 @@ function handleBankImportFile(event) {
   renderBankImportPreview();
 
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "Yapay Zeka ile Ekle";
+    setBankImportActionButton(bankImportAddButton, "ai");
   }
   if (bankImportLocalButton) {
-    bankImportLocalButton.textContent = "Kayıtlara Ekle";
+    setBankImportActionButton(bankImportLocalButton, "local");
   }
 
   if (!pendingBankFiles.length) {
@@ -224,7 +267,7 @@ async function previewBankImportWithAccurateLocalOcr() {
   }
   if (bankImportLocalButton) {
     bankImportLocalButton.disabled = true;
-    bankImportLocalButton.textContent = "Okunuyor...";
+    setBankImportActionButton(bankImportLocalButton, "local", "Okunuyor...");
   }
   if (bankImportCancelButton) bankImportCancelButton.disabled = true;
   setBankImportLoading(true);
@@ -282,18 +325,18 @@ async function previewBankImportWithAccurateLocalOcr() {
         "Seçilen dosyalardan hareket okunamadı. Görseldeki satırları daha net okumak için banka hareketleri ekranını tam ve parlak şekilde yükle." +
         (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
       if (bankImportLocalButton) {
-        bankImportLocalButton.textContent = "Kayıtlara Ekle";
+        setBankImportActionButton(bankImportLocalButton, "local");
       }
       return;
     }
 
     bankImportStatus.textContent =
-      `${readyCount} hareket onay bekliyor. Eklemek istediklerinin kutusu işaretli kalsın, sonra yeşil butona tekrar bas.` +
+      `${readyCount} hareket onay bekliyor. Eklemek istediklerinin kutusu işaretli kalsın, sonra "Kayıtlara Ekle" seçeneğine tekrar bas.` +
       (duplicateCount ? ` ${duplicateCount} tekrar işaretlenmedi.` : "") +
       (invalidCount ? ` ${invalidCount} satır okunamadı.` : "") +
       (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
     if (bankImportLocalButton) {
-      bankImportLocalButton.textContent = "Seçilenleri Onayla ve Ekle";
+      setBankImportActionButton(bankImportLocalButton, "local", "Seçilenleri Onayla ve Ekle");
     }
     openBankImportPreviewModal();
   } catch (error) {
@@ -304,7 +347,7 @@ async function previewBankImportWithAccurateLocalOcr() {
       ? `Kayıtlara ekleme hazırlanamadı: ${error.message}`
       : "Kayıtlara ekleme hazırlanamadı. Dosyayı tekrar seç.";
     if (bankImportLocalButton) {
-      bankImportLocalButton.textContent = "Kayıtlara Ekle";
+      setBankImportActionButton(bankImportLocalButton, "local");
     }
   } finally {
     setBankImportLoading(false);
@@ -314,7 +357,7 @@ async function previewBankImportWithAccurateLocalOcr() {
     if (bankImportLocalButton) {
       bankImportLocalButton.disabled = false;
       if (!pendingBankImports.length) {
-        bankImportLocalButton.textContent = "Kayıtlara Ekle";
+        setBankImportActionButton(bankImportLocalButton, "local");
       }
     }
     if (bankImportCancelButton) bankImportCancelButton.disabled = false;
@@ -392,7 +435,7 @@ async function previewBankImportLocally(options = {}) {
         (fallbackReason ? ` Yapay zeka mesajı: ${fallbackReason}` : "") +
         (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
       if (bankImportAddButton) {
-        bankImportAddButton.textContent = "Yapay Zeka ile Ekle";
+        setBankImportActionButton(bankImportAddButton, "ai");
       }
       return false;
     }
@@ -407,7 +450,7 @@ async function previewBankImportLocally(options = {}) {
     }
 
     if (bankImportAddButton) {
-      bankImportAddButton.textContent = "Önizlemeyi Aç";
+      setBankImportActionButton(bankImportAddButton, "ai", "Önizlemeyi Aç");
     }
 
     openBankImportPreviewModal();
@@ -463,13 +506,13 @@ async function previewBankImportWithAi() {
   }
 
   // ACIKLAMA: previousAddText degiskeninin Turkce karsiligi "previous add metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const previousAddText = bankImportAddButton?.textContent || "Yapay Zeka ile Ekle";
+  const previousAddText = getBankImportActionButtonLabel(bankImportAddButton, BANK_IMPORT_MENU_LABELS.ai);
 
   bankImportAddButton.disabled = true;
   if (bankImportCancelButton) bankImportCancelButton.disabled = true;
   setBankImportLoading(true);
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "Yapay Zeka Okuyor...";
+    setBankImportActionButton(bankImportAddButton, "ai", "Yapay Zeka Okuyor...");
   }
   bankImportStatus.textContent = "Yapay zeka banka ekranını ve sayfadaki gerçek hareket satırlarını algılıyor...";
 
@@ -520,7 +563,7 @@ async function previewBankImportWithAi() {
     const invalidCount = pendingBankImports.filter((item) => !item.valid).length;
 
     if (bankImportAddButton) {
-      bankImportAddButton.textContent = pendingBankImports.length ? "Önizlemeyi Aç" : previousAddText;
+      setBankImportActionButton(bankImportAddButton, "ai", pendingBankImports.length ? "Önizlemeyi Aç" : previousAddText);
     }
 
     bankImportStatus.textContent =
@@ -541,7 +584,7 @@ async function previewBankImportWithAi() {
       bankImportLocalButton.disabled = false;
     }
     if (bankImportCancelButton) bankImportCancelButton.disabled = false;
-    bankImportAddButton.textContent = pendingBankImports.length ? "Önizlemeyi Aç" : previousAddText;
+    setBankImportActionButton(bankImportAddButton, "ai", pendingBankImports.length ? "Önizlemeyi Aç" : previousAddText);
   }
 }
 
@@ -1505,7 +1548,7 @@ function previewBankImport(options = {}) {
   const invalidCount = pendingBankImports.filter((item) => !item.valid).length;
 
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = pendingBankImports.length ? "Seçilenleri Onayla ve Ekle" : "Yapay Zeka ile Ekle";
+    setBankImportActionButton(bankImportAddButton, "ai", pendingBankImports.length ? "Seçilenleri Onayla ve Ekle" : BANK_IMPORT_MENU_LABELS.ai);
   }
 
   if (!updateStatus) {
@@ -1522,7 +1565,7 @@ function previewBankImport(options = {}) {
     `${readyCount} hareket onay bekliyor` +
     (duplicateCount ? `, ${duplicateCount} tekrar işaretlenmedi` : "") +
     (invalidCount ? `, ${invalidCount} satır okunamadı` : "") +
-    ". Eklemek istediklerini kontrol edip yeşil butona tekrar bas.";
+    ". Eklemek istediklerini kontrol edip menüden ilgili ekleme seçeneğine tekrar bas.";
 }
 
 // ACIKLAMA: resetBankImportInputState fonksiyonunun Turkce karsiligi "banka ice aktar giris durumunu sifirla"; secili hesaplari, dosyalari, onizlemeyi ve buton durumlarini temizler.
@@ -1562,12 +1605,12 @@ function resetBankImportInputState(statusText = "Banka içe aktarma alanı temiz
 
   if (bankImportAddButton) {
     bankImportAddButton.disabled = false;
-    bankImportAddButton.textContent = "Yapay Zeka ile Ekle";
+    setBankImportActionButton(bankImportAddButton, "ai");
   }
 
   if (bankImportLocalButton) {
     bankImportLocalButton.disabled = false;
-    bankImportLocalButton.textContent = "Kayıtlara Ekle";
+    setBankImportActionButton(bankImportLocalButton, "local");
   }
 
   if (bankImportCancelButton) {

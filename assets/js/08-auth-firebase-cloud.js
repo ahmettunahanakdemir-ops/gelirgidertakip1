@@ -241,15 +241,51 @@ function openProfileModal() {
   }, 0);
 }
 
+function loadProfileContactInfo() {
+  try {
+    const raw = localStorage.getItem(getStorageKey(PROFILE_CONTACT_STORAGE_KEY));
+    const parsed = raw ? JSON.parse(raw) : {};
+    return {
+      homeAddress: String(parsed?.homeAddress || ""),
+      workAddress: String(parsed?.workAddress || ""),
+    };
+  } catch (_error) {
+    return { homeAddress: "", workAddress: "" };
+  }
+}
+
+function saveProfileContactInfo(contact = {}) {
+  const normalized = {
+    homeAddress: String(contact?.homeAddress || "").trim(),
+    workAddress: String(contact?.workAddress || "").trim(),
+  };
+  localStorage.setItem(getStorageKey(PROFILE_CONTACT_STORAGE_KEY), JSON.stringify(normalized));
+  return normalized;
+}
+
+function toggleProfilePasswordFields(forceOpen = null) {
+  if (!profilePasswordFields || !profilePasswordSettingsButton) return;
+  const nextOpen = typeof forceOpen === "boolean" ? forceOpen : profilePasswordFields.hidden;
+  profilePasswordFields.hidden = !nextOpen;
+  profilePasswordSettingsButton.setAttribute("aria-expanded", nextOpen ? "true" : "false");
+  profilePasswordSettingsButton.classList.toggle("is-open", nextOpen);
+  if (nextOpen) setTimeout(() => profileCurrentPassword?.focus(), 10);
+}
+
 // ACIKLAMA: fillProfileForm fonksiyonunun Turkce karsiligi "fill profil form"; ilgili uygulama islemini calistirir.
 function fillProfileForm() {
   if (!currentUser || !profileForm) {
     return;
   }
 
+  const contactInfo = loadProfileContactInfo();
   profileUsername.value = getUserDisplayName(currentUser);
+  if (profileEmail) profileEmail.value = currentUser.email || "";
+  if (profileHomeAddress) profileHomeAddress.value = contactInfo.homeAddress;
+  if (profileWorkAddress) profileWorkAddress.value = contactInfo.workAddress;
   profileCurrentPassword.value = "";
   profilePassword.value = "";
+  toggleProfilePasswordFields(false);
   profileStatus.textContent = "";
   closeDeleteAccountModal();
   closeConfirmDeleteAccountModal();
@@ -278,6 +314,9 @@ async function updateProfile(event) {
 
   // ACIKLAMA: username degiskeninin Turkce karsiligi "kullanici adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const username = profileUsername.value.trim();
+  const contactBefore = loadProfileContactInfo();
+  const homeAddress = profileHomeAddress?.value.trim() || "";
+  const workAddress = profileWorkAddress?.value.trim() || "";
   // ACIKLAMA: currentPassword degiskeninin Turkce karsiligi "mevcut sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const currentPassword = profileCurrentPassword.value;
   // ACIKLAMA: nextPassword degiskeninin Turkce karsiligi "sonraki sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -295,11 +334,13 @@ async function updateProfile(event) {
 
   // ACIKLAMA: usernameChanged degiskeninin Turkce karsiligi "kullanici adi changed"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const usernameChanged = username !== getUserDisplayName(currentUser);
+  const contactChanged = homeAddress !== contactBefore.homeAddress || workAddress !== contactBefore.workAddress;
   // ACIKLAMA: passwordChanged degiskeninin Turkce karsiligi "sifre changed"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const passwordChanged = Boolean(nextPassword);
 
-  if (!usernameChanged && !passwordChanged) {
+  if (!usernameChanged && !passwordChanged && !contactChanged) {
     profileStatus.textContent = "Güncellenecek bir değişiklik yok.";
+    profileForm?.dispatchEvent(new CustomEvent("settings-profile-saved"));
     return;
   }
 
@@ -324,14 +365,22 @@ async function updateProfile(event) {
       await currentUser.updatePassword(nextPassword);
     }
 
+    if (contactChanged) {
+      saveProfileContactInfo({ homeAddress, workAddress });
+    }
+
     await currentUser.reload();
     currentUser = firebaseAuth.currentUser || currentUser;
     saveLastUsername(getUserDisplayName(currentUser));
     renderAuthState();
+    if (contactChanged && typeof syncUserProfileToCloud === "function") {
+      await syncUserProfileToCloud();
+    }
     await syncTransactionsToCloud({ replace: true });
     profileCurrentPassword.value = "";
     profilePassword.value = "";
     profileStatus.textContent = "Profil güncellendi.";
+    profileForm?.dispatchEvent(new CustomEvent("settings-profile-saved"));
   } catch (error) {
     profileStatus.textContent = getFirebaseErrorMessage(error);
   }
@@ -342,6 +391,152 @@ async function reauthenticateCurrentUser(password) {
   // ACIKLAMA: credential degiskeninin Turkce karsiligi "credential"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const credential = window.firebase.auth.EmailAuthProvider.credential(currentUser.email, password);
   await currentUser.reauthenticateWithCredential(credential);
+}
+
+// Hesap silme akisi: once genel onay, sonra e-posta ile 6 haneli kod dogrulamasi yapilir.
+function startDeleteAccountVerification() {
+  if (!currentUser || !currentUser.email) {
+    if (deleteUserStatus) deleteUserStatus.textContent = "Hesabı silmek için giriş yapmalısın.";
+    return;
+  }
+
+  if (deleteUserStatus) deleteUserStatus.textContent = "";
+  openGenericConfirmModal(
+    "Hesabı kalıcı olarak silmek istediğine emin misin?",
+    "Bu işlem hesabını, buluttaki kayıtlarını ve cihazdaki oturum verilerini kalıcı olarak siler.",
+    () => requestDeleteAccountEmailCode(),
+    { confirmLabel: "Evet, devam et", cancelLabel: "Vazgeç" }
+  );
+}
+
+async function requestDeleteAccountEmailCode({ resend = false } = {}) {
+  if (!currentUser || !currentUser.email || deleteCodeRequestInFlight) return;
+
+  deleteCodeRequestInFlight = true;
+  if (deleteUserStatus) deleteUserStatus.textContent = resend ? "Yeni doğrulama kodu gönderiliyor..." : "Doğrulama kodu gönderiliyor...";
+  if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = resend ? "Yeni kod gönderiliyor..." : "Kod gönderiliyor...";
+  if (resendDeleteAccountCodeButton) resendDeleteAccountCodeButton.disabled = true;
+
+  try {
+    const response = await fetch("/.netlify/functions/account-delete-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "request",
+        email: currentUser.email,
+        uid: currentUser.uid,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.challenge) {
+      throw new Error(data.error || "Doğrulama kodu gönderilemedi.");
+    }
+
+    pendingDeleteEmailChallenge = data.challenge;
+    pendingDeleteEmailVerifiedToken = "";
+    if (deleteAccountCodeEmail) deleteAccountCodeEmail.textContent = currentUser.email;
+    if (deleteAccountCodeInput) deleteAccountCodeInput.value = "";
+    if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = "Kod e-posta adresine gönderildi. Kod 10 dakika geçerlidir.";
+    if (deleteUserStatus) deleteUserStatus.textContent = "";
+    if (deleteAccountCodeModal) deleteAccountCodeModal.hidden = false;
+    setTimeout(() => deleteAccountCodeInput?.focus(), 0);
+  } catch (error) {
+    const message = error?.message || "Doğrulama kodu gönderilemedi.";
+    if (deleteUserStatus) deleteUserStatus.textContent = message;
+    if (deleteAccountCodeStatus && !deleteAccountCodeModal?.hidden) deleteAccountCodeStatus.textContent = message;
+  } finally {
+    deleteCodeRequestInFlight = false;
+    if (resendDeleteAccountCodeButton) resendDeleteAccountCodeButton.disabled = false;
+  }
+}
+
+function closeDeleteAccountCodeModal() {
+  pendingDeleteEmailChallenge = "";
+  pendingDeleteEmailVerifiedToken = "";
+  if (deleteAccountCodeForm) deleteAccountCodeForm.reset();
+  if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = "";
+  if (deleteAccountCodeModal) deleteAccountCodeModal.hidden = true;
+}
+
+async function verifyDeleteAccountEmailCode(event) {
+  event?.preventDefault();
+  if (!currentUser || !pendingDeleteEmailChallenge) {
+    if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = "Önce yeni bir doğrulama kodu iste.";
+    return;
+  }
+
+  const code = String(deleteAccountCodeInput?.value || "").replace(/\D/g, "").slice(0, 6);
+  if (code.length !== 6) {
+    if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = "6 haneli doğrulama kodunu gir.";
+    deleteAccountCodeInput?.focus();
+    return;
+  }
+
+  const submitButton = deleteAccountCodeForm?.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+  if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = "Kod doğrulanıyor...";
+
+  try {
+    const response = await fetch("/.netlify/functions/account-delete-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "verify",
+        email: currentUser.email,
+        uid: currentUser.uid,
+        code,
+        challenge: pendingDeleteEmailChallenge,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.verified || !data.verifiedToken) {
+      throw new Error(data.error || "Doğrulama kodu geçersiz.");
+    }
+
+    pendingDeleteEmailVerifiedToken = data.verifiedToken;
+    if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = "Kod doğrulandı. Hesap silme işlemi hazırlanıyor...";
+    await deleteCurrentUserAccountWithEmailVerification();
+  } catch (error) {
+    if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = error?.message || "Doğrulama kodu kontrol edilemedi.";
+  } finally {
+    if (submitButton) submitButton.disabled = false;
+  }
+}
+
+async function deleteCurrentUserAccountWithEmailVerification() {
+  if (!currentUser || !firebaseAuth || !firebaseDb || !pendingDeleteEmailVerifiedToken) {
+    if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = "Hesap silme doğrulaması tamamlanamadı.";
+    return;
+  }
+
+  const user = currentUser;
+  try {
+    // Firebase, hesap silme gibi kritik islemlerde yakin zamanda giris yapilmis olmasini ister.
+    const tokenResult = await user.getIdTokenResult(true);
+    const authTime = Number(tokenResult?.claims?.auth_time || 0);
+    const authAgeSeconds = authTime ? Math.max(0, Math.floor(Date.now() / 1000) - authTime) : Number.POSITIVE_INFINITY;
+    if (authAgeSeconds > 240) {
+      throw new Error("E-posta kodu doğrulandı. Firebase güvenliği nedeniyle hesabı silmeden önce çıkış yapıp tekrar giriş yapman gerekiyor. Tekrar giriş yaptıktan sonra aynı işlemi yeniden başlat.");
+    }
+
+    if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = "Hesap ve bulut kayıtları siliniyor...";
+    await deleteUserCloudData(user.uid);
+    clearUserLocalData(user.uid);
+    await user.delete();
+    transactions = [];
+    assets = [];
+    besAccounts = [];
+    borcAlacakKayitlari = [];
+    paymentAccounts = [];
+    render();
+    pendingDeleteEmailChallenge = "";
+    pendingDeleteEmailVerifiedToken = "";
+    if (deleteAccountCodeModal) deleteAccountCodeModal.hidden = true;
+    if (deleteUserStatus) deleteUserStatus.textContent = "";
+    if (cloudStatus) cloudStatus.textContent = "Kullanıcı hesabı silindi.";
+  } catch (error) {
+    if (deleteAccountCodeStatus) deleteAccountCodeStatus.textContent = getFirebaseErrorMessage?.(error) || error?.message || "Hesap silinemedi.";
+  }
 }
 
 // ACIKLAMA: openDeleteAccountModal fonksiyonunun Turkce karsiligi "ac sil hesap pencere"; ilgili pencereyi veya ekrani acar.
@@ -938,6 +1133,15 @@ function fetchCloudProfile(userId, options = {}) {
 function applyCloudAssetAndBesProfile(data = {}, options = {}) {
   const { renderAfterApply = true } = options;
   applyDeletedProfileRecordState(readCloudDeletedProfileRecordState(data));
+
+  if (Object.prototype.hasOwnProperty.call(data, "homeAddress") || Object.prototype.hasOwnProperty.call(data, "workAddress")) {
+    const contactInfo = saveProfileContactInfo({
+      homeAddress: data.homeAddress || "",
+      workAddress: data.workAddress || "",
+    });
+    if (profileHomeAddress && document.activeElement !== profileHomeAddress) profileHomeAddress.value = contactInfo.homeAddress;
+    if (profileWorkAddress && document.activeElement !== profileWorkAddress) profileWorkAddress.value = contactInfo.workAddress;
+  }
 
   if (Array.isArray(data.assets) || Array.isArray(data.deletedAssetTombstones)) {
     assets = applyDeletedProfileTombstones(
@@ -1581,6 +1785,8 @@ function syncUserProfileToCloud() {
         {
           email: user.email || "",
           username: getUserDisplayName(user),
+          homeAddress: loadProfileContactInfo().homeAddress,
+          workAddress: loadProfileContactInfo().workAddress,
           assets: committedAssets,
           besAccounts: committedBesAccounts,
           debtReceivables: committedDebtRecords,

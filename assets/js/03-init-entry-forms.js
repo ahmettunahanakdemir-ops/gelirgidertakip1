@@ -338,7 +338,8 @@ function init() {
     }
   });
   profileForm?.addEventListener("submit", updateProfile);
-  deleteUserButton?.addEventListener("click", openDeleteAccountModal);
+  profilePasswordSettingsButton?.addEventListener("click", () => toggleProfilePasswordFields());
+  deleteUserButton?.addEventListener("click", startDeleteAccountVerification);
   deleteAccountForm?.addEventListener("submit", requestDeleteAccountConfirmation);
   closeDeleteAccountButton?.addEventListener("click", closeDeleteAccountModal);
   deleteAccountModal?.addEventListener("click", (event) => {
@@ -351,6 +352,14 @@ function init() {
   confirmDeleteAccountModal?.addEventListener("click", (event) => {
     if (event.target === confirmDeleteAccountModal) {
       closeConfirmDeleteAccountModal();
+    }
+  });
+  deleteAccountCodeForm?.addEventListener("submit", verifyDeleteAccountEmailCode);
+  closeDeleteAccountCodeButton?.addEventListener("click", closeDeleteAccountCodeModal);
+  resendDeleteAccountCodeButton?.addEventListener("click", () => requestDeleteAccountEmailCode({ resend: true }));
+  deleteAccountCodeModal?.addEventListener("click", (event) => {
+    if (event.target === deleteAccountCodeModal) {
+      closeDeleteAccountCodeModal();
     }
   });
   closeTransactionEditButton.addEventListener("click", closeTransactionEditModal);
@@ -1389,7 +1398,7 @@ function standardizeModalLayouts() {
 function standardizeModalHeaderActions() {
   const modalConfigs = [
     { modal: "genericConfirmModal", title: "genericConfirmTitle", cancel: "#genericConfirmCancelButton", action: "#genericConfirmButton" },
-    { modal: "deleteAccountModal", title: "deleteAccountTitle", cancel: "#closeDeleteAccountButton", action: "#deleteAccountForm button[type='submit']" },
+    { modal: "deleteAccountModal", title: "deleteAccountTitle", cancel: "#closeDeleteAccountButton", action: "button[type='submit'][form='deleteAccountForm']" },
     { modal: "confirmDeleteAccountModal", title: "confirmDeleteAccountTitle", cancel: "#cancelConfirmDeleteButton", action: "#confirmDeleteAccountButton" },
     { modal: "recentTransactionsModal", title: "recentTransactionsModalTitle", cancel: "#closeRecentTransactionsButton" },
     { modal: "categoryAddModal", title: "categoryAddModalTitle", cancel: "#closeCategoryAddModalButton", action: "#categoryAddSubmitButton", actionText: "Kaydet" },
@@ -1472,3 +1481,32 @@ function standardizeModalHeaderActions() {
 }
 
 // ACIKLAMA: loadTransactions fonksiyonunun Turkce karsiligi "yukle islemler"; ilgili uygulama islemini calistirir.
+
+
+// v394 - Kart hareketleri içe aktarma üç nokta menüsü.
+(function setupBankImportOverflowMenu() {
+  const menuButton = document.getElementById("bankImportMenuButton");
+  const menu = document.getElementById("bankImportMenu");
+  if (!menuButton || !menu) return;
+
+  const setOpen = (open) => {
+    menu.hidden = !open;
+    menuButton.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+
+  menuButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setOpen(menu.hidden);
+  });
+
+  menu.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const target = event.target.closest("button, label");
+    if (target) window.setTimeout(() => setOpen(false), 0);
+  });
+
+  document.addEventListener("click", () => setOpen(false));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+})();

@@ -65,6 +65,9 @@ let isPaymentAccountRecordsFilterInteracting = false;
 let paymentAccountRecordsInteractionTimer = null;
 // ACIKLAMA: pendingDeletePassword degiskeninin Turkce karsiligi "bekleyen sil sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 let pendingDeletePassword = "";
+let pendingDeleteEmailChallenge = "";
+let pendingDeleteEmailVerifiedToken = "";
+let deleteCodeRequestInFlight = false;
 // ACIKLAMA: pendingGenericConfirmAction degiskeninin Turkce karsiligi "bekleyen genel onay action"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 let pendingGenericConfirmAction = null;
 // ACIKLAMA: uiSettings degiskeninin Turkce karsiligi "ui ayarlar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.

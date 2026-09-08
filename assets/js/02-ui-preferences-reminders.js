@@ -168,8 +168,15 @@ function changeFontSize(delta) {
 
 // ACIKLAMA: resetAppearanceSettings fonksiyonunun Turkce karsiligi "sifirla gorunum ayarlar"; ilgili uygulama islemini calistirir.
 function resetAppearanceSettings() {
-  uiSettings = { ...DEFAULT_UI_SETTINGS };
-  applyTypographySettings(uiSettings);
+  openGenericConfirmModal(
+    "Varsayılana dönülsün mü?",
+    "Yazı tipi, yazı kalınlığı ve yazı boyutu varsayılan ayarlara dönecek.",
+    () => {
+      uiSettings = { ...DEFAULT_UI_SETTINGS };
+      applyTypographySettings(uiSettings);
+    },
+    { confirmLabel: "Varsayılana dön", cancelLabel: "Vazgeç" }
+  );
 }
 
 // ACIKLAMA: initThemePreference fonksiyonunun Turkce karsiligi "baslat tema tercih"; ilgili uygulama islemini calistirir.
@@ -569,7 +576,7 @@ async function sendCardPaymentReminder(item, slot) {
 }
 
 // ACIKLAMA: openGenericConfirmModal fonksiyonunun Turkce karsiligi "ac genel onay pencere"; ilgili pencereyi veya ekrani acar.
-function openGenericConfirmModal(title, text, onConfirm) {
+function openGenericConfirmModal(title, text, onConfirm, options = {}) {
   if (!genericConfirmModal) {
     if (typeof onConfirm === "function") {
       onConfirm();
@@ -583,6 +590,12 @@ function openGenericConfirmModal(title, text, onConfirm) {
   }
   if (genericConfirmText) {
     genericConfirmText.textContent = text || "Bu işlem geri alınamaz.";
+  }
+  if (genericConfirmButton) {
+    genericConfirmButton.textContent = options.confirmLabel || "Evet, sil";
+  }
+  if (genericConfirmCancelButton) {
+    genericConfirmCancelButton.textContent = options.cancelLabel || "Vazgeç";
   }
   genericConfirmModal.hidden = false;
 }
@@ -712,69 +725,41 @@ function hideAllStartupModals() {
 
 // ACIKLAMA: mountSummaryFilterPanel fonksiyonunun Turkce karsiligi "yerlestir ozet filtre panel"; ilgili uygulama islemini calistirir.
 function mountSummaryFilterPanel() {
-  // ACIKLAMA: filterPanel degiskeninin Turkce karsiligi "filtre panel"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const filterPanel = document.querySelector("#settingsView .home-summary-filter-standalone");
-  // ACIKLAMA: summaryStack degiskeninin Turkce karsiligi "ozet stack"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const summaryStack = document.querySelector("#summaryView .summary-stack");
-  // ACIKLAMA: statsGrid degiskeninin Turkce karsiligi "istatistikler grid"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const statsGrid = document.querySelector("#summaryView .stats-grid");
+  if (!filterPanel) return;
 
-  if (!filterPanel || !summaryStack || !statsGrid) {
-    return;
-  }
-
-  filterPanel.setAttribute("aria-label", "Gelir gider tarih filtresi");
+  filterPanel.setAttribute("aria-label", "Tarih işlemleri");
   filterPanel.classList.add("settings-filter-panel");
 
-  // ACIKLAMA: summaryPanel degiskeninin Turkce karsiligi "ozet panel"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  let summaryPanel = document.getElementById("summaryHomeSummaryFilterPanel");
-  if (!summaryPanel) {
-    summaryPanel = filterPanel.cloneNode(true);
-    summaryPanel.id = "summaryHomeSummaryFilterPanel";
-    summaryPanel.setAttribute("aria-label", "Özet ve tasarruf tarih filtresi");
-    summaryPanel.classList.remove("settings-filter-panel");
-    summaryPanel.classList.add("summary-filter-panel");
+  // Eski sürümlerde özet sayfasına doğrudan eklenen filtre kartını kaldır.
+  document.getElementById("summaryHomeSummaryFilterPanel")?.remove();
 
-    // ACIKLAMA: status kullaniciya durum, hata veya basari mesaji gostermek icin kullanilir.
-    const status = summaryPanel.querySelector("#homeSummaryFilterStatus");
-    // ACIKLAMA: start degiskeninin Turkce karsiligi "baslangic"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const start = summaryPanel.querySelector("#homeSummaryStartDate");
-    // ACIKLAMA: end degiskeninin Turkce karsiligi "bitis"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const end = summaryPanel.querySelector("#homeSummaryEndDate");
-    // ACIKLAMA: apply degiskeninin Turkce karsiligi "uygula"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const apply = summaryPanel.querySelector("#applyHomeSummaryFilterButton");
-    // ACIKLAMA: clear degiskeninin Turkce karsiligi "temizle"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const clear = summaryPanel.querySelector("#clearHomeSummaryFilterButton");
-    if (status) status.id = "summaryHomeSummaryFilterStatus";
-    if (start) start.id = "summaryHomeSummaryStartDate";
-    if (end) end.id = "summaryHomeSummaryEndDate";
-    if (apply) {
-      apply.id = "summaryApplyHomeSummaryFilterButton";
-      apply.textContent = "Özete Uygula";
-    }
-    if (clear) clear.id = "summaryClearHomeSummaryFilterButton";
-    summaryStack.insertBefore(summaryPanel, statsGrid);
-  }
-
-  // ACIKLAMA: entryKicker degiskeninin Turkce karsiligi "entry kicker"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const entryKicker = filterPanel.querySelector(".panel-kicker");
-  // ACIKLAMA: entryNote degiskeninin Turkce karsiligi "entry note"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+  const entryTitle = filterPanel.querySelector("h2");
   const entryNote = filterPanel.querySelector(".panel-note");
-  // ACIKLAMA: entryApply degiskeninin Turkce karsiligi "entry uygula"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const entryApply = filterPanel.querySelector("#applyHomeSummaryFilterButton");
   if (entryKicker) entryKicker.textContent = "Filtre";
-  if (entryNote) entryNote.textContent = "Gelir / gider eklerken de aynı tarih aralığı kullanılır.";
+  if (entryTitle) entryTitle.textContent = "Tarih işlemleri";
+  if (entryNote) entryNote.textContent = "Özet ve Tasarruf ile aynı tarih aralığı kullanılır.";
   if (entryApply) entryApply.textContent = "Filtreyi Uygula";
+}
 
-  // ACIKLAMA: summaryKicker degiskeninin Turkce karsiligi "ozet kicker"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const summaryKicker = summaryPanel.querySelector(".panel-kicker");
-  // ACIKLAMA: summaryTitle degiskeninin Turkce karsiligi "ozet baslik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const summaryTitle = summaryPanel.querySelector("h2");
-  // ACIKLAMA: summaryNote degiskeninin Turkce karsiligi "ozet note"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const summaryNote = summaryPanel.querySelector(".panel-note");
-  if (summaryKicker) summaryKicker.textContent = "Filtre";
-  if (summaryTitle) summaryTitle.textContent = "Gelir / gider tarih filtresi";
-  if (summaryNote) summaryNote.textContent = "Özet ve tasarruf için tarih aralığı seç.";
+function openSummaryDateFilterModal() {
+  const modal = document.getElementById("summaryDateFilterModal");
+  if (!modal) return;
+  syncHomeSummaryFilterControls();
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  setTimeout(() => document.getElementById("summaryHomeSummaryStartDate")?.focus(), 20);
+}
+
+function closeSummaryDateFilterModal() {
+  const modal = document.getElementById("summaryDateFilterModal");
+  if (!modal) return;
+  modal.hidden = true;
+  if (!document.querySelector('.modal-backdrop:not([hidden])')) {
+    document.body.classList.remove("modal-open");
+  }
 }
 
 // ACIKLAMA: getHomeSummaryStartInputs fonksiyonunun Turkce karsiligi "al ana sayfa ozet baslangic inputs"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
@@ -815,6 +800,18 @@ function syncHomeSummaryFilterDraft(source, inputs) {
 
 // ACIKLAMA: bindHomeSummaryFilterControls fonksiyonunun Turkce karsiligi "bagla ana sayfa ozet filtre kontroller"; ilgili uygulama islemini calistirir.
 function bindHomeSummaryFilterControls() {
+  const closeButton = document.getElementById("closeSummaryDateFilterModalButton");
+  const modal = document.getElementById("summaryDateFilterModal");
+  if (closeButton && closeButton.dataset.summaryFilterBound !== "true") {
+    closeButton.dataset.summaryFilterBound = "true";
+    closeButton.addEventListener("click", closeSummaryDateFilterModal);
+  }
+  if (modal && modal.dataset.summaryFilterBackdropBound !== "true") {
+    modal.dataset.summaryFilterBackdropBound = "true";
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeSummaryDateFilterModal();
+    });
+  }
   getHomeSummaryStartInputs().forEach((input) => {
     if (input.dataset.homeSummaryBound === "true") return;
     input.dataset.homeSummaryBound = "true";
@@ -985,6 +982,23 @@ function canScrollElementInTouchDirection(element, deltaY) {
   return true;
 }
 
+// ACIKLAMA: getRootScrollElement fonksiyonunun Turkce karsiligi "kok kaydirma elemanini al"; tarayicinin belgeyi gercekte kaydirdigi ana elemani dondurur.
+function getRootScrollElement() {
+  return document.scrollingElement || document.documentElement;
+}
+
+// ACIKLAMA: canRootDocumentScrollInTouchDirection fonksiyonunun Turkce karsiligi "kok belge dokunma yonunde kayabilir mi"; body/document uzerindeki dogal sayfa kaydirmasini dikkate alir.
+function canRootDocumentScrollInTouchDirection(deltaY) {
+  // ACIKLAMA: rootScrollElement degiskeninin Turkce karsiligi "kok kaydirma elemani"; tarayicinin belgeyi kaydirdigi asli elemandir.
+  const rootScrollElement = getRootScrollElement();
+
+  if (!rootScrollElement) {
+    return false;
+  }
+
+  return canScrollElementInTouchDirection(rootScrollElement, deltaY);
+}
+
 // ACIKLAMA: hasScrollableAncestorInTouchDirection fonksiyonunun Turkce karsiligi "dokunma yonunde kaydirilabilir ust eleman var mi"; en ust/en alt sinirda bosluga dogru esnemeyi ayirt eder.
 function hasScrollableAncestorInTouchDirection(target, deltaY) {
   // ACIKLAMA: workspace degiskeninin Turkce karsiligi "calisma alani"; sayfanin ana kaydirma kabidir.
@@ -1004,7 +1018,7 @@ function hasScrollableAncestorInTouchDirection(target, deltaY) {
     node = node.parentElement;
   }
 
-  return Boolean(workspace && isScrollableYElement(workspace) && canScrollElementInTouchDirection(workspace, deltaY));
+  return Boolean((workspace && isScrollableYElement(workspace) && canScrollElementInTouchDirection(workspace, deltaY)) || canRootDocumentScrollInTouchDirection(deltaY));
 }
 
 // ACIKLAMA: setupMobileBoundaryScrollLock fonksiyonunun Turkce karsiligi "mobil sinir kaydirma kilidi kur"; iOS/PWA'da en ust ve en altta arka planin gorunmesine neden olan esnemeyi engeller.

@@ -1033,12 +1033,12 @@ function getHomeSummaryTransactions() {
 
 // ACIKLAMA: getSummaryScopedTransactions fonksiyonunun Turkce karsiligi "al ozet scoped islemler"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getSummaryScopedTransactions() {
-  return isHomeSummaryFilterActive() ? getHomeSummaryTransactions() : getDateFilteredTransactions();
+  return getHomeSummaryTransactions();
 }
 
 // ACIKLAMA: getSummaryScopeLabel fonksiyonunun Turkce karsiligi "al ozet scope etiket"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getSummaryScopeLabel() {
-  return isHomeSummaryFilterActive() ? getHomeSummaryFilterLabel() : getDateFilterLabel();
+  return isHomeSummaryFilterActive() ? getHomeSummaryFilterLabel() : "Tüm zamanlar";
 }
 
 // ACIKLAMA: getHomeSummaryFilterLabel fonksiyonunun Turkce karsiligi "al ana sayfa ozet filtre etiket"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
@@ -1078,7 +1078,7 @@ function updateHomeSummaryFilterStatus(totals = null, count = null) {
 
   if (!isHomeSummaryFilterActive()) {
     statusNodes.forEach((node) => {
-      node.textContent = "Şu anda tüm kayıtların gelir gider hesabı gösterilmektedir.";
+      node.textContent = "Şu anda tüm zamanların gelir gider hesabı gösterilmektedir.";
     });
     return;
   }
@@ -1103,6 +1103,11 @@ function applyHomeSummaryFilter() {
   renderHome();
   renderStats();
   renderCategoryBreakdown();
+  if (typeof renderModernShell === "function") renderModernShell();
+  if (typeof closeSummaryDateFilterModal === "function") {
+    const modal = document.getElementById("summaryDateFilterModal");
+    if (modal && !modal.hidden) closeSummaryDateFilterModal();
+  }
 }
 
 // ACIKLAMA: clearHomeSummaryFilter fonksiyonunun Turkce karsiligi "temizle ana sayfa ozet filtre"; ilgili uygulama islemini calistirir.
@@ -1132,7 +1137,7 @@ function renderHome() {
       ? `Şu anda ${getHomeSummaryFilterLabel()} arası gelir gider hesabınız gösterilmektedir. ${
           totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."
         }`
-      : `Şu anda tüm kayıtların gelir gider hesabı gösterilmektedir. ${
+      : `Şu anda tüm zamanların gelir gider hesabı gösterilmektedir. ${
           totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."
         }`;
   }

@@ -24,37 +24,37 @@
       rel="stylesheet"
     />
     <!-- ACIKLAMA: PWA kurulum bilgilerini ve uygulama ikonlarini tarayiciya tanitir. -->
-    <link rel="manifest" href="manifest.json?v=373" />
+    <link rel="manifest" href="manifest.json?v=417" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <!-- ACIKLAMA: CSS yuklenmeden once kayitli tema tercihini uygulayan kucuk JS dosyasi. -->
-    <script src="assets/js/00-theme-preload.js?v=373"></script>
+    <script src="assets/js/00-theme-preload.js?v=417"></script>
     <!-- ACIKLAMA: Kok degiskenler, global sayfa zemini ve temel form/button ayarlari. -->
-    <link rel="stylesheet" href="assets/css/01-base.css?v=373" />
+    <link rel="stylesheet" href="assets/css/01-base.css?v=417" />
     <!-- ACIKLAMA: Giris/kayit/parola ekranlari, ortak formlar, butonlar ve tehlikeli islem alanlari. -->
-    <link rel="stylesheet" href="assets/css/02-auth-forms.css?v=373" />
+    <link rel="stylesheet" href="assets/css/02-auth-forms.css?v=417" />
     <!-- ACIKLAMA: Uygulama iskeleti, sidebar, topbar, ekran bolumleri ve ana grid duzeni. -->
-    <link rel="stylesheet" href="assets/css/03-shell-navigation.css?v=373" />
+    <link rel="stylesheet" href="assets/css/03-shell-navigation.css?v=417" />
     <!-- ACIKLAMA: Ana sayfa ozetleri, PDF/print onizleme, kayit gecmisi, banka import temel kartlari ve sayfalama. -->
-    <link rel="stylesheet" href="assets/css/04-dashboard-history-export.css?v=373" />
+    <link rel="stylesheet" href="assets/css/04-dashboard-history-export.css?v=417" />
     <!-- ACIKLAMA: Modallar, odeme kartlari, acilis ekrani ve ilk responsive kart kurallari. -->
-    <link rel="stylesheet" href="assets/css/05-modals-payment-splash.css?v=373" />
+    <link rel="stylesheet" href="assets/css/05-modals-payment-splash.css?v=417" />
     <!-- ACIKLAMA: Splash animasyonlari, odeme kartlari, varlik/BES ekranlari ve mobil iyilestirmeler. -->
-    <link rel="stylesheet" href="assets/css/06-mobile-payment-assets.css?v=373" />
+    <link rel="stylesheet" href="assets/css/06-mobile-payment-assets.css?v=417" />
     <!-- ACIKLAMA: Tema degiskenleri, acik/koyu tema, ayarlar ekrani ve genel kontrol gorselleri. -->
-    <link rel="stylesheet" href="assets/css/07-theme-settings.css?v=373" />
+    <link rel="stylesheet" href="assets/css/07-theme-settings.css?v=417" />
     <!-- ACIKLAMA: Modal alt aksiyonlari, filtreler, ana sayfa mini listeleri ve bank-import modal duzeni. -->
-    <link rel="stylesheet" href="assets/css/08-modal-filters-home.css?v=373" />
+    <link rel="stylesheet" href="assets/css/08-modal-filters-home.css?v=417" />
     <!-- ACIKLAMA: Banka import ayrintilari, odeme hesabi filtreleri, genis ekran ve arama duzenleri. -->
-    <link rel="stylesheet" href="assets/css/09-bank-import-filters-wide.css?v=373" />
+    <link rel="stylesheet" href="assets/css/09-bank-import-filters-wide.css?v=417" />
     <!-- ACIKLAMA: Mobil/PWA, yedekleme, auth, kart ve form responsive duzeltmeleri. -->
-    <link rel="stylesheet" href="assets/css/10-responsive-pwa-overrides.css?v=373" />
+    <link rel="stylesheet" href="assets/css/10-responsive-pwa-overrides.css?v=417" />
     <!-- ACIKLAMA: Coklu gelir/gider modali, son kayitlar penceresi ve son katman mobil duzeltmeleri. -->
-    <link rel="stylesheet" href="assets/css/11-bulk-recent-final.css?v=373" />
+    <link rel="stylesheet" href="assets/css/11-bulk-recent-final.css?v=417" />
     <!-- ACIKLAMA: Borc ve alacak takip ekrani, kayit satirlari, filtreler ve mobil yerlesim. -->
-    <link rel="stylesheet" href="assets/css/12-debts-receivables.css?v=373" />
-    <link rel="stylesheet" href="assets/css/13-modern-shell.css?v=373" />
-    <link rel="stylesheet" href="assets/css/14-settings-dialogs.css?v=373" />
+    <link rel="stylesheet" href="assets/css/12-debts-receivables.css?v=417" />
+    <link rel="stylesheet" href="assets/css/13-modern-shell.css?v=417" />
+    <link rel="stylesheet" href="assets/css/14-settings-dialogs.css?v=417" />
   </head>
   <body>
 
@@ -360,20 +360,35 @@
           </section>
           <!-- ACIKLAMA: Bu alan acilista banka ice aktarma penceresine tasinir. -->
           <section id="bankImportPanel" class="bank-import-panel" hidden>
-            <div class="bank-import-modal-nav">
+            <div class="bank-import-modal-nav bank-import-menu-nav">
               <button id="closeBankImportModalButton" class="entry-modal-nav-button entry-modal-cancel" type="button">İptal</button>
-              <h2 id="bankImportModalTitle">Kart hareketlerini içe aktar</h2>
-              <div class="bank-import-modal-nav-actions">
-                <label class="entry-modal-nav-button bank-upload-trigger bank-upload-nav-trigger" for="bankImportFile" aria-label="Dosya yükle" title="Dosya yükle">
-                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path d="M12 16V7m0 0-3.5 3.5M12 7l3.5 3.5M5 17.5v1A2.5 2.5 0 0 0 7.5 21h9A2.5 2.5 0 0 0 19 18.5v-1" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-                    <rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="none" stroke="currentColor" stroke-opacity="0.18"/>
-                  </svg>
-                </label>
-                <!-- ACIKLAMA: bankImportAddButton tiklama olayi JS tarafinda baglanan butondur. -->
-                <button id="bankImportAddButton" class="entry-modal-nav-button entry-modal-save" type="button">Yapay Zeka ile Ekle</button>
-                <!-- ACIKLAMA: bankImportLocalButton tiklama olayi JS tarafinda baglanan butondur. -->
-                <button id="bankImportLocalButton" class="entry-modal-nav-button" type="button">Kayıtlara Ekle</button>
+              <div class="bank-import-menu-wrap">
+                <button id="bankImportMenuButton" class="entry-modal-nav-button bank-import-menu-button" type="button" aria-label="İçe aktarma seçenekleri" title="İçe aktarma seçenekleri" aria-expanded="false" aria-controls="bankImportMenu">
+                  <span aria-hidden="true">•••</span>
+                </button>
+                <div id="bankImportMenu" class="bank-import-menu" hidden>
+                  <label class="bank-import-menu-item bank-upload-trigger" for="bankImportFile" aria-label="Görsel yükle" title="Görsel yükle">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path d="M12 16V7m0 0-3.5 3.5M12 7l3.5 3.5M5 17.5v1A2.5 2.5 0 0 0 7.5 21h9A2.5 2.5 0 0 0 19 18.5v-1" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                    </svg>
+                    <span>Görsel Yükle</span>
+                  </label>
+                  <button id="bankImportLocalButton" class="bank-import-menu-item" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <ellipse cx="12" cy="5" rx="7" ry="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                      <path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3 1.4 0 2.7-.2 3.8-.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+                      <path d="M18 15v6m-3-3h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+                    </svg>
+                    <span>Kayıtlara Ekle</span>
+                  </button>
+                  <button id="bankImportAddButton" class="bank-import-menu-item" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path d="M12 3l1.1 3.1L16 7.2l-2.9 1.1L12 11.4l-1.1-3.1L8 7.2l2.9-1.1L12 3Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8"/>
+                      <path d="M18 12l.8 2.2L21 15l-2.2.8L18 18l-.8-2.2L15 15l2.2-.8L18 12ZM7 13l1.2 3.3L11.5 17l-3.3 1.2L7 21.5l-1.2-3.3L2.5 17l3.3-1.2L7 13Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
+                    <span>Yapay Zeka ile Ekle</span>
+                  </button>
+                </div>
               </div>
             </div>
             <p class="panel-note bank-import-modal-note">
@@ -827,17 +842,17 @@
         <section id="summaryView" class="view-section" data-view>
           <div class="summary-stack">
             <section class="stats-grid">
-              <article class="panel stat-card">
+              <article class="panel stat-card summary-stat-income">
                 <span>Toplam Gelir</span>
                 <!-- ACIKLAMA: incomeTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="incomeTotal">0 TL</strong>
               </article>
-              <article class="panel stat-card">
+              <article class="panel stat-card summary-stat-expense">
                 <span>Toplam Gider</span>
                 <!-- ACIKLAMA: expenseTotal hesaplanan para/toplam degerinin gosterildigi alandir. -->
                 <strong id="expenseTotal">0 TL</strong>
               </article>
-              <article class="panel stat-card">
+              <article class="panel stat-card summary-stat-savings">
                 <span>Tasarruf</span>
                 <!-- ACIKLAMA: monthlySavings bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                 <strong id="monthlySavings">0 TL</strong>
@@ -897,7 +912,7 @@
             <div class="panel-heading compact-heading">
               <div>
                 <p class="panel-kicker">Filtre</p>
-                <h2>Gelir / gider tarih filtresi</h2>
+                <h2>Tarih işlemleri</h2>
                 <p id="homeSummaryFilterStatus" class="panel-note">Şu anda tüm kayıtların gelir gider hesabı gösterilmektedir.</p>
               </div>
             </div>
@@ -1001,7 +1016,7 @@
 
                 <div class="auth-actions settings-actions">
                   <!-- ACIKLAMA: resetAppearanceButton parola sifirlama akisinda kullanilir. -->
-                  <button id="resetAppearanceButton" class="ghost-btn" type="button">Varsayılan ayarlara dön</button>
+                  <button id="resetAppearanceButton" class="ghost-btn" type="button">Varsayılana dön</button>
                 </div>
               </section>
 
@@ -1044,7 +1059,7 @@
                     <small>Yedek aldığın son tarih burada görünür; verilerinde sorun olursa bu yedek Firebase'de saklanır.</small>
                   </div>
                   <!-- ACIKLAMA: cloudBackupButton tiklama olayi JS tarafinda baglanan butondur. -->
-                  <button id="cloudBackupButton" class="primary-btn" type="button">Yedek Al</button>
+                  <button id="cloudBackupButton" class="primary-btn backup-icon-button" type="button" aria-label="Bulut yedeği al" title="Bulut yedeği al">Yedek Al</button>
                 </div>
                 <div class="notification-settings-card cloud-backup-card local-backup-card">
                   <div>
@@ -1052,7 +1067,7 @@
                     <small>Bu cihazdaki kayıtları JSON dosyası olarak indirir. Firebase bağlantısı gerekmez.</small>
                   </div>
                   <!-- ACIKLAMA: localBackupDownloadButton tiklama olayi JS tarafinda baglanan butondur. -->
-                  <button id="localBackupDownloadButton" class="ghost-btn" type="button">Dosya İndir</button>
+                  <button id="localBackupDownloadButton" class="ghost-btn backup-icon-button" type="button" aria-label="Yedek dosyasını indir" title="Yedek dosyasını indir">Dosya İndir</button>
                 </div>
                 <div class="notification-settings-card cloud-backup-card local-backup-card local-backup-import-card">
                   <div>
@@ -1062,7 +1077,7 @@
                   <!-- ACIKLAMA: localBackupImportInput bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
                   <input id="localBackupImportInput" type="file" accept=".json,application/json" hidden />
                   <!-- ACIKLAMA: localBackupImportButton tiklama olayi JS tarafinda baglanan butondur. -->
-                  <button id="localBackupImportButton" class="ghost-btn" type="button">Yedek Yükle</button>
+                  <button id="localBackupImportButton" class="ghost-btn backup-icon-button" type="button" aria-label="Yerel yedeği yükle" title="Yerel yedeği yükle">Yedek Yükle</button>
                 </div>
                 <!-- ACIKLAMA: cloudBackupStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
                 <p id="cloudBackupStatus" class="sync-status">Son yedek: Henüz yok.</p>
@@ -1073,68 +1088,67 @@
           <!-- ACIKLAMA: Kullanıcı işlemleri artık Ayarlar ekranının içinde yer alır. -->
           <section class="panel user-actions-panel">
             <!-- ACIKLAMA: profileForm kullanici verisi toplamak ve submit olayini yakalamak icin kullanilir. -->
-            <form id="profileForm" class="profile-form">
-              <div class="panel-heading">
+            <form id="profileForm" class="profile-form settings-profile-form">
+              <div class="panel-heading" hidden>
                 <div>
                   <p class="panel-kicker">Kullanıcı İşlemleri</p>
-                  <!-- ACIKLAMA: profileTitle bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
-                  <h2 id="profileTitle">Profil bilgileri</h2>
-                  <p class="panel-note">
-                    Kullanıcı adını güncelle veya şifreni mevcut şifrenle değiştir.
-                  </p>
+                  <h2 id="profileTitle">Hesap bilgileri</h2>
                 </div>
               </div>
-              <label>
-                Kullanıcı adı
-                <!-- ACIKLAMA: profileUsername bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
-                <input id="profileUsername" type="text" autocomplete="username" required />
-              </label>
-              <label>
-                Mevcut şifre
-                <!-- ACIKLAMA: profileCurrentPassword bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
-                <input
-                  id="profileCurrentPassword"
-                  type="password"
-                  minlength="6"
-                  autocomplete="current-password"
-                  placeholder="Şifre değişikliği için gerekli"
-                />
-              </label>
-              <label>
-                Yeni şifre
-                <!-- ACIKLAMA: profilePassword bu HTML elemaninin JS/CSS tarafinda hedeflenebilmesi icin verilen benzersiz kimliktir. -->
-                <input
-                  id="profilePassword"
-                  type="password"
-                  minlength="6"
-                  autocomplete="new-password"
-                  placeholder="Değiştirmek istemiyorsan boş bırak"
-                />
-              </label>
-              <div class="auth-actions">
-                <button class="primary-btn" type="submit">Güncelle</button>
+
+              <div class="settings-profile-card">
+                <label>
+                  <span>Kullanıcı adı</span>
+                  <input id="profileUsername" type="text" autocomplete="username" required />
+                </label>
+                <label>
+                  <span>Mail adresi</span>
+                  <input id="profileEmail" type="email" autocomplete="email" readonly />
+                </label>
+                <label>
+                  <span>Ev adresi</span>
+                  <input id="profileHomeAddress" type="text" autocomplete="street-address" placeholder="Ev adresini gir" />
+                </label>
+                <label>
+                  <span>İş adresi</span>
+                  <input id="profileWorkAddress" type="text" autocomplete="organization" placeholder="İş adresini gir" />
+                </label>
               </div>
-              <!-- ACIKLAMA: profileStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
+
+              <div class="settings-profile-password-card">
+                <button id="profilePasswordSettingsButton" class="preferences-link profile-password-disclosure" type="button" aria-expanded="false" aria-controls="profilePasswordFields">
+                  <span class="profile-password-disclosure-icon" aria-hidden="true"></span>
+                  <span>Şifre işlemleri</span>
+                  <span class="profile-password-disclosure-chevron" aria-hidden="true"></span>
+                </button>
+                <div id="profilePasswordFields" class="profile-password-fields" hidden>
+                  <label>
+                    <span>Mevcut şifre</span>
+                    <input id="profileCurrentPassword" type="password" minlength="6" autocomplete="current-password" placeholder="Mevcut şifren" />
+                  </label>
+                  <label>
+                    <span>Yeni şifre</span>
+                    <input id="profilePassword" type="password" minlength="6" autocomplete="new-password" placeholder="Yeni şifren" />
+                  </label>
+                </div>
+              </div>
+
+              <section class="settings-account-operations" aria-labelledby="accountOperationsTitle">
+                <h3 id="accountOperationsTitle">Hesap işlemleri</h3>
+                <div class="preferences-rows settings-account-operation-rows">
+                  <!-- ACIKLAMA: deleteUserButton satiri hesap silme dogrulama akisini baslatir. -->
+                  <button id="deleteUserButton" class="preferences-link settings-delete-account-row" type="button">
+                    <span class="settings-delete-account-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span>Hesabı kalıcı olarak sil</span>
+                    <span class="settings-delete-account-chevron" aria-hidden="true">›</span>
+                  </button>
+                </div>
+                <!-- ACIKLAMA: deleteUserStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
+                <p id="deleteUserStatus" class="sync-status"></p>
+              </section>
+
               <p id="profileStatus" class="sync-status"></p>
             </form>
-            
-            <div class="danger-zone">
-              <div>
-                <p class="panel-kicker">Kullanıcı Sil</p>
-                <h3>Hesabı kalıcı olarak sil</h3>
-                <p class="panel-note">
-                  Bu işlem hesabını, buluttaki kayıtlarını ve cihazdaki oturum verilerini kalıcı olarak siler.
-                </p>
-              </div>
-              <div class="auth-actions">
-                <!-- ACIKLAMA: deleteUserButton tiklama olayi JS tarafinda baglanan butondur. -->
-                <button id="deleteUserButton" class="danger-btn" type="button">
-                  Hesabı kalıcı olarak sil
-                </button>
-              </div>
-              <!-- ACIKLAMA: deleteUserStatus hata, basari veya bilgilendirme mesajinin yazildigi alandir. -->
-              <p id="deleteUserStatus" class="sync-status"></p>
-            </div>
           </section>
         </section>
 
@@ -1160,6 +1174,26 @@
           <!-- ACIKLAMA: genericConfirmCancelButton tiklama olayi JS tarafinda baglanan butondur. -->
           <button id="genericConfirmCancelButton" class="ghost-btn" type="button">Vazgeç</button>
         </div>
+      </section>
+    </div>
+
+    <!-- ACIKLAMA: Hesap silme icin e-posta dogrulama kodu penceresi. -->
+    <div id="deleteAccountCodeModal" class="modal-backdrop" hidden>
+      <section class="modal-card delete-code-modal" role="dialog" aria-modal="true" aria-labelledby="deleteAccountCodeTitle">
+        <div class="entry-modal-nav delete-code-modal-nav">
+          <button id="closeDeleteAccountCodeButton" class="entry-modal-nav-button entry-modal-cancel" type="button">İptal</button>
+          <h2 id="deleteAccountCodeTitle">Doğrulama kodu</h2>
+          <button id="resendDeleteAccountCodeButton" class="entry-modal-nav-button" type="button">Tekrar Gönder</button>
+        </div>
+        <form id="deleteAccountCodeForm" class="profile-form delete-code-form">
+          <p class="panel-note"><strong id="deleteAccountCodeEmail"></strong> adresine gönderilen 6 haneli kodu gir.</p>
+          <label class="delete-code-field">
+            <span>Doğrulama kodu</span>
+            <input id="deleteAccountCodeInput" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required />
+          </label>
+          <button class="primary-btn delete-code-verify" type="submit">Doğrula ve Devam Et</button>
+          <p id="deleteAccountCodeStatus" class="sync-status"></p>
+        </form>
       </section>
     </div>
 
@@ -1268,22 +1302,24 @@
             <button id="bulkEntrySubmitButton" class="entry-modal-nav-button entry-modal-save" type="submit" form="bulkEntryForm">Kaydet</button>
           </div>
         </div>
-        <div class="bulk-entry-modal-note-wrap">
-          <p class="panel-note">Dolu satırları tek seferde kaydet; boş satırlar otomatik yok sayılır.</p>
+        <div class="bulk-entry-modal-scroll">
+          <div class="bulk-entry-modal-note-wrap">
+            <p class="panel-note">Dolu satırları tek seferde kaydet; boş satırlar otomatik yok sayılır.</p>
+          </div>
+          <!-- ACIKLAMA: bulkEntryForm coklu gelir/gider satirlarini tek submit olayinda kaydetmek icin kullanilir. -->
+          <form id="bulkEntryForm" class="bulk-entry-form">
+            <!-- ACIKLAMA: bulkEntryRows JS tarafindan olusturulan coklu kayit satirlarinin yerlestigi alandir. -->
+            <div id="bulkEntryRows" class="bulk-entry-rows"></div>
+            <!-- ACIKLAMA: bulkEntryStatus coklu kayit ekleme sonucunu veya hatasini gosterir. -->
+            <p id="bulkEntryStatus" class="sync-status"></p>
+          </form>
         </div>
-        <!-- ACIKLAMA: bulkEntryForm coklu gelir/gider satirlarini tek submit olayinda kaydetmek icin kullanilir. -->
-        <form id="bulkEntryForm" class="bulk-entry-form">
-          <!-- ACIKLAMA: bulkEntryRows JS tarafindan olusturulan coklu kayit satirlarinin yerlestigi alandir. -->
-          <div id="bulkEntryRows" class="bulk-entry-rows"></div>
-          <!-- ACIKLAMA: bulkEntryStatus coklu kayit ekleme sonucunu veya hatasini gosterir. -->
-          <p id="bulkEntryStatus" class="sync-status"></p>
-        </form>
       </section>
     </div>
 
     <!-- ACIKLAMA: bankImportPreviewModal uygulamada gosterilip gizlenen ana ekran bolumlerinden biridir. -->
     <div id="bankImportModal" class="modal-backdrop" hidden>
-      <section class="modal-card wide-modal bank-import-modal" role="dialog" aria-modal="true" aria-labelledby="bankImportModalTitle">
+      <section class="modal-card wide-modal bank-import-modal" role="dialog" aria-modal="true" aria-label="Kart hareketi içe aktarma">
         <div id="bankImportFormMount"></div>
       </section>
     </div>
@@ -1396,6 +1432,32 @@
             </label>
           </div>
         </form>
+      </section>
+    </div>
+
+    <div id="summaryDateFilterModal" class="modal-backdrop" hidden>
+      <section class="modal-card entry-modal-card summary-date-filter-modal-card" role="dialog" aria-modal="true" aria-labelledby="summaryDateFilterModalTitle">
+        <div class="entry-modal-nav summary-date-filter-modal-nav">
+          <div class="summary-date-filter-modal-nav-start">
+            <button id="closeSummaryDateFilterModalButton" class="entry-modal-nav-button entry-modal-cancel" type="button">İptal</button>
+            <button id="summaryClearHomeSummaryFilterButton" class="entry-modal-nav-button summary-date-filter-clear-nav" type="button">Temizle</button>
+          </div>
+          <h2 id="summaryDateFilterModalTitle">Tarih filtresi</h2>
+          <button id="summaryApplyHomeSummaryFilterButton" class="entry-modal-nav-button entry-modal-save" type="button">Kaydet</button>
+        </div>
+        <div class="summary-date-filter-modal-content">
+          <p id="summaryHomeSummaryFilterStatus" class="panel-note">Şu anda tüm zamanların gelir gider hesabı gösterilmektedir.</p>
+          <div class="summary-date-filter-grid">
+            <label>
+              Başlangıç
+              <input id="summaryHomeSummaryStartDate" type="date" />
+            </label>
+            <label>
+              Bitiş
+              <input id="summaryHomeSummaryEndDate" type="date" />
+            </label>
+          </div>
+        </div>
       </section>
     </div>
 
@@ -2030,7 +2092,7 @@
     </template>
 
     <!-- ACIKLAMA: Firebase proje ayarlarini app.js tarafindan okunacak sekilde yukler. -->
-    <script src="firebase-config.js?v=373"></script>
+    <script src="firebase-config.js?v=417"></script>
     <!-- ACIKLAMA: Firebase cekirdek kutuphanesini yukleyerek bulut baglantisini hazirlar. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <!-- ACIKLAMA: Firebase giris/kayit/parola islemleri icin auth kutuphanesini yukler. -->
@@ -2038,31 +2100,31 @@
     <!-- ACIKLAMA: Firestore veritabani okuma/yazma islemleri icin kutuphaneyi yukler. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <!-- ACIKLAMA: Sabitler, varsayilan veriler ve HTML elemanlarinin DOM referanslari. -->
-    <script src="assets/js/01-config-dom.js?v=373"></script>
+    <script src="assets/js/01-config-dom.js?v=417"></script>
     <!-- ACIKLAMA: Tema, yazi tipi, kart odeme hatirlaticilari, genel onay penceresi ve mobil kaydirma yardimcilari. -->
-    <script src="assets/js/02-ui-preferences-reminders.js?v=373"></script>
+    <script src="assets/js/02-ui-preferences-reminders.js?v=417"></script>
     <!-- ACIKLAMA: Uygulama baslatma fonksiyonu, olay baglantilari, gelir/gider ve coklu kayit formlari. -->
-    <script src="assets/js/03-init-entry-forms.js?v=373"></script>
+    <script src="assets/js/03-init-entry-forms.js?v=417"></script>
     <!-- ACIKLAMA: Yerel depolama, silinmis kayit izleri, kategori listeleri ve ana sayfa render islemleri. -->
-    <script src="assets/js/04-storage-home-render.js?v=373"></script>
+    <script src="assets/js/04-storage-home-render.js?v=417"></script>
     <!-- ACIKLAMA: Varliklar, odeme hesaplari, kredi karti borclari, BES hesaplari ve piyasa fiyatlari. -->
-    <script src="assets/js/05-assets-payments-bes-market.js?v=373"></script>
+    <script src="assets/js/05-assets-payments-bes-market.js?v=417"></script>
     <!-- ACIKLAMA: Ozet kategori dagilimi, kayit gecmisi, filtreler, kategori yonetimi, ekran gecisi ve yan menu. -->
-    <script src="assets/js/06-summary-history-categories-navigation.js?v=373"></script>
+    <script src="assets/js/06-summary-history-categories-navigation.js?v=417"></script>
     <!-- ACIKLAMA: Yedekleme, PDF/Excel disari aktarma, dosyadan ice aktarma ve paylasim kodu islemleri. -->
-    <script src="assets/js/07-backup-export-import-sync.js?v=373"></script>
+    <script src="assets/js/07-backup-export-import-sync.js?v=417"></script>
     <!-- ACIKLAMA: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir. -->
-    <script src="assets/js/08-auth-firebase-cloud.js?v=373"></script>
+    <script src="assets/js/08-auth-firebase-cloud.js?v=417"></script>
     <!-- ACIKLAMA: Banka hareketi ice aktarma, AI/OCR dosya okuma ve metinden hareket ayrisitirma fonksiyonlari. -->
-    <script src="assets/js/09-bank-import-ocr-parsers.js?v=373"></script>
+    <script src="assets/js/09-bank-import-ocr-parsers.js?v=417"></script>
     <!-- ACIKLAMA: Borc/alacak kayitlari, filtreler, ilgili hareketler ve ekran islemleri. -->
-    <script src="assets/js/10-debts-receivables.js?v=373"></script>
+    <script src="assets/js/10-debts-receivables.js?v=417"></script>
     <!-- ACIKLAMA: Acilis ekrani ve service worker kaydi yardimcilari. -->
-    <script src="assets/js/10-startup-pwa.js?v=373"></script>
+    <script src="assets/js/10-startup-pwa.js?v=417"></script>
     <!-- ACIKLAMA: Uygulama durum degiskenlerini yukler ve tum dosyalar hazir olduktan sonra uygulamayi baslatir. En son yuklenmelidir. -->
-    <script src="assets/vendor/lucide.min.js?v=373"></script>
-    <script src="assets/js/10-modern-shell.js?v=373"></script>
-    <script src="assets/js/10-settings-layout.js?v=373"></script>
-    <script src="assets/js/11-state-startup.js?v=373"></script>
+    <script src="assets/vendor/lucide.min.js?v=417"></script>
+    <script src="assets/js/10-modern-shell.js?v=417"></script>
+    <script src="assets/js/10-settings-layout.js?v=417"></script>
+    <script src="assets/js/11-state-startup.js?v=417"></script>
   </body>
 </html>

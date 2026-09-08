@@ -2,6 +2,117 @@
 let shellMonth = "";
 let shellAmountsHidden = false;
 
+let shellToolbarPinRaf = 0;
+let shellToolbarNaturalTop = null;
+let shellToolbarSidebarObserver = null;
+
+function getShellToolbarPlaceholder(toolbar) {
+  if (!toolbar) return null;
+  let placeholder = toolbar.nextElementSibling;
+  if (!placeholder || !placeholder.classList.contains("shell-toolbar-placeholder")) {
+    placeholder = document.createElement("div");
+    placeholder.className = "shell-toolbar-placeholder";
+    placeholder.hidden = true;
+    toolbar.after(placeholder);
+  }
+  return placeholder;
+}
+
+function rememberDesktopShellToolbarNaturalTop(toolbar = document.querySelector(".shell-toolbar")) {
+  if (!toolbar || toolbar.classList.contains("is-desktop-fixed")) return;
+  shellToolbarNaturalTop = toolbar.getBoundingClientRect().top + window.scrollY;
+}
+
+function releaseDesktopShellToolbarPin(toolbar = document.querySelector(".shell-toolbar")) {
+  if (!toolbar) return;
+  const placeholder = getShellToolbarPlaceholder(toolbar);
+  toolbar.classList.remove("is-desktop-fixed");
+  toolbar.style.removeProperty("--shell-toolbar-fixed-left");
+  toolbar.style.removeProperty("--shell-toolbar-fixed-width");
+  toolbar.style.removeProperty("--shell-toolbar-fixed-top");
+  if (placeholder) {
+    placeholder.hidden = true;
+    placeholder.style.height = "0px";
+  }
+  window.requestAnimationFrame(() => rememberDesktopShellToolbarNaturalTop(toolbar));
+}
+
+function syncDesktopShellToolbarPin() {
+  const toolbar = document.querySelector(".shell-toolbar");
+  if (!toolbar) return;
+
+  const isDesktop = window.matchMedia("(min-width: 981px)").matches;
+  if (!isDesktop) {
+    releaseDesktopShellToolbarPin(toolbar);
+    shellToolbarNaturalTop = null;
+    return;
+  }
+
+  const placeholder = getShellToolbarPlaceholder(toolbar);
+  if (!toolbar.classList.contains("is-desktop-fixed")) {
+    if (shellToolbarNaturalTop === null || window.scrollY <= 2) {
+      rememberDesktopShellToolbarNaturalTop(toolbar);
+    }
+  }
+
+  const naturalTop = shellToolbarNaturalTop ?? (toolbar.getBoundingClientRect().top + window.scrollY);
+  const shouldPin = window.scrollY > 2 && window.scrollY >= Math.max(0, naturalTop - 1);
+
+  if (!shouldPin) {
+    if (toolbar.classList.contains("is-desktop-fixed")) {
+      releaseDesktopShellToolbarPin(toolbar);
+    }
+    return;
+  }
+
+  const sourceRect = toolbar.classList.contains("is-desktop-fixed") && !placeholder.hidden
+    ? placeholder.getBoundingClientRect()
+    : toolbar.getBoundingClientRect();
+
+  if (!sourceRect.width || sourceRect.width < 120) return;
+
+  placeholder.hidden = false;
+  placeholder.style.height = `${toolbar.offsetHeight}px`;
+  toolbar.style.setProperty("--shell-toolbar-fixed-left", `${sourceRect.left}px`);
+  toolbar.style.setProperty("--shell-toolbar-fixed-width", `${sourceRect.width}px`);
+  toolbar.style.setProperty("--shell-toolbar-fixed-top", "0px");
+  toolbar.classList.add("is-desktop-fixed");
+}
+
+function requestDesktopShellToolbarPinSync() {
+  if (shellToolbarPinRaf) return;
+  shellToolbarPinRaf = window.requestAnimationFrame(() => {
+    shellToolbarPinRaf = 0;
+    syncDesktopShellToolbarPin();
+  });
+}
+
+function setupDesktopShellToolbarPinning() {
+  if (window.__desktopShellToolbarPinningBound) return;
+  window.__desktopShellToolbarPinningBound = true;
+
+  window.addEventListener("scroll", requestDesktopShellToolbarPinSync, { passive: true });
+  window.addEventListener("resize", () => {
+    shellToolbarNaturalTop = null;
+    requestDesktopShellToolbarPinSync();
+  }, { passive: true });
+
+  if (window.MutationObserver && appShell) {
+    shellToolbarSidebarObserver = new MutationObserver(() => {
+      requestDesktopShellToolbarPinSync();
+      window.setTimeout(requestDesktopShellToolbarPinSync, 240);
+    });
+    shellToolbarSidebarObserver.observe(appShell, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      rememberDesktopShellToolbarNaturalTop();
+      requestDesktopShellToolbarPinSync();
+    });
+  });
+}
+
 function shellIcon(name) {
   return `<i data-lucide="${name}" aria-hidden="true"></i>`;
 }
@@ -100,6 +211,7 @@ function setupModernShell() {
       <button type="button" id="openRecentTransactionsButton" class="shell-icon-button shell-history-action" title="Son kayıtlar" aria-label="Son kayıtlar" hidden>${shellIcon("history")}</button>
       <button type="button" id="exportExcelButton" class="shell-icon-button shell-history-action" title="Excel olarak al" aria-label="Excel olarak al" hidden>${shellIcon("sheet")}</button>
       <button type="button" id="exportPdfButton" class="shell-icon-button shell-history-action" title="PDF olarak al" aria-label="PDF olarak al" hidden>${shellIcon("file-text")}</button>
+      <button type="button" id="summaryDateFilterActionButton" class="shell-icon-button shell-summary-filter" title="Tarih filtresi" aria-label="Tarih filtresi" hidden>${shellIcon("calendar-range")}</button>
       <button type="button" class="shell-icon-button shell-refresh" data-shell-refresh title="Fiyatları yenile" aria-label="Fiyatları yenile" hidden>${shellIcon("refresh-cw")}</button>
       <button type="button" class="shell-icon-button shell-add" data-shell-add title="Yeni işlem" aria-label="Yeni işlem" aria-haspopup="menu" aria-expanded="false">${shellIcon("plus")}</button>
     </div>
@@ -120,6 +232,7 @@ function setupModernShell() {
   const historyRecentActionButton = toolbar.querySelector("#openRecentTransactionsButton");
   const historyExcelActionButton = toolbar.querySelector("#exportExcelButton");
   const historyPdfActionButton = toolbar.querySelector("#exportPdfButton");
+  const summaryDateFilterActionButton = toolbar.querySelector("#summaryDateFilterActionButton");
   const shellQuickActions = toolbar.querySelector("[data-shell-quick-actions]");
 
   shellRefreshButton?.addEventListener("click", async () => {
@@ -149,6 +262,10 @@ function setupModernShell() {
   historyPdfActionButton?.addEventListener("click", () => {
     if (activeView !== "historyView") return;
     exportFilteredTransactionsPdf();
+  });
+  summaryDateFilterActionButton?.addEventListener("click", () => {
+    if (activeView !== "summaryView") return;
+    openSummaryDateFilterModal();
   });
   const closeShellQuickActions = ({ restoreFocus = false } = {}) => {
     if (!shellQuickActions || shellQuickActions.hidden) return;
@@ -231,8 +348,10 @@ function setupModernShell() {
   });
   const shortTitles = {homeView:"Ana Sayfa",entryView:"Gelir / Gider",assetsView:"Birikimlerim",cardsView:"Kartlar / Hesaplar",besView:"BES",debtsView:"Borçlarım",summaryView:"Özet ve Tasarruf",historyView:"Kayıtlar",settingsView:"Ayarlar"};
   Object.entries(shortTitles).forEach(([id,title]) => {if(viewMeta[id]) viewMeta[id].title=title;});
+  setupDesktopShellToolbarPinning();
   window.lucide?.createIcons();
   renderModernShell();
+  requestDesktopShellToolbarPinSync();
 }
 
 function renderModernShell() {
@@ -249,6 +368,13 @@ function renderModernShell() {
   document.querySelectorAll(".shell-history-action").forEach((button) => {
     button.hidden = activeView !== "historyView";
   });
+
+  const summaryFilterButton = document.getElementById("summaryDateFilterActionButton");
+  if (summaryFilterButton) {
+    summaryFilterButton.hidden = activeView !== "summaryView";
+    summaryFilterButton.classList.toggle("is-active", activeView === "summaryView" && typeof isHomeSummaryFilterActive === "function" && isHomeSummaryFilterActive());
+    summaryFilterButton.setAttribute("aria-pressed", String(activeView === "summaryView" && typeof isHomeSummaryFilterActive === "function" && isHomeSummaryFilterActive()));
+  }
 
   document.querySelectorAll("[data-shell-view]").forEach(button => {
     const selected = button.dataset.shellView === activeView;
@@ -268,6 +394,7 @@ function renderModernShell() {
     }
   }
   renderModernDashboard();
+  requestDesktopShellToolbarPinSync();
 }
 
 function renderModernDashboard() {
