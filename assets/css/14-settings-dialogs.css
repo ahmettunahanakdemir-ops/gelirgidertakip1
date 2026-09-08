@@ -933,3 +933,266 @@ html.modern-budget :is(#genericConfirmModal,#confirmDeleteAccountModal,#confirmP
     font-size: 14px !important;
   }
 }
+
+/* v418 - iPhone/WebKit modal cards shrink to their content; long forms keep an inner scroller. */
+@media (max-width: 768px) {
+  html.modern-budget .modal-card > .unified-modal-nav {
+    grid-template-columns: 80px minmax(0, 1fr) 80px !important;
+    column-gap: 8px !important;
+  }
+
+  html.modern-budget .modal-card > .unified-modal-nav .unified-modal-title {
+    position: static !important;
+    grid-column: 2 !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    transform: none !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    text-align: center !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+    line-height: 1.2 !important;
+  }
+
+  html.modern-budget .modal-card > .unified-modal-nav .unified-modal-nav-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 8px !important;
+    line-height: 1.15 !important;
+  }
+
+  html.modern-budget .modal-card > .unified-modal-nav .unified-modal-nav-button[hidden] {
+    display: none !important;
+  }
+
+  html.modern-budget .modal-card > .unified-modal-nav.has-secondary-action {
+    grid-template-columns: 80px minmax(0, 1fr) auto !important;
+  }
+
+  html.modern-budget :is(#entryModal,#besModal,#assetEditModal,#paymentAccountModal,#debtModal) > .modal-card {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - max(24px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 16px)) !important;
+  }
+
+  html.modern-budget #entryModal #entryFormMount,
+  html.modern-budget #besModal .modal-body-scroll,
+  html.modern-budget #paymentAccountModal .modal-body-scroll,
+  html.modern-budget #debtModal .modal-body-scroll,
+  html.modern-budget #assetEditModal .asset-entry-form {
+    flex: 0 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  html.modern-budget #entryModal #entryFormMount,
+  html.modern-budget #besModal .modal-body-scroll,
+  html.modern-budget #paymentAccountModal .modal-body-scroll,
+  html.modern-budget #debtModal .modal-body-scroll {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  html.modern-budget #entryModal #entryForm,
+  html.modern-budget #besModal #besForm,
+  html.modern-budget #paymentAccountModal #paymentAccountForm,
+  html.modern-budget #debtModal #debtForm {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: 12px !important;
+  }
+
+  html.modern-budget #assetEditModal .asset-entry-form {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  html.modern-budget #entryModal #entryFormMount,
+  html.modern-budget #besModal #besFormMount {
+    padding-bottom: 0 !important;
+  }
+
+  html.modern-budget #besModal .modal-body-scroll > #besFormMount,
+  html.modern-budget #paymentAccountModal .modal-body-scroll > #paymentAccountForm,
+  html.modern-budget #debtModal .modal-body-scroll > #debtForm {
+    flex: 0 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  html.modern-budget #assetEditModal #assetEditForm.asset-entry-form {
+    padding-bottom: 12px !important;
+  }
+
+  html.modern-budget #transactionEditModal #transactionEditForm,
+  html.modern-budget #paymentAccountPayModal #paymentAccountPayForm {
+    padding-bottom: 12px !important;
+  }
+
+  html.modern-budget :is(
+    #entryModal .entry-modal-nav-button,
+    #summaryDateFilterModal .entry-modal-nav-button,
+    #assetEditModal .entry-modal-nav-button,
+    #besModal .unified-modal-nav-button,
+    #paymentAccountModal .unified-modal-nav-button,
+    #paymentAccountRecordsModal .unified-modal-nav-button,
+    #debtModal .unified-modal-nav-button
+  ) {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 8px !important;
+    line-height: 1.15 !important;
+  }
+
+  html.modern-budget #entryModal :is(#closeEntryModalButton,#entryModalSubmitButton),
+  html.modern-budget #summaryDateFilterModal :is(#closeSummaryDateFilterModalButton,#summaryClearHomeSummaryFilterButton,#summaryApplyHomeSummaryFilterButton),
+  html.modern-budget #assetEditModal :is(#closeAssetEditModalButton,#assetEditSubmitButton),
+  html.modern-budget #besModal :is(#closeBesModalButton,#besSubmitButton),
+  html.modern-budget #paymentAccountModal :is(#closePaymentAccountModalButton,#paymentAccountSubmitButton),
+  html.modern-budget #paymentAccountRecordsModal :is(#closePaymentAccountRecordsButton,#refreshPaymentAccountFromRecordsButton),
+  html.modern-budget #debtModal :is(#closeDebtModalButton,#debtSubmitButton,#debtEditPaymentButton) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 8px !important;
+  }
+
+  html.modern-budget :is(#besModal,#paymentAccountModal,#paymentAccountRecordsModal,#debtModal) .unified-modal-nav-button[hidden] {
+    display: none !important;
+  }
+
+  html.modern-budget :is(#besModal,#paymentAccountModal,#paymentAccountRecordsModal,#debtModal) .unified-modal-nav,
+  html.modern-budget :is(#entryModal,#assetEditModal) .entry-modal-nav {
+    grid-template-columns: 80px minmax(0, 1fr) 80px !important;
+    column-gap: 8px !important;
+  }
+
+  html.modern-budget :is(#besModal,#paymentAccountModal,#paymentAccountRecordsModal,#debtModal) .unified-modal-title,
+  html.modern-budget :is(#entryModal,#assetEditModal) .entry-modal-nav > h2 {
+    position: static !important;
+    grid-column: 2 !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    transform: none !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    text-align: center !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+    line-height: 1.2 !important;
+  }
+
+  html.modern-budget #debtModal .unified-modal-nav.has-secondary-action {
+    grid-template-columns: 80px minmax(0, 1fr) auto !important;
+  }
+
+  html.modern-budget #debtModal .unified-modal-nav-actions {
+    grid-column: 3 !important;
+    min-width: 0 !important;
+  }
+
+  html.modern-budget #summaryDateFilterModal .summary-date-filter-modal-nav {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: auto auto !important;
+    gap: 10px 8px !important;
+    padding-bottom: 12px !important;
+  }
+
+  html.modern-budget #summaryDateFilterModal .summary-date-filter-modal-nav-start {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    justify-self: start !important;
+    min-width: 0 !important;
+  }
+
+  html.modern-budget #summaryDateFilterModal .summary-date-filter-modal-nav > h2 {
+    position: static !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    transform: none !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    text-align: center !important;
+    text-overflow: clip !important;
+    line-height: 1.2 !important;
+  }
+
+  html.modern-budget #summaryDateFilterModal .summary-date-filter-modal-nav > .entry-modal-save {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    justify-self: end !important;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal > .payment-account-records-modal {
+    display: flex !important;
+    flex-direction: column !important;
+    height: min(760px, calc(100dvh - 24px)) !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 24px) !important;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal .payment-account-records-modal > .unified-modal-nav {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding-bottom: 10px !important;
+    overflow: visible !important;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal .payment-account-records-modal > .modal-body-scroll {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal .account-records-filter {
+    position: relative !important;
+    z-index: 2 !important;
+    display: block !important;
+    width: 100% !important;
+    min-height: 76px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal .account-records-filter :is(label,select) {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
