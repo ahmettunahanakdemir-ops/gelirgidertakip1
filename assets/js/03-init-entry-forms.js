@@ -1,15 +1,59 @@
 // ACIKLAMA: Uygulama baslatma fonksiyonu, olay baglantilari, gelir/gider ve coklu kayit formlari.
 // ACIKLAMA: Bu dosya ayrilan JS yapisinin bir parcasidir; index.html icindeki yukleme sirasi onemlidir.
 
+// ACIKLAMA: Iki formda da dort secim sabit kalir; ayrintilar secimlerin altinda acilir.
+function arrangeEntryOptionalFields(root, bulk = false) {
+  const oldChoices = root.querySelector(bulk ? ".bulk-entry-choice-row" : ".entry-form-choice-row");
+  const note = root.querySelector(bulk ? ".bulk-entry-note-field" : ".entry-note-field");
+  const installment = oldChoices.children[0];
+  const payment = oldChoices.children[1];
+  const follow = root.querySelector(".new-transaction-follow");
+  const deck = document.createElement("div");
+  deck.className = "entry-option-deck";
+  const toggles = document.createElement("div");
+  toggles.className = "entry-option-toggles";
+  const details = document.createElement("div");
+  details.className = "entry-option-details";
+  const noteToggle = document.createElement("label");
+  noteToggle.innerHTML = '<input type="checkbox" data-note-toggle /><span>Not ekle</span>';
+  const noteInput = note.querySelector("input, textarea");
+  noteToggle.addEventListener("change", () => {
+    note.hidden = !noteToggle.querySelector("input").checked;
+    noteInput.disabled = note.hidden;
+  });
+  toggles.append(noteToggle, installment.querySelector("label"), payment.querySelector("label"), follow.querySelector("label"));
+  details.append(note, installment, payment, follow);
+  deck.append(toggles, details);
+  oldChoices.replaceWith(deck);
+  resetEntryNoteOption(root);
+}
+
+function resetEntryNoteOption(root) {
+  const toggle = root.querySelector("[data-note-toggle]");
+  if (!toggle) return;
+  toggle.checked = false;
+  const note = root.querySelector(".entry-note-field, .bulk-entry-note-field");
+  note.hidden = true;
+  note.querySelector("input, textarea").disabled = true;
+}
+
 function init() {
   syncPwaStandaloneClass();
   hideAllStartupModals();
   hideStartupSplash();
   mountModalForms();
+  form.insertBefore(createNewTransactionFollowControl(), form.querySelector(".auth-actions"));
+  arrangeEntryOptionalFields(form);
+  form.addEventListener("reset", () => {
+    resetNewTransactionFollowControl(form);
+    resetEntryNoteOption(form);
+  });
   standardizeModalLayouts();
+  standardizeModalHeaderActions();
   authEmail.value = loadLastUsername();
   authPassword.value = "";
   initThemePreference();
+  initSidebarResponsiveState();
   // Açılışta şifre alanına otomatik odaklanma yapılmıyor.
   // Böylece tarayıcının "parolayı otomatik doldur" penceresi splash/login geçişinde açılmaz.
   dateInput.value = getTurkeyTodayISO();
@@ -25,6 +69,8 @@ function init() {
   syncBankImportAccountSelects();
   setupBulkEntryForm();
   setupBorcAlacakTakibi();
+  setupModernShell();
+  setupSettingsLayout();
   render();
   initHistoryCustomFilterSelects();
   bindHistoryResponsiveLayout();
@@ -103,6 +149,14 @@ function init() {
     resetHistoryFilters();
     renderTransactions();
   });
+  openHistorySearchModalButton?.addEventListener("click", openHistorySearchModal);
+  closeHistorySearchModalButton?.addEventListener("click", closeHistorySearchModal);
+  historySearchButton?.addEventListener("click", closeHistorySearchModal);
+  historySearchModal?.addEventListener("click", (event) => {
+    if (event.target === historySearchModal) {
+      closeHistorySearchModal();
+    }
+  });
   exportButton?.addEventListener("click", exportTransactions);
   exportPdfButton?.addEventListener("click", exportFilteredTransactionsPdf);
   exportExcelButton?.addEventListener("click", exportFilteredTransactionsExcel);
@@ -125,7 +179,17 @@ function init() {
   importSyncButton?.addEventListener("click", importSyncCode);
   bankImportFile.addEventListener("change", handleBankImportFile);
   bankImportAddButton.addEventListener("click", previewBankImportWithAi);
-  bankImportLocalButton?.addEventListener("click", addSelectedBankFiles);
+  bankImportLocalButton?.addEventListener("click", previewBankImportWithAccurateLocalOcr);
+  openBankImportModalButton?.addEventListener("click", openBankImportModal);
+  closeBankImportModalButton?.addEventListener("click", closeBankImportModal);
+  bankImportModal?.addEventListener("click", (event) => {
+    if (event.target === bankImportModal) closeBankImportModal();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && bankImportModal && !bankImportModal.hidden && bankImportPreviewModal?.hidden) {
+      closeBankImportModal();
+    }
+  });
   bankImportAccountSelect?.addEventListener("change", () => {
     syncBankImportAccountSelects(bankImportAccountSelect.value);
     applyBankImportAccountToPending(bankImportAccountSelect.value);
@@ -142,7 +206,12 @@ function init() {
     syncBankImportTransferAccountSelects(bankImportPreviewTransferAccount.value);
     applyBankImportTransferAccountToPending(bankImportPreviewTransferAccount.value);
   });
-  bankImportSelectAllButton?.addEventListener("click", () => setBankImportPreviewSelection(true));
+  bankImportSelectAllButton?.addEventListener("click", () => {
+    const root = bankImportPreviewList || bankImportPreview;
+    const inputs = Array.from(root?.querySelectorAll(".bank-import-check:not(:disabled)") || []);
+    const shouldSelect = inputs.some((input) => !input.checked);
+    setBankImportPreviewSelection(shouldSelect);
+  });
   bankImportClearSelectionButton?.addEventListener("click", () => setBankImportPreviewSelection(false));
   bankImportPreviewConfirmButton?.addEventListener("click", () => confirmBankImport());
   bankImportPreviewCloseButton?.addEventListener("click", closeBankImportPreviewModal);
@@ -151,11 +220,11 @@ function init() {
       closeBankImportPreviewModal();
     }
   });
-  bankImportCancelButton.addEventListener("click", clearBankImport);
+  bankImportCancelButton?.addEventListener("click", clearBankImport);
   previewBankImportButton?.addEventListener("click", previewBankImport);
   confirmBankImportButton?.addEventListener("click", confirmBankImport);
   clearBankImportButton?.addEventListener("click", clearBankImport);
-  openAssetAddModalButton?.addEventListener("click", openAssetAddModal);
+  document.getElementById("openAssetAddModalButton")?.addEventListener("click", openAssetAddModal);
   assetEditForm?.addEventListener("submit", saveAssetModal);
   closeAssetEditModalButton?.addEventListener("click", closeAssetEditModal);
   assetEditModal?.addEventListener("click", (event) => {
@@ -202,7 +271,7 @@ function init() {
       closePaymentAccountRecordsModal();
     }
   });
-  refreshPricesButton.addEventListener("click", () => refreshMarketPrices());
+  refreshPricesButton?.addEventListener("click", () => refreshMarketPrices());
   besForm.addEventListener("submit", addBesAccount);
   openEntryModalButton?.addEventListener("click", openEntryModal);
   closeEntryModalButton?.addEventListener("click", closeEntryModal);
@@ -228,6 +297,7 @@ function init() {
   categoryAddForm?.addEventListener("submit", handleCategoryAdd);
   openCategoryManageModalButton?.addEventListener("click", openCategoryManageModal);
   closeCategoryManageModalButton?.addEventListener("click", closeCategoryManageModal);
+  saveCategoryManageButton?.addEventListener("click", saveManagedCategories);
   categoryManageModal?.addEventListener("click", (event) => {
     if (event.target === categoryManageModal) {
       closeCategoryManageModal();
@@ -386,6 +456,12 @@ function init() {
       entries[0] = borcAlacakGelirGiderOdemesiniHazirla(entries[0], values.debtReceivableId);
     }
     const entry = entries[0];
+    const followOptions = readNewTransactionFollowControl(form);
+    const followError = entries.map((item) => validateNewTransactionFollow(item, followOptions, values.isDebtPayment)).find(Boolean);
+    if (followError) {
+      entryFormStatus.textContent = followError;
+      return;
+    }
 
     if (!entry.title || !entry.amount || !entry.date) {
       return;
@@ -401,6 +477,7 @@ function init() {
       changedPaymentAccount = applyTransactionPaymentEffect(item, 1) || changedPaymentAccount;
     });
     transactions = [...entries, ...transactions].sort(compareTransactionsNewestFirst);
+    entries.forEach((item) => applyNewTransactionFollow(item, followOptions));
     if (entry.debtPaymentId && typeof borcAlacakGelirGiderOdemesiniUygula === "function") {
       borcAlacakGelirGiderOdemesiniUygula(entry);
     }
@@ -435,6 +512,12 @@ function init() {
 
 // ACIKLAMA: mountModalForms fonksiyonunun Turkce karsiligi "yerlestir pencere forms"; ilgili uygulama islemini calistirir.
 function mountModalForms() {
+  const bankImportPanel = document.getElementById("bankImportPanel");
+  const bankImportMount = document.getElementById("bankImportFormMount");
+  if (bankImportPanel && bankImportMount) {
+    bankImportMount.append(bankImportPanel);
+    bankImportPanel.hidden = false;
+  }
   if (entryFormMount && form) {
     entryFormMount.append(form);
     form.hidden = false;
@@ -692,8 +775,11 @@ function createBulkEntryRow() {
   row.className = "bulk-entry-row";
   row.dataset.bulkEntryRow = "true";
   row.innerHTML = `
-    <div class="bulk-entry-main-row">
+    <div class="bulk-entry-row-topbar">
       <span class="bulk-entry-row-number" data-bulk-row-number>1</span>
+      <button class="bulk-entry-remove-icon" data-bulk-action="remove" type="button" aria-label="Satırı kaldır">−</button>
+    </div>
+    <div class="bulk-entry-main-row">
       <label class="bulk-entry-title-field">
         Başlık
         <input data-bulk-field="title" type="text" maxlength="40" placeholder="Maaş, market..." />
@@ -772,10 +858,11 @@ function createBulkEntryRow() {
       Not
       <input data-bulk-field="note" type="text" maxlength="100" placeholder="Kısa not" />
     </label>
-    <button class="ghost-btn bulk-entry-remove" data-bulk-action="remove" type="button" aria-label="Satırı sil">Sil</button>
     <p class="bulk-entry-row-error" data-bulk-row-error></p>
   `;
 
+  row.insertBefore(createNewTransactionFollowControl(), row.querySelector(".bulk-entry-note-field"));
+  arrangeEntryOptionalFields(row, true);
   bindBulkEntryRow(row);
   resetBulkEntryRow(row);
   return row;
@@ -851,6 +938,8 @@ function resetBulkEntryRows(options = {}) {
 
 // ACIKLAMA: resetBulkEntryRow fonksiyonunun Turkce karsiligi "coklu kayit satirini sifirla"; tek bir toplu kayit satirini varsayilan hale getirir.
 function resetBulkEntryRow(row) {
+  resetNewTransactionFollowControl(row);
+  resetEntryNoteOption(row);
   const fields = getBulkEntryFields(row);
   if (fields.title) fields.title.value = "";
   if (fields.amount) fields.amount.value = "";
@@ -1100,7 +1189,7 @@ function readBulkEntryTransaction(row, index, now, ayrilanTutarlar = new Map()) 
     transferAccountId: fields.transferAccount?.value || "",
     transferFee: fields.transferFee?.value || "",
     date: fields.date?.value || "",
-    note: fields.note?.value || "",
+    note: fields.note?.disabled ? "" : fields.note?.value || "",
     isInstallment: Boolean(fields.installment?.checked),
     installmentCount: fields.installmentCount?.value || "",
     isDebtPayment: Boolean(fields.debtPayment?.checked),
@@ -1143,7 +1232,13 @@ function readBulkEntryTransaction(row, index, now, ayrilanTutarlar = new Map()) 
     );
   }
 
-  return { status: "ready", entries };
+  const followOptions = readNewTransactionFollowControl(row);
+  const followError = entries.map((item) => validateNewTransactionFollow(item, followOptions, values.isDebtPayment)).find(Boolean);
+  if (followError) {
+    setBulkEntryRowError(row, `${index + 1}. satır: ${followError}`);
+    return { status: "invalid" };
+  }
+  return { status: "ready", entries, followOptions };
 }
 
 // ACIKLAMA: addBulkTransactions fonksiyonunun Turkce karsiligi "coklu gelir gider kaydet"; dolu satirlarin tamamini tek seferde kayitlara ekler.
@@ -1153,6 +1248,7 @@ function addBulkTransactions(event) {
   const rows = getBulkEntryRows();
   const now = getTurkeyNowDateTime();
   const readyEntries = [];
+  const followSelections = new Map();
   const ayrilanBorcAlacakTutarlari = new Map();
 
   for (let index = 0; index < rows.length; index += 1) {
@@ -1166,6 +1262,7 @@ function addBulkTransactions(event) {
     }
     if (result.status === "ready") {
       readyEntries.push(...result.entries);
+      result.entries.forEach((item) => followSelections.set(item.id, result.followOptions));
     }
   }
 
@@ -1186,6 +1283,7 @@ function addBulkTransactions(event) {
   });
 
   transactions = [...readyEntries, ...transactions].sort(compareTransactionsNewestFirst);
+  readyEntries.forEach((entry) => applyNewTransactionFollow(entry, followSelections.get(entry.id)));
   currentHistoryPage = 1;
 
   let borcAlacakOdemesiUygulandi = false;
@@ -1283,6 +1381,93 @@ function standardizeModalLayouts() {
 
     card.classList.add("modal-layout-standard");
     card.dataset.modalLayoutStandardized = "true";
+  });
+}
+
+
+// ACIKLAMA: standardizeModalHeaderActions tum acilir pencerelerde ana aksiyon butonlarini ayni ust cubukta toplar.
+function standardizeModalHeaderActions() {
+  const modalConfigs = [
+    { modal: "genericConfirmModal", title: "genericConfirmTitle", cancel: "#genericConfirmCancelButton", action: "#genericConfirmButton" },
+    { modal: "deleteAccountModal", title: "deleteAccountTitle", cancel: "#closeDeleteAccountButton", action: "#deleteAccountForm button[type='submit']" },
+    { modal: "confirmDeleteAccountModal", title: "confirmDeleteAccountTitle", cancel: "#cancelConfirmDeleteButton", action: "#confirmDeleteAccountButton" },
+    { modal: "recentTransactionsModal", title: "recentTransactionsModalTitle", cancel: "#closeRecentTransactionsButton" },
+    { modal: "categoryAddModal", title: "categoryAddModalTitle", cancel: "#closeCategoryAddModalButton", action: "#categoryAddSubmitButton", actionText: "Kaydet" },
+    { modal: "categoryManageModal", title: "categoryManageModalTitle", cancel: "#closeCategoryManageModalButton", action: "#saveCategoryManageButton", actionText: "Kaydet" },
+    { modal: "besModal", title: "besModalTitle", cancel: "#closeBesModalButton", action: "#besSubmitButton", actionText: "Kaydet" },
+    { modal: "debtModal", title: "debtModalTitle", cancel: "#closeDebtModalButton", action: "#debtSubmitButton", secondaryAction: "#debtEditPaymentButton", actionText: "Kaydet" },
+    { modal: "debtPaymentModal", title: "debtPaymentModalTitle", cancel: "#closeDebtPaymentModalButton", action: "#debtPaymentSubmitButton", actionText: "Kaydet" },
+    { modal: "transactionEditModal", title: "transactionEditTitle", cancel: "#closeTransactionEditButton", action: "#transactionEditForm button[type='submit']", actionText: "Kaydet" },
+    { modal: "paymentAccountModal", title: "paymentAccountModalTitle", cancel: "#closePaymentAccountModalButton", action: "#paymentAccountSubmitButton", actionText: "Kaydet" },
+    { modal: "confirmPaymentAccountDeleteModal", title: "confirmPaymentAccountDeleteTitle", cancel: "#cancelDeletePaymentAccountButton", action: "#confirmDeletePaymentAccountButton" },
+    { modal: "paymentAccountRecordsModal", title: "paymentAccountRecordsTitle", cancel: "#closePaymentAccountRecordsButton", action: "#refreshPaymentAccountFromRecordsButton" },
+    { modal: "paymentAccountPayModal", title: "paymentAccountPayTitle", cancel: "#closePaymentAccountPayButton", action: "#paymentAccountPayForm button[type='submit']", actionText: "Öde" },
+  ];
+
+  modalConfigs.forEach((config) => {
+    const modal = document.getElementById(config.modal);
+    if (!modal || modal.dataset.headerActionsStandardized === "true") return;
+
+    const card = modal.querySelector(":scope > .modal-card");
+    const title = document.getElementById(config.title);
+    const cancelButton = modal.querySelector(config.cancel);
+    const actionButton = config.action ? modal.querySelector(config.action) : null;
+    const secondaryActionButton = config.secondaryAction ? modal.querySelector(config.secondaryAction) : null;
+    if (!card || !title || !cancelButton) return;
+
+    // Zaten ozel ust cubuga sahip pencerelere dokunma.
+    if (card.querySelector(":scope > .entry-modal-nav, :scope > .bulk-entry-modal-nav, :scope > .bank-import-modal-nav, :scope > .bank-import-preview-modal-nav, :scope > form > .entry-modal-nav, :scope > form > .bulk-entry-modal-nav, :scope > form > .asset-entry-modal-nav")) {
+      modal.dataset.headerActionsStandardized = "true";
+      return;
+    }
+
+    const oldFooter = cancelButton.closest(".auth-actions, .modal-actions, .modal-footer-actions");
+    const actionWasDanger = Boolean(actionButton?.classList.contains("danger-btn"));
+
+    const nav = document.createElement("div");
+    nav.className = "unified-modal-nav";
+
+    cancelButton.classList.remove("ghost-btn", "primary-btn", "success-btn", "danger-btn");
+    cancelButton.classList.add("unified-modal-nav-button", "unified-modal-cancel");
+    nav.appendChild(cancelButton);
+
+    title.classList.add("unified-modal-title");
+    nav.appendChild(title);
+
+    if (actionButton || secondaryActionButton) {
+      const actionGroup = document.createElement("div");
+      actionGroup.className = "unified-modal-nav-actions";
+
+      if (secondaryActionButton) {
+        secondaryActionButton.classList.remove("ghost-btn", "primary-btn", "success-btn", "danger-btn");
+        secondaryActionButton.classList.add("unified-modal-nav-button", "unified-modal-secondary-action");
+        actionGroup.appendChild(secondaryActionButton);
+        nav.classList.add("has-secondary-action");
+      }
+
+      if (actionButton) {
+        if (config.actionText) actionButton.textContent = config.actionText;
+        actionButton.classList.remove("ghost-btn", "primary-btn", "success-btn", "danger-btn");
+        actionButton.classList.add("unified-modal-nav-button", "unified-modal-action");
+        if (actionWasDanger) actionButton.classList.add("unified-modal-danger");
+        actionGroup.appendChild(actionButton);
+      }
+
+      nav.appendChild(actionGroup);
+    } else {
+      const spacer = document.createElement("span");
+      spacer.className = "unified-modal-nav-spacer";
+      spacer.setAttribute("aria-hidden", "true");
+      nav.appendChild(spacer);
+    }
+
+    card.insertBefore(nav, card.firstChild);
+
+    if (oldFooter && !oldFooter.querySelector("button")) {
+      oldFooter.remove();
+    }
+
+    modal.dataset.headerActionsStandardized = "true";
   });
 }
 

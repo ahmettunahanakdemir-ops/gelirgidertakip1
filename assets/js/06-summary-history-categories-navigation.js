@@ -123,17 +123,35 @@ function applyHistorySearch() {
   renderTransactions();
 }
 
+function openHistorySearchModal() {
+  if (!historySearchModal) return;
+  renderHistoryCategoryFilterOptions();
+  historySearchModal.hidden = false;
+  document.body.classList.add("modal-open");
+  setTimeout(() => searchInput?.focus(), 10);
+}
+
+function closeHistorySearchModal() {
+  if (!historySearchModal) return;
+  historySearchModal.hidden = true;
+  if (!document.querySelector('.modal-backdrop:not([hidden])')) {
+    document.body.classList.remove("modal-open");
+  }
+}
+
 // ACIKLAMA: resetHistoryFilters fonksiyonunun Turkce karsiligi "sifirla gecmis filtreler"; ilgili uygulama islemini calistirir.
 function resetHistoryFilters() {
   currentHistorySearch = "";
   currentHistoryPage = 1;
   if (searchInput) searchInput.value = "";
   if (filterType) filterType.value = "all";
+  if (filterCategory) filterCategory.value = "all";
   if (filterPaymentMethod) filterPaymentMethod.value = "all";
   if (filterPaymentAccount) filterPaymentAccount.value = "all";
   if (historyStartDate) historyStartDate.value = "";
   if (historyEndDate) historyEndDate.value = "";
-  [filterType, filterPaymentMethod, filterPaymentAccount].filter(Boolean).forEach(syncHistoryCustomFilterSelect);
+  renderHistoryCategoryFilterOptions();
+  [filterType, filterCategory, filterPaymentMethod, filterPaymentAccount].filter(Boolean).forEach(syncHistoryCustomFilterSelect);
 }
 
 // ACIKLAMA: renderTransactions fonksiyonunun Turkce karsiligi "islemleri ekrana bas"; ilgili ekran, liste veya kartlari ekrana basar.
@@ -332,6 +350,7 @@ function getVisibleFilteredTransactions() {
   const query = queryText.trim().toLocaleLowerCase("tr-TR");
   // ACIKLAMA: selectedType degiskeninin Turkce karsiligi "selected tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const selectedType = filterType.value;
+  const selectedCategory = filterCategory?.value || "all";
   // ACIKLAMA: selectedPaymentMethod degiskeninin Turkce karsiligi "selected odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const selectedPaymentMethod = filterPaymentMethod?.value || "all";
   // ACIKLAMA: selectedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
@@ -349,6 +368,7 @@ function getVisibleFilteredTransactions() {
       const itemTransferAccountId = String(item.transferAccountId || "");
       // ACIKLAMA: matchesType degiskeninin Turkce karsiligi "eslesmeler tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const matchesType = selectedType === "all" || item.type === selectedType;
+      const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
       // ACIKLAMA: matchesPaymentMethod degiskeninin Turkce karsiligi "eslesmeler odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const matchesPaymentMethod = selectedPaymentMethod === "all" || itemPaymentMethod === selectedPaymentMethod;
       // ACIKLAMA: matchesPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
@@ -361,7 +381,7 @@ function getVisibleFilteredTransactions() {
       const haystack = `${item.title} ${item.category} ${item.note} ${getTransactionPaymentInfo(item)}`.toLocaleLowerCase("tr-TR");
       // ACIKLAMA: matchesQuery degiskeninin Turkce karsiligi "eslesmeler query"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const matchesQuery = !query || haystack.includes(query);
-      return matchesType && matchesPaymentMethod && matchesPaymentAccount && matchesQuery && isInHistoryDateRange(item);
+      return matchesType && matchesCategory && matchesPaymentMethod && matchesPaymentAccount && matchesQuery && isInHistoryDateRange(item);
     })
     .sort(compareTransactionsNewestFirst);
 }
@@ -397,11 +417,35 @@ function renderPaymentAccountFilterOptions() {
   syncHistoryCustomFilterSelect(filterPaymentAccount);
 }
 
+function renderHistoryCategoryFilterOptions() {
+  if (!filterCategory) return;
+  const currentValue = filterCategory.value || "all";
+  const selectedType = filterType?.value || "all";
+  const source = selectedType === "all"
+    ? Object.values(transactionCategories || {}).flat()
+    : (transactionCategories?.[selectedType] || []);
+  const categories = Array.from(new Set(source.map(item => String(item || "").trim()).filter(Boolean)));
+  filterCategory.replaceChildren();
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "Tüm Kategoriler";
+  filterCategory.append(allOption);
+  categories.forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    filterCategory.append(option);
+  });
+  filterCategory.value = categories.includes(currentValue) ? currentValue : "all";
+  syncHistoryCustomFilterSelect(filterCategory);
+}
+
 
 
 // ACIKLAMA: initHistoryCustomFilterSelects fonksiyonunun Turkce karsiligi "baslat gecmis custom filtre selects"; ilgili uygulama islemini calistirir.
 function initHistoryCustomFilterSelects() {
-  [filterType, filterPaymentMethod, filterPaymentAccount].filter(Boolean).forEach((select) => {
+  renderHistoryCategoryFilterOptions();
+  [filterType, filterCategory, filterPaymentMethod, filterPaymentAccount].filter(Boolean).forEach((select) => {
     buildHistoryCustomFilterSelect(select);
     syncHistoryCustomFilterSelect(select);
     if (!select.dataset.customSyncBound) {
@@ -409,6 +453,7 @@ function initHistoryCustomFilterSelects() {
       select.dataset.customSyncBound = "1";
     }
   });
+  filterType?.addEventListener("change", renderHistoryCategoryFilterOptions);
 
   if (!document.body.dataset.historyCustomFiltersReady) {
     document.addEventListener("click", (event) => {
@@ -788,8 +833,13 @@ function getHistoryFilterLabel() {
 
   // ACIKLAMA: selectedPaymentMethod degiskeninin Turkce karsiligi "selected odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const selectedPaymentMethod = filterPaymentMethod?.value || "all";
+  const selectedCategory = filterCategory?.value || "all";
   // ACIKLAMA: selectedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
   const selectedPaymentAccount = filterPaymentAccount?.value || "all";
+
+  if (selectedCategory !== "all") {
+    parts.push(selectedCategory);
+  }
 
   if (selectedPaymentMethod !== "all") {
     parts.push(getPaymentMethodLabel(selectedPaymentMethod));
@@ -1211,6 +1261,15 @@ function renderCategoryManageList() {
     // ACIKLAMA: row degiskeninin Turkce karsiligi "satir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const row = document.createElement("div");
     row.className = "category-manage-row";
+    row.dataset.originalName = name;
+
+    const dragHandle = document.createElement("button");
+    dragHandle.type = "button";
+    dragHandle.className = "category-drag-handle";
+    dragHandle.innerHTML = shellIcon("grip-vertical");
+    dragHandle.title = "Sürükleyerek sırala";
+    dragHandle.setAttribute("aria-label", `${name} kategorisini sürükleyerek sırala`);
+    bindCategoryDragHandle(dragHandle, row);
 
     // ACIKLAMA: input kullanicidan veri alan input elemaninin DOM referansidir.
     const input = document.createElement("input");
@@ -1219,44 +1278,108 @@ function renderCategoryManageList() {
     input.maxLength = 32;
     input.autocomplete = "off";
 
-    const orderActions = document.createElement("div");
-    orderActions.className = "category-order-actions";
-    const moveUpButton = document.createElement("button");
-    moveUpButton.type = "button";
-    moveUpButton.className = "ghost-btn category-order-button";
-    moveUpButton.textContent = "↑";
-    moveUpButton.title = "Yukarı taşı";
-    moveUpButton.setAttribute("aria-label", `${name} kategorisini yukarı taşı`);
-    moveUpButton.disabled = index === 0;
-    moveUpButton.addEventListener("click", () => moveManagedCategory(type, name, -1));
-
-    const moveDownButton = document.createElement("button");
-    moveDownButton.type = "button";
-    moveDownButton.className = "ghost-btn category-order-button";
-    moveDownButton.textContent = "↓";
-    moveDownButton.title = "Aşağı taşı";
-    moveDownButton.setAttribute("aria-label", `${name} kategorisini aşağı taşı`);
-    moveDownButton.disabled = index === items.length - 1;
-    moveDownButton.addEventListener("click", () => moveManagedCategory(type, name, 1));
-    orderActions.append(moveUpButton, moveDownButton);
-
-    // ACIKLAMA: saveButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
-    const saveButton = document.createElement("button");
-    saveButton.type = "button";
-    saveButton.className = "primary-btn";
-    saveButton.textContent = "Kaydet";
-    saveButton.addEventListener("click", () => renameManagedCategory(type, name, input.value));
-
     // ACIKLAMA: deleteButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
-    deleteButton.className = "danger-btn";
-    deleteButton.textContent = "Sil";
-    deleteButton.addEventListener("click", () => deleteManagedCategory(type, name));
+    deleteButton.className = "category-remove-button";
+    deleteButton.innerHTML = shellIcon("x");
+    deleteButton.title = "Kategoriyi kaldır";
+    deleteButton.setAttribute("aria-label", `${name} kategorisini kaldır`);
+    deleteButton.addEventListener("click", () => {
+      if (categoryManageList.querySelectorAll(".category-manage-row").length <= 1) {
+        categoryManageStatus.textContent = "Son kategori silinemez.";
+        return;
+      }
+      row.remove();
+      categoryManageStatus.textContent = "Değişiklikleri uygulamak için Kaydet'e bas.";
+    });
 
-    row.append(input, orderActions, saveButton, deleteButton);
+    row.append(dragHandle, input, deleteButton);
     categoryManageList.append(row);
   });
+  window.lucide?.createIcons();
+}
+
+// ACIKLAMA: Fare, dokunma ve klavye ile kategori satirlarinin sirasi degistirilir.
+function bindCategoryDragHandle(handle, row) {
+  let pointerId = null;
+  const moveDrag = (event) => {
+    if (pointerId !== event.pointerId) return;
+    event.preventDefault();
+    const rows = Array.from(categoryManageList.querySelectorAll(".category-manage-row:not(.is-dragging)"));
+    const nextRow = rows.find(candidate => event.clientY < candidate.getBoundingClientRect().top + candidate.offsetHeight / 2);
+    if (nextRow) categoryManageList.insertBefore(row, nextRow);
+    else categoryManageList.append(row);
+    const bounds = categoryManageList.getBoundingClientRect();
+    if (event.clientY < bounds.top + 36) categoryManageList.scrollTop -= 12;
+    if (event.clientY > bounds.bottom - 36) categoryManageList.scrollTop += 12;
+  };
+  const finishDrag = (event) => {
+    if (event && pointerId !== event.pointerId) return;
+    if (pointerId === null) return;
+    window.removeEventListener("pointermove", moveDrag);
+    window.removeEventListener("pointerup", finishDrag);
+    window.removeEventListener("pointercancel", finishDrag);
+    pointerId = null;
+    row.classList.remove("is-dragging");
+    categoryManageList.classList.remove("is-reordering");
+    categoryManageStatus.textContent = "Yeni sırayı uygulamak için Kaydet'e bas.";
+  };
+
+  handle.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    pointerId = event.pointerId;
+    row.classList.add("is-dragging");
+    categoryManageList.classList.add("is-reordering");
+    window.addEventListener("pointermove", moveDrag, { passive: false });
+    window.addEventListener("pointerup", finishDrag);
+    window.addEventListener("pointercancel", finishDrag);
+    event.preventDefault();
+  });
+  handle.addEventListener("keydown", (event) => {
+    if (!event.altKey || !["ArrowUp", "ArrowDown"].includes(event.key)) return;
+    event.preventDefault();
+    const sibling = event.key === "ArrowUp" ? row.previousElementSibling : row.nextElementSibling;
+    if (!sibling) return;
+    if (event.key === "ArrowUp") categoryManageList.insertBefore(row, sibling);
+    else categoryManageList.insertBefore(sibling, row);
+    handle.focus();
+    categoryManageStatus.textContent = "Yeni sırayı uygulamak için Kaydet'e bas.";
+  });
+}
+
+// ACIKLAMA: Duzenlenen adlari, silinen satirlari ve suruklenen sirayi tek seferde kaydeder.
+function saveManagedCategories() {
+  const type = String(categoryManageType?.value || "expense");
+  const rows = Array.from(categoryManageList?.querySelectorAll(".category-manage-row") || []);
+  const names = rows.map(row => String(row.querySelector("input")?.value || "").trim());
+  if (!names.length || names.some(name => !name)) {
+    categoryManageStatus.textContent = "Kategori adı boş olamaz.";
+    return;
+  }
+  const foldedNames = names.map(name => name.toLocaleLowerCase("tr-TR"));
+  if (new Set(foldedNames).size !== foldedNames.length) {
+    categoryManageStatus.textContent = "Aynı isimde iki kategori olamaz.";
+    return;
+  }
+
+  const renameMap = new Map(rows.map((row, index) => [row.dataset.originalName, names[index]]));
+  const changedTransactions = [];
+  transactions = transactions.map(item => {
+    if (item.type !== type || !renameMap.has(item.category) || renameMap.get(item.category) === item.category) return item;
+    const updatedTransaction = { ...item, category: renameMap.get(item.category), updatedAt: getTurkeyNowDateTime() };
+    changedTransactions.push(updatedTransaction);
+    return updatedTransaction;
+  });
+  transactionCategories[type] = names;
+  transactionCategories = normalizeCategoryState(transactionCategories);
+  persistTransactionCategories();
+  if (changedTransactions.length) persistTransactions({ cloudUpserts: changedTransactions });
+  syncCategorySelects();
+  renderHistoryCategoryFilterOptions();
+  render();
+  renderCategoryManageList();
+  categoryManageStatus.textContent = "Kategori adları ve sırası kaydedildi.";
 }
 
 // ACIKLAMA: Kategoriyi secilen yonde bir sira tasir ve yeni sirayi yerel/bulut profile kaydeder.
@@ -1421,7 +1544,7 @@ function openBesModal(item = null) {
   editingBesId = item?.id || "";
   besForm.reset();
   besModalTitle.textContent = item ? "BES sözleşmesini güncelle" : "BES sözleşmesi ekle";
-  besSubmitButton.textContent = item ? "BES Güncelle" : "BES Ekle";
+  besSubmitButton.textContent = "Kaydet";
 
   if (item) {
     besForm.elements.besProvider.value = item.provider || "";
@@ -1454,7 +1577,7 @@ function closeBesModal() {
   }
 
   if (besSubmitButton) {
-    besSubmitButton.textContent = "BES Ekle";
+    besSubmitButton.textContent = "Kaydet";
   }
 }
 
@@ -1546,13 +1669,13 @@ function resetViewTransientState(viewId) {
   if (viewId === "entryView") {
     closeEntryModal();
     closeBulkEntryModal();
+    closeBankImportModal();
+    return;
+  }
+
+  if (viewId === "settingsView") {
     closeCategoryAddModal();
     closeCategoryManageModal();
-    clearHomeSummaryFilter();
-    resetBankImportInputState(null);
-    if (bankImportStatus) {
-      bankImportStatus.textContent = "";
-    }
     return;
   }
 
@@ -1583,7 +1706,6 @@ function resetViewTransientState(viewId) {
   }
 
   if (viewId === "summaryView") {
-    clearHomeSummaryFilter();
     if (summaryCategoryTypeFilter) {
       summaryCategoryTypeFilter.value = "expense";
     }
@@ -1633,12 +1755,10 @@ function renderView() {
   pageKicker.textContent = meta.kicker;
   pageTitle.textContent = meta.title;
   pageSubtitle.textContent = meta.subtitle;
-
-  if (activeView === "userView") {
-    fillProfileForm();
-  }
+  renderModernShell();
 
   if (activeView === "settingsView") {
+    fillProfileForm();
     syncAppearanceControls();
     updateCloudBackupStatus();
   }
@@ -1646,13 +1766,71 @@ function renderView() {
   updateHistoryResponsiveLayout();
 }
 
+// ACIKLAMA: Masaustu yan menu durumu yerel depolamada saklanir; varsayilan davranis acik menudur.
+const DESKTOP_SIDEBAR_STORAGE_KEY = "akisDesktopSidebarExpanded";
+
+function isDesktopSidebarMode() {
+  return window.matchMedia("(min-width: 981px)").matches;
+}
+
+function readDesktopSidebarPreference() {
+  try {
+    const stored = localStorage.getItem(DESKTOP_SIDEBAR_STORAGE_KEY);
+    if (stored === null) return false;
+    return stored === "1";
+  } catch (error) {
+    return false;
+  }
+}
+
+function writeDesktopSidebarPreference(expanded) {
+  try {
+    localStorage.setItem(DESKTOP_SIDEBAR_STORAGE_KEY, expanded ? "1" : "0");
+  } catch (error) {
+    // Yerel depolama kullanilamiyorsa sessizce varsayilan davranisa donulur.
+  }
+}
+
+function setDesktopSidebarExpanded(expanded, { persist = false } = {}) {
+  if (!appShell) return;
+  appShell.classList.toggle("sidebar-expanded", expanded);
+  mobileMenuButton?.setAttribute("aria-expanded", expanded ? "true" : "false");
+  if (persist) writeDesktopSidebarPreference(expanded);
+}
+
+function syncSidebarResponsiveState() {
+  if (!appShell) return;
+
+  if (isDesktopSidebarMode()) {
+    if (sidebar?.classList.contains("open") || appShell.classList.contains("menu-open")) {
+      setMobileSidebarOpen(false);
+    }
+    setDesktopSidebarExpanded(readDesktopSidebarPreference());
+    return;
+  }
+
+  appShell.classList.remove("sidebar-expanded");
+  mobileMenuButton?.setAttribute("aria-expanded", "false");
+}
+
+function initSidebarResponsiveState() {
+  if (window.__akisSidebarResponsiveStateBound) {
+    syncSidebarResponsiveState();
+    return;
+  }
+
+  syncSidebarResponsiveState();
+  window.addEventListener("resize", syncSidebarResponsiveState);
+  window.__akisSidebarResponsiveStateBound = true;
+}
+
 // ACIKLAMA: toggleSidebar fonksiyonunun Turkce karsiligi "ac kapat sidebar"; ilgili uygulama islemini calistirir.
 function toggleSidebar() {
-  if (window.matchMedia("(min-width: 981px)").matches) {
+  if (isDesktopSidebarMode()) {
     if (sidebar.classList.contains("open") || appShell.classList.contains("menu-open")) {
       setMobileSidebarOpen(false);
     }
-    appShell.classList.toggle("sidebar-expanded");
+    setDesktopSidebarExpanded(!appShell.classList.contains("sidebar-expanded"), { persist: true });
     return;
   }
 

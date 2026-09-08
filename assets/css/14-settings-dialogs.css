@@ -1,0 +1,210 @@
+/* ACIKLAMA: v367 uzerinde gruplanmis ayarlar ve cihazdan bagimsiz pencere sinirlari. */
+html.modern-budget #settingsView [hidden] {display:none!important;}
+html.modern-budget #settingsView .preferences-link {display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:18px 20px;margin:0;border:0;border-radius:0;border-top:1px solid var(--stroke);background:transparent;box-shadow:none;color:var(--text);font-size:17px;font-weight:500;text-align:left;white-space:normal;}
+html.modern-budget #settingsView .preferences-link:first-child {border-top:0;}
+html.modern-budget #settingsView .preferences-link > span {flex:1;min-width:0;overflow-wrap:anywhere;}
+html.modern-budget #settingsView .preferences-link svg {width:24px;height:24px;flex-shrink:0;color:var(--accent);}
+html.modern-budget #settingsView .preferences-link svg:last-child {width:18px;color:var(--muted);}
+html.modern-budget #settingsView .preferences-link:focus-visible {outline:2px solid var(--accent);outline-offset:-3px;}
+html.modern-budget #settingsView .preferences-danger .preferences-link {color:var(--expense);}
+html.modern-budget #settingsView .preferences-back {width:48px;min-height:48px;display:grid;place-items:center;padding:8px;}
+html.modern-budget #settingsView .preferences-subpage {min-height:65dvh;animation:preferences-enter 180ms ease-out;}
+html.modern-budget #settingsView .preferences-subpage > .preferences-content {margin-top:20px;padding:20px;background:var(--surface);border-radius:22px;}
+@keyframes preferences-enter {from {opacity:0;transform:translateX(18px);} to {opacity:1;transform:translateX(0);}}
+@media(prefers-reduced-motion:reduce) {html.modern-budget #settingsView .preferences-subpage {animation:none;}}
+html.modern-budget #settingsView .preferences-subpage .preferences-header {grid-template-columns:48px minmax(0,1fr) 48px;}
+html.modern-budget #settingsView .preferences-subpage .preferences-header h2 {font-size:20px!important;overflow-wrap:normal;word-break:normal;}
+@media(max-width:980px) {
+ html.modern-budget .mobile-dock {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));left:max(4px,env(safe-area-inset-left));right:max(4px,env(safe-area-inset-right));padding:4px;gap:0;}
+ html.modern-budget .mobile-dock button {width:100%;height:52px;min-height:52px;padding:4px 0;gap:2px;overflow:hidden;}
+ html.modern-budget .mobile-dock button svg {width:22px;height:22px;flex-shrink:0;}
+ html.modern-budget .mobile-dock button span {display:none;}
+ html.modern-budget .mobile-dock button.active span {display:block;font-size:9px;line-height:12px;max-width:100%;white-space:normal;text-align:center;}
+ html.modern-budget .mobile-dock {--dock-count:7;--dock-index:0;isolation:isolate;background:rgba(248,249,250,.78);border:1px solid rgba(255,255,255,.8);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);box-shadow:0 8px 28px rgba(0,0,0,.1);}
+ html.modern-budget .mobile-dock::before {content:"";position:absolute;z-index:0;left:4px;top:4px;bottom:4px;width:calc((100% - 8px)/var(--dock-count));border-radius:24px;background:rgba(55,65,68,.12);opacity:0;transform:translateX(calc(var(--dock-index)*100%));transition:transform 260ms cubic-bezier(.22,.8,.25,1),opacity 140ms ease;pointer-events:none;}
+ html.modern-budget .mobile-dock.has-active-item::before {opacity:1;}
+ html.modern-budget .mobile-dock button {position:relative;z-index:1;color:#50585a;transition:color 180ms ease;}
+ html.modern-budget .mobile-dock button.active {background:transparent;color:#182224;}
+ html.modern-budget[data-theme="dark"] .mobile-dock {background:rgba(28,33,35,.8);border-color:rgba(255,255,255,.2);}
+ html.modern-budget[data-theme="dark"] .mobile-dock button {color:#bdc5c8;}
+ html.modern-budget[data-theme="dark"] .mobile-dock::before {background:rgba(255,255,255,.16);}
+ html.modern-budget[data-theme="dark"] .mobile-dock button.active {background:transparent;color:#fff;}
+}
+@media(prefers-reduced-motion:reduce) {html.modern-budget .mobile-dock button,html.modern-budget .mobile-dock::before {transition:none;}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+ html.modern-budget .mobile-dock {background:#f5f6f7;}
+ html.modern-budget[data-theme="dark"] .mobile-dock {background:#202628;}
+}
+
+/* ACIKLAMA: Ayar alt ekranlari ana ayar listesinin olcu ve yuzey dilini kullanir. */
+html.modern-budget #settingsView .preferences-subpage > .preferences-content {max-width:680px;margin:20px auto 0;padding:0;background:transparent;border-radius:0;}
+html.modern-budget #settingsView .preferences-subpage .preferences-content > :is(.panel,form) {display:block!important;width:100%;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;}
+html.modern-budget #settingsView .preferences-subpage :is(input:not([type="range"]):not([type="checkbox"]),select,textarea) {min-height:48px;border:1px solid var(--stroke);border-radius:14px;background:var(--surface-soft);color:var(--text);font-size:16px;}
+html.modern-budget #settingsView .preferences-subpage :is(.primary-btn,.ghost-btn,.danger-btn) {min-height:52px;border-radius:16px;font-size:16px;white-space:normal;}
+
+html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid {display:block!important;overflow:hidden;background:var(--surface);border-radius:22px;}
+html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid > label {display:flex;align-items:center;gap:16px;min-height:64px;padding:10px 20px;border-bottom:1px solid var(--stroke);font-size:17px;font-weight:500;}
+html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid > label:last-child {border-bottom:0;}
+html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid select {width:auto!important;min-width:130px!important;max-width:58%!important;margin-left:auto;border:0;background:transparent;color:var(--accent);text-align:right;box-shadow:none;}
+html.modern-budget #settingsView [data-settings-page="typography"] .font-size-control {margin-top:16px;padding:18px 20px;background:var(--surface);border-radius:22px;}
+html.modern-budget #settingsView [data-settings-page="typography"] .font-size-headline {display:flex;justify-content:space-between;gap:16px;margin-bottom:14px;font-size:17px;}
+html.modern-budget #settingsView [data-settings-page="typography"] .font-size-actions button {width:48px;min-height:48px!important;border-radius:14px;}
+html.modern-budget #settingsView [data-settings-page="typography"] .settings-actions {margin-top:16px;padding:8px;background:var(--surface);border-radius:22px;}
+html.modern-budget #settingsView [data-settings-page="typography"] .settings-actions > button {width:100%;border-color:transparent;box-shadow:none;}
+html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid select {min-height:44px!important;border:0!important;background:transparent!important;box-shadow:none!important;outline-offset:2px;}
+html.modern-budget #settingsView [data-settings-page="typography"] .settings-actions > button {height:52px!important;min-height:52px!important;max-height:52px!important;padding:8px 14px!important;}
+
+html.modern-budget #settingsView [data-settings-page="notifications"] .notification-settings-card,
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card {display:flex!important;align-items:center;gap:16px;margin:0!important;padding:18px 20px!important;background:var(--surface)!important;border:0!important;border-bottom:1px solid var(--stroke)!important;border-radius:0!important;box-shadow:none!important;}
+html.modern-budget #settingsView [data-settings-page="notifications"] .notification-settings-card {border-radius:22px 22px 0 0!important;}
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card:first-of-type {border-radius:22px 22px 0 0!important;}
+html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card:nth-last-of-type(1) {border-radius:0 0 22px 22px!important;border-bottom:0!important;}
+html.modern-budget #settingsView [data-settings-page="notifications"] .sync-status,
+html.modern-budget #settingsView [data-settings-page="backup"] .sync-status {margin:0;padding:16px 20px;background:var(--surface);border-radius:0 0 22px 22px;font-size:15px;line-height:1.5;}
+html.modern-budget #settingsView [data-settings-page="backup"] .sync-status {margin-top:16px;border-radius:22px;}
+
+html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important;}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls > label {display:grid;gap:8px;padding:16px 18px;background:var(--surface);border-radius:22px;font-size:16px;}
+html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls > button {width:100%;}
+html.modern-budget #settingsView [data-settings-page="categories"] .settings-category-actions {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important;padding:8px;background:var(--surface);border-radius:22px;}
+html.modern-budget #settingsView [data-settings-page="categories"] .settings-category-actions > button {width:100%;}
+
+html.modern-budget #settingsView [data-settings-page="profile"] #profileForm > label {display:grid;gap:8px;margin:0;padding:16px 20px;background:var(--surface);border-bottom:1px solid var(--stroke);font-size:16px;}
+html.modern-budget #settingsView [data-settings-page="profile"] #profileForm > label:first-of-type {border-radius:22px 22px 0 0;}
+html.modern-budget #settingsView [data-settings-page="profile"] #profileForm > label:last-of-type {border-bottom:0;border-radius:0 0 22px 22px;}
+html.modern-budget #settingsView [data-settings-page="profile"] #profileForm > .auth-actions {margin-top:16px;padding:8px;background:var(--surface);border-radius:22px;}
+html.modern-budget #settingsView [data-settings-page="profile"] #profileForm > .sync-status {margin:12px 4px 0;}
+html.modern-budget #settingsView [data-settings-page="danger"] .danger-zone {display:block!important;padding:20px!important;background:var(--surface)!important;border-radius:22px!important;}
+html.modern-budget #settingsView [data-settings-page="danger"] .danger-zone .auth-actions {margin-top:16px;}
+
+@media(max-width:640px) {
+ html.modern-budget #settingsView .preferences-subpage > .preferences-content {margin-top:16px;}
+ html.modern-budget #settingsView [data-settings-page="date-filter"] .home-summary-filter-controls,
+ html.modern-budget #settingsView [data-settings-page="categories"] .settings-category-actions {grid-template-columns:minmax(0,1fr)!important;}
+ html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid > label {padding:8px 16px;font-size:16px;}
+ html.modern-budget #settingsView [data-settings-page="typography"] .settings-form-grid select {min-width:112px!important;max-width:62%!important;}
+ html.modern-budget #settingsView [data-settings-page="notifications"] .notification-settings-card,
+ html.modern-budget #settingsView [data-settings-page="backup"] .notification-settings-card {padding:16px!important;}
+}
+
+html.modern-budget #historySearchModal .history-search-modal-nav {grid-template-columns:minmax(0,auto) minmax(70px,1fr) minmax(44px,auto)!important;}
+html.modern-budget #historySearchModal .history-search-nav-start {grid-column:1;grid-row:1;display:flex;align-items:center;gap:6px;min-width:0;}
+html.modern-budget #historySearchModal .history-search-nav-start .entry-modal-nav-button {grid-column:auto!important;width:auto!important;min-width:0!important;max-width:none!important;padding:8px 10px!important;}
+html.modern-budget #historySearchModal .history-search-nav-start .history-filter-clear-nav {margin:0!important;min-height:42px!important;color:var(--accent)!important;}
+html.modern-budget #historySearchModal .history-search-modal-nav > h2 {grid-column:2!important;}
+html.modern-budget #historySearchModal .history-search-modal-nav > .entry-modal-save {grid-column:3!important;}
+@media(max-width:360px) {
+ html.modern-budget #historySearchModal .history-search-modal-nav {grid-template-columns:minmax(0,auto) minmax(54px,1fr) 44px!important;gap:5px!important;padding-left:8px!important;padding-right:8px!important;}
+ html.modern-budget #historySearchModal .history-search-nav-start {gap:3px;}
+ html.modern-budget #historySearchModal .history-search-nav-start .entry-modal-nav-button {padding:7px 5px!important;font-size:11px!important;}
+ html.modern-budget #historySearchModal .history-search-modal-nav h2 {overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;font-size:13px!important;}
+ html.modern-budget #historySearchModal .history-search-modal-nav > .entry-modal-save {padding:7px 6px!important;min-width:44px!important;}
+}
+
+/* ACIKLAMA: Kategori siralama satirlari fare ve dokunmatik suruklemeye uygun hale getirilir. */
+html.modern-budget #categoryManageModal .category-manage-row {display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px!important;gap:10px!important;align-items:center!important;padding:8px!important;border:1px solid var(--stroke);border-radius:14px;background:var(--surface-soft);transition:border-color 140ms ease,box-shadow 140ms ease,opacity 140ms ease;}
+html.modern-budget #categoryManageModal .category-manage-row input {width:100%!important;min-width:0!important;height:46px!important;margin:0!important;}
+html.modern-budget #categoryManageModal :is(.category-drag-handle,.category-remove-button) {display:grid;place-items:center;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border:1px solid var(--stroke);border-radius:12px;background:var(--surface);box-shadow:none;}
+html.modern-budget #categoryManageModal .category-drag-handle {cursor:grab;color:var(--muted);touch-action:none;user-select:none;-webkit-user-select:none;}
+html.modern-budget #categoryManageModal .category-drag-handle:active {cursor:grabbing;}
+html.modern-budget #categoryManageModal .category-remove-button {color:var(--expense);}
+html.modern-budget #categoryManageModal :is(.category-drag-handle,.category-remove-button) svg {width:21px;height:21px;pointer-events:none;}
+html.modern-budget #categoryManageModal .category-manage-row.is-dragging {z-index:2;opacity:.78;border-color:var(--accent);box-shadow:0 10px 24px rgba(0,0,0,.14);}
+html.modern-budget #categoryManageModal .category-manage-list.is-reordering {cursor:grabbing;}
+html.modern-budget #categoryManageModal .category-order-actions,
+html.modern-budget #categoryManageModal .category-order-button {display:none!important;}
+html.modern-budget #categoryManageModal .unified-modal-nav {grid-template-columns:minmax(64px,auto) minmax(0,1fr) minmax(64px,auto)!important;}
+html.modern-budget #categoryManageModal .unified-modal-nav-actions {grid-column:3!important;justify-self:end;}
+html.modern-budget #categoryManageModal #saveCategoryManageButton {min-width:70px!important;}
+@media(max-width:420px) {
+ html.modern-budget #categoryManageModal .category-manage-row {grid-template-columns:40px minmax(0,1fr) 40px!important;gap:7px!important;padding:7px!important;}
+ html.modern-budget #categoryManageModal :is(.category-drag-handle,.category-remove-button) {width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;}
+ html.modern-budget #categoryManageModal .unified-modal-nav {gap:5px!important;}
+ html.modern-budget #categoryManageModal .unified-modal-title {font-size:15px!important;}
+ html.modern-budget #categoryManageModal .unified-modal-nav-button {min-width:54px!important;padding-left:8px!important;padding-right:8px!important;font-size:13px!important;}
+}
+
+html.modern-budget .sidebar-app-icon {display:none;object-fit:contain;}
+@media(min-width:981px) {
+ html.modern-budget body #appShell > .sidebar {visibility:visible!important;pointer-events:auto!important;}
+ html.modern-budget body #appShell .sidebar .brand-block {visibility:visible!important;}
+ html.modern-budget body #appShell.sidebar-expanded .sidebar .sidebar-app-icon {display:block;visibility:visible!important;width:34px;height:34px;flex:0 0 34px;border-radius:9px;}
+}
+html.modern-budget[data-active-view="settingsView"] .shell-toolbar,
+html.modern-budget[data-active-view="settingsView"] .topbar {display:none!important;}
+html.modern-budget #settingsView .preferences-layout {max-width:820px;margin:0 auto;padding:0 4px 32px;}
+html.modern-budget #settingsView .preferences-header {display:grid;grid-template-columns:86px minmax(0,1fr) 86px;align-items:center;gap:8px;position:sticky;top:0;z-index:5;padding:16px 0 22px;background:var(--bg);}
+html.modern-budget #settingsView .preferences-header h2 {text-align:center;font-size:22px!important;margin:0;}
+html.modern-budget #settingsView .preferences-close {min-height:44px;padding:8px 12px;border:1px solid var(--stroke);border-radius:24px;background:var(--surface);color:var(--accent);font-size:16px;}
+html.modern-budget #settingsView .preferences-section {margin:18px 0 28px;}
+html.modern-budget #settingsView .preferences-section > h3 {font-size:17px!important;font-weight:600;color:var(--muted)!important;margin:0 16px 10px;}
+html.modern-budget #settingsView .preferences-rows {background:var(--surface);border-radius:22px;overflow:hidden;}
+html.modern-budget #settingsView .preferences-value-row,
+html.modern-budget #settingsView .preferences-disclosure > summary {display:flex;align-items:center;gap:14px;padding:18px 20px;min-height:64px;margin:0;cursor:pointer;color:var(--text);font-size:17px;font-weight:500;}
+html.modern-budget #settingsView .preferences-value-row > span {flex:1;min-width:0;}
+html.modern-budget #settingsView .preferences-value-row select {width:auto!important;max-width:55%!important;min-width:100px!important;min-height:36px!important;padding:4px 22px 4px 4px!important;border:0!important;box-shadow:none!important;background-color:transparent!important;color:var(--accent)!important;text-align:right;}
+html.modern-budget #settingsView .preferences-disclosure {border:0;border-top:1px solid var(--stroke);}
+html.modern-budget #settingsView .preferences-disclosure:first-child {border-top:0;}
+html.modern-budget #settingsView summary::-webkit-details-marker {display:none;}
+html.modern-budget #settingsView summary {list-style:none;}
+html.modern-budget #settingsView summary > span {flex:1;min-width:0;overflow-wrap:anywhere;}
+html.modern-budget #settingsView summary > svg {color:var(--accent);width:24px;height:24px;flex-shrink:0;}
+html.modern-budget #settingsView summary > svg:last-child {color:var(--muted);width:18px;}
+html.modern-budget #settingsView details[open] > summary > svg:last-child {transform:rotate(90deg);}
+html.modern-budget #settingsView .preferences-content {padding:0 20px 20px;min-width:0;}
+html.modern-budget #settingsView .preferences-content > .panel,
+html.modern-budget #settingsView .preferences-content > form {padding:0!important;margin:0!important;display:grid!important;gap:14px!important;background:transparent!important;border:0!important;box-shadow:none!important;}
+html.modern-budget #settingsView .preferences-content .panel-heading,
+html.modern-budget #settingsView .settings-preview-card {display:none!important;}
+html.modern-budget #settingsView .settings-form-grid {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px;}
+html.modern-budget #settingsView .notification-settings-card {display:flex!important;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:14px 0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;border-bottom:1px solid var(--stroke)!important;}
+html.modern-budget #settingsView .notification-settings-card > div {flex:1 1 210px;min-width:0;}
+html.modern-budget #settingsView .notification-settings-card small {display:block;line-height:1.5;margin-top:6px;}
+html.modern-budget #settingsView .notification-settings-card > button {flex:0 1 auto;max-width:100%;white-space:normal!important;}
+html.modern-budget #settingsView .auth-actions {display:flex!important;flex-wrap:wrap;gap:10px!important;}
+html.modern-budget #settingsView .auth-actions > button {flex:1 1 160px;min-width:0!important;max-width:100%;white-space:normal!important;}
+html.modern-budget #settingsView .preferences-danger summary,html.modern-budget #settingsView .preferences-danger summary > svg:first-child {color:var(--expense)!important;}
+html.modern-budget #settingsView .danger-zone {margin:0!important;padding:0!important;background:transparent!important;border:0!important;}
+html.modern-budget #settingsView input:not([type="range"]):not([type="checkbox"]),html.modern-budget #settingsView select {width:100%;min-width:0;max-width:100%;box-sizing:border-box;}
+html.modern-budget #settingsView .font-size-actions {display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px!important;gap:10px;}
+html.modern-budget #settingsView .font-size-actions button {min-width:0!important;padding:6px!important;}
+html.modern-budget #settingsView .font-size-actions input {min-width:0;width:100%;}
+
+html.modern-budget #historySearchModal > .history-search-modal-card {width:min(720px,calc(100% - 24px))!important;max-width:720px!important;min-width:0!important;max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;margin:auto!important;padding:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;background:var(--surface-soft)!important;}
+html.modern-budget #historySearchModal #historySearchForm {display:block!important;min-height:0;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 20px 20px!important;margin:0!important;}
+html.modern-budget #historySearchModal .history-search-modal-nav {position:sticky!important;top:0!important;display:grid!important;grid-template-columns:minmax(54px,auto) minmax(0,1fr) minmax(54px,auto)!important;align-items:center!important;gap:8px!important;margin:0 -20px 18px!important;padding:14px 16px!important;background:var(--surface-soft)!important;z-index:3;border-bottom:1px solid var(--stroke)!important;}
+html.modern-budget #historySearchModal .history-search-modal-nav h2 {position:static!important;transform:none!important;grid-column:2!important;grid-row:1!important;width:auto!important;white-space:normal!important;font-size:18px!important;line-height:1.25!important;text-align:center;min-width:0!important;max-width:none!important;margin:0!important;overflow-wrap:normal!important;}
+html.modern-budget #historySearchModal .entry-modal-nav-button {grid-row:1!important;}
+html.modern-budget #historySearchModal .custom-filter-select {display:none!important;}
+html.modern-budget #historySearchModal select.native-filter-source {display:block!important;position:static!important;opacity:1!important;visibility:visible!important;clip:auto!important;clip-path:none!important;}
+html.modern-budget #historySearchModal .entry-modal-nav-button {width:auto!important;min-width:54px!important;max-width:90px!important;height:auto!important;min-height:42px!important;max-height:none!important;padding:8px 10px!important;white-space:normal!important;font-size:14px!important;line-height:1.25!important;border-radius:22px!important;}
+html.modern-budget #historySearchModal .history-search-heading {display:none!important;}
+html.modern-budget #historySearchModal .history-search-grid {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;}
+html.modern-budget #historySearchModal .history-search-grid > label {display:grid!important;gap:7px!important;min-width:0!important;margin:0!important;color:var(--muted);}
+html.modern-budget #historySearchModal .history-search-full {grid-column:1/-1!important;}
+html.modern-budget #historySearchModal input,html.modern-budget #historySearchModal select,
+html.modern-budget #historySearchModal .history-custom-select {width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
+html.modern-budget #historySearchModal input,html.modern-budget #historySearchModal select {min-height:46px!important;height:46px!important;padding:10px 12px!important;border:1px solid var(--stroke)!important;border-radius:12px!important;background:var(--surface)!important;color:var(--text)!important;box-shadow:none!important;font-size:16px!important;}
+html.modern-budget #historySearchModal .history-filter-clear {margin:20px 0 0!important;min-width:0!important;max-width:100%!important;}
+/* ACIKLAMA: Uzun etiket ve tutarlar modalin gorunur alanini genisletemez. */
+html.modern-budget #bankImportModal .bank-import-modal-nav {display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;overflow:visible!important;white-space:normal!important;}
+html.modern-budget #bankImportModal .bank-import-modal-nav > h2#bankImportModalTitle {position:static!important;display:block!important;transform:none!important;grid-column:2!important;width:auto!important;max-width:none!important;white-space:normal!important;text-align:center!important;margin:0!important;}
+html.modern-budget #bankImportModal .bank-import-modal-nav-actions {display:grid!important;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr)!important;grid-column:1/-1!important;width:100%!important;min-width:0!important;gap:8px!important;}
+html.modern-budget #bankImportModal .bank-import-modal-nav-actions > * {width:100%!important;min-width:0!important;max-width:100%!important;white-space:normal!important;box-sizing:border-box!important;height:auto!important;min-height:44px!important;max-height:none!important;padding:8px!important;}
+html.modern-budget #bankImportModal .bank-import-modal-nav > h2#bankImportModalTitle {visibility:visible!important;height:auto!important;min-width:0!important;overflow:visible!important;font-size:16px!important;line-height:1.3!important;}
+html.modern-budget #bankImportModal .bank-import-modal-nav-actions :is(#bankImportAddButton,#bankImportLocalButton) {min-width:0!important;min-height:44px!important;max-height:none!important;font-size:12px!important;}
+html.modern-budget .modal-card {min-width:0!important;box-sizing:border-box!important;}
+html.modern-budget .modal-card :is(form,label,fieldset,.modal-body-scroll,.transaction-side) {min-width:0;}
+html.modern-budget .modal-card :is(input,select,textarea) {box-sizing:border-box;max-width:100%;}
+html.modern-budget .modal-card :is(.transaction-title,.transaction-meta,.sync-status) {overflow-wrap:anywhere;}
+html.modern-budget .modal-card .transaction-side {flex-wrap:wrap;}
+@media(max-width:640px) {
+  html.modern-budget #settingsView .preferences-layout {padding:0 0 24px;}
+  html.modern-budget #settingsView .preferences-header {padding-top:max(12px,env(safe-area-inset-top));}
+  html.modern-budget #settingsView .preferences-value-row,html.modern-budget #settingsView summary {padding:16px!important;font-size:16px!important;}
+  html.modern-budget #settingsView .preferences-content {padding:0 16px 16px;}
+  html.modern-budget #settingsView .settings-form-grid {grid-template-columns:minmax(0,1fr)!important;}
+  html.modern-budget #historySearchModal .history-search-grid {grid-template-columns:minmax(0,1fr)!important;}
+  html.modern-budget #historySearchModal #historySearchForm {padding:0 16px 16px!important;}
+  html.modern-budget #historySearchModal .history-search-modal-nav {margin:0 -16px 16px!important;padding:12px!important;}
+}

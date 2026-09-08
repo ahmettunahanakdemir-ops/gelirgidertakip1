@@ -130,7 +130,7 @@ const BANK_OCR_TIMEOUT_MS = 30000;
 // ACIKLAMA: TRANSACTIONS_PER_PAGE gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
 const TRANSACTIONS_PER_PAGE = 20;
 // ACIKLAMA: BULK_ENTRY_INITIAL_ROWS coklu gelir/gider formunda baslangicta kac satir gosterilecegini belirler.
-const BULK_ENTRY_INITIAL_ROWS = 3;
+const BULK_ENTRY_INITIAL_ROWS = 1;
 // ACIKLAMA: TROY_OUNCE_GRAMS degiskeninin Turkce karsiligi "troy ons grams"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 const TROY_OUNCE_GRAMS = 31.1034768;
 // ACIKLAMA: BANK_OCR_BALANCE_KEYWORDS metin/OCR ayiklama sirasinda aranacak kelimeleri listeler.
@@ -385,9 +385,9 @@ const viewMeta = {
     subtitle: "Tek işlem ekleyebilir veya banka hareketlerini içe aktarabilirsin.",
   },
   assetsView: {
-    kicker: "Varlıklarım",
-    title: "Varlıklarım",
-    subtitle: "Döviz, altın, kripto ve nakit varlıklarının güncel TL değerini izle.",
+    kicker: "Birikimlerim",
+    title: "Birikimlerim",
+    subtitle: "Döviz, altın, kripto ve nakit birikimlerinin güncel TL değerini izle.",
   },
   cardsView: {
     kicker: "Kartlar / Hesaplar",
@@ -418,11 +418,6 @@ const viewMeta = {
     kicker: "Ayarlar",
     title: "Görünüm ve yazı ayarları",
     subtitle: "Tema, yazı tipi, kalınlık ve boyut ayarlarını kişiselleştir.",
-  },
-  userView: {
-    kicker: "Kullanıcı İşlemleri",
-    title: "Profil bilgileri",
-    subtitle: "Kullanıcı adını ve parolanı güvenli şekilde güncelle.",
   },
 };
 
@@ -606,6 +601,7 @@ const transactionList = document.getElementById("transactionList");
 const transactionTemplate = document.getElementById("transactionTemplate");
 // ACIKLAMA: filterType degiskeninin Turkce karsiligi "filtre tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 const filterType = document.getElementById("filterType");
+const filterCategory = document.getElementById("filterCategory");
 // ACIKLAMA: filterPaymentMethod degiskeninin Turkce karsiligi "filtre odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
 const filterPaymentMethod = document.getElementById("filterPaymentMethod");
 // ACIKLAMA: filterPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
@@ -628,6 +624,12 @@ const exportPdfButton = document.getElementById("exportPdfButton");
 const exportExcelButton = document.getElementById("exportExcelButton");
 // ACIKLAMA: openRecentTransactionsButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
 const openRecentTransactionsButton = document.getElementById("openRecentTransactionsButton");
+// ACIKLAMA: historySearchModal acilip kapanan modal/pencere elemaninin DOM referansidir.
+const historySearchModal = document.getElementById("historySearchModal");
+// ACIKLAMA: openHistorySearchModalButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
+const openHistorySearchModalButton = document.getElementById("openHistorySearchModalButton");
+// ACIKLAMA: closeHistorySearchModalButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
+const closeHistorySearchModalButton = document.getElementById("closeHistorySearchModalButton");
 // ACIKLAMA: recentTransactionsModal acilip kapanan modal/pencere elemaninin DOM referansidir.
 const recentTransactionsModal = document.getElementById("recentTransactionsModal");
 // ACIKLAMA: recentTransactionsList ekrana basilan liste/kart satirlarinin yerlesecegi DOM alanidir.
@@ -859,6 +861,9 @@ const transactionEditStatus = document.getElementById("transactionEditStatus");
 const closeTransactionEditButton = document.getElementById("closeTransactionEditButton");
 // ACIKLAMA: openEntryModalButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
 const openEntryModalButton = document.getElementById("openEntryModalButton");
+const openBankImportModalButton = document.getElementById("openBankImportModalButton");
+const bankImportModal = document.getElementById("bankImportModal");
+const closeBankImportModalButton = document.getElementById("closeBankImportModalButton");
 // ACIKLAMA: entryModal acilip kapanan modal/pencere elemaninin DOM referansidir.
 const entryModal = document.getElementById("entryModal");
 // ACIKLAMA: entryFormMount degiskeninin Turkce karsiligi "entry form yerlestir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -891,6 +896,7 @@ const categoryManageList = document.getElementById("categoryManageList");
 const categoryManageStatus = document.getElementById("categoryManageStatus");
 // ACIKLAMA: closeCategoryManageModalButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
 const closeCategoryManageModalButton = document.getElementById("closeCategoryManageModalButton");
+const saveCategoryManageButton = document.getElementById("saveCategoryManageButton");
 // ACIKLAMA: paymentAccountPayModal acilip kapanan modal/pencere elemaninin DOM referansidir.
 const paymentAccountPayModal = document.getElementById("paymentAccountPayModal");
 // ACIKLAMA: paymentAccountPayForm ilgili formun DOM referansidir; submit ve veri okuma islemlerinde kullanilir.

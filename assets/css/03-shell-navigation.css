@@ -371,3 +371,20 @@
   justify-content: space-between;
   gap: 18px;
 }
+
+
+/* ACIKLAMA: Masaustunde yan menu acilir/daralir davranisina yumusak gecisler ekler. */
+@media (min-width: 981px) {
+  .app-shell,
+  .sidebar,
+  .brand-block,
+  .nav-item,
+  .sidebar-account,
+  .logout-btn {
+    transition: all 200ms ease;
+  }
+
+  .brand-block #mobileMenuButton.sidebar-toggle {
+    flex: 0 0 auto;
+  }
+}

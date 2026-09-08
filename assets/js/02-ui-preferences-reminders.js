@@ -26,7 +26,7 @@ function loadThemePreference() {
   try {
     // ACIKLAMA: saved degiskeninin Turkce karsiligi "saved"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const saved = localStorage.getItem(THEME_STORAGE_KEY);
-    return saved === "dark" ? "dark" : "light";
+    return ["dark", "light", "system"].includes(saved) ? saved : "light";
   } catch (error) {
     return "light";
   }
@@ -44,7 +44,7 @@ function saveThemePreference(theme) {
 // ACIKLAMA: normalizeUiSettings fonksiyonunun Turkce karsiligi "standartlastir ui ayarlar"; veriyi uygulamanin bekledigi temiz formata cevirir.
 function normalizeUiSettings(raw = {}) {
   // ACIKLAMA: normalizedTheme degiskeninin Turkce karsiligi "normalized tema"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const normalizedTheme = raw.theme === "dark" ? "dark" : "light";
+  const normalizedTheme = ["dark", "light", "system"].includes(raw.theme) ? raw.theme : "light";
   // ACIKLAMA: normalizedFontFamily degiskeninin Turkce karsiligi "normalized yazi tipi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const normalizedFontFamily = Object.prototype.hasOwnProperty.call(FONT_FAMILY_MAP, raw.fontFamily) ? raw.fontFamily : DEFAULT_UI_SETTINGS.fontFamily;
   // ACIKLAMA: normalizedFontWeight degiskeninin Turkce karsiligi "normalized yazi kalinlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -101,6 +101,8 @@ function updateThemeButtons(theme) {
 
 // ACIKLAMA: syncAppearanceControls fonksiyonunun Turkce karsiligi "esitle gorunum kontroller"; bulut ve yerel veri esitleme akisini yonetir.
 function syncAppearanceControls() {
+  const themeSelect = document.getElementById("preferencesTheme");
+  if (themeSelect) themeSelect.value = uiSettings.theme;
   if (settingsFontFamily) {
     settingsFontFamily.value = uiSettings.fontFamily;
   }
@@ -120,8 +122,9 @@ function syncAppearanceControls() {
 function applyTheme(theme, options = {}) {
   const { persist = true, syncControls = true } = options;
   // ACIKLAMA: normalizedTheme degiskeninin Turkce karsiligi "normalized tema"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const normalizedTheme = theme === "dark" ? "dark" : "light";
-  uiSettings = normalizeUiSettings({ ...uiSettings, theme: normalizedTheme });
+  const preference = ["dark", "light", "system"].includes(theme) ? theme : "light";
+  const normalizedTheme = preference === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : preference;
+  uiSettings = normalizeUiSettings({ ...uiSettings, theme: preference });
   document.documentElement.setAttribute("data-theme", normalizedTheme);
   document.body?.setAttribute("data-theme", normalizedTheme);
   // ACIKLAMA: metaTheme degiskeninin Turkce karsiligi "meta tema"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -171,6 +174,10 @@ function resetAppearanceSettings() {
 
 // ACIKLAMA: initThemePreference fonksiyonunun Turkce karsiligi "baslat tema tercih"; ilgili uygulama islemini calistirir.
 function initThemePreference() {
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+  const updateSystemTheme = () => { if (uiSettings.theme === "system") applyTheme("system", { persist: false }); };
+  if (systemTheme.addEventListener) systemTheme.addEventListener("change", updateSystemTheme);
+  else systemTheme.addListener(updateSystemTheme);
   uiSettings = loadUiSettings();
   applyTypographySettings(uiSettings, { persist: false, syncControls: true });
 
@@ -706,7 +713,7 @@ function hideAllStartupModals() {
 // ACIKLAMA: mountSummaryFilterPanel fonksiyonunun Turkce karsiligi "yerlestir ozet filtre panel"; ilgili uygulama islemini calistirir.
 function mountSummaryFilterPanel() {
   // ACIKLAMA: filterPanel degiskeninin Turkce karsiligi "filtre panel"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const filterPanel = document.querySelector("#entryView .home-summary-filter-standalone");
+  const filterPanel = document.querySelector("#settingsView .home-summary-filter-standalone");
   // ACIKLAMA: summaryStack degiskeninin Turkce karsiligi "ozet stack"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const summaryStack = document.querySelector("#summaryView .summary-stack");
   // ACIKLAMA: statsGrid degiskeninin Turkce karsiligi "istatistikler grid"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -716,8 +723,8 @@ function mountSummaryFilterPanel() {
     return;
   }
 
-  filterPanel.setAttribute("aria-label", "Gelir gider ekle tarih filtresi");
-  filterPanel.classList.add("entry-filter-panel");
+  filterPanel.setAttribute("aria-label", "Gelir gider tarih filtresi");
+  filterPanel.classList.add("settings-filter-panel");
 
   // ACIKLAMA: summaryPanel degiskeninin Turkce karsiligi "ozet panel"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   let summaryPanel = document.getElementById("summaryHomeSummaryFilterPanel");
@@ -725,7 +732,7 @@ function mountSummaryFilterPanel() {
     summaryPanel = filterPanel.cloneNode(true);
     summaryPanel.id = "summaryHomeSummaryFilterPanel";
     summaryPanel.setAttribute("aria-label", "Özet ve tasarruf tarih filtresi");
-    summaryPanel.classList.remove("entry-filter-panel");
+    summaryPanel.classList.remove("settings-filter-panel");
     summaryPanel.classList.add("summary-filter-panel");
 
     // ACIKLAMA: status kullaniciya durum, hata veya basari mesaji gostermek icin kullanilir.

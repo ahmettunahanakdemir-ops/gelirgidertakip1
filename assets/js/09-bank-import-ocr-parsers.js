@@ -3,6 +3,21 @@
 
 function setBankImportLoading(isLoading) {
   bankImportStatus?.classList.toggle("is-loading", Boolean(isLoading));
+  if (closeBankImportModalButton) closeBankImportModalButton.disabled = Boolean(isLoading);
+}
+
+function openBankImportModal() {
+  if (!bankImportModal) return;
+  resetBankImportInputState("Henüz banka hareketi okunmadı.");
+  bankImportModal.hidden = false;
+  bankImportAccountSelect?.focus();
+}
+
+function closeBankImportModal() {
+  if (!bankImportModal || closeBankImportModalButton?.disabled) return;
+  resetBankImportInputState("Henüz banka hareketi okunmadı.");
+  bankImportModal.hidden = true;
+  if (activeView === "entryView") openBankImportModalButton?.focus();
 }
 
 // ACIKLAMA: withTimeout fonksiyonunun Turkce karsiligi "with timeout"; ilgili uygulama islemini calistirir.
@@ -28,7 +43,7 @@ function handleBankImportFile(event) {
   renderBankImportPreview();
 
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
+    bankImportAddButton.textContent = "Yapay Zeka ile Ekle";
   }
   if (bankImportLocalButton) {
     bankImportLocalButton.textContent = "Kayıtlara Ekle";
@@ -42,7 +57,7 @@ function handleBankImportFile(event) {
   // ACIKLAMA: names degiskeninin Turkce karsiligi "adlar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const names = pendingBankFiles.map((file) => file.name).join(", ");
   bankImportStatus.textContent =
-    `${pendingBankFiles.length} dosya seçildi: ${names}. Yapay zeka ile ya da normal önizleme ile kontrol edebilirsin.`;
+    `${pendingBankFiles.length} dosya seçildi: ${names}. Yapay zeka ile ya da gelişmiş yerel okuma ile kontrol edebilirsin.`;
 }
 
 // ACIKLAMA: isPdfFile fonksiyonunun Turkce karsiligi "mi PDF dosya"; ilgili uygulama islemini calistirir.
@@ -166,12 +181,25 @@ function buildPendingBankImportItems(parsedMovements, sourceName = "", existingS
       raw: movement.raw || "",
       sourceName,
       reason: duplicate ? "Bu hareket zaten kayıtlı görünüyor." : "",
+      extraOptions: {
+        noteEnabled: false,
+        note: "",
+        isInstallment: false,
+        installmentCount: 2,
+        isDebtPayment: false,
+        debtReceivableId: "",
+      },
+      followOptions: {
+        selected: false,
+        listType: "debt",
+        dueDate: "",
+      },
     };
   });
 }
 
-// ACIKLAMA: addSelectedBankFiles fonksiyonunun Turkce karsiligi "add selected banka dosyalar"; formdan gelen bilgiyi kaydeder veya yeni kayit ekler.
-async function addSelectedBankFiles() {
+// ACIKLAMA: Banka ekranlarini cihazda OCR ile okuyup en guvenilir hareketleri onizlemeye hazirlar.
+async function previewBankImportWithAccurateLocalOcr() {
   if (pendingBankImports.length) {
     confirmBankImport();
     return;
@@ -198,7 +226,7 @@ async function addSelectedBankFiles() {
     bankImportLocalButton.disabled = true;
     bankImportLocalButton.textContent = "Okunuyor...";
   }
-  bankImportCancelButton.disabled = true;
+  if (bankImportCancelButton) bankImportCancelButton.disabled = true;
   setBankImportLoading(true);
   bankImportStatus.textContent = pendingBankFiles.length
     ? `${pendingBankFiles.length} dosya okunuyor...`
@@ -217,7 +245,7 @@ async function addSelectedBankFiles() {
         const parsedMovements = parseBankMovements(text);
         // ACIKLAMA: pendingItems degiskeninin Turkce karsiligi "bekleyen ogeler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
         const pendingItems = buildPendingBankImportItems(parsedMovements, file.name, existingSignatures, seenSignatures, {
-          importLabel: "Banka içe aktarımı",
+            importLabel: "Gelişmiş yerel banka okuma",
         });
         allPendingImports.push(...pendingItems);
       } catch (error) {
@@ -231,7 +259,7 @@ async function addSelectedBankFiles() {
     if (pastedText) {
       allPendingImports.push(
         ...buildPendingBankImportItems(parseBankMovements(pastedText), "Yapıştırılan metin", existingSignatures, seenSignatures, {
-          importLabel: "Banka içe aktarımı",
+          importLabel: "Gelişmiş yerel banka okuma",
         })
       );
     }
@@ -289,7 +317,7 @@ async function addSelectedBankFiles() {
         bankImportLocalButton.textContent = "Kayıtlara Ekle";
       }
     }
-    bankImportCancelButton.disabled = false;
+    if (bankImportCancelButton) bankImportCancelButton.disabled = false;
   }
 }
 
@@ -310,7 +338,7 @@ async function previewBankImportLocally(options = {}) {
   if (bankImportLocalButton) {
     bankImportLocalButton.disabled = true;
   }
-  bankImportCancelButton.disabled = true;
+  if (bankImportCancelButton) bankImportCancelButton.disabled = true;
   setBankImportLoading(true);
   bankImportStatus.textContent = fallbackReason
     ? "Yapay zeka tamamlanamadı; normal önizleme hazırlanıyor..."
@@ -364,7 +392,7 @@ async function previewBankImportLocally(options = {}) {
         (fallbackReason ? ` Yapay zeka mesajı: ${fallbackReason}` : "") +
         (failedFiles.length ? ` Okunamayan dosya: ${failedFiles.join(", ")}.` : "");
       if (bankImportAddButton) {
-        bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
+        bankImportAddButton.textContent = "Yapay Zeka ile Ekle";
       }
       return false;
     }
@@ -390,7 +418,7 @@ async function previewBankImportLocally(options = {}) {
     if (bankImportLocalButton) {
       bankImportLocalButton.disabled = false;
     }
-    bankImportCancelButton.disabled = false;
+    if (bankImportCancelButton) bankImportCancelButton.disabled = false;
   }
 }
 
@@ -435,10 +463,10 @@ async function previewBankImportWithAi() {
   }
 
   // ACIKLAMA: previousAddText degiskeninin Turkce karsiligi "previous add metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const previousAddText = bankImportAddButton?.textContent || "Yapay Zeka ile Kayıtlara Ekle";
+  const previousAddText = bankImportAddButton?.textContent || "Yapay Zeka ile Ekle";
 
   bankImportAddButton.disabled = true;
-  bankImportCancelButton.disabled = true;
+  if (bankImportCancelButton) bankImportCancelButton.disabled = true;
   setBankImportLoading(true);
   if (bankImportAddButton) {
     bankImportAddButton.textContent = "Yapay Zeka Okuyor...";
@@ -505,14 +533,14 @@ async function previewBankImportWithAi() {
     // ACIKLAMA: message degiskeninin Turkce karsiligi "mesaj"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const message = getBankAiImportErrorMessage(error);
 
-    bankImportStatus.textContent = `${message} Normal okuma için "Kayıtlara Ekle" butonunu kullanabilirsin.`;
+    bankImportStatus.textContent = `${message} Gelişmiş yerel okuma için "Kayıtlara Ekle" butonunu kullanabilirsin.`;
   } finally {
     setBankImportLoading(false);
     bankImportAddButton.disabled = false;
     if (bankImportLocalButton) {
       bankImportLocalButton.disabled = false;
     }
-    bankImportCancelButton.disabled = false;
+    if (bankImportCancelButton) bankImportCancelButton.disabled = false;
     bankImportAddButton.textContent = pendingBankImports.length ? "Önizlemeyi Aç" : previousAddText;
   }
 }
@@ -933,28 +961,50 @@ async function loadTesseract() {
 }
 
 // ACIKLAMA: recognizeBankImageUrl fonksiyonunun Turkce karsiligi "tani banka gorsel adres"; ilgili uygulama islemini calistirir.
-async function recognizeBankImageUrl(url, statusLabel = "Görsel") {
+async function recognizeBankImageUrl(url, statusLabel = "Görsel", pageSegmentationMode = "6") {
   if (statusLabel) {
     bankImportStatus.textContent = `${statusLabel} OCR ile okunuyor...`;
   }
 
-  // ACIKLAMA: tesseract degiskeninin Turkce karsiligi "Tesseract"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+  const worker = await createBankOcrWorker();
+  try {
+    return extractOcrTextFromResult(await recognizeBankImageData(worker, url, pageSegmentationMode));
+  } finally {
+    await worker.terminate();
+  }
+}
+
+async function createBankOcrWorker() {
   const tesseract = await withTimeout(
     loadTesseract(),
     BANK_OCR_TIMEOUT_MS,
     "Görsel okuma motoru çok uzun sürede açıldı. Lütfen görseli tekrar seç."
   );
-  // ACIKLAMA: result degiskeninin Turkce karsiligi "result"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const result = await withTimeout(
-    tesseract.recognize(url, "tur+eng", {
-      tessedit_pageseg_mode: "6",
-      preserve_interword_spaces: "1",
-    }),
+  let expired = false;
+  const pending = tesseract.createWorker("tur+eng").then(async (worker) => {
+    if (expired) await worker.terminate();
+    return worker;
+  });
+  try {
+    return await withTimeout(pending, BANK_OCR_TIMEOUT_MS, "Görsel okuma motoru başlatılamadı.");
+  } catch (error) {
+    expired = true;
+    throw error;
+  }
+}
+
+async function recognizeBankImageData(worker, image, mode = "6", whitelist = "") {
+  // Okuma parametreleri createWorker secenekleri degil, motor parametreleridir.
+  await worker.setParameters({
+    tessedit_pageseg_mode: mode,
+    preserve_interword_spaces: "1",
+    tessedit_char_whitelist: whitelist,
+  });
+  return withTimeout(
+    worker.recognize(image),
     BANK_OCR_TIMEOUT_MS,
     "OCR okuma çok uzun sürdü. Görseli kırpmadan, daha net ya da daha küçük boyutta tekrar yükle."
   );
-
-  return extractOcrTextFromResult(result);
 }
 
 // ACIKLAMA: extractOcrTextFromResult fonksiyonunun Turkce karsiligi "ayikla OCR metin kaynakli result"; metin, dosya veya API cevabindan gerekli bilgileri ayiklar.
@@ -993,8 +1043,6 @@ function extractOcrTextFromResult(result) {
 function chooseBestBankOcrText(candidates) {
   // ACIKLAMA: uniqueCandidates degiskeninin Turkce karsiligi "unique candidates"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const uniqueCandidates = (candidates || []).filter(Boolean);
-  // ACIKLAMA: combinedCandidate degiskeninin Turkce karsiligi "combined candidate"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const combinedCandidate = uniqueCandidates.length > 1 ? uniqueCandidates.join("\n") : "";
   // ACIKLAMA: scoreCandidate degiskeninin Turkce karsiligi "puan candidate"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const scoreCandidate = (text, index) => {
     // ACIKLAMA: movements degiskeninin Turkce karsiligi "movements"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -1029,21 +1077,6 @@ function chooseBestBankOcrText(candidates) {
   };
   // ACIKLAMA: scored degiskeninin Turkce karsiligi "scored"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const scored = uniqueCandidates.map(scoreCandidate).filter((item) => item.text);
-
-  if (
-    combinedCandidate &&
-    !isStrictBankCardScreen(combinedCandidate) &&
-    !uniqueCandidates.some((text) => normalizeBankText(text) === normalizeBankText(combinedCandidate))
-  ) {
-    // ACIKLAMA: combinedScore degiskeninin Turkce karsiligi "combined puan"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const combinedScore = scoreCandidate(combinedCandidate, uniqueCandidates.length);
-    // ACIKLAMA: bestSingleCount degiskeninin Turkce karsiligi "en iyi single sayi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const bestSingleCount = scored.reduce((best, item) => Math.max(best, item.movements.length), 0);
-
-    if (combinedScore.movements.length > bestSingleCount) {
-      scored.push(combinedScore);
-    }
-  }
 
   if (!scored.length) {
     return "";
@@ -1153,30 +1186,168 @@ async function extractImageText(file) {
   let imageUrl = URL.createObjectURL(file);
   // ACIKLAMA: processedUrl degiskeninin Turkce karsiligi "processed adres"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   let processedUrl = "";
+  let worker = null;
 
   try {
     processedUrl = await preprocessImageForBankOcr(file);
-    // ACIKLAMA: targetUrl degiskeninin Turkce karsiligi "hedef adres"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const targetUrl = processedUrl || imageUrl;
-    // ACIKLAMA: processedText degiskeninin Turkce karsiligi "processed metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const processedText = await recognizeBankImageUrl(targetUrl, file.name);
+    worker = await createBankOcrWorker();
+    const candidates = [];
+    const originalResults = [];
+    const attempts = [
+      { url: processedUrl || imageUrl, mode: "6", label: `${file.name} işlenmiş görüntü` },
+    ];
 
-    if (!processedUrl) {
-      return processedText;
+    if (processedUrl) {
+      attempts.push(
+        { url: imageUrl, mode: "6", label: `${file.name} orijinal görüntü` },
+        { url: imageUrl, mode: "11", label: `${file.name} dağınık satırlar` }
+      );
     }
 
-    bankImportStatus.textContent = `${file.name} için orijinal görüntü de kontrol ediliyor...`;
-    // ACIKLAMA: originalText degiskeninin Turkce karsiligi "orijinal metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const originalText = await recognizeBankImageUrl(imageUrl, file.name);
-    // ACIKLAMA: combinedText degiskeninin Turkce karsiligi "combined metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const combinedText = [processedText, originalText].filter(Boolean).join("\n");
-    return chooseBestBankOcrText([processedText, originalText, combinedText]);
+    for (const attempt of attempts) {
+      try {
+        bankImportStatus.textContent = `${attempt.label} OCR ile okunuyor...`;
+        const result = await recognizeBankImageData(worker, attempt.url, attempt.mode);
+        const text = extractOcrTextFromResult(result);
+        // Daginik metin modu yalnizca konum tabanli cozumleme icindir; duz metindeki satir sirasini degistirebilir.
+        if (attempt.mode !== "11") candidates.push(text);
+        if (attempt.url === imageUrl) originalResults.push(result.data);
+      } catch (error) {
+        console.warn(`OCR denemesi tamamlanamadı (${attempt.label}).`, error);
+      }
+    }
+
+    let cardRows = [];
+    try {
+      cardRows = await extractPositionedBankCardRows(file, originalResults, worker);
+    } catch (error) {
+      console.warn("Kart alanları ayrı okunamadı; tam görüntü sonucu kullanılacak.", error);
+    }
+    if (cardRows.length) {
+      const cell = (value) => `"${String(value).replace(/"/g, '""')}"`;
+      return ["Tarih;Açıklama;Tutar", ...cardRows.map((row) =>
+        [row.date, row.title, `${row.type === "income" ? "+" : "-"}${row.amount.toFixed(2).replace(".", ",")}`].map(cell).join(";")
+      )].join("\n");
+    }
+    const bestText = chooseBestBankOcrText(candidates);
+
+    if (!bestText) {
+      throw new Error("Görselde okunabilir banka hareketi bulunamadı.");
+    }
+
+    return bestText;
   } finally {
+    if (worker) await worker.terminate();
     URL.revokeObjectURL(imageUrl);
     if (processedUrl) {
       URL.revokeObjectURL(processedUrl);
     }
   }
+}
+
+// Kart ekraninda sutunlari ayri okumak, magaza kodlarinin tutara ve komsu islemlerin birbirine eklenmesini onler.
+async function extractPositionedBankCardRows(file, results, worker) {
+  const screens = results.filter((data) =>
+    normalizeBankText(data.text).includes("kart hareketleri") &&
+    !hasAnyBankKeyword(data.text, BANK_OCR_BALANCE_KEYWORDS)
+  );
+  if (!screens.length || !window.createImageBitmap) return [];
+
+  const bitmap = await createImageBitmap(file);
+  try {
+    const { width, height } = bitmap;
+    const layouts = screens.map((data) => ({
+      data,
+      months: findPositionedBankDateAnchors(data.words || [], width, height),
+    })).sort((a, b) => b.months.length - a.months.length ||
+      b.months.reduce((sum, word) => sum + word.confidence, 0) - a.months.reduce((sum, word) => sum + word.confidence, 0));
+    const layout = layouts[0];
+    if (layout.months.length < 2) return [];
+
+    const crop = (left, top, right, bottom) => {
+      left = Math.max(0, Math.floor(left));
+      top = Math.max(0, Math.floor(top));
+      right = Math.min(width, Math.ceil(right));
+      bottom = Math.min(height, Math.ceil(bottom));
+      const canvas = document.createElement("canvas");
+      const scale = Math.min(3, 2200 / width);
+      canvas.width = Math.round((right - left) * scale) + 32;
+      canvas.height = Math.round((bottom - top) * scale) + 32;
+      const context = canvas.getContext("2d");
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(bitmap, left, top, right - left, bottom - top, 16, 16, canvas.width - 32, canvas.height - 32);
+      return canvas;
+    };
+    const rows = [];
+    const globalYear = String(layout.data.text).match(/\b20\d{2}\b/)?.[0] || getTurkeyTodayISO().slice(0, 4);
+    for (let index = 0; index < layout.months.length; index++) {
+      bankImportStatus.textContent = `${file.name}: ${index + 1}/${layout.months.length} hareketin alanları okunuyor...`;
+      const month = layout.months[index];
+      const top = month.bbox.y0 - width * 0.10;
+      const bottom = layout.months[index + 1]
+        ? layout.months[index + 1].bbox.y0 - width * 0.10
+        : Math.min(height, month.bbox.y1 + width * 0.13);
+      const dayResult = await recognizeBankImageData(worker,
+        crop(width * 0.045, top, width * 0.155, month.bbox.y0 - width * 0.008), "7", "0123456789");
+      const dateWords = screens.flatMap((data) => data.words || []).filter((word) =>
+        word.bbox.x1 < width * 0.19 && word.bbox.y0 >= top && word.bbox.y0 < bottom);
+      const dayVotes = new Map();
+      const voteDay = (text, confidence) => {
+        const digits = String(text).trim().replace(/[zZ]/g, "2").replace(/[oO]/g, "0").replace(/[Il|]/g, "1");
+        const day = /^\d{1,2}$/.test(digits) ? Number(digits) : 0;
+        if (day < 1 || day > 31) return;
+        const vote = dayVotes.get(day) || {day, count: 0, confidence: 0};
+        vote.count++;
+        vote.confidence += Number(confidence) || 0;
+        dayVotes.set(day, vote);
+      };
+      dateWords.filter((word) => word.bbox.y1 < month.bbox.y0).forEach((word) => voteDay(word.text, word.confidence));
+      voteDay(dayResult.data.text, dayResult.data.confidence);
+      const day = [...dayVotes.values()].sort((a, b) => b.count - a.count || b.confidence - a.confidence)[0]?.day || 0;
+      const yearWord = dateWords.filter((word) => word.bbox.y0 > month.bbox.y1 && /^20\d{2}$/.test(word.text))
+        .sort((a, b) => b.confidence - a.confidence)[0];
+      let monthNumber = getPositionedBankMonth(month.text);
+      if (!monthNumber) {
+        const monthResult = await recognizeBankImageData(worker,
+          crop(width * 0.045, month.bbox.y0 - 4, width * 0.155, month.bbox.y1 + 4), "7");
+        monthNumber = getPositionedBankMonth(monthResult.data.text.trim());
+      }
+      const date = day >= 1 && day <= 31 ? buildIsoDate(yearWord?.text || globalYear, monthNumber, day) : "";
+      const amountResult = await recognizeBankImageData(worker,
+        crop(width * 0.69, top, width * 0.945, Math.min(bottom, month.bbox.y1)), "6");
+      const amountLine = amountResult.data.text.split(/\r?\n/).find((line) => /\d[,.]\d{2}\b/.test(line));
+      const amount = amountLine ? parseBankAmount(amountLine) : null;
+      const titleResult = await recognizeBankImageData(worker,
+        crop(width * 0.18, top, width * 0.69, bottom), "6");
+      const title = cleanBankTitle(titleResult.data.text.split(/\r?\n/)
+        .map((line) => line.replace(/\b(?:TRTR|TR|CH)\s*$/i, "").trim()).filter(Boolean).join(" "));
+      if (!date || !amount || !title) return [];
+      const type = inferBankTemplateTransactionType(title, amount, [title]);
+      rows.push({date, title, amount: amount.amount, type});
+    }
+    return rows;
+  } finally {
+    bitmap.close();
+  }
+}
+
+function getPositionedBankMonth(text) {
+  return getBankMonthNumber(normalizeBankText(text).replace(/^adu$/, "agu"));
+}
+
+function findPositionedBankDateAnchors(words, width, height) {
+  const dateColumn = words.filter((word) => word.bbox && word.bbox.x1 < width * 0.19 && word.bbox.y0 > height * 0.12);
+  const months = dateColumn.filter((word) => getPositionedBankMonth(word.text) && normalizeBankText(word.text) !== "ara");
+  // Ay adi yanlis okunsa bile altindaki yil, yeni bir hareketin baslangicini korur.
+  dateColumn.filter((word) => /^20\d{2}$/.test(word.text)).forEach((year) => {
+    if (months.some((month) => year.bbox.y0 - month.bbox.y1 > 0 && year.bbox.y0 - month.bbox.y1 < width * 0.045)) return;
+    const preceding = dateColumn.filter((word) => word.bbox.y1 < year.bbox.y0 &&
+      year.bbox.y0 - word.bbox.y1 < width * 0.045 && /[a-zA-ZğĞıİşŞüÜöÖçÇ]/.test(word.text))
+      .sort((a, b) => b.bbox.y1 - a.bbox.y1)[0];
+    if (preceding) months.push(preceding);
+  });
+  return months.sort((a, b) => a.bbox.y0 - b.bbox.y0);
 }
 
 // ACIKLAMA: preprocessImageForBankOcr fonksiyonunun Turkce karsiligi "on isleme al gorsel icin banka OCR"; ilgili uygulama islemini calistirir.
@@ -1334,7 +1505,7 @@ function previewBankImport(options = {}) {
   const invalidCount = pendingBankImports.filter((item) => !item.valid).length;
 
   if (bankImportAddButton) {
-    bankImportAddButton.textContent = pendingBankImports.length ? "Seçilenleri Onayla ve Ekle" : "Yapay Zeka ile Kayıtlara Ekle";
+    bankImportAddButton.textContent = pendingBankImports.length ? "Seçilenleri Onayla ve Ekle" : "Yapay Zeka ile Ekle";
   }
 
   if (!updateStatus) {
@@ -1391,7 +1562,7 @@ function resetBankImportInputState(statusText = "Banka içe aktarma alanı temiz
 
   if (bankImportAddButton) {
     bankImportAddButton.disabled = false;
-    bankImportAddButton.textContent = "Yapay Zeka ile Kayıtlara Ekle";
+    bankImportAddButton.textContent = "Yapay Zeka ile Ekle";
   }
 
   if (bankImportLocalButton) {
@@ -1400,7 +1571,7 @@ function resetBankImportInputState(statusText = "Banka içe aktarma alanı temiz
   }
 
   if (bankImportCancelButton) {
-    bankImportCancelButton.disabled = false;
+    if (bankImportCancelButton) bankImportCancelButton.disabled = false;
   }
 
   if (typeof statusText === "string" && bankImportStatus) {
@@ -1420,24 +1591,78 @@ function confirmBankImport(options = {}) {
     return;
   }
 
-  // ACIKLAMA: selectionRoot degiskeninin Turkce karsiligi "secim root"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const selectionRoot = bankImportPreviewList || bankImportPreview;
-  // ACIKLAMA: selectedIndexes degiskeninin Turkce karsiligi "selected indexes"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const selectedIndexes = Array.from(selectionRoot.querySelectorAll(".bank-import-check:checked")).map(
     (input) => Number(input.value)
   );
-  // ACIKLAMA: selectedTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
-  const selectedTransactions = pendingBankImports
-    .filter(
-      (item, index) =>
-        selectedIndexes.includes(index) &&
-        item.valid &&
-        !item.duplicate &&
-        item.transaction?.title &&
-        item.transaction?.date &&
-        Number(item.transaction?.amount || 0) > 0
-    )
-    .map((item) => item.transaction);
+  const selectedItems = pendingBankImports.filter(
+    (item, index) =>
+      selectedIndexes.includes(index) &&
+      item.valid &&
+      !item.duplicate &&
+      item.transaction?.title &&
+      item.transaction?.date &&
+      Number(item.transaction?.amount || 0) > 0
+  );
+
+  if (!selectedItems.length) {
+    if (updateStatus) {
+      bankImportStatus.textContent = "Eklenecek yeni hareket seçilmedi.";
+    }
+    return;
+  }
+
+  const selectedTransactions = [];
+  const followSelections = new Map();
+
+  for (const item of selectedItems) {
+    const extraOptions = getBankImportExtraOptions(item);
+    const followOptions = getBankImportFollowOptions(item);
+    const now = getTurkeyNowDateTime();
+    const time = getTimePart(item.transaction?.transactionAt || item.raw || "") || getTurkeyNowTime();
+    const baseValues = {
+      type: item.transaction.type,
+      title: item.transaction.title,
+      amount: item.transaction.amount,
+      category: item.transaction.category,
+      paymentMethod: item.transaction.paymentMethod,
+      paymentAccountId: item.transaction.paymentAccountId,
+      transferAccountId: item.transaction.transferAccountId,
+      transferFee: item.transaction.transferFee || 0,
+      date: item.transaction.date,
+      note: extraOptions.noteEnabled ? String(extraOptions.note || "").trim() : "",
+      isInstallment: extraOptions.isInstallment,
+      installmentCount: extraOptions.installmentCount,
+    };
+
+    let entries = extraOptions.isInstallment
+      ? gelirGiderTaksitSerisiniOlustur(baseValues, now, time)
+      : [createEntryTransaction(baseValues, now, time)];
+
+    if (extraOptions.isDebtPayment && typeof borcAlacakGelirGiderOdemesiniDogrula === "function") {
+      const baglantiHatasi = borcAlacakGelirGiderOdemesiniDogrula(entries[0], extraOptions.debtReceivableId);
+      if (baglantiHatasi) {
+        bankImportStatus.textContent = baglantiHatasi;
+        bankImportPreviewStatus.textContent = baglantiHatasi;
+        openBankImportPreviewModal();
+        return;
+      }
+      entries[0] = borcAlacakGelirGiderOdemesiniHazirla(entries[0], extraOptions.debtReceivableId);
+    }
+
+    const followError = entries
+      .map((entry) => validateNewTransactionFollow(entry, followOptions, extraOptions.isDebtPayment))
+      .find(Boolean);
+    if (followError) {
+      bankImportStatus.textContent = followError;
+      bankImportPreviewStatus.textContent = followError;
+      openBankImportPreviewModal();
+      return;
+    }
+
+    selectedTransactions.push(...entries);
+    entries.forEach((entry) => followSelections.set(entry.id, followOptions));
+  }
 
   if (!selectedTransactions.length) {
     if (updateStatus) {
@@ -1446,7 +1671,6 @@ function confirmBankImport(options = {}) {
     return;
   }
 
-  // ACIKLAMA: invalidTransfer degiskeninin Turkce karsiligi "invalid aktarim"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const invalidTransfer = selectedTransactions.find(
     (transaction) =>
       transaction.type === "transfer" &&
@@ -1463,7 +1687,14 @@ function confirmBankImport(options = {}) {
     return;
   }
 
-  // ACIKLAMA: changedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+  if (!selectedTransactions.every((transaction) => validateTransactionPayment(transaction, bankImportPreviewStatus || bankImportStatus))) {
+    if (updateStatus && bankImportStatus && bankImportPreviewStatus?.textContent) {
+      bankImportStatus.textContent = bankImportPreviewStatus.textContent;
+    }
+    openBankImportPreviewModal();
+    return;
+  }
+
   let changedPaymentAccount = false;
   selectedTransactions.forEach((transaction) => {
     if (applyTransactionPaymentEffect(transaction, 1)) {
@@ -1476,6 +1707,12 @@ function confirmBankImport(options = {}) {
   }
 
   transactions = [...selectedTransactions, ...transactions].sort(compareTransactionsNewestFirst);
+  selectedTransactions.forEach((item) => applyNewTransactionFollow(item, followSelections.get(item.id)));
+  selectedTransactions.forEach((entry) => {
+    if (entry.debtPaymentId && typeof borcAlacakGelirGiderOdemesiniUygula === "function") {
+      borcAlacakGelirGiderOdemesiniUygula(entry);
+    }
+  });
   persistTransactions({ cloudUpserts: selectedTransactions });
   render();
 
@@ -1713,46 +1950,31 @@ function createBankImportPreviewEditRow(item, index) {
     return row;
   }
 
-  // ACIKLAMA: grid degiskeninin Turkce karsiligi "grid"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const grid = document.createElement("div");
-  grid.className = "bank-import-edit-grid";
-  grid.append(
-    createBankImportEditField("Başlık", createBankImportEditInput(index, "title", item.transaction.title, "text")),
-    createBankImportEditField("Tip", createBankImportTypeSelect(index, item.transaction.type)),
-    createBankImportEditField("Tutar", createBankImportEditInput(index, "amount", item.transaction.amount, "number")),
-    createBankImportEditField("Kategori", createBankImportCategorySelect(index, item.transaction.type, item.transaction.category)),
-    createBankImportEditField("Tarih", createBankImportEditInput(index, "date", item.transaction.date, "date")),
-    createBankImportEditField("Kaynak", createBankImportPaymentAccountSelect(index, "paymentAccountId", item.transaction.paymentAccountId, item.transaction.transferAccountId)),
-    createBankImportEditField("Karşı", createBankImportPaymentAccountSelect(index, "transferAccountId", item.transaction.transferAccountId, item.transaction.paymentAccountId))
-  );
+  const titleField = createBankImportEditField("Başlık", createBankImportEditInput(index, "title", item.transaction.title, "text"));
+  const amountField = createBankImportEditField("Tutar", createBankImportEditInput(index, "amount", item.transaction.amount, "number"));
+  const typeField = createBankImportEditField("Tip", createBankImportTypeSelect(index, item.transaction.type));
+  const categoryField = createBankImportEditField("Kategori", createBankImportCategorySelect(index, item.transaction.type, item.transaction.category));
+  const accountField = createBankImportEditField("Kart / hesap", createBankImportPaymentAccountSelect(index, "paymentAccountId", item.transaction.paymentAccountId, item.transaction.transferAccountId));
+  const transferField = createBankImportEditField("Karşı hesap", createBankImportPaymentAccountSelect(index, "transferAccountId", item.transaction.transferAccountId, item.transaction.paymentAccountId));
+  const dateField = createBankImportEditField("Tarih", createBankImportEditInput(index, "date", item.transaction.date, "date"));
 
-  // ACIKLAMA: meta degiskeninin Turkce karsiligi "meta"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const meta = document.createElement("p");
-  meta.className = "transaction-meta";
-  // ACIKLAMA: rowAccount degiskeninin Turkce karsiligi "satir hesap"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const rowAccount = item.transaction.paymentAccountId
-    ? paymentAccounts.find((account) => account.id === item.transaction.paymentAccountId)
-    : null;
-  // ACIKLAMA: rowTransferAccount degiskeninin Turkce karsiligi "satir aktarim hesap"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const rowTransferAccount = item.transaction.transferAccountId
-    ? paymentAccounts.find((account) => account.id === item.transaction.transferAccountId)
-    : null;
-  meta.textContent = [
-    item.sourceName,
-    item.duplicate ? "Tekrar" : "",
-    rowAccount ? formatPaymentAccountName(rowAccount) : "Kart / hesap seçilmedi",
-    rowTransferAccount ? `Karşı hesap: ${formatPaymentAccountName(rowTransferAccount)}` : "",
-  ].filter(Boolean).join(" · ");
+  const mainRow = document.createElement("div");
+  mainRow.className = "bank-import-entry-row bank-import-entry-main-row";
+  mainRow.append(titleField, amountField);
 
-  if (item.raw && normalizeBankText(item.raw) !== normalizeBankText(item.transaction.title)) {
-    // ACIKLAMA: raw degiskeninin Turkce karsiligi "ham metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const raw = document.createElement("small");
-    raw.className = "bank-import-raw";
-    raw.textContent = item.raw;
-    body.append(grid, meta, raw);
-  } else {
-    body.append(grid, meta);
-  }
+  const categoryRow = document.createElement("div");
+  categoryRow.className = "bank-import-entry-row bank-import-entry-category-row";
+  categoryRow.append(typeField, categoryField);
+
+  const paymentRow = document.createElement("div");
+  paymentRow.className = "bank-import-entry-row bank-import-entry-payment-row";
+  paymentRow.append(accountField, transferField, dateField);
+
+  const choiceRow = document.createElement("div");
+  choiceRow.className = "bank-import-entry-row bank-import-entry-choice-row";
+  choiceRow.append(createBankImportOptionalDeck(index, item));
+
+  body.append(mainRow, categoryRow, paymentRow, choiceRow);
 
   row.append(checkbox, body);
   return row;
@@ -1765,6 +1987,227 @@ function createBankImportEditField(labelText, control) {
   label.textContent = labelText;
   label.append(control);
   return label;
+}
+
+function getBankImportExtraOptions(item) {
+  if (!item.extraOptions) {
+    item.extraOptions = {
+      noteEnabled: false,
+      note: "",
+      isInstallment: false,
+      installmentCount: 2,
+      isDebtPayment: false,
+      debtReceivableId: "",
+    };
+  }
+  if (!Number.isInteger(Number(item.extraOptions.installmentCount)) || Number(item.extraOptions.installmentCount) < 2) {
+    item.extraOptions.installmentCount = 2;
+  }
+  return item.extraOptions;
+}
+
+function getBankImportFollowOptions(item) {
+  if (!item.followOptions) {
+    item.followOptions = { selected: false, listType: "debt", dueDate: "" };
+  }
+  item.followOptions.selected = Boolean(item.followOptions.selected);
+  item.followOptions.listType = item.followOptions.listType === "receivable" ? "receivable" : "debt";
+  item.followOptions.dueDate = String(item.followOptions.dueDate || "");
+  return item.followOptions;
+}
+
+function createBankImportOptionalDeck(index, item) {
+  const extraOptions = getBankImportExtraOptions(item);
+  const followOptions = getBankImportFollowOptions(item);
+  const transferMi = item.transaction.type === "transfer";
+
+  if (transferMi) {
+    extraOptions.isInstallment = false;
+    extraOptions.isDebtPayment = false;
+    extraOptions.debtReceivableId = "";
+  }
+  if (extraOptions.isDebtPayment) {
+    extraOptions.isInstallment = false;
+  }
+
+  const deck = document.createElement("div");
+  deck.className = "entry-option-deck bank-import-option-deck";
+  const toggles = document.createElement("div");
+  toggles.className = "entry-option-toggles bank-import-option-toggles";
+  const details = document.createElement("div");
+  details.className = "entry-option-details bank-import-option-details";
+
+  const noteField = document.createElement("label");
+  noteField.className = "entry-note-field bank-import-note-field";
+  noteField.hidden = !extraOptions.noteEnabled;
+  noteField.innerHTML = 'Not<input data-bank-note-input type="text" maxlength="100" placeholder="Kısa not" />';
+  const noteInput = noteField.querySelector("input");
+  noteInput.value = String(extraOptions.note || "");
+  noteInput.disabled = !extraOptions.noteEnabled;
+  noteInput.addEventListener("input", () => {
+    getBankImportExtraOptions(item).note = noteInput.value;
+  });
+
+  const noteToggle = document.createElement("label");
+  noteToggle.className = "bank-import-toggle-card";
+  noteToggle.innerHTML = '<input data-bank-note-toggle type="checkbox" /><span>Not ekle</span>';
+  const noteCheckbox = noteToggle.querySelector('input');
+  noteCheckbox.checked = Boolean(extraOptions.noteEnabled);
+  noteCheckbox.disabled = Boolean(item.duplicate);
+  noteToggle.addEventListener("change", () => {
+    const options = getBankImportExtraOptions(item);
+    options.noteEnabled = Boolean(noteCheckbox.checked);
+    noteField.hidden = !options.noteEnabled;
+    noteInput.disabled = !options.noteEnabled;
+  });
+
+  const installmentGroup = document.createElement("div");
+  installmentGroup.className = "entry-choice-group bank-import-installment-group";
+  installmentGroup.innerHTML = `
+    <label class="bank-import-toggle-card">
+      <input data-bank-installment-toggle type="checkbox" />
+      <span>Bu işlem taksit mi?</span>
+    </label>
+    <label data-bank-installment-count-field hidden>
+      Toplam taksit sayısı
+      <input data-bank-installment-count type="number" min="2" max="60" step="1" inputmode="numeric" value="2" />
+    </label>`;
+  const installmentCheckbox = installmentGroup.querySelector('[data-bank-installment-toggle]');
+  const installmentCountField = installmentGroup.querySelector('[data-bank-installment-count-field]');
+  const installmentCountInput = installmentGroup.querySelector('[data-bank-installment-count]');
+  installmentCheckbox.checked = Boolean(extraOptions.isInstallment);
+  installmentCheckbox.disabled = Boolean(item.duplicate || transferMi || extraOptions.isDebtPayment);
+  installmentCountInput.value = String(extraOptions.installmentCount || 2);
+  installmentCountField.hidden = !extraOptions.isInstallment;
+  installmentCountInput.disabled = !extraOptions.isInstallment;
+  installmentCheckbox.addEventListener("change", () => {
+    const options = getBankImportExtraOptions(item);
+    options.isInstallment = Boolean(installmentCheckbox.checked) && !options.isDebtPayment && item.transaction.type !== "transfer";
+    installmentCountField.hidden = !options.isInstallment;
+    installmentCountInput.disabled = !options.isInstallment;
+    if (options.isInstallment && Number(installmentCountInput.value || 0) < 2) {
+      installmentCountInput.value = "2";
+    }
+  });
+  installmentCountInput.addEventListener("input", () => {
+    const count = Math.max(2, Math.min(60, Math.trunc(Number(installmentCountInput.value || 2))));
+    getBankImportExtraOptions(item).installmentCount = count;
+  });
+  installmentCountInput.addEventListener("change", () => {
+    const count = Math.max(2, Math.min(60, Math.trunc(Number(installmentCountInput.value || 2))));
+    installmentCountInput.value = String(count);
+    getBankImportExtraOptions(item).installmentCount = count;
+  });
+
+  const debtPaymentGroup = document.createElement("div");
+  debtPaymentGroup.className = "entry-choice-group bank-import-debt-payment-group";
+  debtPaymentGroup.innerHTML = `
+    <label class="bank-import-toggle-card">
+      <input data-bank-debt-payment-toggle type="checkbox" />
+      <span>Bu işlem borç ödemesi / alacak tahsilatı mı?</span>
+    </label>
+    <div class="entry-debt-payment-options bank-import-debt-payment-options" data-bank-debt-payment-options hidden>
+      <label>
+        <span data-bank-debt-payment-label>Bağlı kayıt</span>
+        <select data-bank-debt-payment-target></select>
+      </label>
+      <p data-bank-debt-payment-hint></p>
+    </div>`;
+  const debtPaymentCheckbox = debtPaymentGroup.querySelector('[data-bank-debt-payment-toggle]');
+  const debtPaymentOptions = debtPaymentGroup.querySelector('[data-bank-debt-payment-options]');
+  const debtPaymentTarget = debtPaymentGroup.querySelector('[data-bank-debt-payment-target]');
+  const debtPaymentLabel = debtPaymentGroup.querySelector('[data-bank-debt-payment-label]');
+  const debtPaymentHint = debtPaymentGroup.querySelector('[data-bank-debt-payment-hint]');
+  debtPaymentCheckbox.checked = Boolean(extraOptions.isDebtPayment);
+  debtPaymentCheckbox.disabled = Boolean(item.duplicate || transferMi);
+  debtPaymentOptions.hidden = !extraOptions.isDebtPayment;
+  debtPaymentTarget.disabled = !extraOptions.isDebtPayment;
+  debtPaymentCheckbox.addEventListener("change", () => {
+    const options = getBankImportExtraOptions(item);
+    options.isDebtPayment = Boolean(debtPaymentCheckbox.checked) && item.transaction.type !== "transfer";
+    if (options.isDebtPayment) {
+      options.isInstallment = false;
+      installmentCheckbox.checked = false;
+      installmentCheckbox.disabled = true;
+      installmentCountField.hidden = true;
+      installmentCountInput.disabled = true;
+    } else {
+      installmentCheckbox.disabled = Boolean(item.duplicate || item.transaction.type === "transfer");
+    }
+    debtPaymentOptions.hidden = !options.isDebtPayment;
+    debtPaymentTarget.disabled = !options.isDebtPayment;
+  });
+  fillBankImportDebtPaymentOptions(item, debtPaymentTarget, debtPaymentLabel, debtPaymentHint);
+  debtPaymentTarget.value = String(extraOptions.debtReceivableId || "");
+  debtPaymentTarget.addEventListener("change", () => {
+    getBankImportExtraOptions(item).debtReceivableId = String(debtPaymentTarget.value || "");
+    fillBankImportDebtPaymentOptions(item, debtPaymentTarget, debtPaymentLabel, debtPaymentHint);
+  });
+
+  const followControl = createNewTransactionFollowControl(followOptions);
+  const followToggleLabel = followControl.querySelector(".transaction-follow-toggle");
+  const followCheckbox = followToggleLabel?.querySelector('input[type="checkbox"]');
+  if (followCheckbox) {
+    followCheckbox.disabled = Boolean(item.duplicate);
+  }
+
+  toggles.append(noteToggle, installmentGroup.querySelector("label"), debtPaymentGroup.querySelector("label"), followToggleLabel);
+  details.append(noteField, installmentGroup, debtPaymentGroup, followControl);
+  deck.append(toggles, details);
+
+  const syncFollowOptions = () => {
+    item.followOptions = readNewTransactionFollowControl(deck);
+  };
+  followCheckbox?.addEventListener("change", syncFollowOptions);
+  followControl.addEventListener("change", syncFollowOptions);
+  syncFollowOptions();
+
+  return deck;
+}
+
+function fillBankImportDebtPaymentOptions(item, select, label, hint) {
+  const extraOptions = getBankImportExtraOptions(item);
+  const alacakMi = item.transaction?.type === "income";
+  const uygunKayitlar = (typeof borcAlacakKayitlari !== "undefined" ? borcAlacakKayitlari : [])
+    .filter((entry) => entry.status === "open" && Number(entry.amount || 0) > 0)
+    .filter((entry) => alacakMi ? entry.kind === "receivable" : entry.kind === "debt")
+    .sort((left, right) => {
+      const leftDate = left.dueDate || left.startDate || "9999-12-31";
+      const rightDate = right.dueDate || right.startDate || "9999-12-31";
+      return leftDate.localeCompare(rightDate) || String(left.person || "").localeCompare(String(right.person || ""), "tr");
+    });
+
+  if (label) {
+    label.textContent = alacakMi ? "Tahsil edilecek alacak" : "Ödenecek borç / taksit";
+  }
+  if (select) {
+    const seciliKayitId = String(extraOptions.debtReceivableId || select.value || "");
+    select.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = uygunKayitlar.length
+      ? (alacakMi ? "Tahsil edilecek alacağı seç" : "Ödenecek borç veya taksiti seç")
+      : (alacakMi ? "Kalan alacak kaydı bulunmuyor" : "Kalan borç veya taksit kaydı bulunmuyor");
+    select.append(placeholder);
+    uygunKayitlar.forEach((entry) => {
+      const option = document.createElement("option");
+      option.value = entry.id;
+      option.textContent = `${entry.person} · ${borcAlacakListeTuruEtiketi(entry.listType)} · Kalan ${currency.format(entry.amount)}`;
+      select.append(option);
+    });
+    select.value = uygunKayitlar.some((entry) => entry.id === seciliKayitId) ? seciliKayitId : "";
+    extraOptions.debtReceivableId = select.value;
+  }
+  if (hint) {
+    const kayit = typeof borcAlacakKayitlari !== "undefined"
+      ? borcAlacakKayitlari.find((entry) => entry.id === String(extraOptions.debtReceivableId || ""))
+      : null;
+    hint.textContent = kayit
+      ? `${kayit.person} kaydında kalan ${currency.format(kayit.amount)} tutardan düşülecek.`
+      : (alacakMi
+        ? "Yalnızca kalan alacak kayıtları gösterilir."
+        : "Yalnızca kalan borç ve taksit kayıtları gösterilir.");
+  }
 }
 
 // ACIKLAMA: createBankImportEditInput fonksiyonunun Turkce karsiligi "olustur banka ice aktar duzenle giris alani"; kullanilacak veri yapisini veya HTML elemanini olusturur.
@@ -2016,6 +2459,10 @@ function updateBankImportPreviewSummary() {
   if (bankImportPreviewConfirmButton) {
     bankImportPreviewConfirmButton.disabled = selectedCount === 0;
   }
+
+  if (bankImportSelectAllButton) {
+    bankImportSelectAllButton.disabled = readyCount === 0;
+  }
 }
 
 // ACIKLAMA: openBankImportPreviewModal fonksiyonunun Turkce karsiligi "ac banka ice aktar onizle pencere"; ilgili pencereyi veya ekrani acar.
@@ -2023,7 +2470,7 @@ function openBankImportPreviewModal() {
   renderBankImportPreview();
 
   if (!pendingBankImports.length) {
-    bankImportStatus.textContent = "Önce yapay zeka ile ya da normal önizleme ile hareketleri hazırla.";
+    bankImportStatus.textContent = "Önce yapay zeka ile ya da gelişmiş yerel okuma ile hareketleri hazırla.";
     return;
   }
 
@@ -2062,16 +2509,22 @@ function parseBankMovements(raw) {
   // ACIKLAMA: templateRowStartCount degiskeninin Turkce karsiligi "sablon satir baslangic sayi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const templateRowStartCount = countBankAppTemplateRowStarts(normalizedRaw);
 
-  if (shouldTrustBankAppTemplateRows(normalizedRaw, templateMovements) && templateMovements.length >= templateRowStartCount) {
-    return templateMovements;
-  }
-
   // ACIKLAMA: mobileMovements degiskeninin Turkce karsiligi "mobil movements"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const mobileMovements = dedupeBankMovements(parseMobileBankOcrRows(normalizedRaw));
   // ACIKLAMA: screenshotMovements degiskeninin Turkce karsiligi "ekran goruntusu movements"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const screenshotMovements = dedupeBankMovements(parseBankScreenshotMovements(normalizedRaw));
   // ACIKLAMA: mobileRowStartCount degiskeninin Turkce karsiligi "mobil satir baslangic sayi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const mobileRowStartCount = countMobileBankOcrStarts(getBankOcrLines(normalizedRaw));
+
+  const bestScreenMovements = selectBestBankScreenMovements(
+    normalizedRaw,
+    [templateMovements, mobileMovements, screenshotMovements],
+    Math.max(templateRowStartCount, mobileRowStartCount)
+  );
+
+  if (shouldTrustBankAppTemplateRows(normalizedRaw, bestScreenMovements)) {
+    return bestScreenMovements;
+  }
 
   if (isStrictBankCardScreen(normalizedRaw) && mobileMovements.length >= mobileRowStartCount) {
     return mobileMovements;
@@ -2107,6 +2560,39 @@ function parseBankMovements(raw) {
   }
 
   return dedupeBankMovements(allMovements);
+}
+
+// ACIKLAMA: Ayni ekran icin uretilen sonuclardan satir sayisi ve tutarliligi en yuksek olani secer.
+function selectBestBankScreenMovements(raw, movementGroups, rowStartCount = 0) {
+  const groups = (movementGroups || [])
+    .map((items, index) => ({ items: dedupeBankMovements(items || []), index }))
+    .filter((group) => group.items.length);
+
+  if (!groups.length) {
+    return [];
+  }
+
+  const strictCardScreen = isStrictBankCardScreen(raw) || normalizeBankText(raw).includes("kart hareketleri");
+
+  return groups
+    .map((group) => {
+      const signedCount = group.items.filter((item) => item.hasExplicitSign).length;
+      const suspiciousCount = group.items.filter((item) =>
+        !Number.isFinite(Number(item.amount)) || Number(item.amount) <= 0 || Number(item.amount) > 10000000
+      ).length;
+      const overCount = rowStartCount ? Math.max(0, group.items.length - rowStartCount) : 0;
+      const missingCount = rowStartCount ? Math.max(0, rowStartCount - group.items.length) : 0;
+      const score =
+        Math.min(group.items.length, rowStartCount || group.items.length) * 100 +
+        signedCount * (strictCardScreen ? 2 : 12) -
+        overCount * 160 -
+        missingCount * 45 -
+        suspiciousCount * 200 -
+        group.index * 3;
+
+      return { ...group, score };
+    })
+    .sort((left, right) => right.score - left.score || left.index - right.index)[0].items;
 }
 
 // ACIKLAMA: isStrictBankCardScreen fonksiyonunun Turkce karsiligi "mi kesin banka kart ekran"; ilgili uygulama islemini calistirir.
@@ -2311,7 +2797,7 @@ function parseBankTemplateDateFromLine(line) {
   const text = String(line || "");
   // ACIKLAMA: monthRegex degiskeninin Turkce karsiligi "ay regex"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const monthRegex =
-    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|way|mav|haziran|haz|temmuz|tem|agustos|ağustos|agu|eylul|eylül|eyl|ekim|eki|kasim|kasım|kas|aralik|aralık|ara)";
+    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|way|mav|haziran|haz|temmuz|tem|agustos|ağustos|agu|eylul|eylül|eyl|eyi|ekim|eki|kasim|kasım|kas|aralik|aralık|ara)";
   // ACIKLAMA: match degiskeninin Turkce karsiligi "eslesme"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const match = text.match(new RegExp(String.raw`^\s*(\d{1,2})\s+${monthRegex}(?:\s+(20\d{2}))?(?:\s+([01]?\d|2[0-3])[:.]([0-5]\d))?`, "i"));
 
@@ -2432,6 +2918,14 @@ function extractBankTemplateTitle(block, amountDetails, start) {
 function inferBankTemplateTransactionType(title, amountDetails, block) {
   // ACIKLAMA: text degiskeninin Turkce karsiligi "metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const text = normalizeBankText(`${title} ${block.join(" ")}`);
+
+  if (/\bodeme\b.{0,24}\btesekkur\b/.test(text)) {
+    return "income";
+  }
+
+  if (text.includes("nakit avans") && !amountDetails.hasExplicitSign) {
+    return "income";
+  }
 
   if (amountDetails.sign < 0) {
     return "expense";
@@ -2685,7 +3179,7 @@ function getBankMovementDedupeTitle(movement) {
 
 // ACIKLAMA: normalizeBankOcrRawText fonksiyonunun Turkce karsiligi "standartlastir banka OCR ham metin"; veriyi uygulamanin bekledigi temiz formata cevirir.
 function normalizeBankOcrRawText(raw) {
-  return String(raw || "")
+  const lines = String(raw || "")
     .replace(/[−–—]/g, "-")
     .replace(/[|¦]/g, " ")
     .replace(/[₺]/g, " ₺ ")
@@ -2694,13 +3188,63 @@ function normalizeBankOcrRawText(raw) {
     .replace(/\r/g, "\n")
     .split("\n")
     .map((line) => fixCommonBankOcrTokens(normalizeOcrMoneyCharacters(line)).replace(/\s{2,}/g, " ").trim())
-    .filter(Boolean)
-    .join("\n");
+    .filter(Boolean);
+
+  const hasPerMovementBalance = lines.some((line) => normalizeBankText(line).includes("kalan bakiye"));
+
+  if (hasPerMovementBalance) {
+    for (let index = 1; index < lines.length; index += 1) {
+      const dateWithDetail = lines[index].match(/^(\d{1,2})\s+(.+)$/);
+      const previousAmounts = findUsableMoneyMatchesInLine(lines[index - 1] || "");
+      const currentAmounts = findUsableMoneyMatchesInLine(lines[index]);
+
+      if (
+        dateWithDetail &&
+        Number(dateWithDetail[1]) >= 1 &&
+        Number(dateWithDetail[1]) <= 31 &&
+        !currentAmounts.length &&
+        previousAmounts.some((item) => item.details.hasExplicitSign)
+      ) {
+        lines[index - 1] = `${String(Number(dateWithDetail[1])).padStart(2, "0")} ${lines[index - 1]}`;
+        lines[index] = dateWithDetail[2].trim();
+      }
+    }
+  }
+
+  for (let index = 1; index < lines.length; index += 1) {
+    const dayMatch = lines[index].match(/^(\d{1,2})$/);
+    const previousLine = lines[index - 1] || "";
+
+    if (
+      dayMatch &&
+      Number(dayMatch[1]) >= 1 &&
+      Number(dayMatch[1]) <= 31 &&
+      /[A-Za-zÇĞİÖŞÜçğıöşü]/.test(previousLine) &&
+      findMoneyMatchesInLine(previousLine).length
+    ) {
+      lines[index - 1] = `${String(Number(dayMatch[1])).padStart(2, "0")} ${previousLine}`;
+      lines.splice(index, 1);
+      index -= 1;
+    }
+  }
+
+  return lines.join("\n");
 }
 
 // ACIKLAMA: fixCommonBankOcrTokens fonksiyonunun Turkce karsiligi "duzelt common banka OCR parcalar"; ilgili uygulama islemini calistirir.
 function fixCommonBankOcrTokens(value) {
   return String(value || "")
+    .replace(/^\s*0\s*(?:=|g|D)\s+(?=[A-Za-zÇĞİÖŞÜçğıöşü])/i, "05 ")
+    .replace(/^\s*[O0Ö]Z(?=\s|$)/i, "07")
+    .replace(/^\s*([1-3])\s+(\d)(?=\s|$)/, (_, tens, ones) => {
+      const day = Number(`${tens}${ones}`);
+      return day <= 31 ? String(day).padStart(2, "0") : `${tens} ${ones}`;
+    })
+    .replace(/^\s*0\s+(\d)(?=\s|$)/, "0$1")
+    .replace(/^\s*00(\d)(?=\s|$)/, "0$1")
+    .replace(/^\s*[([]?[OQ]\s*0?(\d{1,2})(?=\s|$)/i, (_, day) => String(Number(day)).padStart(2, "0"))
+    .replace(/^(\d{1,2})\s+-\s+(?=\d)/, "$1 ")
+    .replace(/\bEY[Iİ1]\b/gi, "EYL")
     .replace(/\bBSM[WV]\b/gi, "BSMV")
     .replace(/\bFAST[.-]?CEP\b/gi, "FAST CEP")
     .replace(/\bHOHH\b/gi, "HOHH")
@@ -2777,7 +3321,8 @@ function parseMobileBankOcrRows(raw) {
       const nextStart = uniqueStarts[order + 1]?.index ?? lines.length;
       // ACIKLAMA: block degiskeninin Turkce karsiligi "blok"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const block = lines.slice(start.index, nextStart);
-      return parseMobileBankOcrBlock(block, start);
+      const previousLines = lines.slice(Math.max(0, start.index - 16), start.index);
+      return parseMobileBankOcrBlock(block, start, previousLines);
     })
     .filter(Boolean);
 }
@@ -2911,7 +3456,7 @@ function findDayMonthDateInText(value) {
   const text = String(value || "");
   // ACIKLAMA: monthRegex degiskeninin Turkce karsiligi "ay regex"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const monthRegex =
-    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|way|mav|haziran|haz|temmuz|tem|agustos|ağustos|agu|eylul|eylül|eyl|ekim|eki|kasim|kasım|kas|aralik|aralık|ara)";
+    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|way|mav|haziran|haz|temmuz|tem|agustos|ağustos|agu|eylul|eylül|eyl|eyi|ekim|eki|kasim|kasım|kas|aralik|aralık|ara)";
   // ACIKLAMA: match degiskeninin Turkce karsiligi "eslesme"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const match = text.match(new RegExp(String.raw`\b(\d{1,2})\s+${monthRegex}(?:\s+(20\d{2}))?`, "i"));
 
@@ -3067,7 +3612,7 @@ function getMobileBankRowStart(line, lines, index) {
 }
 
 // ACIKLAMA: parseMobileBankOcrBlock fonksiyonunun Turkce karsiligi "cozumle mobil banka OCR blok"; metin, dosya veya API cevabindan gerekli bilgileri ayiklar.
-function parseMobileBankOcrBlock(block, start) {
+function parseMobileBankOcrBlock(block, start, previousLines = []) {
   // ACIKLAMA: amountDetails degiskeninin Turkce karsiligi "tutar ayrintilar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const amountDetails = findBankMovementAmount(block);
 
@@ -3076,7 +3621,7 @@ function parseMobileBankOcrBlock(block, start) {
   }
 
   // ACIKLAMA: date degiskeninin Turkce karsiligi "tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const date = buildMobileBankOcrDate(block, start.day);
+  const date = buildMobileBankOcrDate(block, start.day, previousLines);
   // ACIKLAMA: title degiskeninin Turkce karsiligi "baslik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const title = extractMobileBankOcrTitle(block, amountDetails, start.day) || extractBankMovementTitle(block, amountDetails) || "Banka Hareketi";
   // ACIKLAMA: type degiskeninin Turkce karsiligi "tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -3098,7 +3643,7 @@ function parseMobileBankOcrBlock(block, start) {
 }
 
 // ACIKLAMA: buildMobileBankOcrDate fonksiyonunun Turkce karsiligi "olustur mobil banka OCR tarih"; kullanilacak veri yapisini veya HTML elemanini olusturur.
-function buildMobileBankOcrDate(block, day) {
+function buildMobileBankOcrDate(block, day, previousLines = []) {
   // ACIKLAMA: currentDate degiskeninin Turkce karsiligi "mevcut tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const currentDate = getTurkeyTodayISO();
   // ACIKLAMA: currentYear degiskeninin Turkce karsiligi "mevcut yil"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -3123,6 +3668,27 @@ function buildMobileBankOcrDate(block, day) {
       const yearMatch = String(line || "").match(/\b20\d{2}\b/);
       if (yearMatch) {
         year = Number(yearMatch[0]);
+      }
+    }
+  }
+
+  if (!month && previousLines.length) {
+    for (let index = previousLines.length - 1; index >= 0; index -= 1) {
+      const line = previousLines[index];
+
+      if (!month) {
+        month = getBankMonthNumber(line);
+      }
+
+      if (!year) {
+        const yearMatch = String(line || "").match(/\b20\d{2}\b/);
+        if (yearMatch) {
+          year = Number(yearMatch[0]);
+        }
+      }
+
+      if (month && year) {
+        break;
       }
     }
   }
@@ -3308,7 +3874,7 @@ function parseBankScreenshotDateFromLine(line) {
   const normalized = normalizeBankText(text);
   // ACIKLAMA: monthRegex degiskeninin Turkce karsiligi "ay regex"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const monthRegex =
-    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|way|mav|haziran|haz|june|jun|temmuz|tem|july|jul|agustos|ağustos|agu|august|aug|eylul|eylül|eyl|september|sep|ekim|eki|october|oct|kasim|kasım|kas|november|nov|aralik|aralık|ara|december|dec)";
+    "(ocak|subat|şubat|mart|nisan|mayis|mayıs|may|way|mav|haziran|haz|june|jun|temmuz|tem|july|jul|agustos|ağustos|agu|august|aug|eylul|eylül|eyl|eyi|september|sep|ekim|eki|october|oct|kasim|kasım|kas|november|nov|aralik|aralık|ara|december|dec)";
   // ACIKLAMA: match degiskeninin Turkce karsiligi "eslesme"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const match = text.match(new RegExp(String.raw`\b(\d{1,2})\s+${monthRegex}\s+(20\d{2})(?:\s+([01]?\d|2[0-3])[:.]([0-5]\d))?`, "i"));
 
@@ -3352,7 +3918,7 @@ function getBankMonthNumber(value) {
     ["haziran", "haz", "jun", "june"],
     ["temmuz", "tem", "jul", "july"],
     ["agustos", "agu", "aug", "august"],
-    ["eylul", "eyl", "sep", "september"],
+    ["eylul", "eyl", "eyi", "sep", "september"],
     ["ekim", "eki", "oct", "october"],
     ["kasim", "kas", "nov", "november"],
     ["aralik", "ara", "dec", "december"],
@@ -3446,6 +4012,22 @@ function findBankMovementAmount(block) {
 
   // ACIKLAMA: explicitCandidates degiskeninin Turkce karsiligi "acik candidates"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const explicitCandidates = candidates.filter((item) => item.explicit && !item.looksBalance);
+  const unsignedCandidates = candidates.filter((item) => !item.explicit && !item.looksBalance);
+  const positiveExplicitCandidates = explicitCandidates.filter((item) => item.sign > 0);
+  const blockText = (block || []).join(" ");
+
+  if (
+    positiveExplicitCandidates.length &&
+    unsignedCandidates.length &&
+    !hasBankIncomeContext(blockText)
+  ) {
+    const bestUnsigned = unsignedCandidates.sort((a, b) => b.score - a.score)[0];
+    const bestPositive = positiveExplicitCandidates.sort((a, b) => b.score - a.score)[0];
+
+    if (bestUnsigned.amount > bestPositive.amount) {
+      return bestUnsigned;
+    }
+  }
 
   if (explicitCandidates.length) {
     return explicitCandidates.sort((a, b) => b.score - a.score)[0];
@@ -3629,21 +4211,30 @@ function findMoneyMatchesInLine(line) {
   // ACIKLAMA: text degiskeninin Turkce karsiligi "metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const text = normalizeOcrMoneyCharacters(line);
   // ACIKLAMA: moneyPattern degiskeninin Turkce karsiligi "para kalip"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const moneyPattern = /[+\-]?\s*(?:₺\s*)?(?:\d{1,3}(?:[.\s]\d{3})+|\d+)(?:[,.]\d{1,2})\s*(?:TL|TRY|₺)?/gi;
+  const moneyPattern = /(?<![\d.,])[+\-]?\s*(?:₺\s*)?(?:\d{1,3}(?:[.\s]\d{3})+|\d+)(?:[,.]\d{1,2})\s*(?:TL|TRY|₺)?/gi;
   // ACIKLAMA: matches degiskeninin Turkce karsiligi "eslesmeler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const matches = [];
   let match;
 
   while ((match = moneyPattern.exec(text))) {
     // ACIKLAMA: candidate degiskeninin Turkce karsiligi "candidate"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const candidate = match[0].trim();
+    let candidate = match[0].trim();
+    let candidateIndex = match.index + match[0].indexOf(candidate);
+    const datePrefixedAmount = candidate.match(
+      /^(\d{1,2})\s+((?:\d{1,3}(?:[.\s]\d{3})+|\d+)[,.]\d{1,2}\s*(?:TL|TRY|₺)?)$/i
+    );
+
+    if (datePrefixedAmount && Number(datePrefixedAmount[1]) >= 1 && Number(datePrefixedAmount[1]) <= 31) {
+      candidate = datePrefixedAmount[2].trim();
+      candidateIndex += match[0].lastIndexOf(datePrefixedAmount[2]);
+    }
 
     if (!candidate || /^\d{1,2}[,.]\d{2}$/.test(candidate) && !/[+\-₺]|TL|TRY/i.test(candidate)) {
-      matches.push({ text: candidate, index: match.index });
+      matches.push({ text: candidate, index: candidateIndex });
       continue;
     }
 
-    matches.push({ text: candidate, index: match.index });
+    matches.push({ text: candidate, index: candidateIndex });
   }
 
   return matches;
@@ -4558,6 +5149,8 @@ function parseBankAmount(input) {
     .replace(/[^0-9,.\-+]/g, "")
     .replace(/[+-]/g, "");
 
+  cleaned = cleaned.replace(/^(\d{1,3}(?:\.\d{3})+)\.(\d{1,2})$/, "$1,$2");
+
   if (!cleaned) {
     return null;
   }
@@ -4717,6 +5310,13 @@ function inferTransactionType(title, sign = 1, hasExplicitSign = false) {
 
   // ACIKLAMA: text degiskeninin Turkce karsiligi "metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const text = normalizeBankText(title);
+  if (/\bodeme\b.{0,24}\btesekkur\b/.test(text)) {
+    return "income";
+  }
+
+  if (text.includes("nakit avans")) {
+    return "income";
+  }
   // ACIKLAMA: incomeKeywords degiskeninin Turkce karsiligi "gelir keywords"; ilgili veri veya servis icin anahtar bilgisini tutar.
   const incomeKeywords = ["maas", "ucret", "gelir", "alacak", "gelen", "iade", "refund", "iptal", "temettu", "faiz"];
 

@@ -943,6 +943,7 @@ function render() {
   renderBesAccounts();
   borcAlacaklariEkranaBas();
   renderHome();
+  renderModernDashboard();
   renderCategoryBreakdown();
   renderTransactions();
   if (recentTransactionsModal && !recentTransactionsModal.hidden) {
@@ -1116,10 +1117,6 @@ function clearHomeSummaryFilter() {
 
 // ACIKLAMA: renderHome fonksiyonunun Turkce karsiligi "ekrana bas ana sayfa"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderHome() {
-  if (!homeBalance) {
-    return;
-  }
-
   // ACIKLAMA: homeTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const homeTransactions = getHomeSummaryTransactions();
   // ACIKLAMA: totals degiskeninin Turkce karsiligi "totals"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -1129,25 +1126,26 @@ function renderHome() {
   // ACIKLAMA: besTotalValue degiskeninin Turkce karsiligi "BES toplam deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const besTotalValue = getBesTotal();
 
-  homeBalance.textContent = currency.format(totals.balance);
-  homeInsight.textContent = isHomeSummaryFilterActive()
-    ? `Şu anda ${getHomeSummaryFilterLabel()} arası gelir gider hesabınız gösterilmektedir. ${
-        totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."
-      }`
-    : `Şu anda tüm kayıtların gelir gider hesabı gösterilmektedir. ${
-        totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."
-      }`;
-  homeAssetsTotal.textContent = currency.format(assetTotal);
-  homeBesTotal.textContent = currency.format(besTotalValue);
-  homeSavingsTotal.textContent = currency.format(totals.balance);
+  if (homeBalance) homeBalance.textContent = currency.format(totals.balance);
+  if (homeInsight) {
+    homeInsight.textContent = isHomeSummaryFilterActive()
+      ? `Şu anda ${getHomeSummaryFilterLabel()} arası gelir gider hesabınız gösterilmektedir. ${
+          totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."
+        }`
+      : `Şu anda tüm kayıtların gelir gider hesabı gösterilmektedir. ${
+          totals.balance >= 0 ? "Gelirlerin giderlerinin üzerinde." : "Giderlerin gelirlerini aşıyor."
+        }`;
+  }
+  if (homeAssetsTotal) homeAssetsTotal.textContent = currency.format(assetTotal);
+  if (homeBesTotal) homeBesTotal.textContent = currency.format(besTotalValue);
+  if (homeSavingsTotal) homeSavingsTotal.textContent = currency.format(totals.balance);
+
   updateHomeSummaryFilterStatus(totals, homeTransactions.length);
   renderHomeWealthChart({
     cashBalance: Math.max(totals.balance, 0),
     assetTotal,
     besTotalValue,
   });
-  renderHomeAssetList();
-  renderHomeBesList();
 }
 
 // ACIKLAMA: fitHomeWealthTotalText fonksiyonunun Turkce karsiligi "sigdir ana sayfa birikim toplam metin"; ilgili uygulama islemini calistirir.
@@ -1225,7 +1223,9 @@ function renderHomeWealthChart({ cashBalance, assetTotal, besTotalValue }) {
   // ACIKLAMA: total hesaplanan toplam degerin ekranda gosterilecegi alandir.
   const total = segments.reduce((sum, segment) => sum + segment.value, 0);
 
-  homeWealthTotal.textContent = currency.format(total);
+  const wealthAmountsHidden =
+    typeof shellAmountsHidden !== "undefined" && Boolean(shellAmountsHidden);
+  homeWealthTotal.textContent = wealthAmountsHidden ? "••••" : currency.format(total);
   fitHomeWealthTotalText();
   homeWealthLegend.innerHTML = "";
 
@@ -1260,7 +1260,11 @@ function renderHomeWealthChart({ cashBalance, assetTotal, besTotalValue }) {
     row.className = "wealth-legend-row";
     row.innerHTML = `
       <span><i style="background:${segment.color}"></i>${escapeHtml(segment.label)}</span>
-      <strong>${escapeHtml(currency.format(segment.value))} · %${ratio.toFixed(0)}</strong>
+      <strong>${
+        wealthAmountsHidden
+          ? "•••• · ••"
+          : `${escapeHtml(currency.format(segment.value))} · %${ratio.toFixed(0)}`
+      }</strong>
     `;
     homeWealthLegend.append(row);
   });

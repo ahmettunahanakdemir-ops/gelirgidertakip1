@@ -462,6 +462,7 @@ html[data-theme="dark"] #entryModal .entry-form .entry-debt-payment-toggle {
   accent-color: var(--accent);
 }
 
+.new-transaction-follow .transaction-follow-toggle,
 .profile-form .transaction-follow-toggle {
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
@@ -471,6 +472,7 @@ html[data-theme="dark"] #entryModal .entry-form .entry-debt-payment-toggle {
   cursor: pointer;
 }
 
+.new-transaction-follow .transaction-follow-toggle input,
 .profile-form .transaction-follow-toggle input {
   width: 20px !important;
   height: 20px !important;
@@ -508,6 +510,103 @@ html[data-theme="dark"] #entryModal .entry-form .entry-debt-payment-toggle {
 
 .transaction-follow-options[hidden] {
   display: none !important;
+}
+
+.entry-option-deck {
+  grid-column: 1 / -1 !important;
+  width: 100%;
+  min-width: 0;
+}
+
+.entry-option-toggles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#entryModal .entry-option-toggles > label,
+#bulkEntryModal .entry-option-toggles > label {
+  display: grid !important;
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  grid-column: auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  min-height: 48px !important;
+  height: auto !important;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(120, 150, 145, 0.09);
+  cursor: pointer;
+}
+
+#entryModal .entry-option-toggles input,
+#bulkEntryModal .entry-option-toggles input {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  appearance: auto !important;
+  accent-color: var(--accent);
+}
+
+.entry-option-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.entry-option-details > .entry-choice-group,
+.entry-option-details > .bulk-entry-choice-group,
+.entry-option-details > .new-transaction-follow {
+  display: contents !important;
+}
+
+.entry-option-details > :not([hidden]),
+.entry-option-details > div > :not([hidden]),
+.entry-option-details > fieldset > :not([hidden]) {
+  grid-column: 1 / -1 !important;
+}
+
+.entry-option-details label[hidden],
+.entry-option-details div[hidden] {
+  display: none !important;
+}
+
+.entry-option-details .transaction-follow-options,
+.entry-option-details .entry-debt-payment-options,
+.entry-option-details .bulk-entry-debt-payment-options,
+.entry-option-details .entry-note-field,
+.entry-option-details .bulk-entry-note-field,
+.entry-option-details #entryInstallmentCountField,
+.entry-option-details [data-bulk-installment-count-field] {
+  margin: 12px 0 0 !important;
+  min-width: 0;
+}
+
+.new-transaction-follow {
+  grid-column: 1 / -1 !important;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.new-transaction-follow .transaction-follow-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .new-transaction-follow .transaction-follow-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 html[data-theme="dark"] .transaction-follow-settings {
@@ -891,4 +990,156 @@ html[data-theme="dark"] .debt-installment-filter-field select {
   .debt-amount-input-row button {
     width: 100%;
   }
+}
+
+
+/* v358 - Borç/alacak kartlarında Düzenle + yeşil ödeme/tahsil + Sil düzeni. */
+.debt-record-actions {
+  grid-template-columns: repeat(3, minmax(96px, 1fr));
+  min-width: 330px;
+}
+
+.debt-record-actions .debt-payment-primary {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--income);
+  border-radius: 8px;
+  background: var(--income);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(23, 128, 95, 0.18);
+}
+
+.debt-record-actions .debt-payment-primary:hover,
+.debt-record-actions .debt-payment-primary:focus-visible {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+
+.debt-record-actions .debt-payment-primary:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 720px) {
+  .debt-record-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    min-width: 0;
+    width: 100%;
+  }
+
+  .debt-record-actions button {
+    padding-inline: 8px;
+    font-size: 0.88rem;
+  }
+}
+
+
+/* v359 - Liste kartlarında ödeme/tahsil butonu kaldırıldı; düzenleme/silme sade kaldı. */
+.debt-record-actions {
+  grid-template-columns: repeat(2, minmax(96px, 1fr));
+  min-width: 220px;
+}
+
+@media (max-width: 720px) {
+  .debt-record-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
+}
+
+/* v362 - Borçlarım ve Alacaklarım bölümündeki Sil butonları, Düzenle ile aynı hissi veren sade stilde; sadece yumuşak kırmızı tona çekildi. */
+.debt-record-actions .danger-btn,
+.debt-installment-group-actions .danger-btn {
+  min-width: 0;
+  padding: 11px 14px;
+  border-radius: 8px;
+  background: #fff;
+  color: #d85b5b !important;
+  border: 1px solid rgba(216, 91, 91, 0.18) !important;
+  box-shadow: none !important;
+}
+
+.debt-record-actions .danger-btn:hover,
+.debt-installment-group-actions .danger-btn:hover,
+.debt-record-actions .danger-btn:focus-visible,
+.debt-installment-group-actions .danger-btn:focus-visible {
+  color: #cb4a4a !important;
+  border-color: rgba(216, 91, 91, 0.28) !important;
+  background: #fff7f7 !important;
+  box-shadow: none !important;
+  transform: translateY(-1px);
+}
+
+.debt-record-actions .danger-btn:active,
+.debt-installment-group-actions .danger-btn:active {
+  transform: translateY(0);
+  box-shadow: none !important;
+}
+
+
+/* v365 - Borçlarım / Alacaklarım Sil butonu, Kayıtlar bölümündeki Sil butonuyla aynı yapıda. */
+.debt-record-actions .debt-record-delete-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  min-width: 58px !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  background: var(--surface) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--stroke) !important;
+  box-shadow: none !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.debt-record-actions .debt-record-delete-btn:hover,
+.debt-record-actions .debt-record-delete-btn:focus-visible {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  box-shadow: none !important;
+}
+
+.debt-record-actions .debt-record-delete-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: none !important;
+}
+
+.debt-record-actions > .ghost-btn[data-debt-action="edit"] {
+  min-width: 92px !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+}
+
+.debt-record-actions {
+  grid-template-columns: 92px 58px !important;
+  min-width: 160px !important;
+}
+
+@media (max-width: 720px) {
+  .debt-record-actions {
+    grid-template-columns: minmax(92px, 1fr) 58px !important;
+    min-width: 0 !important;
+  }
+}
+
+
+/* v366 - Borçlarım özet kartlarını masaüstünde 2x2 düzenle; boş durum metinlerini ve not satırını sadeleştir. */
+@media (min-width: 769px) {
+  #debtsView .debt-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+#debtInstallmentListStatus[hidden],
+#debtModalNote[hidden] {
+  display: none !important;
 }

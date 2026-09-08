@@ -1,0 +1,2593 @@
+/* ACIKLAMA: Sade mobil uygulama ve masaustu gorunumu. Onceki islevsel yerlesimleri koruyan son tema katmani. */
+html.modern-budget {
+  --bg: #f1f2f6; --surface: #fff; --surface-soft: #f4f5f7;
+  --text: #172325; --muted: #798185; --stroke: #e1e5e7; --border: #e1e5e7;
+  --accent: #117b75; --accent-soft: #e1f0ee; --income: #258449; --expense: #c84646;
+  --shadow: 0 8px 24px rgba(25,45,50,.05);
+  --app-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+html.modern-budget[data-theme="dark"] {
+  --bg: #15191c; --surface: #20272b; --surface-soft: #2a3237;
+  --text: #f4f6f7; --muted: #adb7bd; --stroke: #374247; --border: #374247;
+  --accent: #4eb8ae; --accent-soft: #233e3d; --income: #71c897; --expense: #f39090;
+}
+html.modern-budget body, html.modern-budget .workspace, html.modern-budget #appShell {
+  background: var(--bg) !important; background-image: none !important;
+  color: var(--text) !important; font-family: var(--app-font-family) !important;
+}
+html.modern-budget body::before, html.modern-budget body::after,
+html.modern-budget .workspace::before, html.modern-budget .workspace::after { display: none !important; }
+html.modern-budget * { letter-spacing: 0 !important; }
+html.modern-budget h1, html.modern-budget h2, html.modern-budget h3 {font-family: var(--app-font-family) !important;color:var(--text);}
+html.modern-budget h1 {font-size:26px!important;line-height:1.25;}
+html.modern-budget h2 {font-size:20px!important;line-height:1.3;}
+html.modern-budget .panel, html.modern-budget .action-panel,
+html.modern-budget .topbar, html.modern-budget .bank-import-panel {
+  background: transparent !important; box-shadow: none !important; backdrop-filter: none !important;
+  border: 0 !important; border-radius:0 !important;
+}
+html.modern-budget .panel {padding:20px 0!important;}
+html.modern-budget .panel-kicker, html.modern-budget #pageSubtitle,
+html.modern-budget .action-panel > div > .panel-note {display:none!important;}
+html.modern-budget .topbar {padding: 8px 0 22px!important;min-height:0!important;margin:0!important;}
+html.modern-budget[data-active-view="homeView"] .topbar {display:none!important;}
+html.modern-budget .topbar-side {margin-left:auto;}
+html.modern-budget .user-chip, html.modern-budget .auth-badge {background:var(--accent-soft)!important;color:var(--accent)!important;border:0!important;box-shadow:none!important;}
+html.modern-budget .panel-note,html.modern-budget .transaction-meta {color:var(--muted)!important;}
+html.modern-budget .transaction-item,html.modern-budget .stat-card,
+html.modern-budget .bank-import-item,html.modern-budget .bulk-entry-row {
+  background:var(--surface)!important;box-shadow:none!important;border:1px solid var(--stroke)!important;border-radius:8px!important;
+}
+html.modern-budget .transaction-item {padding:14px!important;gap:14px!important;}
+html.modern-budget .transaction-title {color:var(--text)!important;}
+html.modern-budget .transaction-list {gap:8px!important;}
+html.modern-budget .stat-card {padding:18px!important;}
+html.modern-budget .stat-card {min-height:0!important;gap:8px!important;}
+html.modern-budget .debt-view-tabs {display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;background:var(--stroke)!important;border:0!important;border-radius:24px!important;padding:4px!important;gap:2px!important;}
+html.modern-budget .debt-view-tab {border:0!important;border-radius:20px!important;background:transparent!important;color:var(--muted)!important;min-width:0!important;padding:10px 6px!important;font-size:13px!important;}
+html.modern-budget .debt-view-tab.is-active {background:var(--surface)!important;color:var(--text)!important;}
+html.modern-budget .stat-card strong {font-size:26px!important;}
+html.modern-budget button {font-family:var(--app-font-family)!important;box-shadow:none!important;}
+html.modern-budget .primary-btn,html.modern-budget .success-btn {background:#117b75!important;color:#fff!important;border:1px solid #117b75!important;border-radius:8px!important;}
+html.modern-budget .ghost-btn,html.modern-budget .file-trigger {background:var(--surface)!important;color:var(--accent)!important;border:1px solid var(--stroke)!important;border-radius:8px!important;}
+html.modern-budget .text-btn {color:var(--accent)!important;}
+html.modern-budget .danger-btn,html.modern-budget .logout-btn {background:var(--surface)!important;color:var(--expense)!important;border:1px solid var(--stroke)!important;border-radius:8px!important;}
+html.modern-budget input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.modern-budget select, html.modern-budget textarea {
+  background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--stroke)!important;
+  box-shadow:none!important;border-radius:8px!important;
+}
+html.modern-budget input:focus,html.modern-budget select:focus,html.modern-budget textarea:focus {outline:2px solid var(--accent)!important;outline-offset:1px;}
+html.modern-budget .modal-backdrop {background:rgba(20,29,33,.35)!important;backdrop-filter:blur(5px)!important;}
+html.modern-budget .modal-card {background:var(--surface-soft)!important;color:var(--text)!important;box-shadow:var(--shadow)!important;border:1px solid var(--stroke)!important;border-radius:12px!important;}
+html.modern-budget .modal-header,html.modern-budget .modal-footer-actions {background:var(--surface-soft)!important;}
+html.modern-budget .sidebar {background:var(--surface)!important;color:var(--text)!important;box-shadow:none!important;border-right:1px solid var(--stroke)!important;}
+html.modern-budget .brand-block {padding:20px 14px!important;border-bottom:1px solid var(--stroke)!important;}
+html.modern-budget .brand-block p,html.modern-budget .brand-block strong {color:var(--text)!important;font-size:20px!important;}
+html.modern-budget .side-nav {gap:4px!important;padding:8px!important;}
+html.modern-budget .nav-item {background:transparent!important;color:var(--muted)!important;border:0!important;box-shadow:none!important;border-radius:8px!important;min-height:46px!important;padding:10px!important;font-size:14px!important;gap:12px!important;}
+html.modern-budget .nav-item.active {background:var(--accent-soft)!important;color:var(--accent)!important;}
+html.modern-budget .nav-icon {background:transparent!important;border:0!important;width:24px!important;height:24px!important;min-width:24px!important;display:inline-flex!important;align-items:center;justify-content:center;}
+html.modern-budget .sidebar-account {background:transparent!important;border:0!important;box-shadow:none!important;margin:8px!important;padding:10px!important;}
+html.modern-budget .account-label {display:none!important;}
+html.modern-budget .sidebar-footer {padding:12px!important;background:var(--surface)!important;}
+.lucide {width:22px;height:22px;flex-shrink:0;stroke-width:1.8;}
+.shell-toolbar {position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0 22px;}
+.shell-quick-actions {position:absolute;top:54px;right:0;z-index:140;width:min(360px,calc(100vw - 32px));padding:8px;background:var(--surface);border:1px solid var(--stroke);border-radius:12px;box-shadow:0 16px 40px rgba(15,40,40,.16);}
+.shell-quick-actions[hidden] {display:none!important;}
+html.modern-budget .shell-quick-actions > button {width:100%;display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:12px;min-height:0!important;padding:12px!important;background:transparent!important;border:0!important;border-radius:8px!important;color:var(--text)!important;text-align:left!important;}
+html.modern-budget .shell-quick-actions > button:hover,html.modern-budget .shell-quick-actions > button:focus-visible {background:var(--accent-soft)!important;color:var(--accent)!important;}
+.shell-quick-actions > button > .lucide {width:22px;height:22px;justify-self:center;color:var(--accent);}
+.shell-quick-actions > button > span {display:grid;gap:3px;min-width:0;}
+.shell-quick-actions strong {font-size:14px;color:inherit;}
+.shell-quick-actions small {font-size:11px;line-height:1.4;color:var(--muted);font-weight:400;}
+.shell-period {display:flex;align-items:center;gap:12px;font-size:18px;font-weight:650;}
+.shell-icon-button {width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--stroke);border-radius:50%;background:var(--surface);color:var(--accent);padding:8px;}
+html.modern-budget .shell-icon-button {min-height:0!important;min-width:0!important;max-height:42px!important;padding:8px!important;}
+html.modern-budget .shell-transaction {text-align:left!important;}
+html.modern-budget .shell-transaction > span {text-align:left!important;}
+html.modern-budget .shell-section-heading .text-btn {background:transparent!important;border:0!important;border-radius:0!important;padding:6px 0!important;min-height:0!important;}
+html.modern-budget #sidebar .nav-icon,html.modern-budget #sidebar .nav-icon svg {color:inherit!important;}
+.shell-period .shell-icon-button {background:transparent;border:0;}
+.shell-add {background:#117b75;color:#fff;border-color:#117b75;}
+.modern-overview {display:grid;gap:24px;}
+.month-balance {background:#107b75;color:#fff;border-radius:8px;padding:22px 28px;}
+.month-balance-top {display:flex;justify-content:space-between;align-items:center;}
+.month-balance-top img {border-radius:8px;}
+.month-balance .shell-icon-button {background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;width:34px;height:34px;}
+.month-balance-main {display:flex;align-items:center;justify-content:space-between;gap:16px;margin:16px 0;}
+.month-balance-main > div:first-child {min-width:0;}
+.month-balance-main > div > span {display:block;font-size:13px;opacity:.85;margin-bottom:6px;}
+.month-balance-main > div > strong {display:block;font-size:36px;line-height:1.2;overflow-wrap:anywhere;}
+.shell-saving-ring {width:100px;height:100px;flex-shrink:0;border:6px solid rgba(255,255,255,.28);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.month-balance-main .shell-saving-ring strong {font-size:22px;}
+.month-balance-main .shell-saving-ring span {font-size:10px;margin:4px 0 0;}
+.month-balance-totals {display:flex;justify-content:space-between;gap:24px;}
+.month-balance-totals div {display:grid;gap:6px;min-width:0;}
+.month-balance-totals div:last-child {text-align:right;}
+.month-balance-totals span {font-size:12px;opacity:.8;}
+.month-balance-totals strong {font-size:20px;overflow-wrap:anywhere;}
+.shell-recent {padding:0 0 8px;}
+.shell-section-heading {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.shell-section-heading h2 {margin:0;}
+.shell-transaction {width:100%;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;padding:14px 0;background:transparent;border:0;border-bottom:1px solid var(--stroke);color:var(--text);}
+.shell-transaction > span:nth-child(2) {display:grid;gap:5px;min-width:0;}
+.shell-transaction strong {font-size:14px;overflow-wrap:anywhere;}
+.shell-transaction small {font-size:12px;color:var(--muted);}
+.shell-transaction b {font-size:14px;white-space:nowrap;color:var(--expense);}
+.shell-transaction.income b {color:var(--income);}
+.shell-transaction.transfer b {color:var(--accent);}
+.shell-transaction-icon {display:grid;place-items:center;width:36px;height:36px;background:var(--accent-soft);color:var(--accent);border-radius:8px;}
+.shell-transaction.income .shell-transaction-icon {background:#e7f4e9;color:#27854e;}
+.shell-empty {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:170px;gap:12px;color:var(--muted);}
+.shell-empty p {margin:0;}
+.shell-empty .lucide {width:32px;height:32px;}
+html.modern-budget #homeView .home-balance {background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--stroke)!important;padding:16px!important;border-radius:8px!important;}
+html.modern-budget #homeView .home-balance strong {color:var(--text)!important;font-size:26px!important;}
+html.modern-budget #homeView .home-balance {min-height:0!important;display:grid!important;gap:8px!important;margin-top:16px!important;}
+html.modern-budget #homeView .home-balance > span {color:var(--muted)!important;}
+html.modern-budget #homeInsight {display:none;}
+html.modern-budget .wealth-chart-panel {border-top:1px solid var(--stroke)!important;}
+html.modern-budget .login-screen {background:var(--bg)!important;}
+html.modern-budget .login-card {background:var(--surface)!important;border:1px solid var(--stroke)!important;box-shadow:var(--shadow)!important;border-radius:12px!important;}
+.mobile-dock {display:none;}
+@media(min-width:981px) {
+  html.modern-budget .shell-toolbar {display:grid;grid-template-columns:1fr auto 1fr;}
+  html.modern-budget .shell-toolbar .shell-settings {display:none!important;}
+  html.modern-budget .shell-toolbar .shell-period {grid-column:2;justify-self:center;}
+  html.modern-budget .shell-toolbar .shell-add {grid-column:3;justify-self:end;}
+  html.modern-budget #appShell:not([hidden]) {display:block!important;padding:0!important;}
+  html.modern-budget body #appShell.app-shell > #sidebar.sidebar {position:fixed!important;inset:0 auto 0 0!important;width:230px!important;max-width:230px!important;height:100dvh!important;transform:none!important;display:flex!important;flex-direction:column!important;}
+  html.modern-budget body #appShell.app-shell:not([hidden]) > .workspace {margin-left:230px!important;width:calc(100% - 230px)!important;max-width:none!important;padding:28px 40px!important;}
+  html.modern-budget body #appShell .sidebar .brand-block > div {display:block!important;opacity:1!important;width:auto!important;}
+  html.modern-budget body #appShell .sidebar .nav-item {font-size:14px!important;white-space:normal!important;overflow:visible!important;}
+  html.modern-budget .workspace > * {max-width:1180px;margin-left:auto;margin-right:auto;}
+  html.modern-budget #topbarMenuButton,html.modern-budget #mobileMenuButton {display:none!important;}
+  html.modern-budget .side-nav .nav-item {justify-content:flex-start!important;}
+}
+@media(max-width:980px) {
+  html.modern-budget #appShell:not([hidden]) {display:block!important;padding:0!important;}
+  html.modern-budget #appShell > .workspace {margin:0!important;width:100%!important;padding:16px 16px calc(104px + env(safe-area-inset-bottom))!important;}
+  html.modern-budget #topbarMenuButton {display:none!important;}
+  html.modern-budget body #appShell.app-shell > #sidebar.sidebar {width:min(300px,85vw)!important;max-width:85vw!important;height:100dvh!important;inset:0 auto 0 0!important;z-index:120!important;transform:translateX(-100%)!important;}
+  html.modern-budget body #appShell.app-shell > #sidebar.sidebar.open {transform:translateX(0)!important;}
+  html.modern-budget body #appShell .sidebar.open .brand-block > div {display:block!important;opacity:1!important;width:auto!important;}
+  html.modern-budget body #appShell .sidebar.open .nav-item {font-size:14px!important;justify-content:flex-start!important;white-space:normal!important;}
+  html.modern-budget .mobile-dock {display:flex;position:fixed;bottom:calc(12px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:90;background:var(--surface);border:1px solid var(--stroke);border-radius:30px;padding:6px;gap:2px;box-shadow:0 6px 24px rgba(15,40,40,.12);}
+  html.modern-budget .mobile-dock button {display:flex;flex:1;min-width:0;flex-direction:column;justify-content:center;align-items:center;gap:4px;min-height:48px;padding:6px 2px;background:transparent;color:var(--muted);border:0;border-radius:24px;}
+  html.modern-budget .mobile-dock button.active {color:#fff;background:#117b75;}
+  .mobile-dock button span {font-size:10px;white-space:nowrap;}
+  html.auth-logged-out .mobile-dock {display:none!important;}
+  .shell-period {font-size:16px;gap:0;}
+  .shell-icon-button {width:36px;height:36px;}
+  .shell-toolbar {padding:0 0 18px;}
+  .shell-quick-actions {top:46px;}
+  html.modern-budget h1 {font-size:21px!important;}
+  html.modern-budget h2 {font-size:18px!important;}
+  html.modern-budget .topbar {padding-bottom:18px!important;}
+  html.modern-budget .topbar-side {display:none!important;}
+  .month-balance {padding:18px;}
+  .month-balance-main > div > strong {font-size:30px;}
+  .shell-saving-ring {width:76px;height:76px;border-width:5px;}
+  .month-balance-totals strong {font-size:17px;}
+  .modern-overview {gap:24px;}
+  html.modern-budget .stats-grid {grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  html.modern-budget .stat-card strong {font-size:22px!important;}
+  html.modern-budget .modal-card {max-height:calc(100dvh - 24px)!important;width:calc(100% - 20px)!important;padding:16px!important;}
+}
+@media(prefers-reduced-motion:reduce) {.modern-budget * {scroll-behavior:auto!important;animation:none!important;transition:none!important;}}
+
+
+/* v319 - Tekli gelir/gider penceresinde iOS benzeri ust Kaydet / Iptal cubugu. */
+#entryModal .entry-modal-card {
+  position: relative;
+}
+
+#entryModal .entry-modal-nav {
+  position: sticky;
+  top: -16px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 8px;
+  margin: -16px -16px 14px;
+  padding: 14px 8px 11px;
+  background: color-mix(in srgb, var(--surface-soft) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#entryModal .entry-modal-nav h2 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  grid-column: 2;
+  margin: 0 !important;
+  max-width: min(46vw, 320px);
+  overflow: hidden;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+html.modern-budget #entryModal .entry-modal-nav-button {
+  width: 104px !important;
+  min-width: 104px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+#entryModal .entry-modal-cancel {
+  grid-column: 1;
+  justify-self: start;
+}
+
+#entryModal .entry-modal-save {
+  grid-column: 3;
+  justify-self: end;
+}
+
+html.modern-budget #entryModal .entry-modal-nav-button:hover,
+html.modern-budget #entryModal .entry-modal-nav-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+}
+
+html.modern-budget #entryModal .entry-modal-save {
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+}
+
+html.modern-budget #entryModal .entry-modal-save:disabled {
+  border-color: transparent !important;
+  background: color-mix(in srgb, var(--stroke) 35%, var(--surface)) !important;
+  box-shadow: none !important;
+  color: var(--muted) !important;
+  cursor: default;
+  opacity: 0.58;
+}
+
+@media (min-width: 981px) {
+  #entryModal .entry-modal-nav {
+    top: -20px;
+    margin: -20px -20px 18px;
+    padding: 20px 20px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  #entryModal .entry-modal-nav {
+    grid-template-columns: minmax(76px, 1fr) minmax(0, auto) minmax(76px, 1fr);
+    gap: 8px;
+  }
+
+  #entryModal .entry-modal-nav h2 {
+    max-width: 42vw;
+    font-size: 17px !important;
+  }
+
+  html.modern-budget #entryModal .entry-modal-nav-button {
+    min-width: 74px !important;
+    min-height: 44px !important;
+    padding: 9px 14px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* v320 - Ust modal butonlarini esit boyutta ve kenarlara daha yakin konumlandir. */
+@media (max-width: 420px) {
+  #entryModal .entry-modal-nav {
+    grid-template-columns: 100px minmax(0, 1fr) 100px;
+    gap: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  html.modern-budget #entryModal .entry-modal-nav-button {
+    width: 94px !important;
+    min-width: 94px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 10px !important;
+    font-size: 14px !important;
+  }
+
+  #entryModal .entry-modal-nav h2 {
+    max-width: 100%;
+    font-size: 17px !important;
+  }
+}
+
+
+/* v321 - Basligi iki ust butonun tam ortasina sabitle; Kaydet'i Iptal ile ayni gorunum/efekte getir. */
+html.modern-budget #entryModal .entry-modal-cancel:active,
+html.modern-budget #entryModal .entry-modal-save:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 9px rgba(15, 40, 40, 0.05) !important;
+}
+
+/* v322 - "Yeni kayıt oluştur" başlığını modalın gerçek yatay merkezine sabitle. */
+#entryModal .entry-modal-nav h2 {
+  grid-column: 1 / -1 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: max-content !important;
+  max-width: calc(100% - 240px) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  transform: translateY(-50%) !important;
+  justify-self: center !important;
+}
+
+@media (max-width: 480px) {
+  #entryModal .entry-modal-nav h2 {
+    max-width: calc(100% - 210px) !important;
+  }
+}
+
+
+/* v323 - Coklu gelir/gider modali ust cubugunu tekli kayit modalindeki sisteme yaklastir. */
+#bulkEntryModal .bulk-entry-modal {
+  position: relative;
+}
+
+#bulkEntryModal .bulk-entry-modal-nav {
+  position: sticky;
+  top: -16px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: -16px -16px 10px;
+  padding: 14px 8px 11px;
+  background: color-mix(in srgb, var(--surface-soft) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#bulkEntryModal .bulk-entry-modal-nav h2 {
+  grid-column: 2;
+  justify-self: center;
+  align-self: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 !important;
+  overflow: hidden;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#bulkEntryModal .bulk-entry-modal-nav .entry-modal-cancel {
+  grid-column: 1;
+  justify-self: start;
+}
+
+#bulkEntryModal .bulk-entry-modal-nav-actions {
+  grid-column: 3;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+html.modern-budget #bulkEntryModal .entry-modal-nav-button {
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html.modern-budget #bulkEntryModal .entry-modal-nav-button:hover,
+html.modern-budget #bulkEntryModal .entry-modal-nav-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+}
+
+html.modern-budget #bulkEntryModal .entry-modal-nav-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 9px rgba(15, 40, 40, 0.05) !important;
+}
+
+html.modern-budget #bulkEntryModal #closeBulkEntryModalButton,
+html.modern-budget #bulkEntryModal #bulkEntrySubmitButton {
+  width: 104px !important;
+  min-width: 104px !important;
+}
+
+html.modern-budget #bulkEntryModal .bulk-entry-nav-icon-button {
+  width: 44px !important;
+  min-width: 44px !important;
+  padding: 0 !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+}
+
+#bulkEntryModal .bulk-entry-modal-note-wrap {
+  padding: 0 2px 8px;
+}
+
+#bulkEntryModal .bulk-entry-modal-note-wrap .panel-note {
+  margin: 0;
+}
+
+@media (min-width: 981px) {
+  #bulkEntryModal .bulk-entry-modal-nav {
+    top: -20px;
+    margin: -20px -20px 12px;
+    padding: 20px 20px 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  #bulkEntryModal .bulk-entry-modal-nav {
+    grid-template-columns: 92px minmax(0, 1fr) auto;
+    gap: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  #bulkEntryModal .bulk-entry-modal-nav h2 {
+    max-width: 100%;
+    font-size: 17px !important;
+  }
+
+  html.modern-budget #bulkEntryModal #closeBulkEntryModalButton,
+  html.modern-budget #bulkEntryModal #bulkEntrySubmitButton {
+    width: 88px !important;
+    min-width: 88px !important;
+    font-size: 14px !important;
+  }
+
+  html.modern-budget #bulkEntryModal .bulk-entry-nav-icon-button {
+    width: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    font-size: 22px !important;
+  }
+}
+
+
+/* v324 - Coklu kayit basligini buton bloklarina gore ortala. */
+#bulkEntryModal .bulk-entry-modal-nav {
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+}
+
+#bulkEntryModal .bulk-entry-modal-nav-actions {
+  min-width: 156px;
+}
+
+@media (max-width: 640px) {
+  #bulkEntryModal .bulk-entry-modal-nav {
+    grid-template-columns: 92px minmax(0, 1fr) auto;
+  }
+
+  #bulkEntryModal .bulk-entry-modal-nav-actions {
+    min-width: 136px;
+  }
+}
+
+
+/* v328 - Kart hareketleri modalini tekli/coklu kayit modalleriyle ayni ust sistemde goster. */
+#bankImportModal .bank-import-modal {
+  position: relative;
+}
+
+#bankImportModal #bankImportPanel {
+  padding: 0 !important;
+}
+
+#bankImportModal .bank-import-modal-nav {
+  position: sticky;
+  top: -16px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: -16px -16px 12px;
+  padding: 14px 8px 11px;
+  background: color-mix(in srgb, var(--surface-soft) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#bankImportModal .bank-import-modal-nav h2 {
+  grid-column: 2;
+  justify-self: center;
+  align-self: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 !important;
+  overflow: hidden;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#bankImportModal .bank-import-modal-nav .entry-modal-cancel {
+  grid-column: 1;
+  justify-self: start;
+}
+
+#bankImportModal .bank-import-modal-nav-actions {
+  grid-column: 3;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 216px;
+}
+
+html.modern-budget #bankImportModal .entry-modal-nav-button,
+html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html.modern-budget #bankImportModal .entry-modal-nav-button:hover,
+html.modern-budget #bankImportModal .entry-modal-nav-button:focus-visible,
+html.modern-budget #bankImportModal .bank-upload-nav-trigger:hover,
+html.modern-budget #bankImportModal .bank-upload-nav-trigger:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+}
+
+html.modern-budget #bankImportModal .entry-modal-nav-button:active,
+html.modern-budget #bankImportModal .bank-upload-nav-trigger:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 9px rgba(15, 40, 40, 0.05) !important;
+}
+
+html.modern-budget #bankImportModal #closeBankImportModalButton,
+html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+  width: 104px !important;
+  min-width: 104px !important;
+}
+
+html.modern-budget #bankImportModal #bankImportAddButton {
+  width: auto !important;
+  min-width: 104px !important;
+}
+
+#bankImportModal .bank-import-modal-note {
+  margin: 0 0 16px !important;
+  padding: 0 2px;
+}
+
+#bankImportModal .bank-import-account-panel {
+  margin: 0 0 14px;
+}
+
+#bankImportModal .bank-import-secondary-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+#bankImportModal .bank-import-secondary-actions > button {
+  min-height: 48px;
+}
+
+html.modern-budget #bankImportModal .bank-import-reset-button {
+  border-color: color-mix(in srgb, var(--expense) 22%, var(--stroke)) !important;
+  color: var(--expense) !important;
+}
+
+#bankImportModal .bank-upload-trigger {
+  min-height: 44px;
+}
+
+@media (min-width: 981px) {
+  #bankImportModal .bank-import-modal-nav {
+    top: -20px;
+    margin: -20px -20px 14px;
+    padding: 20px 20px 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  #bankImportModal .bank-import-modal-nav {
+    grid-template-columns: 92px minmax(0, 1fr) auto;
+    gap: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  #bankImportModal .bank-import-modal-nav h2 {
+    font-size: 17px !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav-actions {
+    min-width: 136px;
+    gap: 6px;
+  }
+
+  html.modern-budget #bankImportModal #closeBankImportModalButton,
+  html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+    width: 88px !important;
+    min-width: 88px !important;
+    font-size: 14px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportAddButton {
+    min-width: 88px !important;
+    font-size: 14px !important;
+    padding: 0 12px !important;
+  }
+
+  #bankImportModal .bank-import-secondary-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* v329 - Banka aktarim modalinde yukleyi ikonlastir; AI ve kayitlara ekle butonlarini ust cubuga tasi. */
+#bankImportModal .bank-import-modal-nav-actions {
+  min-width: 0;
+  gap: 8px;
+}
+
+html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  padding: 0 !important;
+  flex: 0 0 44px;
+}
+
+#bankImportModal .bank-upload-nav-trigger svg {
+  width: 20px;
+  height: 20px;
+}
+
+html.modern-budget #bankImportModal #bankImportAddButton,
+html.modern-budget #bankImportModal #bankImportLocalButton {
+  width: auto !important;
+  min-width: 0 !important;
+  padding: 0 16px !important;
+}
+
+#bankImportModal .bank-import-secondary-actions {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  #bankImportModal .bank-import-modal-nav-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  #bankImportModal .bank-import-modal-nav-actions {
+    min-width: 0;
+    gap: 6px;
+  }
+
+  html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    flex-basis: 40px;
+  }
+
+  html.modern-budget #bankImportModal #bankImportAddButton,
+  html.modern-budget #bankImportModal #bankImportLocalButton {
+    min-width: 0 !important;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+  }
+}
+
+
+/* v330 - Banka aktarim basligini gizle; tum ust aksiyonlari tek satirda yan yana goster; AI butonunu altin yap. */
+#bankImportModal .bank-import-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+#bankImportModal .bank-import-modal-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+#bankImportModal .bank-import-modal-nav::-webkit-scrollbar {
+  display: none;
+}
+
+#bankImportModal .bank-import-modal-nav .entry-modal-cancel {
+  grid-column: auto !important;
+  justify-self: auto !important;
+  flex: 0 0 auto;
+}
+
+#bankImportModal .bank-import-modal-nav-actions {
+  grid-column: auto !important;
+  justify-self: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  min-width: max-content !important;
+  flex: 0 0 auto;
+}
+
+html.modern-budget #bankImportModal #bankImportAddButton {
+  border-color: #d4a72c !important;
+  background: linear-gradient(180deg, #f7d86d 0%, #e8bd3f 100%) !important;
+  color: #473500 !important;
+  box-shadow: 0 4px 16px rgba(174, 127, 16, 0.18) !important;
+}
+
+html.modern-budget #bankImportModal #bankImportAddButton:hover,
+html.modern-budget #bankImportModal #bankImportAddButton:focus-visible {
+  border-color: #bf901c !important;
+  background: linear-gradient(180deg, #ffe48a 0%, #edc44c 100%) !important;
+  color: #3c2d00 !important;
+}
+
+html.modern-budget #bankImportModal #bankImportAddButton:active {
+  background: linear-gradient(180deg, #e9c452 0%, #d7a92d 100%) !important;
+}
+
+html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton {
+  border-color: #d3a92f !important;
+  background: linear-gradient(180deg, #d9b64d 0%, #b99024 100%) !important;
+  color: #1f1800 !important;
+}
+
+@media (max-width: 640px) {
+  #bankImportModal .bank-import-modal-nav {
+    gap: 6px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav-actions {
+    gap: 6px !important;
+  }
+
+  html.modern-budget #bankImportModal #closeBankImportModalButton {
+    width: 76px !important;
+    min-width: 76px !important;
+    max-width: 76px !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+  }
+
+  html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportAddButton {
+    min-width: 118px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportLocalButton {
+    min-width: 104px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+}
+
+
+/* v331 - Kart hareketleri basligini Iptal ile diger aksiyonlar arasinda yeniden goster. */
+#bankImportModal .bank-import-modal-nav {
+  overflow-x: hidden !important;
+}
+
+#bankImportModal .bank-import-modal-nav h2,
+#bankImportModal #bankImportModalTitle {
+  position: static !important;
+  display: block !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 150px !important;
+  max-width: none !important;
+  margin: 0 8px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+#bankImportModal .bank-import-modal-nav-actions {
+  margin-left: auto !important;
+}
+
+@media (max-width: 640px) {
+  #bankImportModal .bank-import-modal-nav {
+    gap: 5px !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav h2,
+  #bankImportModal #bankImportModalTitle {
+    flex: 1 1 92px !important;
+    min-width: 82px !important;
+    margin: 0 2px !important;
+    font-size: 13px !important;
+    line-height: 1.1 !important;
+    white-space: normal !important;
+  }
+
+  html.modern-budget #bankImportModal #closeBankImportModalButton {
+    width: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    font-size: 12px !important;
+  }
+
+  html.modern-budget #bankImportModal .bank-upload-nav-trigger {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    flex-basis: 36px !important;
+  }
+
+  #bankImportModal .bank-upload-nav-trigger svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportAddButton {
+    min-width: 98px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+  }
+
+  html.modern-budget #bankImportModal #bankImportLocalButton {
+    min-width: 88px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+
+/* v332 - Telefon gorunumunde banka aktarim basligini gizle; masaustunde gorunur kalsin. */
+@media (max-width: 640px) {
+  #bankImportModal .bank-import-modal-nav h2,
+  #bankImportModal #bankImportModalTitle {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    flex: 0 0 0 !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav {
+    justify-content: flex-start !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav-actions {
+    margin-left: 0 !important;
+  }
+}
+
+
+/* v333 - Telefon/tablet dar gorunumunde basligi tamamen gizle; Iptal solda, aksiyonlar sagda. */
+@media (max-width: 900px) {
+  #bankImportModal .bank-import-modal-nav > h2#bankImportModalTitle,
+  #bankImportModal #bankImportModalTitle {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    flex: 0 0 0 !important;
+    pointer-events: none !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: auto !important;
+    gap: 8px !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav .entry-modal-cancel {
+    margin-right: auto !important;
+    flex: 0 0 auto !important;
+  }
+
+  #bankImportModal .bank-import-modal-nav-actions {
+    margin-left: auto !important;
+    flex: 0 0 auto !important;
+    justify-content: flex-end !important;
+  }
+}
+
+
+/* v334 - Banka hareketi onizleme modalini diger sablonlarla ayni ust gezinime donustur. */
+#bankImportPreviewModal .bank-import-preview-modal {
+  position: relative;
+}
+
+#bankImportPreviewModal .bank-import-preview-modal-nav {
+  position: sticky;
+  top: -16px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 8px;
+  margin: -16px -16px 12px;
+  padding: 14px 8px 11px;
+  background: color-mix(in srgb, var(--surface-soft) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#bankImportPreviewModal .bank-import-preview-modal-nav h2 {
+  grid-column: 2;
+  justify-self: center;
+  align-self: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 !important;
+  overflow: hidden;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#bankImportPreviewModal .bank-import-preview-modal-note {
+  margin: 0 0 16px !important;
+  padding: 0 2px;
+}
+
+html.modern-budget #bankImportPreviewModal .entry-modal-nav-button {
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html.modern-budget #bankImportPreviewModal .entry-modal-nav-button:hover,
+html.modern-budget #bankImportPreviewModal .entry-modal-nav-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+}
+
+html.modern-budget #bankImportPreviewModal .entry-modal-nav-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 9px rgba(15, 40, 40, 0.05) !important;
+}
+
+html.modern-budget #bankImportPreviewModal #bankImportPreviewCloseButton,
+html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
+  width: 104px !important;
+  min-width: 104px !important;
+}
+
+#bankImportPreviewModal .modal-actions {
+  display: none !important;
+}
+
+@media (min-width: 981px) {
+  #bankImportPreviewModal .bank-import-preview-modal-nav {
+    top: -20px;
+    margin: -20px -20px 14px;
+    padding: 20px 20px 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  #bankImportPreviewModal .bank-import-preview-modal-nav {
+    grid-template-columns: 88px minmax(0, 1fr) 88px;
+    gap: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  #bankImportPreviewModal .bank-import-preview-modal-nav h2 {
+    font-size: 16px !important;
+  }
+
+  html.modern-budget #bankImportPreviewModal #bankImportPreviewCloseButton,
+  html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
+    width: 82px !important;
+    min-width: 82px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    font-size: 14px !important;
+    padding: 0 10px !important;
+  }
+}
+
+
+/* v335 - Banka önizleme işlem kartlarının modal yüksekliğine sıkışıp kırpılmasını engelle. */
+#bankImportPreviewModal .bank-import-preview-list {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-auto-rows: max-content !important;
+  align-content: start !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+#bankImportPreviewModal .bank-import-edit-item {
+  height: auto !important;
+  min-height: max-content !important;
+  max-height: none !important;
+  align-self: start !important;
+}
+
+#bankImportPreviewModal .bank-import-edit-body,
+#bankImportPreviewModal .bank-import-edit-grid {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+#bankImportPreviewModal .bank-import-preview-modal-nav,
+#bankImportPreviewModal .bank-import-preview-modal-note,
+#bankImportPreviewModal .bank-import-modal-tools,
+#bankImportPreviewModal .sync-status {
+  flex: 0 0 auto !important;
+}
+
+
+/* v336 - Banka onizleme ekraninda tek secim butonu kullan ve islem kartlarini tekli/coklu kayit formlarina yaklastir. */
+#bankImportPreviewModal .bank-import-preview-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: end !important;
+  gap: 10px !important;
+}
+
+#bankImportPreviewModal #bankImportSelectAllButton {
+  min-width: 120px !important;
+}
+
+#bankImportPreviewModal .bank-import-edit-item {
+  display: grid !important;
+  grid-template-columns: 28px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 12px !important;
+  padding: 16px !important;
+  border-radius: 12px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--stroke) !important;
+  box-shadow: none !important;
+}
+
+#bankImportPreviewModal .bank-import-check {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 28px 0 0 !important;
+  accent-color: var(--accent);
+}
+
+#bankImportPreviewModal .bank-import-edit-body {
+  display: grid !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+#bankImportPreviewModal .bank-import-edit-grid {
+  display: grid !important;
+  grid-template-columns:
+    minmax(170px, 1.7fr)
+    minmax(110px, 0.9fr)
+    minmax(120px, 0.9fr)
+    minmax(130px, 1fr)
+    minmax(130px, 0.95fr) !important;
+  gap: 12px !important;
+  align-items: end !important;
+}
+
+#bankImportPreviewModal .bank-import-edit-grid > label,
+#bankImportPreviewModal .new-transaction-follow,
+#bankImportPreviewModal .transaction-follow-options > label {
+  display: grid !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: var(--muted) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+}
+
+#bankImportPreviewModal .bank-import-edit-grid input:not([type="checkbox"]):not([type="radio"]),
+#bankImportPreviewModal .bank-import-edit-grid select,
+#bankImportPreviewModal .transaction-follow-options input,
+#bankImportPreviewModal .transaction-follow-options select {
+  width: 100% !important;
+  min-height: 46px !important;
+  padding: 12px 14px !important;
+  border-radius: 10px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--stroke) !important;
+  box-shadow: none !important;
+}
+
+#bankImportPreviewModal .bank-import-edit-grid input:focus,
+#bankImportPreviewModal .bank-import-edit-grid select:focus,
+#bankImportPreviewModal .transaction-follow-options input:focus,
+#bankImportPreviewModal .transaction-follow-options select:focus {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 1px !important;
+}
+
+#bankImportPreviewModal .new-transaction-follow {
+  grid-column: 1 / -1 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+#bankImportPreviewModal .new-transaction-follow .transaction-follow-toggle {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-height: 48px !important;
+  padding: 0 14px !important;
+  border: 1px solid var(--stroke) !important;
+  border-radius: 10px !important;
+  background: var(--surface-soft) !important;
+}
+
+#bankImportPreviewModal .new-transaction-follow .transaction-follow-toggle input[type="checkbox"] {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  accent-color: var(--accent);
+}
+
+#bankImportPreviewModal .new-transaction-follow .transaction-follow-toggle span {
+  color: var(--muted) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+}
+
+#bankImportPreviewModal .new-transaction-follow .transaction-follow-options {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px !important;
+  margin-top: 12px !important;
+}
+
+#bankImportPreviewModal .transaction-meta,
+#bankImportPreviewModal .bank-import-raw {
+  padding-left: 0 !important;
+}
+
+@media (max-width: 980px) {
+  #bankImportPreviewModal .bank-import-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #bankImportPreviewModal .bank-import-edit-item {
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+    padding: 14px !important;
+    gap: 10px !important;
+  }
+
+  #bankImportPreviewModal .bank-import-check {
+    width: 18px !important;
+    height: 18px !important;
+    margin-top: 26px !important;
+  }
+
+  #bankImportPreviewModal .bank-import-edit-grid,
+  #bankImportPreviewModal .new-transaction-follow .transaction-follow-options {
+    grid-template-columns: 1fr !important;
+  }
+
+  #bankImportPreviewModal #bankImportSelectAllButton {
+    min-width: 108px !important;
+  }
+}
+
+
+/* v337 - Kart hareketi onizleme kartlarini yeni kayit olustur formuna benzet. */
+#bankImportPreviewModal .bank-import-edit-item {
+  display: grid !important;
+  grid-template-columns: 28px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 12px !important;
+  padding: 16px !important;
+  border-radius: 12px !important;
+}
+
+#bankImportPreviewModal .bank-import-check {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 26px 0 0 !important;
+  accent-color: var(--accent);
+}
+
+#bankImportPreviewModal .bank-import-edit-body {
+  display: grid !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-row {
+  display: grid !important;
+  grid-column: 1 / -1 !important;
+  gap: 12px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-main-row,
+#bankImportPreviewModal .bank-import-entry-category-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-payment-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-choice-row {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+#bankImportPreviewModal .bank-import-edit-body > label,
+#bankImportPreviewModal .bank-import-entry-row > label,
+#bankImportPreviewModal .bank-import-entry-row .transaction-follow-options > label,
+#bankImportPreviewModal .bank-import-entry-row .new-transaction-follow {
+  display: grid !important;
+  gap: 8px !important;
+  color: var(--muted) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-row input:not([type="checkbox"]):not([type="radio"]),
+#bankImportPreviewModal .bank-import-entry-row select,
+#bankImportPreviewModal .bank-import-entry-row textarea {
+  width: 100% !important;
+  min-height: 46px !important;
+  padding: 13px 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--stroke) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-row input:focus,
+#bankImportPreviewModal .bank-import-entry-row select:focus,
+#bankImportPreviewModal .bank-import-entry-row textarea:focus {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 1px !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-row .new-transaction-follow {
+  width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-row .transaction-follow-toggle {
+  display: grid !important;
+  grid-template-columns: 22px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 48px !important;
+  padding: 12px 14px !important;
+  border: 1px solid var(--stroke) !important;
+  border-radius: 8px !important;
+  background: rgba(33, 92, 82, 0.05) !important;
+  color: var(--text) !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-row .transaction-follow-toggle input[type="checkbox"] {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  accent-color: var(--accent);
+}
+
+#bankImportPreviewModal .bank-import-entry-row .transaction-follow-toggle span {
+  color: var(--muted) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+}
+
+#bankImportPreviewModal .bank-import-entry-row .transaction-follow-options {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-top: 12px !important;
+}
+
+#bankImportPreviewModal .transaction-meta {
+  margin: 0 !important;
+  padding-left: 0 !important;
+}
+
+#bankImportPreviewModal .bank-import-raw {
+  margin-top: 0 !important;
+  padding-left: 0 !important;
+}
+
+@media (max-width: 900px) {
+  #bankImportPreviewModal .bank-import-entry-payment-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  #bankImportPreviewModal .bank-import-entry-payment-row > label:last-child {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #bankImportPreviewModal .bank-import-edit-item {
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  #bankImportPreviewModal .bank-import-check {
+    width: 18px !important;
+    height: 18px !important;
+    margin-top: 24px !important;
+  }
+
+  #bankImportPreviewModal .bank-import-entry-main-row,
+  #bankImportPreviewModal .bank-import-entry-category-row,
+  #bankImportPreviewModal .bank-import-entry-payment-row,
+  #bankImportPreviewModal .bank-import-entry-row .transaction-follow-options {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+
+
+
+/* v339 - Banka hareketi onay kartlarini gelir/gider ekle alanlarindaki secim yapisina yaklastir. */
+#bankImportPreviewModal .bank-import-entry-choice-row {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+#bankImportPreviewModal .bank-import-option-deck,
+#bankImportPreviewModal .bank-import-option-details,
+#bankImportPreviewModal .bank-import-option-details > label,
+#bankImportPreviewModal .bank-import-option-details > div,
+#bankImportPreviewModal .bank-import-option-details .transaction-follow-options > label,
+#bankImportPreviewModal .bank-import-option-details .entry-debt-payment-options > label,
+#bankImportPreviewModal .bank-import-option-details .entry-debt-payment-options,
+#bankImportPreviewModal .bank-import-option-details .new-transaction-follow {
+  min-width: 0 !important;
+}
+
+#bankImportPreviewModal .bank-import-option-deck .entry-option-toggles {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+#bankImportPreviewModal .bank-import-option-deck .entry-option-toggles > label {
+  display: grid !important;
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  min-height: 48px !important;
+  border: 1px solid var(--stroke) !important;
+  border-radius: 8px !important;
+  background: rgba(120, 150, 145, 0.09) !important;
+  color: var(--muted) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  cursor: pointer;
+}
+
+#bankImportPreviewModal .bank-import-option-deck .entry-option-toggles > label input {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  appearance: auto !important;
+  accent-color: var(--accent);
+}
+
+#bankImportPreviewModal .bank-import-option-deck .entry-option-details {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+  margin-top: 12px !important;
+}
+
+#bankImportPreviewModal .bank-import-option-deck .entry-option-details > .entry-choice-group,
+#bankImportPreviewModal .bank-import-option-deck .entry-option-details > .new-transaction-follow {
+  display: contents !important;
+}
+
+#bankImportPreviewModal .bank-import-option-deck .entry-option-details > :not([hidden]),
+#bankImportPreviewModal .bank-import-option-deck .entry-option-details > div > :not([hidden]),
+#bankImportPreviewModal .bank-import-option-deck .entry-option-details > fieldset > :not([hidden]) {
+  grid-column: 1 / -1 !important;
+}
+
+#bankImportPreviewModal .bank-import-option-deck .entry-option-details label[hidden],
+#bankImportPreviewModal .bank-import-option-deck .entry-option-details div[hidden] {
+  display: none !important;
+}
+
+#bankImportPreviewModal .bank-import-option-details > label,
+#bankImportPreviewModal .bank-import-option-details .entry-debt-payment-options > label,
+#bankImportPreviewModal .bank-import-option-details .transaction-follow-options > label,
+#bankImportPreviewModal .bank-import-option-details .new-transaction-follow {
+  display: grid !important;
+  gap: 8px !important;
+  color: var(--muted) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+}
+
+#bankImportPreviewModal .bank-import-option-details .transaction-follow-options,
+#bankImportPreviewModal .bank-import-option-details .entry-debt-payment-options {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-top: 12px !important;
+}
+
+#bankImportPreviewModal .bank-import-option-details .entry-debt-payment-options p {
+  grid-column: 1 / -1 !important;
+  margin: 0 !important;
+  color: var(--muted) !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+}
+
+#bankImportPreviewModal .bank-import-option-details .new-transaction-follow {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+#bankImportPreviewModal .bank-import-option-details .transaction-follow-toggle {
+  display: none !important;
+}
+
+#bankImportPreviewModal .transaction-meta,
+#bankImportPreviewModal .bank-import-raw {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  #bankImportPreviewModal .bank-import-option-deck .entry-option-toggles,
+  #bankImportPreviewModal .bank-import-option-details .transaction-follow-options,
+  #bankImportPreviewModal .bank-import-option-details .entry-debt-payment-options {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+
+/* v341 - Koyu modda taksit ve borç/alacak ödeme seçeneklerini diğer seçim kutularıyla aynı palete getir. */
+html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .transaction-installment-toggle,
+html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-debt-payment-toggle {
+  border-color: var(--border) !important;
+  background: rgba(120, 150, 145, 0.09) !important;
+  color: var(--muted) !important;
+}
+
+html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .transaction-installment-toggle span,
+html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-debt-payment-toggle span {
+  color: var(--muted) !important;
+}
+
+
+/* v343 - Masaüstünde gerçek açılır/daralır yan menü; içerik genişliği korunur. */
+@media (min-width: 981px) {
+  html.modern-budget body #appShell.app-shell > #sidebar.sidebar {
+    width: 66px !important;
+    max-width: 66px !important;
+    transition: width 220ms ease, max-width 220ms ease !important;
+  }
+
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > #sidebar.sidebar {
+    width: 230px !important;
+    max-width: 230px !important;
+  }
+
+  html.modern-budget body #appShell.app-shell:not([hidden]) > .workspace {
+    margin-left: 66px !important;
+    width: calc(100% - 66px) !important;
+    max-width: none !important;
+    transition: margin-left 220ms ease, width 220ms ease !important;
+  }
+
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace {
+    margin-left: 230px !important;
+    width: calc(100% - 230px) !important;
+  }
+
+  /* Önceki 1180px merkezleme içeriği gereksiz yere küçültüyordu. */
+  html.modern-budget .workspace > * {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Masaüstü menü aç/kapat düğmesi. */
+  html.modern-budget #mobileMenuButton.sidebar-toggle {
+    display: inline-grid !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 9px !important;
+    flex: 0 0 40px !important;
+    border: 1px solid var(--stroke) !important;
+    border-radius: 12px !important;
+    background: var(--surface) !important;
+    color: var(--accent) !important;
+    box-shadow: 0 4px 14px rgba(15, 40, 40, 0.06) !important;
+  }
+
+  html.modern-budget #mobileMenuButton.sidebar-toggle span {
+    width: 20px !important;
+    height: 2px !important;
+    margin: 2px 0 !important;
+    background: var(--accent) !important;
+  }
+
+  html.modern-budget #mobileMenuButton.sidebar-toggle:hover,
+  html.modern-budget #mobileMenuButton.sidebar-toggle:focus-visible {
+    background: var(--accent-soft) !important;
+    border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  }
+
+  html.modern-budget body #appShell .sidebar .brand-block {
+    justify-content: center !important;
+    padding: 14px 8px !important;
+    gap: 10px !important;
+  }
+
+  html.modern-budget body #appShell.sidebar-expanded .sidebar .brand-block {
+    justify-content: flex-start !important;
+    padding: 14px 12px !important;
+  }
+
+  html.modern-budget body #appShell .sidebar .brand-block > div {
+    display: none !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  html.modern-budget body #appShell.sidebar-expanded .sidebar .brand-block > div {
+    display: block !important;
+    opacity: 1 !important;
+    width: auto !important;
+  }
+
+  html.modern-budget body #appShell .sidebar .nav-item {
+    justify-content: center !important;
+    gap: 0 !important;
+    padding: 10px !important;
+    font-size: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+  }
+
+  html.modern-budget body #appShell.sidebar-expanded .sidebar .nav-item {
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 10px !important;
+    font-size: 14px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+  }
+
+  html.modern-budget body #appShell:not(.sidebar-expanded) .sidebar-account,
+  html.modern-budget body #appShell:not(.sidebar-expanded) .sidebar-footer {
+    display: none !important;
+  }
+
+  html.modern-budget body #appShell.sidebar-expanded .sidebar-account {
+    display: block !important;
+  }
+
+  html.modern-budget body #appShell.sidebar-expanded .sidebar-footer {
+    display: block !important;
+  }
+}
+
+
+/* v344 - Genis masaustu menude ana icerigin gereksiz yere merkezde daralmasini engelle. */
+@media (min-width: 981px) {
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace {
+    margin-left: 230px !important;
+    width: calc(100vw - 230px) !important;
+    max-width: calc(100vw - 230px) !important;
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+    box-sizing: border-box !important;
+  }
+
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace > .shell-toolbar,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace > .topbar,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace > .view-section,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace > .view-section.active,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) #homeView,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) #homeView > .modern-overview,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) #homeView .month-balance,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) #homeView .shell-recent,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) #homeView .summary-stack {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) #homeView {
+    min-width: 0 !important;
+  }
+}
+
+
+/* v345 - Masaüstünde sidebar ile içerik arasındaki çift yatay kaymayı kaldır. */
+@media (min-width: 981px) {
+  html.modern-budget body #appShell.app-shell:not([hidden]) > .workspace,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+
+  html.modern-budget body #appShell.app-shell:not(.sidebar-expanded):not([hidden]) > .workspace {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+
+  html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+
+/* v346 - Masaüstünde hem dar hem geniş menü görünümünü birlikte düzelt:
+   grid yerleşimini geri getir, boşluğu kaldır, dar görünümde içerik taşmasını engelle. */
+@media (min-width: 981px) {
+  html.modern-budget #appShell.app-shell:not([hidden]) {
+    display: grid !important;
+    grid-template-columns: 66px minmax(0, 1fr) !important;
+    align-items: start !important;
+    padding: 0 !important;
+  }
+
+  html.modern-budget #appShell.app-shell.sidebar-expanded:not([hidden]) {
+    grid-template-columns: 230px minmax(0, 1fr) !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > #sidebar.sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    inset: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    transform: none !important;
+    z-index: 40 !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
+    grid-column: 2 !important;
+    margin-left: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    padding: 28px 32px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  html.modern-budget .workspace > * {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+
+/* v347 - Kullanıcı işlemleri Ayarlar ekranına taşındı. */
+#settingsView > .user-actions-panel {
+  margin-top: 18px !important;
+}
+
+#settingsView > .user-actions-panel .profile-form {
+  width: 100%;
+}
+
+
+/* v349 - Masaüstü yan menü sayfa kaydırılsa da ekranda sabit kalır. */
+@media (min-width: 981px) {
+  html.modern-budget body #appShell.app-shell > #sidebar.sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    inset: 0 auto 0 0 !important;
+    width: 66px !important;
+    max-width: 66px !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    transform: none !important;
+    z-index: 80 !important;
+  }
+
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > #sidebar.sidebar {
+    width: 230px !important;
+    max-width: 230px !important;
+  }
+
+  html.modern-budget #appShell.app-shell:not([hidden]) {
+    grid-template-columns: 66px minmax(0, 1fr) !important;
+  }
+
+  html.modern-budget #appShell.app-shell.sidebar-expanded:not([hidden]) {
+    grid-template-columns: 230px minmax(0, 1fr) !important;
+  }
+
+  html.modern-budget body #appShell.app-shell > .workspace,
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
+    grid-column: 2 !important;
+    margin-left: 0 !important;
+    min-width: 0 !important;
+  }
+}
+
+
+/* v351 - Üst araç çubuğunda bağlamsal yenile + ekle butonları ve yalnız ana sayfada tarih filtresi. */
+.shell-toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.shell-refresh {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.shell-refresh.is-refreshing .lucide {
+  animation: shell-refresh-spin 850ms linear infinite;
+}
+
+@keyframes shell-refresh-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (min-width: 981px) {
+  html.modern-budget .shell-toolbar-actions {
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  html.modern-budget .shell-toolbar .shell-add {
+    grid-column: auto;
+    justify-self: auto;
+  }
+}
+
+
+/* v353 - Birikim ekleme penceresini gelir/gider ekleme modalinin ust buton yapisina benzet. */
+#assetEditModal .asset-entry-modal-card {
+  position: relative;
+}
+
+#assetEditModal .asset-entry-modal-nav {
+  position: sticky;
+  top: -16px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 8px;
+  margin: -16px -16px 14px;
+  padding: 14px 8px 11px;
+  background: color-mix(in srgb, var(--surface-soft) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#assetEditModal .asset-entry-modal-nav h2 {
+  position: absolute;
+  grid-column: 1 / -1 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 50%;
+  width: max-content !important;
+  max-width: calc(100% - 240px) !important;
+  margin: 0 auto !important;
+  overflow: hidden;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateY(-50%) !important;
+  pointer-events: none;
+}
+
+html.modern-budget #assetEditModal .entry-modal-nav-button {
+  width: 104px !important;
+  min-width: 104px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+#assetEditModal .entry-modal-cancel {
+  grid-column: 1;
+  justify-self: start;
+}
+
+#assetEditModal .entry-modal-save {
+  grid-column: 3;
+  justify-self: end;
+}
+
+html.modern-budget #assetEditModal .entry-modal-nav-button:hover,
+html.modern-budget #assetEditModal .entry-modal-nav-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+}
+
+html.modern-budget #assetEditModal .entry-modal-cancel:active,
+html.modern-budget #assetEditModal .entry-modal-save:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 9px rgba(15, 40, 40, 0.05) !important;
+}
+
+#assetEditModal .asset-entry-heading {
+  margin-bottom: 4px;
+}
+
+@media (min-width: 981px) {
+  #assetEditModal .asset-entry-modal-nav {
+    top: -20px;
+    margin: -20px -20px 18px;
+    padding: 20px 20px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  #assetEditModal .asset-entry-modal-nav {
+    grid-template-columns: minmax(76px, 1fr) minmax(0, auto) minmax(76px, 1fr);
+    gap: 8px;
+  }
+
+  #assetEditModal .asset-entry-modal-nav h2 {
+    max-width: 42vw;
+    font-size: 17px !important;
+  }
+
+  html.modern-budget #assetEditModal .entry-modal-nav-button {
+    min-width: 74px !important;
+    min-height: 44px !important;
+    padding: 9px 14px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  #assetEditModal .asset-entry-modal-nav {
+    grid-template-columns: 100px minmax(0, 1fr) 100px;
+    gap: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  html.modern-budget #assetEditModal .entry-modal-nav-button {
+    width: 94px !important;
+    min-width: 94px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 10px !important;
+    font-size: 14px !important;
+  }
+
+  #assetEditModal .asset-entry-modal-nav h2 {
+    max-width: 100%;
+    font-size: 17px !important;
+  }
+}
+
+
+/* v354 - Birikim modal basligini ortala, butonlari kenarlara yasla ve alanlari tek sutunda diz. */
+#assetEditModal .asset-entry-form {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 16px !important;
+}
+
+#assetEditModal .asset-entry-modal-nav {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  grid-template-columns: 112px minmax(0, 1fr) 112px !important;
+}
+
+#assetEditModal .asset-entry-form > label,
+#assetEditModal .asset-entry-form > .panel-heading,
+#assetEditModal .asset-entry-form > .sync-status,
+#assetEditModal .asset-entry-form > .asset-entry-modal-nav {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+#assetEditModal .asset-entry-modal-nav h2 {
+  left: 50% !important;
+  right: auto !important;
+  width: auto !important;
+  max-width: calc(100% - 256px) !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+#assetEditModal .asset-entry-modal-nav .entry-modal-cancel {
+  justify-self: start !important;
+}
+
+#assetEditModal .asset-entry-modal-nav .entry-modal-save {
+  justify-self: end !important;
+}
+
+#assetEditModal .asset-entry-form .panel-heading {
+  margin-top: 4px;
+}
+
+#assetEditModal .asset-entry-form .panel-kicker {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  #assetEditModal .asset-entry-modal-nav {
+    grid-template-columns: 94px minmax(0, 1fr) 94px !important;
+  }
+
+  #assetEditModal .asset-entry-modal-nav h2 {
+    max-width: calc(100% - 204px) !important;
+  }
+}
+
+
+/* v355 - Telefon gorunumunde Birikim ekle modalindeki yatay kayma ve tasma sorunlarini duzelt. */
+@media (max-width: 768px) {
+  #assetEditModal .modal-card {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin-inline: auto !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  #assetEditModal .asset-entry-form,
+  #assetEditModal .asset-entry-form > label,
+  #assetEditModal .asset-entry-form > label > input,
+  #assetEditModal .asset-entry-form > label > select {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #assetEditModal .modal-card {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    border-radius: 18px !important;
+  }
+
+  #assetEditModal .asset-entry-modal-nav {
+    margin-left: -12px !important;
+    margin-right: -12px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    grid-template-columns: 88px minmax(0, 1fr) 88px !important;
+    gap: 6px !important;
+  }
+
+  html.modern-budget #assetEditModal .entry-modal-nav-button {
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 10px !important;
+    font-size: 14px !important;
+  }
+
+  #assetEditModal .asset-entry-modal-nav h2 {
+    max-width: calc(100% - 188px) !important;
+    font-size: 16px !important;
+  }
+}
+
+
+/* v356 - Tum standart acilir pencerelerde Iptal solda, baslik ortada, ana aksiyon sagda. */
+.unified-modal-nav {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: -20px -20px 14px;
+  padding: 16px 20px 12px;
+  box-sizing: content-box;
+  background: color-mix(in srgb, var(--surface-soft) 94%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.unified-modal-title {
+  grid-column: 2;
+  justify-self: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 !important;
+  overflow: hidden;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+  text-align: center !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.modern-budget .unified-modal-nav-button {
+  width: 104px !important;
+  min-width: 104px !important;
+  max-width: 104px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 84%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  box-sizing: border-box !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.unified-modal-cancel { grid-column: 1; justify-self: start; }
+.unified-modal-action { grid-column: 3; justify-self: end; }
+.unified-modal-nav-spacer { grid-column: 3; width: 104px; height: 1px; }
+
+html.modern-budget .unified-modal-nav-button:hover,
+html.modern-budget .unified-modal-nav-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+}
+
+html.modern-budget .unified-modal-nav-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 9px rgba(15, 40, 40, 0.05) !important;
+}
+
+html.modern-budget .unified-modal-danger {
+  color: var(--expense) !important;
+  border-color: color-mix(in srgb, var(--expense) 30%, var(--stroke)) !important;
+  background: color-mix(in srgb, var(--expense) 7%, var(--surface)) !important;
+}
+
+.modal-card.modal-layout-standard > .unified-modal-nav + .modal-fixed-heading .panel-kicker,
+.modal-card.modal-layout-standard > .unified-modal-nav + .modal-fixed-heading h2 {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .unified-modal-nav {
+    grid-template-columns: 92px minmax(0, 1fr) 92px;
+    gap: 6px;
+    margin: -16px -16px 12px;
+    padding: 14px 12px 10px;
+    box-sizing: content-box;
+  }
+
+  html.modern-budget .unified-modal-nav-button {
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 9px !important;
+    font-size: 13px !important;
+  }
+
+  .unified-modal-nav-spacer { width: 88px; }
+  .unified-modal-title { font-size: 16px !important; }
+}
+
+@media (max-width: 420px) {
+  .unified-modal-nav {
+    grid-template-columns: 82px minmax(0, 1fr) 82px;
+    gap: 4px;
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  html.modern-budget .unified-modal-nav-button {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    padding: 0 7px !important;
+    font-size: 12.5px !important;
+  }
+
+  .unified-modal-nav-spacer { width: 80px; }
+  .unified-modal-title { font-size: 15px !important; }
+}
+
+
+/* v357 - Telefonda Birikimlerim ve Kartlar/Hesaplar özet kartlarını üç satır halinde göster. */
+@media (max-width: 768px) {
+  html.modern-budget #assetsView .stats-grid,
+  html.modern-budget #cardsView .stats-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  html.modern-budget #assetsView .stats-grid > .stat-card,
+  html.modern-budget #cardsView .stats-grid > .stat-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-column: 1 / -1 !important;
+  }
+}
+
+
+/* v359 - Borç/alacak düzenleme modalında Tahsil Et / Ödeme Yap, Güncelle'nin yanında görünür. */
+.unified-modal-nav-actions {
+  grid-column: 3;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.unified-modal-nav.has-secondary-action {
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+}
+
+.unified-modal-nav.has-secondary-action .unified-modal-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max-content;
+  max-width: min(360px, calc(100% - 440px));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+html.modern-budget .unified-modal-secondary-action {
+  color: #fff !important;
+  border-color: var(--income) !important;
+  background: var(--income) !important;
+  box-shadow: 0 7px 18px rgba(23, 128, 95, 0.18) !important;
+}
+
+html.modern-budget .unified-modal-secondary-action:hover,
+html.modern-budget .unified-modal-secondary-action:focus-visible {
+  color: #fff !important;
+  border-color: var(--income) !important;
+  background: var(--income) !important;
+  filter: brightness(1.04);
+}
+
+@media (max-width: 768px) {
+  .unified-modal-nav.has-secondary-action {
+    grid-template-columns: 88px minmax(0, 1fr) auto;
+  }
+
+  .unified-modal-nav.has-secondary-action .unified-modal-title {
+    max-width: calc(100% - 300px);
+  }
+
+  .unified-modal-nav.has-secondary-action .unified-modal-nav-actions {
+    gap: 5px;
+  }
+
+  html.modern-budget .unified-modal-nav.has-secondary-action .unified-modal-nav-actions .unified-modal-nav-button {
+    width: 76px !important;
+    min-width: 76px !important;
+    max-width: 76px !important;
+    padding-inline: 6px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .unified-modal-nav.has-secondary-action {
+    grid-template-columns: 76px minmax(0, 1fr) auto;
+  }
+
+  .unified-modal-nav.has-secondary-action .unified-modal-title {
+    max-width: calc(100% - 258px);
+    font-size: 14px !important;
+  }
+
+  html.modern-budget .unified-modal-nav.has-secondary-action .unified-modal-nav-actions .unified-modal-nav-button {
+    width: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px !important;
+    font-size: 11.5px !important;
+  }
+}
+
+
+/* v360 - Sayfaların üstündeki ortak başlık/kullanıcı şeridini tamamen kaldır. */
+.removed-page-header-targets {
+  display: none !important;
+}
+
+
+/* v366 - Masaüstünde BES özet kartlarını 2x2 düzenle. */
+@media (min-width: 769px) {
+  html.modern-budget #besView .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+
+/* v367 - Kayitlar ekraninda filtreleri modal icine tasi ve ust cubuga simge butonlari ekle. */
+.shell-history-action {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+#historySearchModal .history-search-modal-card {
+  position: relative;
+}
+
+#historySearchModal .history-search-modal-nav {
+  position: sticky;
+  top: -16px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 8px;
+  margin: -16px -16px 14px;
+  padding: 14px 8px 11px;
+  background: color-mix(in srgb, var(--surface-soft) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#historySearchModal .history-search-modal-nav h2 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  grid-column: 1 / -1;
+  width: max-content;
+  max-width: calc(100% - 240px);
+  margin: 0 auto !important;
+  overflow: hidden;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+html.modern-budget #historySearchModal .entry-modal-nav-button {
+  width: 104px !important;
+  min-width: 104px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid color-mix(in srgb, var(--stroke) 72%, transparent) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+  box-shadow: 0 4px 16px rgba(15, 40, 40, 0.06) !important;
+  color: var(--accent) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+#historySearchModal .entry-modal-cancel {
+  grid-column: 1;
+  justify-self: start;
+}
+
+#historySearchModal .entry-modal-save {
+  grid-column: 3;
+  justify-self: end;
+}
+
+html.modern-budget #historySearchModal .entry-modal-nav-button:hover,
+html.modern-budget #historySearchModal .entry-modal-nav-button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--stroke)) !important;
+  background: var(--accent-soft) !important;
+}
+
+html.modern-budget #historySearchModal .entry-modal-cancel:active,
+html.modern-budget #historySearchModal .entry-modal-save:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 9px rgba(15, 40, 40, 0.05) !important;
+}
+
+#historySearchModal .history-search-form {
+  gap: 14px;
+}
+
+#historySearchModal .history-search-heading {
+  padding-top: 4px;
+}
+
+#historySearchModal .history-search-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+#historySearchModal .history-search-grid > label {
+  display: grid;
+  gap: 8px;
+}
+
+#historySearchModal .history-search-full {
+  grid-column: 1 / -1;
+}
+
+#historySearchModal .history-filter-clear {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+}
+
+@media (min-width: 981px) {
+  #historySearchModal .history-search-modal-nav {
+    top: -20px;
+    margin: -20px -20px 18px;
+    padding: 20px 20px 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  #historySearchModal .history-search-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #historySearchModal .history-search-full {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  #historySearchModal .history-search-modal-nav {
+    grid-template-columns: minmax(76px, 1fr) minmax(0, auto) minmax(76px, 1fr);
+    gap: 8px;
+  }
+
+  #historySearchModal .history-search-modal-nav h2 {
+    max-width: 42vw;
+    font-size: 17px !important;
+  }
+
+  html.modern-budget #historySearchModal .entry-modal-nav-button {
+    min-width: 74px !important;
+    min-height: 44px !important;
+    padding: 9px 14px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  #historySearchModal .history-search-modal-nav {
+    grid-template-columns: 100px minmax(0, 1fr) 100px;
+    gap: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  html.modern-budget #historySearchModal .entry-modal-nav-button {
+    width: 94px !important;
+    min-width: 94px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 10px !important;
+    font-size: 14px !important;
+  }
+
+  #historySearchModal .history-search-modal-nav h2 {
+    max-width: 100%;
+    font-size: 17px !important;
+  }
+}

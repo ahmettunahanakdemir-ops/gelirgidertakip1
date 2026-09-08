@@ -233,9 +233,12 @@ function openProfileModal() {
     return;
   }
 
-  switchView("userView");
+  switchView("settingsView");
   fillProfileForm();
-  setTimeout(() => profileUsername?.focus(), 0);
+  setTimeout(() => {
+    document.querySelector("#settingsView .user-actions-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    profileUsername?.focus();
+  }, 0);
 }
 
 // ACIKLAMA: fillProfileForm fonksiyonunun Turkce karsiligi "fill profil form"; ilgili uygulama islemini calistirir.

@@ -958,7 +958,7 @@ function openPaymentAccountModal(item = null) {
   }
 
   if (paymentAccountSubmitButton) {
-    paymentAccountSubmitButton.textContent = item ? "Kart / Hesap Güncelle" : "Kart / Hesap Ekle";
+    paymentAccountSubmitButton.textContent = "Kaydet";
   }
 
   if (paymentAccountStatus) {
@@ -1003,7 +1003,7 @@ function resetPaymentAccountForm() {
   }
 
   if (paymentAccountSubmitButton) {
-    paymentAccountSubmitButton.textContent = "Kart / Hesap Ekle";
+    paymentAccountSubmitButton.textContent = "Kaydet";
   }
 
   if (paymentAccountModalTitle) {
@@ -1011,7 +1011,8 @@ function resetPaymentAccountForm() {
   }
 
   if (paymentAccountModalSubtitle) {
-    paymentAccountModalSubtitle.textContent = "Bilgileri bu pencereden gir; kaydedince kart şablonu listede görünecek.";
+    paymentAccountModalSubtitle.textContent = "";
+    paymentAccountModalSubtitle.hidden = true;
   }
 
   updatePaymentAccountFormVisibility();
@@ -2693,13 +2694,13 @@ function openAssetAddModal() {
   editingAssetId = null;
   resetAssetForm();
   if (assetEditModalTitle) {
-    assetEditModalTitle.textContent = "Varlık ekle";
+    assetEditModalTitle.textContent = "Birikim ekle";
   }
   if (assetEditModalNote) {
-    assetEditModalNote.textContent = "Varlık bilgilerini bu pencereden girebilirsin.";
+    assetEditModalNote.textContent = "Birikim bilgilerini bu pencereden girebilirsin.";
   }
   if (assetEditSubmitButton) {
-    assetEditSubmitButton.textContent = "Varlık Ekle";
+    assetEditSubmitButton.textContent = "Kaydet";
   }
   if (assetEditStatus) {
     assetEditStatus.textContent = "";
@@ -2723,10 +2724,10 @@ function openAssetEditModal(assetId) {
   assetEditLabel.value = item.label || "";
   assetEditAmount.value = String(item.amount ?? "");
   if (assetEditModalTitle) {
-    assetEditModalTitle.textContent = "Varlık düzenle";
+    assetEditModalTitle.textContent = "Birikim düzenle";
   }
   if (assetEditModalNote) {
-    assetEditModalNote.textContent = "Varlık bilgilerini bu pencereden güncelleyebilirsin.";
+    assetEditModalNote.textContent = "Birikim bilgilerini bu pencereden güncelleyebilirsin.";
   }
   if (assetEditSubmitButton) {
     assetEditSubmitButton.textContent = "Kaydet";
@@ -2924,7 +2925,7 @@ async function refreshMarketPrices(options = {}) {
   }
 
   if (!silent || !marketData.updatedAt) {
-    marketStatus.textContent = "Canlı fiyatlar alınamadı. İnternet bağlantısını kontrol edip Fiyatları Yenile'ye bas.";
+    marketStatus.textContent = "Canlı fiyatlar alınamadı. İnternet bağlantısını kontrol edip yukarıdaki yenile simgesine bas.";
   }
 }
 

@@ -17,6 +17,7 @@ const borcTaksitSayisiAlani = document.getElementById("debtInstallmentCountInput
 const borcNotuAlani = document.getElementById("debtNoteInput");
 const borcFormDurumu = document.getElementById("debtFormStatus");
 const borcKaydetButtonu = document.getElementById("debtSubmitButton");
+const borcDuzenleOdemeButtonu = document.getElementById("debtEditPaymentButton");
 const borcPenceresiniAcButtonu = document.getElementById("openDebtModalButton");
 const taksitPenceresiniAcButtonu = document.getElementById("openInstallmentModalButton");
 const alacakPenceresiniAcButtonu = document.getElementById("openReceivableModalButton");
@@ -340,6 +341,12 @@ function setupBorcAlacakTakibi() {
   taksitPenceresiniAcButtonu?.addEventListener("click", () => borcAlacakPenceresiniAc("", "installment"));
   alacakPenceresiniAcButtonu?.addEventListener("click", () => borcAlacakPenceresiniAc("", "receivable"));
   borcPenceresiniKapatButtonu?.addEventListener("click", borcAlacakPenceresiniKapat);
+  borcDuzenleOdemeButtonu?.addEventListener("click", () => {
+    const kayitId = String(duzenlenenBorcAlacakId || "");
+    if (!kayitId) return;
+    borcAlacakPenceresiniKapat();
+    borcAlacakOdemePenceresiniAc(kayitId);
+  });
   borcEklemePenceresi?.addEventListener("click", (event) => {
     if (event.target === borcEklemePenceresi) borcAlacakPenceresiniKapat();
   });
@@ -400,6 +407,62 @@ function borcAlacakSekmesiniAc(sekme = "debts") {
 function borcTaksitZorunlulugunuGuncelle() {
   if (!borcVadeTarihiAlani) return;
   borcVadeTarihiAlani.required = borcEklemeFormu?.dataset.listType === "installment";
+}
+
+// ACIKLAMA: Yeni kayit ekranlari ayni takip secimini ve mevcut borc kaydetme yolunu kullanir.
+function createNewTransactionFollowControl(options = {}) {
+  const control = document.createElement("fieldset");
+  control.className = "new-transaction-follow transaction-follow-settings";
+  control.innerHTML = `
+    <label class="transaction-follow-toggle">
+      <input data-follow-selected type="checkbox" />
+      <span>Borçlarım bölümünde takip edilsin</span>
+    </label>
+    <div class="transaction-follow-options" data-follow-options hidden>
+      <label>Takip türü<select data-follow-type>
+        <option value="debt">Borçlarıma eklensin</option>
+        <option value="receivable">Alacaklarıma eklensin</option>
+      </select></label>
+      <label>Vade tarihi<input data-follow-date type="date" /></label>
+    </div>`;
+  control.querySelector("[data-follow-selected]").checked = Boolean(options.selected);
+  control.querySelector("[data-follow-type]").value = options.listType === "receivable" ? "receivable" : "debt";
+  control.querySelector("[data-follow-date]").value = options.dueDate || "";
+  const checkbox = control.querySelector("[data-follow-selected]");
+  const sync = () => {
+    control.querySelector("[data-follow-options]").hidden = !checkbox.checked;
+  };
+  checkbox.addEventListener("change", sync);
+  control.addEventListener("change", sync);
+  sync();
+  return control;
+}
+
+function readNewTransactionFollowControl(root) {
+  return {
+    selected: Boolean(root?.querySelector("[data-follow-selected]")?.checked),
+    listType: root?.querySelector("[data-follow-type]")?.value || "debt",
+    dueDate: root?.querySelector("[data-follow-date]")?.value || "",
+  };
+}
+
+function resetNewTransactionFollowControl(root) {
+  const control = root?.querySelector(".new-transaction-follow");
+  if (!control) return;
+  root.querySelector("[data-follow-selected]").checked = false;
+  control.querySelector("[data-follow-type]").value = "debt";
+  control.querySelector("[data-follow-date]").value = "";
+  control.querySelector("[data-follow-options]").hidden = true;
+}
+
+function validateNewTransactionFollow(entry, options, isDebtPayment = false) {
+  if (!options?.selected) return "";
+  if (isDebtPayment || entry.debtPaymentId) return "Ödeme / tahsilat işlemi ayrıca yeni borç veya alacak olarak eklenemez.";
+  return borcAlacakIslemDuzenlemeTakibiniDogrula(entry, options);
+}
+
+function applyNewTransactionFollow(entry, options) {
+  if (options?.selected) borcAlacakIslemDuzenlemesiniTakibeUygula(entry, options);
 }
 
 function borcAlacakIslemTakipKaydiniBul(islemId) {
@@ -505,13 +568,17 @@ function borcAlacakPencereMetinleriniGuncelle() {
     : "debt";
   const kayitDuzenleniyor = Boolean(duzenlenenBorcAlacakId);
   const metinler = {
-    debt: ["Manuel Borç Takibi", kayitDuzenleniyor ? "Borç kaydını düzenle" : "Yeni borç ekle", "Kalan borcunu gelir/gider hareketlerinden bağımsız takip et."],
-    installment: ["Manuel Taksit Takibi", kayitDuzenleniyor ? "Taksit planını düzenle" : "Yeni taksit planı ekle", "Toplam tutarı ve taksit sayısını gir; kalan taksitler aylık olarak oluşturulsun."],
-    receivable: ["Manuel Alacak Takibi", kayitDuzenleniyor ? "Alacak kaydını düzenle" : "Yeni alacak ekle", "Kalan alacağını gelir/gider hareketlerinden bağımsız takip et."],
+    debt: ["Manuel Borç Takibi", kayitDuzenleniyor ? "Borç kaydını düzenle" : "Yeni borç ekle", ""],
+    installment: ["Manuel Taksit Takibi", kayitDuzenleniyor ? "Taksit planını düzenle" : "Yeni taksit planı ekle", ""],
+    receivable: ["Manuel Alacak Takibi", kayitDuzenleniyor ? "Alacak kaydını düzenle" : "Yeni alacak ekle", ""],
   };
   if (borcPencereKickerAlani) borcPencereKickerAlani.textContent = metinler[listeTuru][0];
   if (borcPencereBasligi) borcPencereBasligi.textContent = metinler[listeTuru][1];
-  if (borcPencereNotuAlani) borcPencereNotuAlani.textContent = metinler[listeTuru][2];
+  if (borcPencereNotuAlani) {
+    const notMetni = metinler[listeTuru][2] || "";
+    borcPencereNotuAlani.textContent = notMetni;
+    borcPencereNotuAlani.hidden = !notMetni;
+  }
 }
 
 function borcAlacakTakipTuruAlanlariniGuncelle() {
@@ -575,6 +642,11 @@ function borcAlacakPenceresiniAc(kayitId = "", istenenListeTuru = aktifBorcAlaca
       .slice(0, 180);
   }
   if (borcKaydetButtonu) borcKaydetButtonu.textContent = kayit ? "Güncelle" : "Kaydet";
+  if (borcDuzenleOdemeButtonu) {
+    const odemeYapilabilir = Boolean(kayit && Number(kayit.amount || 0) > 0);
+    borcDuzenleOdemeButtonu.hidden = !odemeYapilabilir;
+    borcDuzenleOdemeButtonu.textContent = kayit?.kind === "receivable" ? "Tahsil Et" : "Ödeme Yap";
+  }
   if (borcFormDurumu) borcFormDurumu.textContent = "";
   borcAlacakTakipTuruAlanlariniGuncelle();
   if (borcEklemePenceresi) borcEklemePenceresi.hidden = false;
@@ -597,6 +669,7 @@ function borcAlacakPenceresiniKapat() {
   if (borcTaksitSayisiEtiketi) borcTaksitSayisiEtiketi.hidden = true;
   if (borcFormDurumu) borcFormDurumu.textContent = "";
   if (borcKaydetButtonu) borcKaydetButtonu.textContent = "Kaydet";
+  if (borcDuzenleOdemeButtonu) borcDuzenleOdemeButtonu.hidden = true;
   if (borcPencereBasligi) borcPencereBasligi.textContent = "Yeni borç ekle";
   borcAlacakPencereMetinleriniGuncelle();
   if (borcEklemePenceresi) borcEklemePenceresi.hidden = true;
@@ -1249,12 +1322,7 @@ function borcAlacakIsaretliTaksitleriniEkranaBas(durumFiltresi = "open") {
   }
 
   if (isaretliTaksitDurumuAlani) {
-    const sayfaBilgisi = toplamSayfa > 1 ? ` Sayfa ${isaretliTaksitSayfasi}/${toplamSayfa}.` : "";
-    isaretliTaksitDurumuAlani.textContent = durumFiltresi === "paid"
-      ? `${islemler.length} ödenen otomatik taksit bulundu.${sayfaBilgisi}`
-      : durumFiltresi === "current"
-        ? `${islemler.length} bu aya ait otomatik taksit bulundu.${sayfaBilgisi}`
-        : `${islemler.length} kalan otomatik taksit bulundu.${sayfaBilgisi}`;
+    isaretliTaksitDurumuAlani.textContent = "";
   }
   if (isaretliTaksitSayfalamaAlani) isaretliTaksitSayfalamaAlani.hidden = toplamSayfa <= 1;
   if (isaretliTaksitOncekiSayfaButtonu) isaretliTaksitOncekiSayfaButtonu.disabled = isaretliTaksitSayfasi <= 1;
@@ -1405,7 +1473,7 @@ function borcAlacaklariEkranaBas() {
       const satir = document.createElement("article");
       satir.className = `debt-record-item debt-kind-${kayit.kind}${kayit.status === "closed" ? " is-closed" : ""}`;
       const anaAksiyon = kayit.amount > 0
-        ? `<button class="ghost-btn debt-payment-action" type="button" data-debt-action="pay" data-debt-id="${escapeHtml(kayit.id)}">${kayit.kind === "debt" ? "Ödeme Yap" : "Tahsilat Gir"}</button>`
+        ? ""
         : kayit.manualClosed && !kayit.payments.length
           ? `<button class="ghost-btn" type="button" data-debt-action="reopen" data-debt-id="${escapeHtml(kayit.id)}">Yeniden Aç</button>`
           : '<span class="debt-linked-badge">Tamamlandı</span>';
@@ -1433,16 +1501,15 @@ function borcAlacaklariEkranaBas() {
           ${borcAlacakOdemeGecmisiHtml(kayit)}
         </div>
         <div class="debt-record-actions">
-          ${anaAksiyon}
-          <button class="ghost-btn" type="button" data-debt-action="change-type" data-debt-id="${escapeHtml(kayit.id)}">Türünü Değiştir</button>
           <button class="ghost-btn" type="button" data-debt-action="edit" data-debt-id="${escapeHtml(kayit.id)}">Düzenle</button>
-          <button class="danger-btn" type="button" data-debt-action="delete" data-debt-id="${escapeHtml(kayit.id)}">Sil</button>
+          ${anaAksiyon}
+          <button class="ghost-btn delete-transaction-btn debt-record-delete-btn" type="button" data-debt-action="delete" data-debt-id="${escapeHtml(kayit.id)}">Sil</button>
         </div>
       `;
       hedefListe.append(satir);
     });
   }
-  if (hedefDurumAlani) hedefDurumAlani.textContent = `${gorunenKayitlar.length} kayıt gösteriliyor.`;
+  if (hedefDurumAlani) hedefDurumAlani.textContent = "";
 }
 
 function borcAlacakTaksitleriniEkranaBas() {
@@ -1494,7 +1561,6 @@ function borcAlacakTaksitleriniEkranaBas() {
         </div>
         <div class="debt-installment-group-actions">
           <strong>${kayit.installmentCount} aylık taksit</strong>
-          <button class="ghost-btn" type="button" data-debt-action="change-type" data-debt-id="${escapeHtml(kayit.id)}">Türünü Değiştir</button>
           <button class="ghost-btn" type="button" data-debt-action="edit" data-debt-id="${escapeHtml(kayit.id)}">Düzenle</button>
           <button class="danger-btn" type="button" data-debt-action="delete" data-debt-id="${escapeHtml(kayit.id)}">Sil</button>
         </div>
@@ -1513,6 +1579,7 @@ function borcAlacakTaksitleriniEkranaBas() {
     borcTaksitListesi.innerHTML = `<div class="empty-state">${bosMesaj}</div>`;
   }
   if (borcTaksitListeDurumu) {
-    borcTaksitListeDurumu.textContent = `${gorunenTaksitSayisi} manuel taksit · ${otomatikTaksitSayisi} otomatik taksit gösteriliyor.`;
+    borcTaksitListeDurumu.textContent = "";
+    borcTaksitListeDurumu.hidden = true;
   }
 }
