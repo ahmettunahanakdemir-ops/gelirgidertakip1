@@ -137,6 +137,14 @@ function init() {
   summaryCategoryTypeFilter?.addEventListener("change", () => {
     renderCategoryBreakdown();
   });
+  document.getElementById("closeSummaryCategoryDetailButton")?.addEventListener("click", closeSummaryCategoryDetailModal);
+  document.getElementById("summaryCategoryDetailModal")?.addEventListener("click", (event) => {
+    if (event.target === event.currentTarget) closeSummaryCategoryDetailModal();
+  });
+  document.addEventListener("keydown", (event) => {
+    const modal = document.getElementById("summaryCategoryDetailModal");
+    if (event.key === "Escape" && modal && !modal.hidden) closeSummaryCategoryDetailModal();
+  });
   historyStartDate.addEventListener("change", () => {
     currentHistoryPage = 1;
     renderTransactions();

@@ -1,9 +1,10 @@
 // ACIKLAMA NOTU: Bu dosyada kod bloklarinin yaninda ne ise yaradiklarini anlatan yorumlar vardir.
 // ACIKLAMA: Service worker tarafinda kullanilan aktif cache adini tutar.
-const CACHE_NAME = "akis-butce-v418";
+const CACHE_NAME = "akis-butce-v419";
 // ACIKLAMA: Uygulamanin cevrimdisi acilmasi icin cachelenecek temel dosyalari listeler.
 const APP_ASSETS = [
-  "./assets/css/14-settings-dialogs.css?v=418",
+  "./assets/css/15-summary-category-details.css?v=419",
+  "./assets/css/14-settings-dialogs.css?v=419",
   "./assets/js/10-settings-layout.js?v=418",
   "./assets/css/13-modern-shell.css?v=418",
   "./assets/js/10-modern-shell.js?v=418",
@@ -26,10 +27,10 @@ const APP_ASSETS = [
   "./firebase-config.js?v=418",
   "./assets/js/01-config-dom.js?v=418",
   "./assets/js/02-ui-preferences-reminders.js?v=418",
-  "./assets/js/03-init-entry-forms.js?v=418",
+  "./assets/js/03-init-entry-forms.js?v=419",
   "./assets/js/04-storage-home-render.js?v=418",
   "./assets/js/05-assets-payments-bes-market.js?v=418",
-  "./assets/js/06-summary-history-categories-navigation.js?v=418",
+  "./assets/js/06-summary-history-categories-navigation.js?v=419",
   "./assets/js/07-backup-export-import-sync.js?v=418",
   "./assets/js/08-auth-firebase-cloud.js?v=418",
   "./assets/js/09-bank-import-ocr-parsers.js?v=418",

@@ -103,17 +103,128 @@ function renderCategoryBreakdown() {
       // ACIKLAMA: row degiskeninin Turkce karsiligi "satir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const row = document.createElement("div");
       row.className = `category-row category-row-${selectedType}`;
-      row.innerHTML = `
-        <div class="category-topline">
-          <span>${escapeHtml(category)}</span>
-          <span>${escapeHtml(currency.format(amount))} · %${ratio.toFixed(0)}</span>
-        </div>
-        <div class="category-bar">
-          <span style="width:${Math.min(100, Math.max(0, ratio))}%"></span>
-        </div>
-      `;
+      const summaryRow = document.createElement("div");
+      summaryRow.className = "category-summary-row";
+      const topline = document.createElement("div");
+      topline.className = "category-topline";
+      const categoryName = document.createElement("span");
+      categoryName.textContent = category;
+      const categoryAmount = document.createElement("span");
+      categoryAmount.textContent = `${currency.format(amount)} · %${ratio.toFixed(0)}`;
+      topline.append(categoryName, categoryAmount);
+
+      const detailButton = document.createElement("button");
+      detailButton.type = "button";
+      detailButton.className = "category-detail-button";
+      detailButton.textContent = "Detay";
+      detailButton.setAttribute("aria-haspopup", "dialog");
+      detailButton.setAttribute("aria-label", `${category} kategorisi kayıtlarını görüntüle`);
+      detailButton.addEventListener("click", () => {
+        const categoryTransactions = filteredTransactions.filter((item) =>
+          (item.category || (item.type === "transfer" ? "Transfer" : "Diğer")) === category
+        );
+        openSummaryCategoryDetail(category, selectedType, categoryTransactions, detailButton);
+      });
+      summaryRow.append(topline, detailButton);
+
+      const bar = document.createElement("div");
+      bar.className = "category-bar";
+      const barFill = document.createElement("span");
+      barFill.style.width = `${Math.min(100, Math.max(0, ratio))}%`;
+      bar.append(barFill);
+      row.append(summaryRow, bar);
       categoryBreakdown.append(row);
     });
+}
+
+let summaryCategoryDetailTrigger = null;
+
+function openSummaryCategoryDetail(category, selectedType, categoryTransactions, trigger) {
+  const modal = document.getElementById("summaryCategoryDetailModal");
+  const title = document.getElementById("summaryCategoryDetailTitle");
+  const scope = document.getElementById("summaryCategoryDetailScope");
+  const summary = document.getElementById("summaryCategoryDetailSummary");
+  const list = document.getElementById("summaryCategoryDetailList");
+  if (!modal || !title || !scope || !summary || !list) return;
+
+  const records = [...categoryTransactions].sort(compareTransactionsNewestFirst);
+  const total = records.reduce((sum, item) => sum + getSummaryCategoryAmount(item), 0);
+  const periodLabel = isHomeSummaryFilterActive()
+    ? `${getHomeSummaryFilterLabel()} · seçili tarih aralığı`
+    : "Tüm zamanlar";
+  const typeLabel = selectedType === "all" ? "Tüm işlem türleri" : getSummaryCategoryTypeLabel(selectedType);
+
+  title.textContent = `${category} kayıtları`;
+  scope.textContent = `${periodLabel} · ${typeLabel}`;
+  summary.textContent = `${records.length} kayıt · Toplam ${currency.format(total)}`;
+  list.replaceChildren();
+
+  if (!records.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Bu kategoride seçili kapsam için kayıt bulunamadı.";
+    list.append(empty);
+  } else {
+    records.forEach((item) => {
+      const row = document.createElement("article");
+      row.className = `category-detail-record category-detail-record-${item.type}`;
+      row.setAttribute("role", "listitem");
+
+      const content = document.createElement("div");
+      content.className = "category-detail-record-content";
+      const titleLine = document.createElement("div");
+      titleLine.className = "category-detail-record-title-line";
+      const recordTitle = document.createElement("strong");
+      recordTitle.className = "category-detail-record-title";
+      recordTitle.textContent = item.title || category;
+      const typeBadge = document.createElement("span");
+      typeBadge.className = `category-detail-type-badge category-detail-type-${item.type}`;
+      typeBadge.textContent = item.type === "income" ? "Gelir" : item.type === "transfer" ? "Transfer" : "Gider";
+      titleLine.append(recordTitle, typeBadge);
+
+      const dateLine = document.createElement("p");
+      dateLine.className = "category-detail-record-meta";
+      dateLine.textContent = `${formatTransactionDateTime(item)} · ${item.category || category}`;
+      content.append(titleLine, dateLine);
+
+      const paymentInfo = getTransactionPaymentInfo(item);
+      if (paymentInfo) {
+        const accountLine = document.createElement("p");
+        accountLine.className = "category-detail-record-meta";
+        accountLine.textContent = paymentInfo;
+        content.append(accountLine);
+      }
+      if (item.note) {
+        const noteLine = document.createElement("p");
+        noteLine.className = "category-detail-record-note";
+        noteLine.textContent = item.note;
+        content.append(noteLine);
+      }
+
+      const amount = document.createElement("strong");
+      amount.className = `category-detail-record-amount ${item.type}`;
+      const amountValue = item.type === "transfer" ? getSummaryCategoryAmount(item) : Number(item.amount || 0);
+      amount.textContent = `${item.type === "income" ? "+ " : item.type === "expense" ? "− " : ""}${currency.format(amountValue)}`;
+      row.append(content, amount);
+      list.append(row);
+    });
+  }
+
+  summaryCategoryDetailTrigger = trigger || null;
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  document.getElementById("closeSummaryCategoryDetailButton")?.focus();
+}
+
+function closeSummaryCategoryDetailModal() {
+  const modal = document.getElementById("summaryCategoryDetailModal");
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  if (!document.querySelector('.modal-backdrop:not([hidden])')) {
+    document.body.classList.remove("modal-open");
+  }
+  summaryCategoryDetailTrigger?.focus();
+  summaryCategoryDetailTrigger = null;
 }
 
 // ACIKLAMA: applyHistorySearch fonksiyonunun Turkce karsiligi "uygula gecmis arama"; ilgili uygulama islemini calistirir.
@@ -1706,6 +1817,7 @@ function resetViewTransientState(viewId) {
   }
 
   if (viewId === "summaryView") {
+    closeSummaryCategoryDetailModal();
     if (summaryCategoryTypeFilter) {
       summaryCategoryTypeFilter.value = "expense";
     }

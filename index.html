@@ -54,7 +54,8 @@
     <!-- ACIKLAMA: Borc ve alacak takip ekrani, kayit satirlari, filtreler ve mobil yerlesim. -->
     <link rel="stylesheet" href="assets/css/12-debts-receivables.css?v=418" />
     <link rel="stylesheet" href="assets/css/13-modern-shell.css?v=418" />
-    <link rel="stylesheet" href="assets/css/14-settings-dialogs.css?v=418" />
+    <link rel="stylesheet" href="assets/css/14-settings-dialogs.css?v=419" />
+    <link rel="stylesheet" href="assets/css/15-summary-category-details.css?v=419" />
   </head>
   <body>
 
@@ -1480,6 +1481,23 @@
       </section>
     </div>
 
+    <div id="summaryCategoryDetailModal" class="modal-backdrop" hidden>
+      <section class="modal-card wide-modal summary-category-detail-modal" role="dialog" aria-modal="true" aria-labelledby="summaryCategoryDetailTitle">
+        <div class="panel-heading category-detail-header">
+          <div class="category-detail-heading-copy">
+            <p class="panel-kicker">Özet ve Tasarruf</p>
+            <h2 id="summaryCategoryDetailTitle">Kategori kayıtları</h2>
+            <p id="summaryCategoryDetailScope" class="panel-note"></p>
+          </div>
+          <button id="closeSummaryCategoryDetailButton" class="ghost-btn category-detail-close" type="button" aria-label="Kategori ayrıntılarını kapat">Kapat</button>
+        </div>
+        <div class="modal-body-scroll category-detail-scroll">
+          <p id="summaryCategoryDetailSummary" class="category-detail-summary"></p>
+          <div id="summaryCategoryDetailList" class="category-detail-list" role="list" aria-live="polite"></div>
+        </div>
+      </section>
+    </div>
+
     <!-- ACIKLAMA: assetEditModal acilir pencere/modal yapisini JS ile kontrol etmek icin kullanilir. -->
     <div id="assetEditModal" class="modal-backdrop" hidden>
       <section class="modal-card wide-modal entry-modal-card asset-entry-modal-card" role="dialog" aria-modal="true" aria-labelledby="assetEditModalTitle">
@@ -2104,13 +2122,13 @@
     <!-- ACIKLAMA: Tema, yazi tipi, kart odeme hatirlaticilari, genel onay penceresi ve mobil kaydirma yardimcilari. -->
     <script src="assets/js/02-ui-preferences-reminders.js?v=418"></script>
     <!-- ACIKLAMA: Uygulama baslatma fonksiyonu, olay baglantilari, gelir/gider ve coklu kayit formlari. -->
-    <script src="assets/js/03-init-entry-forms.js?v=418"></script>
+    <script src="assets/js/03-init-entry-forms.js?v=419"></script>
     <!-- ACIKLAMA: Yerel depolama, silinmis kayit izleri, kategori listeleri ve ana sayfa render islemleri. -->
     <script src="assets/js/04-storage-home-render.js?v=418"></script>
     <!-- ACIKLAMA: Varliklar, odeme hesaplari, kredi karti borclari, BES hesaplari ve piyasa fiyatlari. -->
     <script src="assets/js/05-assets-payments-bes-market.js?v=418"></script>
     <!-- ACIKLAMA: Ozet kategori dagilimi, kayit gecmisi, filtreler, kategori yonetimi, ekran gecisi ve yan menu. -->
-    <script src="assets/js/06-summary-history-categories-navigation.js?v=418"></script>
+    <script src="assets/js/06-summary-history-categories-navigation.js?v=419"></script>
     <!-- ACIKLAMA: Yedekleme, PDF/Excel disari aktarma, dosyadan ice aktarma ve paylasim kodu islemleri. -->
     <script src="assets/js/07-backup-export-import-sync.js?v=418"></script>
     <!-- ACIKLAMA: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir. -->
