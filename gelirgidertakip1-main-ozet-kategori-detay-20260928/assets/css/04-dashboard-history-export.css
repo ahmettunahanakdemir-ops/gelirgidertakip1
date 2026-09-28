@@ -1,0 +1,844 @@
+/* ACIKLAMA: Ana sayfa ozetleri, PDF/print onizleme, kayit gecmisi, banka import temel kartlari ve sayfalama.
+   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
+
+/* ACIKLAMA: .home-overview-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.home-overview-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel {
+  min-width: 0;
+  max-width: 100%;
+  padding: 20px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 28px rgba(17, 35, 28, 0.07);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.user-actions-panel {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(22px, 3vw, 34px);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.user-actions-panel .profile-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.user-actions-panel .panel-heading,
+.user-actions-panel .auth-actions,
+.user-actions-panel .sync-status,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.user-actions-panel .danger-zone {
+  grid-column: 1 / -1;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.user-actions-panel .danger-zone {
+  width: 100%;
+}
+
+/* ACIKLAMA: .print-report secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.print-report {
+  display: none;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body.pdf-preview-open {
+  overflow: hidden;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  display: grid;
+  place-items: center;
+  padding: clamp(14px, 3vw, 32px);
+  background: rgba(10, 28, 25, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+/* ACIKLAMA: .pdf-preview-shell secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-shell {
+  width: min(1100px, 100%);
+  max-height: min(92vh, 980px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(214, 226, 221, 0.9);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 33, 28, 0.28);
+}
+
+/* ACIKLAMA: .pdf-preview-toolbar secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px clamp(18px, 3vw, 28px);
+  border-bottom: 1px solid var(--stroke);
+  background: linear-gradient(135deg, rgba(239, 248, 244, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+/* ACIKLAMA: .pdf-preview-toolbar h2 secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-toolbar h2 {
+  margin: 2px 0 4px;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+/* ACIKLAMA: .pdf-preview-toolbar span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-toolbar span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* ACIKLAMA: .pdf-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.pdf-preview-actions button {
+  min-width: 136px;
+  min-height: 44px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+.pdf-preview-body {
+  flex: 1;
+  overflow: auto;
+  padding: clamp(14px, 2.5vw, 28px);
+  background: #f5f8f6;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-report secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report {
+  display: block;
+  width: min(940px, 100%);
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 34px);
+  border-radius: 14px;
+  background: #ffffff;
+  color: #18241f;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 12px 34px rgba(24, 36, 31, 0.1);
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-report h1 secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-report p secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report p {
+  margin: 0 0 18px;
+  color: #64746d;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.pdf-preview-overlay .print-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-box secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-box {
+  border: 1px solid #dfe6e2;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-box span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-box span {
+  display: block;
+  color: #64746d;
+  font-size: 12px;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-box strong secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-box strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-report table secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.pdf-preview-overlay .print-report th,
+/* ACIKLAMA: .pdf-preview-overlay .print-report td secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report td {
+  border-bottom: 1px solid #dfe6e2;
+  padding: 9px 7px;
+  text-align: left;
+  vertical-align: top;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-report th secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report th {
+  background: #f3f6f4;
+}
+
+.pdf-preview-overlay .print-report td:last-child,
+/* ACIKLAMA: .pdf-preview-overlay .print-report th:last-child secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report th:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-report .income secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report .income {
+  color: #17805f;
+  font-weight: 700;
+}
+
+/* ACIKLAMA: .pdf-preview-overlay .print-report .expense secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pdf-preview-overlay .print-report .expense {
+  color: #c74e39;
+  font-weight: 700;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: .pdf-preview-overlay secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .pdf-preview-overlay {
+    align-items: stretch;
+    padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+  }
+
+  /* ACIKLAMA: .pdf-preview-shell secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .pdf-preview-shell {
+    max-height: calc(100vh - 20px);
+    border-radius: 18px;
+  }
+
+  /* ACIKLAMA: .pdf-preview-toolbar secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .pdf-preview-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px;
+  }
+
+  /* ACIKLAMA: .pdf-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .pdf-preview-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .pdf-preview-actions button {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  .pdf-preview-body {
+    padding: 10px;
+  }
+
+  /* ACIKLAMA: .pdf-preview-overlay .print-report secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .pdf-preview-overlay .print-report {
+    min-width: 720px;
+  }
+
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .pdf-preview-overlay .print-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media print {
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  body.printing-report {
+    background: #fff !important;
+  }
+
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  body.printing-report > *:not(.print-report) {
+    display: none !important;
+  }
+
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  body.printing-report .print-report {
+    display: block !important;
+    color: #18241f;
+    font-family: Arial, sans-serif;
+    margin: 0;
+  }
+
+  /* ACIKLAMA: .print-report h1 secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-report h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+  }
+
+  /* ACIKLAMA: .print-report p secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-report p {
+    margin: 0 0 18px;
+    color: #64746d;
+  }
+
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .print-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 18px 0;
+  }
+
+  /* ACIKLAMA: .print-box secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-box {
+    border: 1px solid #dfe6e2;
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  /* ACIKLAMA: .print-box span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-box span {
+    display: block;
+    color: #64746d;
+    font-size: 12px;
+  }
+
+  /* ACIKLAMA: .print-box strong secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-box strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 18px;
+  }
+
+  /* ACIKLAMA: .print-report table secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-report table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .print-report th,
+  /* ACIKLAMA: .print-report td secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-report td {
+    border-bottom: 1px solid #dfe6e2;
+    padding: 9px 7px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  /* ACIKLAMA: .print-report th secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-report th {
+    background: #f3f6f4;
+  }
+
+  .print-report td:last-child,
+  /* ACIKLAMA: .print-report th:last-child secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-report th:last-child {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* ACIKLAMA: .print-report .income secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-report .income {
+    color: #17805f;
+    font-weight: 700;
+  }
+
+  /* ACIKLAMA: .print-report .expense secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .print-report .expense {
+    color: #c74e39;
+    font-weight: 700;
+  }
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel h2 {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.45rem;
+}
+
+/* ACIKLAMA: .quick-balance secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.quick-balance {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background:
+    linear-gradient(145deg, rgba(23, 128, 95, 0.94), rgba(23, 63, 95, 0.94)),
+    var(--sidebar);
+  color: #f7fffd;
+}
+
+/* ACIKLAMA: .home-balance secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.home-balance {
+  min-height: 210px;
+}
+
+/* ACIKLAMA: .quick-balance span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.quick-balance span {
+  color: rgba(247, 255, 253, 0.78);
+  font-weight: 800;
+}
+
+/* ACIKLAMA: .quick-balance strong secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.quick-balance strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2.3rem, 5vw, 4rem);
+  line-height: 1;
+}
+
+/* ACIKLAMA: .quick-balance p secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.quick-balance p {
+  max-width: 48ch;
+  margin: 0;
+  color: rgba(247, 255, 253, 0.82);
+  line-height: 1.6;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.summary-stack {
+  display: grid;
+  gap: 18px;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.stat-card {
+  min-height: 145px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.stat-card span {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.stat-card strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-chart-layout {
+  display: grid;
+  grid-template-columns: minmax(210px, 280px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-chart {
+  width: min(280px, 100%);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf3f0;
+  box-shadow: inset 0 0 0 1px rgba(23, 63, 95, 0.08), 0 16px 36px rgba(17, 35, 28, 0.08);
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-chart > div {
+  width: 58%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 18px;
+  text-align: center;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-chart span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-chart strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(1.05rem, 2.8vw, 1.8rem);
+  line-height: 1.05;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-legend {
+  display: grid;
+  gap: 10px;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-legend-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-legend-row i {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-legend-row strong {
+  color: var(--text);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: .category-breakdown secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.category-breakdown {
+  display: grid;
+  gap: 12px;
+}
+
+/* ACIKLAMA: .category-row secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.category-row {
+  display: grid;
+  gap: 8px;
+}
+
+/* ACIKLAMA: .category-topline secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.category-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 900;
+}
+
+/* ACIKLAMA: .category-bar secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.category-bar {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: #e9efec;
+}
+
+/* ACIKLAMA: .category-bar span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.category-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), #86efac);
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading {
+  align-items: flex-end;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.filters {
+  width: min(780px, 100%);
+  justify-content: flex-end;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.filters select {
+  flex: 0 0 170px;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.filters input {
+  flex: 1 1 180px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.filters .range-filter {
+  flex: 0 1 150px;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.filters .range-filter input {
+  min-height: 44px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.filters .ghost-btn {
+  flex: 0 0 auto;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-list {
+  display: grid;
+  gap: 10px;
+}
+
+/* ACIKLAMA: .compact-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.compact-list {
+  gap: 8px;
+}
+
+/* ACIKLAMA: .mini-row secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.mini-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  font-weight: 900;
+}
+
+/* ACIKLAMA: .mini-row span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.mini-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: .mini-row strong secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.mini-row strong {
+  white-space: nowrap;
+  color: var(--income);
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-title {
+  margin: 0;
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-meta {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.transaction-side .ghost-btn {
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-amount {
+  font-family: "Space Grotesk", sans-serif;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-amount.income {
+  color: var(--income);
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-amount.expense {
+  color: var(--expense);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.bank-import-panel {
+  display: grid;
+  gap: 14px;
+}
+
+/* ACIKLAMA: .bank-upload-trigger secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-upload-trigger {
+  width: min(280px, 100%);
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+/* ACIKLAMA: .bank-import-preview secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-preview {
+  display: grid;
+  gap: 10px;
+  max-height: 380px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+/* ACIKLAMA: .bank-import-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.bank-import-item.duplicate,
+/* ACIKLAMA: .bank-import-item.invalid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-item.invalid {
+  opacity: 0.68;
+}
+
+/* ACIKLAMA: .bank-import-check secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-check {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+/* ACIKLAMA: .empty-state secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.empty-state {
+  padding: 24px;
+  border: 1px dashed #c9d5cf;
+  border-radius: 8px;
+  text-align: center;
+  color: var(--muted);
+  background: #f8fbf9;
+  font-weight: 800;
+}
+
+/* ACIKLAMA: .pagination-controls secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  margin: 16px auto 0;
+  color: var(--muted);
+  font-weight: 900;
+  text-align: center;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.pagination-controls .ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 72px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: Kayit sayfalama bilgisini butonlarin ortasinda okunakli tutar. */
+.pagination-page-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  min-width: min(100%, 190px);
+  padding: 0 4px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* ACIKLAMA: Ilk ve Son sayfa butonlarini sayfalama grubunda kompakt tutar. */
+.pagination-controls .pagination-edge-btn {
+  min-width: 58px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.pagination-controls .ghost-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+  transform: none;
+}
+
+/* ACIKLAMA: Dar ekranlarda kayit sayfalama bilgisini ustte, butonlari altta ortali gosterir. */
+@media (max-width: 560px) {
+  .pagination-page-label {
+    flex: 0 0 100%;
+    order: -1;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .pagination-controls .ghost-btn {
+    min-width: 58px;
+    padding-inline: 10px;
+  }
+}

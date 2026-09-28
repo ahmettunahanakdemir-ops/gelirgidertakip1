@@ -1,0 +1,4382 @@
+/* ACIKLAMA: Banka import ayrintilari, odeme hesabi filtreleri, genis ekran ve arama duzenleri.
+   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
+
+
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.bank-import-preview-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(31, 184, 166, 0.28);
+  border-radius: 8px;
+  background: rgba(31, 184, 166, 0.10);
+  color: var(--text);
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.bank-import-preview-summary > span {
+  min-width: 0;
+}
+
+/* ACIKLAMA: .bank-import-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.bank-import-mini-btn {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+
+/* ACIKLAMA: .sync-status.is-loading secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.sync-status.is-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ACIKLAMA: .sync-status.is-loading::before secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.sync-status.is-loading::before {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(31, 184, 166, 0.22);
+  border-top-color: #14b8a6;
+  border-radius: 50%;
+  content: "";
+  flex: 0 0 auto;
+  animation: bankImportSpin 0.75s linear infinite;
+}
+
+/* ACIKLAMA: Bu animasyon adimlari ilgili hareket/efekt icin kullanilir. */
+@keyframes bankImportSpin {
+  /* ACIKLAMA: to secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bank-import-account-panel,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-modal-tools {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(31, 184, 166, 0.24);
+  border-radius: 8px;
+  background: rgba(31, 184, 166, 0.08);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.bank-import-account-panel {
+  margin: 18px 0;
+}
+
+.bank-import-account-panel label,
+.bank-import-modal-tools label,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-edit-grid label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.bank-import-account-panel select,
+.bank-import-modal-tools select,
+.bank-import-edit-grid input,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-edit-grid select {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid rgba(31, 53, 45, 0.18);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.bank-import-account-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-preview-modal .bank-import-modal-tools {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+/* ACIKLAMA: .bank-import-preview-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-preview-list {
+  display: grid;
+  gap: 10px;
+}
+
+/* ACIKLAMA: .bank-import-edit-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-edit-item {
+  align-items: start;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+.bank-import-edit-body {
+  min-width: 0;
+  width: 100%;
+}
+
+/* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-edit-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.6fr) minmax(110px, 0.7fr) minmax(120px, 0.8fr) minmax(140px, 1fr) minmax(130px, 0.8fr);
+  gap: 10px;
+  align-items: end;
+}
+
+/* ACIKLAMA: .bank-import-preview[hidden] secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-preview[hidden] {
+  display: none !important;
+}
+
+/* ACIKLAMA: .bank-import-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-item {
+  min-width: 0;
+  border-left: 4px solid transparent;
+  transition: border-color 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-item.selected {
+  background: rgba(31, 184, 166, 0.08);
+}
+
+/* ACIKLAMA: .bank-import-item.income secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-item.income {
+  border-left-color: rgba(21, 128, 61, 0.62);
+}
+
+/* ACIKLAMA: .bank-import-item.expense secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-item.expense {
+  border-left-color: rgba(220, 38, 38, 0.55);
+}
+
+/* ACIKLAMA: .bank-import-item > div secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-item > div {
+  min-width: 0;
+}
+
+.bank-import-item .transaction-title,
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.bank-import-item .transaction-meta {
+  overflow-wrap: anywhere;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.bank-import-item .transaction-side {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* ACIKLAMA: .bank-import-raw secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-raw {
+  display: -webkit-box;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* ACIKLAMA: .bank-import-kind secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-kind {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+/* ACIKLAMA: .bank-import-kind.income secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-kind.income {
+  color: #116036;
+  background: rgba(22, 163, 74, 0.12);
+}
+
+/* ACIKLAMA: .bank-import-kind.expense secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-kind.expense {
+  color: #9f1239;
+  background: rgba(244, 63, 94, 0.12);
+}
+
+html[data-theme="dark"] .bank-import-preview-summary,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .bank-import-preview-summary {
+  background: rgba(31, 184, 166, 0.10);
+  border-color: rgba(94, 224, 209, 0.22);
+  color: #edf9fb;
+}
+
+html[data-theme="dark"] .bank-import-item.selected,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .bank-import-item.selected {
+  background: rgba(94, 224, 209, 0.08);
+}
+
+html[data-theme="dark"] .bank-import-kind.income,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .bank-import-kind.income {
+  color: #9cf5bb;
+  background: rgba(34, 197, 94, 0.16);
+}
+
+html[data-theme="dark"] .bank-import-kind.expense,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .bank-import-kind.expense {
+  color: #fecdd3;
+  background: rgba(244, 63, 94, 0.16);
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 640px) {
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .bank-import-preview-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  /* ACIKLAMA: .bank-import-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-preview-actions {
+    justify-content: flex-start;
+  }
+
+  .bank-import-preview-modal .bank-import-modal-tools,
+  /* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ACIKLAMA: .bank-import-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  .bank-import-item .transaction-side {
+    grid-column: 2;
+    justify-content: flex-end;
+  }
+}
+
+
+/* ACIKLAMA: html:not([data-theme="dark"]) secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html:not([data-theme="dark"]) {
+  --accent: #14b8a6;
+  --accent-strong: #0f9f8f;
+  --accent-soft: rgba(20, 184, 166, 0.14);
+}
+
+html:not([data-theme="dark"]) .primary-btn,
+html:not([data-theme="dark"]) .success-btn,
+body:not([data-theme="dark"]) .primary-btn,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .success-btn {
+  border-color: rgba(15, 159, 143, 0.44);
+  background:
+    linear-gradient(135deg, rgba(45, 212, 191, 0.96), rgba(15, 159, 143, 0.98)),
+    #14b8a6;
+  box-shadow: 0 16px 34px rgba(20, 184, 166, 0.24);
+  color: #0b2f29;
+}
+
+html:not([data-theme="dark"]) .ghost-btn,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .ghost-btn {
+  border-color: rgba(20, 184, 166, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 253, 245, 0.92)),
+    #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.10);
+  color: #0f2f2a;
+}
+
+html:not([data-theme="dark"]) .danger-btn,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .danger-btn {
+  background: linear-gradient(135deg, #fb735f, #cf4a37);
+  box-shadow: 0 16px 34px rgba(207, 74, 55, 0.22);
+}
+
+html:not([data-theme="dark"]) .panel,
+html:not([data-theme="dark"]) .modal-card,
+body:not([data-theme="dark"]) .panel,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .modal-card {
+  border-color: rgba(20, 184, 166, 0.12);
+}
+
+html:not([data-theme="dark"]) .bank-import-account-panel,
+html:not([data-theme="dark"]) .bank-import-modal-tools,
+body:not([data-theme="dark"]) .bank-import-account-panel,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .bank-import-modal-tools {
+  border-color: rgba(20, 184, 166, 0.34);
+  background:
+    linear-gradient(135deg, rgba(236, 253, 245, 0.86), rgba(204, 251, 241, 0.45)),
+    rgba(255, 255, 255, 0.72);
+}
+
+html:not([data-theme="dark"]) .bank-import-edit-item.selected,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .bank-import-edit-item.selected {
+  background:
+    linear-gradient(135deg, rgba(204, 251, 241, 0.66), rgba(240, 253, 244, 0.74)),
+    rgba(255, 255, 255, 0.76);
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-preview-modal {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.bank-import-preview-modal .panel-heading,
+.bank-import-preview-modal .bank-import-modal-tools,
+.bank-import-preview-modal .sync-status,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-preview-modal .modal-actions {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* ACIKLAMA: .bank-import-preview-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-preview-list {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  max-width: 100%;
+}
+
+.bank-import-edit-grid input,
+.bank-import-edit-grid select,
+.bank-import-modal-tools select,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.bank-import-account-panel select {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ACIKLAMA: .bank-import-check secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-check {
+  width: 20px;
+  height: 20px;
+  accent-color: #14b8a6;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card-refresh-btn {
+  border-color: rgba(20, 184, 166, 0.22) !important;
+}
+
+
+.bank-import-preview-modal,
+.bank-import-preview-modal *,
+.bank-import-preview-modal *::before,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-preview-modal *::after {
+  box-sizing: border-box;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-preview-modal {
+  width: min(920px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+}
+
+/* ACIKLAMA: .bank-import-edit-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-edit-item {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-edit-grid {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bank-import-edit-grid label,
+.bank-import-modal-tools label,
+.bank-import-preview-actions,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+.bank-import-edit-body {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bank-import-edit-grid input,
+.bank-import-edit-grid select,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-modal-tools select {
+  max-width: 100%;
+}
+
+.bank-import-raw,
+.bank-import-edit-item .transaction-meta,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.bank-import-preview-modal .panel-note {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 980px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal {
+    width: min(100%, calc(100vw - 22px));
+    max-width: calc(100vw - 22px);
+  }
+
+  /* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-grid {
+    grid-template-columns:
+      minmax(0, 1.45fr)
+      minmax(96px, 0.8fr)
+      minmax(108px, 0.85fr)
+      minmax(118px, 0.95fr)
+      minmax(112px, 0.85fr);
+    gap: 8px;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 860px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal .bank-import-modal-tools {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  /* ACIKLAMA: .bank-import-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-preview-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .bank-import-preview-actions > button {
+    width: 100%;
+  }
+
+  /* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 620px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal {
+    width: calc(100vw - max(18px, env(safe-area-inset-left) + env(safe-area-inset-right)));
+    max-width: calc(100vw - max(18px, env(safe-area-inset-left) + env(safe-area-inset-right)));
+    padding-inline: 14px;
+  }
+
+  .bank-import-edit-grid,
+  /* ACIKLAMA: .bank-import-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-preview-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ACIKLAMA: .bank-import-edit-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-item {
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+    padding-inline: 10px;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .app-shell {
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+
+  /* ACIKLAMA: .view-section.active secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .view-section.active {
+    gap: 14px;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .panel {
+    border-radius: 22px;
+  }
+
+  .home-summary-filter-controls,
+  .date-filter,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .filters {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-summary-filter-controls input,
+  .home-summary-filter-controls button,
+  .date-filter input,
+  .date-filter button,
+  .filters input,
+  .filters select,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .filters button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal {
+    width: min(100%, calc(100vw - max(20px, env(safe-area-inset-left) + env(safe-area-inset-right))));
+    max-width: none;
+    max-height: calc(100dvh - max(18px, env(safe-area-inset-top)) - max(18px, env(safe-area-inset-bottom)));
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .bank-import-preview-modal .panel-heading {
+    margin-bottom: 10px;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .bank-import-preview-modal .panel-heading h2 {
+    font-size: clamp(1.35rem, 7vw, 1.9rem);
+    line-height: 1.08;
+  }
+
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal .bank-import-modal-tools {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  /* ACIKLAMA: .bank-import-preview-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-preview-list {
+    max-height: calc(100dvh - 310px - env(safe-area-inset-bottom));
+    padding: 0 2px 2px 0;
+  }
+
+  /* ACIKLAMA: .bank-import-edit-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-item {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr) !important;
+    gap: 10px;
+    padding: 14px 12px;
+  }
+
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  .bank-import-edit-body {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .bank-import-edit-grid input,
+  .bank-import-edit-grid select,
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-modal-tools select {
+    min-height: 48px;
+    border-radius: 14px;
+    font-size: 16px;
+  }
+
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal .modal-actions {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal .modal-actions > button {
+    min-height: 54px;
+    width: 100%;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 390px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  /* ACIKLAMA: .bank-import-preview-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-preview-list {
+    max-height: calc(100dvh - 292px - env(safe-area-inset-bottom));
+  }
+}
+
+
+.transaction-amount.transfer,
+html[data-theme="light"] .transaction-amount.transfer,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="light"] .transaction-amount.transfer {
+  color: #64748b !important;
+}
+
+html[data-theme="dark"] .transaction-amount.transfer,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .transaction-amount.transfer {
+  color: #cbd5e1 !important;
+}
+
+/* ACIKLAMA: .bank-import-item.transfer secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-item.transfer {
+  border-left-color: rgba(100, 116, 139, 0.86) !important;
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.account-records-filter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 10px 0 14px;
+  padding: 12px;
+  border: 1px solid rgba(20, 184, 166, 0.28);
+  border-radius: 16px;
+  background: rgba(236, 253, 245, 0.56);
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.account-records-filter label {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.account-records-filter select {
+  width: 100%;
+  min-width: 0;
+}
+
+html[data-theme="dark"] .account-records-filter,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .account-records-filter {
+  border-color: rgba(45, 212, 191, 0.34);
+  background: rgba(20, 184, 166, 0.10);
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .workspace {
+    padding-top: max(10px, env(safe-area-inset-top)) !important;
+    padding-inline: 12px !important;
+    gap: 12px !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 16px !important;
+    min-height: 0 !important;
+    margin: 0 0 10px !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar > div:first-child {
+    padding-left: 56px !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar h1 {
+    font-size: clamp(1.35rem, 6vw, 1.8rem) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar p {
+    font-size: clamp(0.82rem, 3.7vw, 0.98rem) !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar-side {
+    width: auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar-side .user-chip {
+    width: auto !important;
+    max-width: 132px !important;
+    min-height: 36px !important;
+    padding: 8px 10px !important;
+    border-radius: 10px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 0.82rem !important;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar-toggle.topbar-menu {
+    position: absolute !important;
+    top: 14px !important;
+    left: 14px !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 10px !important;
+    z-index: 8 !important;
+  }
+
+  /* ACIKLAMA: .view-section.active secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .view-section.active {
+    gap: 10px !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .panel {
+    border-radius: 8px !important;
+    padding: 18px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-standalone {
+    margin-top: 0 !important;
+    margin-bottom: 10px !important;
+    gap: 12px !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-standalone .panel-heading h2 {
+    font-size: clamp(1.45rem, 6.5vw, 1.85rem) !important;
+    line-height: 1.1 !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-standalone .panel-note {
+    font-size: clamp(0.92rem, 4vw, 1rem) !important;
+    line-height: 1.35 !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-panel {
+    padding: 14px !important;
+    border-radius: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-controls {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .home-summary-filter-controls label {
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 6px !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .home-summary-filter-controls input {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+    font-size: 16px !important;
+    text-align: left !important;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .home-summary-filter-controls button {
+    width: 100% !important;
+    min-height: 48px !important;
+    border-radius: 14px !important;
+  }
+
+  .bank-import-actions,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .bank-import-panel .storage-actions {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .bank-import-actions button,
+  .bank-import-actions .file-button,
+  .bank-import-panel .storage-actions button,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .bank-import-panel .storage-actions .file-trigger {
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+  }
+
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal {
+    width: min(100%, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 18px) !important;
+    padding: 18px !important;
+    overflow: hidden !important;
+  }
+
+  /* ACIKLAMA: .bank-import-preview-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-preview-list {
+    max-height: min(58dvh, 540px) !important;
+    overflow: auto !important;
+    padding-right: 4px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ACIKLAMA: .bank-import-edit-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-item {
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    overflow: hidden !important;
+  }
+
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  .bank-import-edit-body {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .bank-import-edit-grid label,
+  .bank-import-edit-grid input,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .bank-import-edit-grid select {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .bank-import-raw,
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  .bank-import-edit-item .transaction-meta {
+    overflow-wrap: anywhere !important;
+  }
+
+  #paymentAccountRecordsModal .modal-card,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #transactionEditModal .modal-card {
+    width: min(100%, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 18px) !important;
+    padding: 18px !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 390px) {
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .workspace {
+    padding-inline: 8px !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar {
+    padding: 14px 12px !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar > div:first-child {
+    padding-left: 50px !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar-side .user-chip {
+    max-width: 104px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar-toggle.topbar-menu {
+    top: 12px !important;
+    left: 12px !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-standalone .panel-heading h2 {
+    font-size: 1.38rem !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-panel {
+    padding: 12px !important;
+  }
+}
+
+
+html:not([data-theme="dark"]) .primary-btn,
+html:not([data-theme="dark"]) .success-btn,
+body:not([data-theme="dark"]) .primary-btn,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .success-btn {
+  border: 1px solid rgba(4, 120, 87, 0.42) !important;
+  background: linear-gradient(135deg, #2dd4bf 0%, #10b981 48%, #059669 100%) !important;
+  color: #062e25 !important;
+  box-shadow: 0 16px 34px rgba(5, 150, 105, 0.26) !important;
+}
+
+html:not([data-theme="dark"]) .danger-btn,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .danger-btn {
+  border: 1px solid rgba(185, 28, 28, 0.36) !important;
+  background: linear-gradient(135deg, #fb7185 0%, #ef4444 48%, #c2410c 100%) !important;
+  color: #fff7f7 !important;
+  box-shadow: 0 16px 34px rgba(220, 38, 38, 0.24) !important;
+}
+
+html:not([data-theme="dark"]) .ghost-btn,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .ghost-btn {
+  border: 1px solid rgba(20, 184, 166, 0.26) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%) !important;
+  color: #12352f !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .bank-import-panel .storage-actions {
+  grid-template-columns: minmax(180px, 1fr) minmax(190px, 1fr) minmax(180px, 1fr) minmax(160px, 0.9fr);
+}
+
+html:not([data-theme="dark"]) #bankImportLocalButton,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) #bankImportLocalButton {
+  border-color: rgba(20, 184, 166, 0.34) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #ccfbf1 100%) !important;
+  color: #12352f !important;
+}
+
+html[data-theme="dark"] #bankImportLocalButton,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] #bankImportLocalButton {
+  border-color: rgba(94, 224, 209, 0.34) !important;
+  background: linear-gradient(135deg, #10202b 0%, #173241 100%) !important;
+  color: #e8fffb !important;
+  box-shadow: 0 14px 30px rgba(8, 13, 20, 0.30) !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 980px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #entryView .bank-import-panel .storage-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 900px) {
+  #entryView .bank-import-panel .storage-actions,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-controls {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 640px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #entryView .bank-import-panel .storage-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="light"] .payment-card .payment-card-actions .ghost-btn {
+  border-color: rgba(255, 255, 255, 0.72) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 253, 245, 0.94)),
+    #ffffff !important;
+  color: #12352f !important;
+  text-shadow: none !important;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="light"] .payment-card .payment-card-actions .ghost-btn:hover {
+  background:
+    linear-gradient(180deg, #ffffff, #ccfbf1),
+    #ffffff !important;
+  color: #062e25 !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="light"] .payment-card .payment-card-actions .danger-lite-btn {
+  border-color: rgba(254, 202, 202, 0.84) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 247, 247, 0.98), rgba(254, 226, 226, 0.94)),
+    #fff7f7 !important;
+  color: #9f1239 !important;
+  text-shadow: none !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="light"] .payment-card .payment-card-actions .success-btn {
+  border-color: rgba(4, 120, 87, 0.40) !important;
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 48%, #059669 100%) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.20) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="light"] .payment-card .payment-card-actions .success-btn:disabled {
+  border-color: rgba(255, 255, 255, 0.70) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: #64748b !important;
+  text-shadow: none !important;
+  opacity: 0.72 !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-actions .danger-lite-btn {
+  border-color: rgba(254, 202, 202, 0.34) !important;
+  background:
+    linear-gradient(180deg, rgba(127, 29, 29, 0.40), rgba(69, 10, 10, 0.34)),
+    rgba(254, 226, 226, 0.12) !important;
+  color: #fecdd3 !important;
+  text-shadow: none !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-actions .danger-lite-btn:hover {
+  border-color: rgba(252, 165, 165, 0.52) !important;
+  background:
+    linear-gradient(180deg, rgba(153, 27, 27, 0.48), rgba(127, 29, 29, 0.40)),
+    rgba(254, 226, 226, 0.16) !important;
+  color: #ffe4e6 !important;
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  html,
+  body,
+  .app-shell,
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .workspace {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .workspace {
+    padding-top: calc(max(12px, env(safe-area-inset-top)) + 64px) !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0 !important;
+    padding: 16px !important;
+    overflow: hidden;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar > div:first-child {
+    min-width: 0;
+  }
+
+  .topbar h1,
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar-side {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    width: 100%;
+    min-width: 0;
+    gap: 10px !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar-side > button {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    font-size: 0.98rem;
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar-toggle.topbar-menu {
+    top: max(12px, env(safe-area-inset-top)) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 380px) {
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar-side > button {
+    font-size: 0.92rem;
+    min-height: 46px;
+    padding-inline: 10px;
+  }
+}
+
+
+.home-summary-filter-standalone,
+.home-summary-filter-panel,
+.home-summary-filter-controls,
+.home-summary-filter-controls label,
+.date-filter,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.filters {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.home-summary-filter-standalone .panel-heading,
+.home-summary-filter-standalone .panel-heading > div,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.home-summary-filter-standalone .panel-note {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.entry-filter-panel {
+  margin-top: 18px !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.summary-filter-panel {
+  margin-top: 0 !important;
+}
+
+.home-summary-filter-controls input,
+.date-filter input,
+.filters input,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.filters select {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.home-summary-filter-controls button,
+.date-filter button,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.filters button {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .workspace {
+    padding-top: calc(max(8px, env(safe-area-inset-top)) + 34px) !important;
+  }
+
+  /* ACIKLAMA: .view-section.active secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .view-section.active {
+    gap: 12px !important;
+  }
+
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .topbar {
+    padding: 14px !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .panel {
+    padding: clamp(18px, 5vw, 24px) !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-standalone {
+    gap: 12px;
+    margin-top: 12px !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-standalone .panel-heading h2 {
+    font-size: clamp(1.45rem, 6.4vw, 2rem);
+    line-height: 1.12;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-standalone .panel-note {
+    font-size: clamp(0.98rem, 4.1vw, 1.08rem);
+    line-height: 1.38;
+    overflow-wrap: anywhere;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-panel {
+    gap: 12px;
+    padding: 14px !important;
+    border-radius: 20px;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-controls {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .home-summary-filter-controls label {
+    gap: 7px;
+    font-size: 0.98rem;
+  }
+
+  .home-summary-filter-controls input,
+  .date-filter input,
+  .filters input,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .filters select {
+    min-height: 50px;
+    border-radius: 16px;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .home-summary-filter-controls button,
+  .date-filter button,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .filters button {
+    min-height: 54px;
+    border-radius: 16px;
+    padding: 12px 14px;
+    font-size: 1rem;
+    line-height: 1.15;
+  }
+
+  .topbar-menu,
+  .topbar-menu.sidebar-toggle,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar-toggle.topbar-menu {
+    top: max(10px, env(safe-area-inset-top)) !important;
+    left: max(10px, env(safe-area-inset-left)) !important;
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 390px) {
+  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  .workspace {
+    padding-top: calc(max(6px, env(safe-area-inset-top)) + 30px) !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-standalone .panel-heading h2 {
+    font-size: 1.42rem;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-panel {
+    padding: 12px !important;
+  }
+
+  .home-summary-filter-controls button,
+  .date-filter button,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .filters button {
+    min-height: 50px;
+    font-size: 0.96rem;
+  }
+}
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
+  align-items: end !important;
+  gap: 18px !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > div:first-child {
+  min-width: 210px !important;
+  margin: 0 !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: end !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  padding-bottom: 2px !important;
+  scrollbar-width: thin !important;
+}
+
+#historyView .history-heading > .history-filters > select,
+#historyView .history-heading > .history-filters > input,
+#historyView .history-heading > .history-filters > button,
+#historyView .history-heading > .history-filters > .range-filter,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .custom-filter-select {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .range-filter {
+  display: grid !important;
+  gap: 5px !important;
+  width: 126px !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .range-filter input {
+  width: 126px !important;
+  min-width: 126px !important;
+}
+
+#historyView .history-heading > .history-filters > #filterType,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterType"] {
+  width: 148px !important;
+}
+
+#historyView .history-heading > .history-filters > #filterPaymentMethod,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] {
+  width: 154px !important;
+}
+
+#historyView .history-heading > .history-filters > #filterPaymentAccount,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] {
+  width: 176px !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > #searchInput {
+  width: 150px !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > #historySearchButton {
+  width: 104px !important;
+}
+
+#historyView .history-heading > .history-filters > #clearHistoryRangeButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > #openRecentTransactionsButton {
+  width: 136px !important;
+}
+
+#historyView .history-heading > .history-filters > #exportExcelButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > #exportPdfButton {
+  width: 104px !important;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.recent-transactions-modal .recent-transactions-list {
+  max-height: min(62vh, 620px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.recent-transactions-modal .transaction-item {
+  align-items: center;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 980px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > div:first-child {
+    min-width: 0 !important;
+  }
+}
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#historyView .history-panel {
+  overflow: visible !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading {
+  grid-template-columns: minmax(150px, auto) minmax(0, 1fr) !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > div:first-child {
+  min-width: 150px !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters {
+  flex-wrap: wrap !important;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  scrollbar-width: none !important;
+  padding-bottom: 0 !important;
+  row-gap: 8px !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .range-filter {
+  width: 118px !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .range-filter input {
+  width: 118px !important;
+  min-width: 118px !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterType"] {
+  width: 136px !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] {
+  width: 142px !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] {
+  width: 158px !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > #searchInput {
+  width: 132px !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > #historySearchButton {
+  width: 88px !important;
+}
+
+#historyView .history-heading > .history-filters > #clearHistoryRangeButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > #openRecentTransactionsButton {
+  width: 124px !important;
+}
+
+#historyView .history-heading > .history-filters > #exportExcelButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters > #exportPdfButton {
+  width: 92px !important;
+}
+
+
+#historyView .history-heading,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-heading > .history-filters {
+  justify-content: flex-start !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 980px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #historyView .history-panel {
+    overflow: hidden !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    align-items: stretch !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > div:first-child {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  #historyView .history-heading > .history-filters > select,
+  #historyView .history-heading > .history-filters > input,
+  #historyView .history-heading > .history-filters > button,
+  #historyView .history-heading > .history-filters > .range-filter,
+  #historyView .history-heading > .history-filters > .custom-filter-select,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > .history-search-group {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #historyView .history-heading > .history-filters .range-filter input,
+  #historyView .history-heading > .history-filters #searchInput,
+  #historyView .history-heading > .history-filters button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters .custom-filter-trigger {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+  }
+
+  #historyView .history-heading > .history-filters #searchInput,
+  #historyView .history-heading > .history-filters #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters #exportPdfButton {
+    grid-column: auto !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 560px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #historyView .history-panel {
+    border-radius: 20px !important;
+    padding-inline: 16px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters {
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > .range-filter {
+    gap: 5px !important;
+  }
+
+  #historyView .history-heading > .history-filters #historySearchButton,
+  #historyView .history-heading > .history-filters #clearHistoryRangeButton,
+  #historyView .history-heading > .history-filters #openRecentTransactionsButton,
+  #historyView .history-heading > .history-filters #exportExcelButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters #exportPdfButton {
+    min-height: 46px !important;
+  }
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 860px) {
+  .topbar-menu.sidebar-toggle,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar-toggle.topbar-menu {
+    position: fixed !important;
+    top: max(14px, env(safe-area-inset-top)) !important;
+    left: max(14px, env(safe-area-inset-left)) !important;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 16px !important;
+    background: linear-gradient(180deg, rgba(17, 31, 43, 0.96), rgba(9, 21, 32, 0.98)) !important;
+    border: 1px solid rgba(118, 163, 184, 0.28) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    z-index: 120 !important;
+  }
+
+  .topbar-menu.sidebar-toggle span,
+  /* ACIKLAMA: Yan menu, menu butonlari ve navigasyon davranisinin gorunumunu ayarlar. */
+  .sidebar-toggle.topbar-menu span {
+    width: 24px !important;
+    height: 3px !important;
+    border-radius: 999px !important;
+    background: #f5fbff !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #historyView .history-panel {
+    overflow: hidden !important;
+    padding: 22px 20px 18px !important;
+    border-radius: 20px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 20px !important;
+    align-items: stretch !important;
+    padding: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #historyView .history-heading .panel-kicker {
+    margin-bottom: 4px !important;
+    letter-spacing: 0.14em !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading h2 {
+    font-size: clamp(1.7rem, 7vw, 2.1rem) !important;
+    line-height: 1.02 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  #historyView .history-heading > .history-filters > .range-filter,
+  #historyView .history-heading > .history-filters > .custom-filter-select,
+  #historyView .history-heading > .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > input {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    color: var(--muted) !important;
+  }
+
+  #historyView .history-heading > .history-filters .range-filter input,
+  #historyView .history-heading > .history-filters .custom-filter-trigger,
+  #historyView .history-heading > .history-filters #searchInput,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+    font-size: 0.93rem !important;
+    font-weight: 800 !important;
+    text-align: left;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters button {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters #clearHistoryRangeButton {
+    background: linear-gradient(180deg, rgba(24, 37, 49, 0.94), rgba(15, 27, 39, 0.96)) !important;
+    color: #f4fbff !important;
+    border: 1px solid rgba(133, 177, 193, 0.30) !important;
+  }
+
+  #historyView .history-heading > .history-filters #openRecentTransactionsButton,
+  #historyView .history-heading > .history-filters #historySearchButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters #exportExcelButton {
+    background: linear-gradient(135deg, #2ec9b8, #0a9d75) !important;
+    color: #082821 !important;
+    border: 1px solid rgba(56, 223, 199, 0.38) !important;
+    box-shadow: 0 14px 32px rgba(11, 154, 121, 0.22) !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters #exportPdfButton {
+    background: linear-gradient(135deg, #f55e6d, #d43b1f) !important;
+    color: #fff7f5 !important;
+    border: 1px solid rgba(255, 131, 118, 0.35) !important;
+    box-shadow: 0 14px 32px rgba(211, 63, 38, 0.24) !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters #searchInput {
+    text-align: left !important;
+    font-weight: 700 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > .range-filter:nth-of-type(1) {
+    order: 1;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > .range-filter:nth-of-type(2) {
+    order: 2;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterType"] {
+    order: 3;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] {
+    order: 4;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] {
+    order: 5;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > #clearHistoryRangeButton {
+    order: 6;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > #openRecentTransactionsButton {
+    order: 7;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > #exportExcelButton {
+    order: 8;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > #exportPdfButton {
+    order: 9;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > #historySearchButton {
+    order: 10;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > .history-filters > #searchInput {
+    order: 11;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 980px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .history-panel {
+    overflow: hidden !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .history-heading > .history-filters,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .panel-heading.history-heading > .filters.history-filters {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 18px 0 0 0 !important;
+    padding: 0 !important;
+    gap: 12px !important;
+    justify-items: stretch !important;
+    align-items: stretch !important;
+    overflow: visible !important;
+  }
+
+  .history-heading > .history-filters > .range-filter,
+  .history-heading > .history-filters > select,
+  .history-heading > .history-filters > .custom-filter-select,
+  .history-heading > .history-filters > button,
+  .history-heading > .history-filters > input,
+  .history-heading > .history-filters > #searchInput,
+  .history-filters > .range-filter,
+  .history-filters > select,
+  .history-filters > .custom-filter-select,
+  .history-filters > button,
+  .history-filters > input,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-filters > #searchInput {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+    box-sizing: border-box !important;
+  }
+
+  .history-heading > .history-filters > button,
+  .history-filters > button,
+  .history-heading > .history-filters .custom-filter-trigger,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-filters .custom-filter-trigger {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 16px !important;
+    border-radius: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  .history-heading > .history-filters > #searchInput,
+  .history-filters > #searchInput,
+  .history-heading > .history-filters > .range-filter input,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .history-filters > .range-filter input {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    box-sizing: border-box !important;
+    border-radius: 14px !important;
+  }
+
+  .history-heading > .history-filters > .range-filter,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+  }
+
+  .history-heading > .history-filters > #historySearchButton,
+  .history-heading > .history-filters > #clearHistoryRangeButton,
+  .history-heading > .history-filters > #openRecentTransactionsButton,
+  .history-heading > .history-filters > #openRecentTransactionsButton,
+  .history-heading > .history-filters > #exportExcelButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters > #exportPdfButton {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 560px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .history-panel {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .history-heading > .history-filters,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .panel-heading.history-heading > .filters.history-filters {
+    gap: 11px !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 1180px), (hover: none) and (pointer: coarse) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #historyView .history-panel {
+    overflow: hidden !important;
+  }
+
+  #historyView .history-heading,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #historyView .panel-heading.history-heading {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading > div:first-child {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #historyView .history-heading > .history-filters,
+  #historyView .panel-heading.history-heading > .filters.history-filters,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .filters.history-filters {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 18px 0 0 0 !important;
+    padding: 0 !important;
+    gap: 12px !important;
+    justify-content: stretch !important;
+    justify-items: stretch !important;
+    align-content: start !important;
+    align-items: stretch !important;
+    overflow: visible !important;
+  }
+
+  #historyView .history-filters > *,
+  #historyView .history-filters > button,
+  #historyView .history-filters > input,
+  #historyView .history-filters > select,
+  #historyView .history-filters > label,
+  #historyView .history-filters > .range-filter,
+  #historyView .history-filters > .custom-filter-select,
+  #historyView .history-filters > #filterType,
+  #historyView .history-filters > #filterPaymentMethod,
+  #historyView .history-filters > #filterPaymentAccount,
+  #historyView .history-filters > #clearHistoryRangeButton,
+  #historyView .history-filters > #historySearchButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #exportExcelButton,
+  #historyView .history-filters > #exportPdfButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #searchInput {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+  }
+
+  #historyView .history-filters button,
+  #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters .custom-filter-trigger {
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    padding: 0 16px !important;
+    border-radius: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  #historyView .history-filters input,
+  #historyView .history-filters select,
+  #historyView .history-filters .range-filter input,
+  #historyView .history-filters #searchInput,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters .custom-filter-trigger {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    box-sizing: border-box !important;
+    border-radius: 14px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters #searchInput {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 560px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  #historyView .history-panel {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  #historyView .history-heading > .history-filters,
+  #historyView .panel-heading.history-heading > .filters.history-filters,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .filters.history-filters {
+    gap: 11px !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 1180px), (hover: none) and (pointer: coarse) {
+  #historyView .history-filters > #filterType,
+  #historyView .history-filters > #filterPaymentMethod,
+  #historyView .history-filters > #filterPaymentAccount,
+  #historyView .history-filters > #clearHistoryRangeButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #exportExcelButton,
+  #historyView .history-filters > #exportPdfButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #historySearchButton {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+    box-sizing: border-box !important;
+  }
+
+  #historyView .history-filters > #filterType,
+  #historyView .history-filters > #filterPaymentMethod,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #filterPaymentAccount {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    text-align: center !important;
+    text-align-last: center !important;
+    padding-left: 16px !important;
+    padding-right: 40px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    border-radius: 14px !important;
+  }
+
+  #historyView .history-filters > #clearHistoryRangeButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #exportExcelButton,
+  #historyView .history-filters > #exportPdfButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #historySearchButton {
+    justify-content: center !important;
+    text-align: center !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    border-radius: 14px !important;
+    margin: 0 !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-filters {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#historyView .history-filters > .range-filter,
+#historyView .history-filters > select,
+#historyView .history-filters > .custom-filter-select,
+#historyView .history-filters > button,
+#historyView .history-filters > input,
+#historyView .history-filters > #filterType,
+#historyView .history-filters > #filterPaymentMethod,
+#historyView .history-filters > #filterPaymentAccount,
+#historyView .history-filters > #clearHistoryRangeButton,
+#historyView .history-filters > #openRecentTransactionsButton,
+#historyView .history-filters > #openRecentTransactionsButton,
+#historyView .history-filters > #exportExcelButton,
+#historyView .history-filters > #exportPdfButton,
+#historyView .history-filters > #historySearchButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-filters > #searchInput {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  justify-self: stretch !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+}
+
+#historyView .history-filters > button,
+#historyView .history-filters > #clearHistoryRangeButton,
+#historyView .history-filters > #openRecentTransactionsButton,
+#historyView .history-filters > #openRecentTransactionsButton,
+#historyView .history-filters > #exportExcelButton,
+#historyView .history-filters > #exportPdfButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-filters > #historySearchButton {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#historyView .history-filters .custom-filter-select,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-filters .custom-filter-trigger {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-filters .custom-filter-trigger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 1180px), (hover: none) and (pointer: coarse) {
+  #historyView .history-heading > .history-filters,
+  #historyView .panel-heading.history-heading > .filters.history-filters,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .filters.history-filters {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-items: stretch !important;
+    align-items: stretch !important;
+  }
+
+  #historyView .history-filters > #filterType,
+  #historyView .history-filters > #filterPaymentMethod,
+  #historyView .history-filters > #filterPaymentAccount,
+  #historyView .history-filters > #clearHistoryRangeButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #openRecentTransactionsButton,
+  #historyView .history-filters > #exportExcelButton,
+  #historyView .history-filters > #exportPdfButton,
+  #historyView .history-filters > #historySearchButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #searchInput {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#historyView .history-panel {
+  container-type: inline-size;
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) !important;
+    column-gap: 18px !important;
+    align-items: end !important;
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 170px !important;
+    min-width: 170px !important;
+    align-self: end !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns:
+      minmax(108px, 0.80fr)
+      minmax(108px, 0.80fr)
+      minmax(140px, 1.02fr)
+      minmax(140px, 1.02fr)
+      minmax(170px, 1.20fr)
+      minmax(128px, 0.90fr)
+      minmax(88px, 0.64fr)
+      minmax(135px, 1.00fr)
+      minmax(122px, 0.88fr)
+      minmax(104px, 0.76fr)
+      minmax(94px, 0.70fr) !important;
+    grid-template-areas: "start end type payment account clear searchBtn searchInput recent excel pdf" !important;
+    gap: 10px !important;
+    align-items: end !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton { grid-area: recent !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+    align-self: end !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > select.native-filter-source {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-width: 1px !important;
+    max-width: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters button,
+  html:not(.history-compact-layout) #historyView .history-filters input,
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters .range-filter input {
+    height: 44px !important;
+    min-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+  }
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) and (max-width: 1350px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    grid-template-columns: 1fr !important;
+    row-gap: 14px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "start end type payment"
+      "account account clear recent"
+      "searchBtn searchInput searchInput excel"
+      "pdf pdf pdf pdf" !important;
+  }
+}
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-heading {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-heading > div:first-child {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 18px 0 0 0 !important;
+  padding: 0 !important;
+  justify-content: stretch !important;
+  justify-items: stretch !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+html.history-compact-layout #historyView .history-filters > .range-filter,
+html.history-compact-layout #historyView .history-filters > .custom-filter-select,
+html.history-compact-layout #historyView .history-filters > button,
+html.history-compact-layout #historyView .history-filters > input,
+html.history-compact-layout #historyView .history-filters > #searchInput,
+html.history-compact-layout #historyView .history-filters > #clearHistoryRangeButton,
+html.history-compact-layout #historyView .history-filters > #historySearchButton,
+html.history-compact-layout #historyView .history-filters > #openRecentTransactionsButton,
+html.history-compact-layout #historyView .history-filters > #openRecentTransactionsButton,
+html.history-compact-layout #historyView .history-filters > #exportExcelButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #exportPdfButton {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  justify-self: stretch !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > select.native-filter-source {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 1px !important;
+  max-width: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+html.history-compact-layout #historyView .history-filters button,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters .custom-filter-trigger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  padding: 0 16px !important;
+  border-radius: 14px !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+html.history-compact-layout #historyView .history-filters input,
+html.history-compact-layout #historyView .history-filters .range-filter input,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters #searchInput {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  border-radius: 14px !important;
+  box-sizing: border-box !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters .range-filter {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 7px !important;
+}
+
+
+/* ACIKLAMA: @container (max-width: 980px) secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+@container (max-width: 980px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-heading {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-items: stretch !important;
+  }
+
+  #historyView .history-filters > .range-filter,
+  #historyView .history-filters > .custom-filter-select,
+  #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > input {
+    width: 100% !important;
+    max-width: 100% !important;
+    grid-column: 1 / -1 !important;
+  }
+}
+
+
+
+html.history-compact-layout #historyView .history-filters > .custom-filter-select,
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterType"],
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"],
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] {
+  grid-column: 1 / -1 !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  justify-self: stretch !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+}
+
+html.history-compact-layout #historyView .history-filters > .custom-filter-select .custom-filter-trigger,
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterType"] .custom-filter-trigger,
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] .custom-filter-trigger,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] .custom-filter-trigger {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  padding: 0 16px !important;
+  border-radius: 14px !important;
+  box-sizing: border-box !important;
+}
+
+/* ACIKLAMA: @container (max-width: 980px) secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+@container (max-width: 980px) {
+  #historyView .history-filters > .custom-filter-select,
+  #historyView .history-filters > .custom-filter-select[data-for="filterType"],
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"],
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] {
+    grid-column: 1 / -1 !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #historyView .history-filters > .custom-filter-select .custom-filter-trigger,
+  #historyView .history-filters > .custom-filter-select[data-for="filterType"] .custom-filter-trigger,
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] .custom-filter-trigger,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] .custom-filter-trigger {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    padding: 0 16px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) !important;
+    column-gap: 18px !important;
+    align-items: end !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    align-self: end !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns:
+      minmax(112px, 0.78fr)
+      minmax(112px, 0.78fr)
+      minmax(142px, 1fr)
+      minmax(142px, 1fr)
+      minmax(170px, 1.18fr)
+      minmax(126px, 0.88fr)
+      minmax(92px, 0.65fr)
+      minmax(140px, 0.98fr)
+      minmax(128px, 0.90fr)
+      minmax(104px, 0.74fr)
+      minmax(96px, 0.70fr) !important;
+    grid-template-areas: "start end type payment account clear searchBtn searchInput recent excel pdf" !important;
+    gap: 10px !important;
+    align-items: end !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) {
+    grid-area: start !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) {
+    grid-area: end !important;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] {
+    grid-area: type !important;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] {
+    grid-area: payment !important;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] {
+    grid-area: account !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton {
+    grid-area: clear !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton {
+    grid-area: searchBtn !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    grid-area: searchInput !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton {
+    grid-area: recent !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton {
+    grid-area: excel !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton {
+    grid-area: pdf !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+    align-self: end !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-rows: 18px 44px !important;
+    gap: 4px !important;
+    line-height: 1.1 !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    transform: translateY(22px) !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) and (max-width: 1450px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    grid-template-columns: 1fr !important;
+    row-gap: 12px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "start end type payment account clear"
+      "searchBtn searchInput searchInput recent excel pdf" !important;
+    align-items: end !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 1451px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) !important;
+    align-items: end !important;
+    column-gap: 18px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    align-self: end !important;
+    width: 170px !important;
+    min-width: 170px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns:
+      minmax(116px, 0.80fr)
+      minmax(116px, 0.80fr)
+      minmax(142px, 1fr)
+      minmax(142px, 1fr)
+      minmax(170px, 1.16fr)
+      minmax(128px, 0.88fr)
+      minmax(92px, 0.64fr)
+      minmax(136px, 0.95fr)
+      minmax(128px, 0.88fr)
+      minmax(104px, 0.72fr)
+      minmax(96px, 0.68fr) !important;
+    grid-template-areas: "start end type payment account clear searchBtn searchInput recent excel pdf" !important;
+    gap: 10px !important;
+    align-items: end !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton { grid-area: recent !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    align-self: end !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    
+    margin-top: 22px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-rows: 18px 44px !important;
+    gap: 4px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.1 !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) and (max-width: 1450px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    row-gap: 12px !important;
+    align-items: start !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "start end type payment account clear"
+      "searchBtn searchInput searchInput recent excel pdf" !important;
+    gap: 10px !important;
+    align-items: end !important;
+    justify-items: stretch !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton { grid-area: recent !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    align-self: end !important;
+    justify-self: stretch !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    margin-top: 22px !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .range-filter:nth-of-type(1) { order: 1 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .range-filter:nth-of-type(2) { order: 2 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterType"] { order: 3 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { order: 4 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { order: 5 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #searchInput { order: 6 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #historySearchButton { order: 7 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #clearHistoryRangeButton { order: 8 !important; }
+html.history-compact-layout #historyView .history-filters > #openRecentTransactionsButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #openRecentTransactionsButton { order: 9 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #exportExcelButton { order: 10 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #exportPdfButton { order: 11 !important; }
+
+/* ACIKLAMA: @container (max-width: 980px) secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+@container (max-width: 980px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > .range-filter:nth-of-type(1) { order: 1 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > .range-filter:nth-of-type(2) { order: 2 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterType"] { order: 3 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { order: 4 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { order: 5 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #searchInput { order: 6 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #historySearchButton { order: 7 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #clearHistoryRangeButton { order: 8 !important; }
+  #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #openRecentTransactionsButton { order: 9 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #exportExcelButton { order: 10 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #exportPdfButton { order: 11 !important; }
+}
+
+
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#historyView #historySearchButton.history-search-icon-button {
+  gap: 8px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+#historyView #historySearchButton.history-search-icon-button span:first-child {
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .range-filter:nth-of-type(1) { order: 1 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .range-filter:nth-of-type(2) { order: 2 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterType"] { order: 3 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { order: 4 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { order: 5 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #clearHistoryRangeButton { order: 6 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #searchInput { order: 7 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #historySearchButton { order: 8 !important; }
+html.history-compact-layout #historyView .history-filters > #openRecentTransactionsButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #openRecentTransactionsButton { order: 9 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #exportExcelButton { order: 10 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #exportPdfButton { order: 11 !important; }
+
+/* ACIKLAMA: @container (max-width: 980px) secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+@container (max-width: 980px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > .range-filter:nth-of-type(1) { order: 1 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > .range-filter:nth-of-type(2) { order: 2 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterType"] { order: 3 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { order: 4 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { order: 5 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #clearHistoryRangeButton { order: 6 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #searchInput { order: 7 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #historySearchButton { order: 8 !important; }
+  #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #openRecentTransactionsButton { order: 9 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #exportExcelButton { order: 10 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #exportPdfButton { order: 11 !important; }
+}
+
+
+html.history-compact-layout #historyView .history-filters > #searchInput,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #historySearchButton {
+  width: 100% !important;
+  max-width: 100% !important;
+  grid-column: 1 / -1 !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #historySearchButton {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView #historySearchButton {
+  gap: 0 !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView #historySearchButton span {
+  display: none !important;
+}
+
+#historyView #searchInput.history-search-input-with-icon,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView #searchInput {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2218%22%20height%3D%2218%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Ccircle%20cx%3D%2211%22%20cy%3D%2211%22%20r%3D%226.5%22%20stroke%3D%22%23889aa3%22%20stroke-width%3D%221.8%22/%3E%3Cpath%20d%3D%22M16%2016L21%2021%22%20stroke%3D%22%23889aa3%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: 18px center !important;
+  background-size: 18px 18px !important;
+  padding-left: 48px !important;
+}
+
+html[data-theme="dark"] #historyView #searchInput.history-search-input-with-icon,
+body[data-theme="dark"] #historyView #searchInput.history-search-input-with-icon,
+html[data-theme="dark"] #historyView #searchInput,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] #historyView #searchInput {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2218%22%20height%3D%2218%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Ccircle%20cx%3D%2211%22%20cy%3D%2211%22%20r%3D%226.5%22%20stroke%3D%22%2397a8b0%22%20stroke-width%3D%221.8%22/%3E%3Cpath%20d%3D%22M16%2016L21%2021%22%20stroke%3D%22%2397a8b0%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E") !important;
+}
+
+
+#historyView #searchInput::-webkit-search-decoration,
+#historyView #searchInput::-webkit-search-cancel-button,
+#historyView #searchInput::-webkit-search-results-button,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView #searchInput::-webkit-search-results-decoration {
+  margin-right: 8px;
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    grid-template-areas: "start end type payment account clear searchInput searchBtn recent excel pdf" !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    grid-area: searchInput !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton {
+    grid-area: searchBtn !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) and (max-width: 1450px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    grid-template-areas:
+      "start end type payment account clear"
+      "searchInput searchInput searchBtn recent excel pdf" !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    column-gap: 16px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    gap: 12px !important;
+  }
+
+  
+  /* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+  @media (min-width: 1451px) {
+    /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+    html:not(.history-compact-layout) #historyView .history-filters {
+      grid-template-columns:
+        minmax(110px, 0.78fr)
+        minmax(110px, 0.78fr)
+        minmax(136px, 0.96fr)
+        minmax(136px, 0.96fr)
+        minmax(160px, 1.10fr)
+        minmax(118px, 0.84fr)
+        minmax(152px, 1.12fr)
+        minmax(88px, 0.62fr)
+        minmax(118px, 0.86fr)
+        minmax(94px, 0.68fr)
+        minmax(88px, 0.64fr) !important;
+      grid-template-areas: "start end type payment account clear searchInput searchBtn recent excel pdf" !important;
+      gap: 12px !important;
+    }
+
+    /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+    html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+      min-width: 152px !important;
+    }
+  }
+
+  
+  /* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+  @media (min-width: 981px) and (max-width: 1450px) {
+    /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+    html:not(.history-compact-layout) #historyView .history-filters {
+      gap: 12px !important;
+      grid-template-areas:
+        "start end type payment account clear"
+        "searchInput searchInput searchBtn recent excel pdf" !important;
+    }
+
+    /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+    html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    margin: 0 !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 1280px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) !important;
+    column-gap: 18px !important;
+    align-items: end !important;
+    row-gap: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 170px !important;
+    min-width: 170px !important;
+    align-self: end !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns:
+      minmax(118px, 0.78fr)
+      minmax(118px, 0.78fr)
+      minmax(132px, 0.92fr)
+      minmax(132px, 0.92fr)
+      minmax(150px, 1.06fr)
+      minmax(122px, 0.84fr)
+      minmax(152px, 1.08fr)
+      minmax(88px, 0.62fr)
+      minmax(118px, 0.84fr)
+      minmax(92px, 0.66fr)
+      minmax(88px, 0.64fr) !important;
+    grid-template-areas: "start end type payment account clear searchInput searchBtn recent excel pdf" !important;
+    gap: 12px !important;
+    align-items: end !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton { grid-area: recent !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+    align-self: end !important;
+    margin: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-rows: 18px 44px !important;
+    gap: 4px !important;
+    line-height: 1.1 !important;
+    font-size: 0.72rem !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    margin-top: 22px !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    padding-left: 44px !important;
+    padding-right: 14px !important;
+  }
+}
+
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    grid-template-areas: "start end type payment account searchInput searchBtn clear recent excel pdf" !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) and (max-width: 1450px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    grid-template-areas:
+      "start end type payment account recent"
+      "searchInput searchInput searchBtn clear excel pdf" !important;
+  }
+}
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .range-filter:nth-of-type(1) { order: 1 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .range-filter:nth-of-type(2) { order: 2 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterType"] { order: 3 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { order: 4 !important; }
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { order: 5 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #searchInput { order: 6 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #historySearchButton { order: 7 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #clearHistoryRangeButton { order: 8 !important; }
+html.history-compact-layout #historyView .history-filters > #openRecentTransactionsButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #openRecentTransactionsButton { order: 9 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #exportExcelButton { order: 10 !important; }
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters > #exportPdfButton { order: 11 !important; }
+
+/* ACIKLAMA: @container (max-width: 980px) secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+@container (max-width: 980px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > .range-filter:nth-of-type(1) { order: 1 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > .range-filter:nth-of-type(2) { order: 2 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterType"] { order: 3 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { order: 4 !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { order: 5 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #searchInput { order: 6 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #historySearchButton { order: 7 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #clearHistoryRangeButton { order: 8 !important; }
+  #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #openRecentTransactionsButton { order: 9 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #exportExcelButton { order: 10 !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters > #exportPdfButton { order: 11 !important; }
+}
+
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-filters {
+  gap: 12px !important;
+}
+
+#historyView .history-filters > .range-filter,
+#historyView .history-filters > .custom-filter-select,
+#historyView .history-filters > button,
+#historyView .history-filters > input,
+#historyView .history-filters > #searchInput,
+#historyView .history-filters > #clearHistoryRangeButton,
+#historyView .history-filters > #historySearchButton,
+#historyView .history-filters > #openRecentTransactionsButton,
+#historyView .history-filters > #openRecentTransactionsButton,
+#historyView .history-filters > #exportExcelButton,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+#historyView .history-filters > #exportPdfButton {
+  margin: 0 !important;
+}
+
+#historyView .history-filters > .custom-filter-select .custom-filter-trigger,
+#historyView .history-filters > button,
+#historyView .history-filters > #searchInput,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#historyView .history-filters > .range-filter input {
+  box-sizing: border-box !important;
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 1280px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    column-gap: 18px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    gap: 12px !important;
+    align-items: end !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter,
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > input {
+    margin: 0 !important;
+  }
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) and (max-width: 1279px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    row-gap: 12px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    gap: 12px !important;
+  }
+}
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+html.history-compact-layout #historyView .history-filters {
+  gap: 12px !important;
+}
+
+/* ACIKLAMA: @container (max-width: 980px) secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+@container (max-width: 980px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  #historyView .history-filters {
+    gap: 12px !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Kok degiskenler; renk, font ve golge gibi tema degerlerini merkezi olarak tutar. */
+:root {
+  --filter-panel-bg: linear-gradient(180deg, rgba(255,255,255,0.46), rgba(255,255,255,0.28));
+  --filter-panel-border: rgba(124, 171, 162, 0.18);
+  --filter-control-bg: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(245,250,248,0.92));
+  --filter-control-border: rgba(129, 156, 166, 0.28);
+  --filter-control-shadow: 0 10px 24px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+html[data-theme="dark"],
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] {
+  --filter-panel-bg: linear-gradient(180deg, rgba(16, 26, 35, 0.56), rgba(13, 22, 31, 0.40));
+  --filter-panel-border: rgba(151, 183, 199, 0.14);
+  --filter-control-bg: linear-gradient(180deg, rgba(11, 22, 34, 0.94), rgba(10, 20, 31, 0.92));
+  --filter-control-border: rgba(151, 183, 199, 0.16);
+  --filter-control-shadow: 0 16px 28px rgba(2, 10, 18, 0.34), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+
+.home-summary-filter-panel,
+.payment-account-filters,
+.account-records-filter,
+.panel .filters:not(.history-filters),
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.date-filter-group {
+  border: 1px solid var(--filter-panel-border) !important;
+  background: var(--filter-panel-bg) !important;
+  border-radius: 22px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 14px 28px rgba(15, 23, 42, 0.06) !important;
+}
+
+.home-summary-filter-panel,
+.payment-account-filters,
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.account-records-filter {
+  padding: 16px !important;
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.payment-account-filters {
+  display: grid !important;
+  grid-template-columns: minmax(0, 340px) !important;
+  gap: 12px !important;
+  margin: 0 0 18px !important;
+  align-items: end !important;
+  justify-content: start !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.date-filter-group {
+  padding: 12px !important;
+  gap: 12px !important;
+  width: min(520px, 100%) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.panel .filters:not(.history-filters) {
+  padding: 14px !important;
+  gap: 12px !important;
+  align-items: end !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.home-summary-filter-controls {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(160px, 1fr)) repeat(2, minmax(150px, auto)) !important;
+  gap: 12px !important;
+  align-items: end !important;
+}
+
+.home-summary-filter-controls label,
+.payment-account-filter-control,
+.account-records-filter label,
+.panel .filters:not(.history-filters) .range-filter,
+.panel .filters:not(.history-filters) .date-filter,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.date-filter {
+  display: grid !important;
+  gap: 7px !important;
+  color: var(--muted) !important;
+  font-size: 0.9rem !important;
+  font-weight: 800 !important;
+}
+
+
+.home-summary-filter-controls input,
+.payment-account-filter-control select,
+.account-records-filter select,
+.panel .filters:not(.history-filters) select,
+.panel .filters:not(.history-filters) input,
+.date-filter-group select,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.date-filter select {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  height: 46px !important;
+  padding: 12px 14px !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--filter-control-border) !important;
+  background: var(--filter-control-bg) !important;
+  color: var(--text) !important;
+  box-shadow: var(--filter-control-shadow) !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+}
+
+.home-summary-filter-controls input:focus,
+.payment-account-filter-control select:focus,
+.account-records-filter select:focus,
+.panel .filters:not(.history-filters) select:focus,
+.panel .filters:not(.history-filters) input:focus,
+.date-filter-group select:focus,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.date-filter select:focus {
+  border-color: rgba(45, 212, 191, 0.55) !important;
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.10), var(--filter-control-shadow) !important;
+}
+
+.home-summary-filter-controls button,
+.panel .filters:not(.history-filters) button,
+.payment-account-filters button,
+.account-records-filter button,
+.date-filter-group + .storage-actions button,
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.date-filter-group + .auth-actions button {
+  min-height: 46px !important;
+  height: 46px !important;
+  border-radius: 16px !important;
+  white-space: nowrap !important;
+}
+
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.payment-account-filter-control {
+  width: min(360px, 100%) !important;
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.account-records-filter {
+  gap: 10px !important;
+  margin: 12px 0 16px !important;
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 860px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-controls {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .payment-account-filters {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .payment-account-filter-control {
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .date-filter-group {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .panel .filters:not(.history-filters) {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 861px) and (max-width: 1180px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .panel .filters:not(.history-filters) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 1280px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) !important;
+    column-gap: 18px !important;
+    align-items: end !important;
+    row-gap: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 170px !important;
+    min-width: 170px !important;
+    align-self: end !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns:
+      minmax(118px, 0.78fr)
+      minmax(118px, 0.78fr)
+      minmax(136px, 0.92fr)
+      minmax(136px, 0.92fr)
+      minmax(160px, 1.06fr)
+      minmax(156px, 1.10fr)
+      minmax(88px, 0.62fr)
+      minmax(122px, 0.84fr)
+      minmax(120px, 0.84fr)
+      minmax(96px, 0.68fr)
+      minmax(90px, 0.64fr) !important;
+    grid-template-areas: "start end type payment account searchInput searchBtn clear recent excel pdf" !important;
+    gap: 12px !important;
+    align-items: start !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton { grid-area: recent !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-rows: 18px 44px !important;
+    gap: 4px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 66px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    align-self: start !important;
+    justify-self: stretch !important;
+    line-height: 1.1 !important;
+    font-size: 0.72rem !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    margin: 22px 0 0 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    align-self: start !important;
+    justify-self: stretch !important;
+    transform: none !important;
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    padding-left: 44px !important;
+    padding-right: 14px !important;
+    background-position: 16px center !important;
+  }
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) and (max-width: 1279px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    row-gap: 12px !important;
+    align-items: start !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "start end type payment account recent"
+      "searchInput searchInput searchBtn clear excel pdf" !important;
+    gap: 12px !important;
+    align-items: start !important;
+    justify-items: stretch !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton { grid-area: recent !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter {
+    height: 66px !important;
+    display: grid !important;
+    grid-template-rows: 18px 44px !important;
+    gap: 4px !important;
+    margin: 0 !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    height: 44px !important;
+    min-height: 44px !important;
+    margin: 22px 0 0 0 !important;
+    transform: none !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input,
+  html:not(.history-compact-layout) #historyView .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Kok degiskenler; renk, font ve golge gibi tema degerlerini merkezi olarak tutar. */
+:root {
+  --modern-filter-panel-bg: linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.22));
+  --modern-filter-panel-border: rgba(79, 167, 157, 0.26);
+  --modern-filter-control-bg: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,250,248,0.94));
+  --modern-filter-control-border: rgba(129, 156, 166, 0.28);
+  --modern-filter-control-shadow: 0 10px 24px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.60);
+}
+
+html[data-theme="dark"],
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] {
+  --modern-filter-panel-bg: linear-gradient(180deg, rgba(16,26,35,0.56), rgba(13,22,31,0.40));
+  --modern-filter-panel-border: rgba(88, 188, 175, 0.24);
+  --modern-filter-control-bg: linear-gradient(180deg, rgba(11,22,34,0.96), rgba(9,18,29,0.94));
+  --modern-filter-control-border: rgba(151,183,199,0.18);
+  --modern-filter-control-shadow: 0 16px 28px rgba(2,10,18,0.34), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+
+.bank-import-account-panel,
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-modal-tools {
+  gap: 12px !important;
+  padding: 16px !important;
+  border: 1px solid var(--modern-filter-panel-border) !important;
+  border-radius: 18px !important;
+  background: var(--modern-filter-panel-bg) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 14px 28px rgba(15, 23, 42, 0.08) !important;
+}
+
+.bank-import-account-panel label,
+.bank-import-modal-tools label,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-edit-grid label {
+  gap: 7px !important;
+  font-size: 0.9rem !important;
+  font-weight: 800 !important;
+}
+
+.bank-import-account-panel select,
+.bank-import-modal-tools select,
+.bank-import-edit-grid input,
+.bank-import-edit-grid select,
+#entryForm select,
+#entryForm input,
+#transactionEditForm select,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#transactionEditForm input {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  height: 46px !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--modern-filter-control-border) !important;
+  background: var(--modern-filter-control-bg) !important;
+  box-shadow: var(--modern-filter-control-shadow) !important;
+  color: var(--text) !important;
+  padding: 12px 14px !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+}
+
+#entryForm textarea,
+#transactionEditForm textarea,
+.bank-import-textarea,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-edit-grid textarea {
+  border-radius: 16px !important;
+  border: 1px solid var(--modern-filter-control-border) !important;
+  background: var(--modern-filter-control-bg) !important;
+  box-shadow: var(--modern-filter-control-shadow) !important;
+}
+
+.bank-import-account-panel select:focus,
+.bank-import-modal-tools select:focus,
+.bank-import-edit-grid input:focus,
+.bank-import-edit-grid select:focus,
+#entryForm select:focus,
+#entryForm input:focus,
+#transactionEditForm select:focus,
+#transactionEditForm input:focus,
+#entryForm textarea:focus,
+#transactionEditForm textarea:focus,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-textarea:focus {
+  border-color: rgba(45,212,191,0.55) !important;
+  box-shadow: 0 0 0 4px rgba(45,212,191,0.10), var(--modern-filter-control-shadow) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.bank-import-account-panel p {
+  font-size: 0.9rem !important;
+  line-height: 1.45 !important;
+}
+
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.bank-import-preview-modal .bank-import-modal-tools {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto !important;
+  align-items: end !important;
+  margin-bottom: 16px !important;
+}
+
+/* ACIKLAMA: .bank-import-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-preview-actions {
+  gap: 10px !important;
+  align-self: end !important;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.bank-import-mini-btn {
+  min-height: 46px !important;
+  padding: 0 14px !important;
+  border-radius: 16px !important;
+  font-size: 0.88rem !important;
+}
+
+
+/* ACIKLAMA: .bank-import-preview-list secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-preview-list {
+  gap: 14px !important;
+}
+
+/* ACIKLAMA: .bank-import-item secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-item {
+  border-left-width: 4px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 20px rgba(2,10,18,0.10) !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-item.selected {
+  background: linear-gradient(180deg, rgba(31,184,166,0.10), rgba(31,184,166,0.05)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 24px rgba(20,184,166,0.10) !important;
+}
+
+/* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.bank-import-edit-grid {
+  gap: 12px !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.bank-import-edit-grid label {
+  min-width: 0 !important;
+}
+
+
+#entryForm,
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#transactionEditForm {
+  gap: 14px !important;
+}
+
+#entryForm label,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+#transactionEditForm label {
+  gap: 7px !important;
+}
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 900px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .bank-import-preview-modal .bank-import-modal-tools {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ACIKLAMA: .bank-import-preview-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-preview-actions {
+    justify-content: stretch !important;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .bank-import-preview-actions .bank-import-mini-btn {
+    flex: 1 1 auto !important;
+  }
+
+  /* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 640px) {
+  /* ACIKLAMA: .bank-import-edit-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .bank-import-edit-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 1280px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading {
+    display: grid !important;
+    grid-template-columns: 170px minmax(0, 1fr) !important;
+    column-gap: 18px !important;
+    align-items: end !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-heading > div:first-child {
+    width: 170px !important;
+    min-width: 170px !important;
+    align-self: end !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters {
+    display: grid !important;
+    grid-template-columns:
+      minmax(118px, 1fr)
+      minmax(118px, 1fr)
+      minmax(138px, 1.08fr)
+      minmax(138px, 1.08fr)
+      minmax(162px, 1.20fr)
+      minmax(170px, 1.22fr)
+      minmax(88px, 0.72fr)
+      minmax(122px, 0.92fr)
+      minmax(122px, 0.94fr)
+      minmax(96px, 0.78fr)
+      minmax(92px, 0.76fr) !important;
+    grid-template-areas: "start end type payment account searchInput searchBtn clear recent excel pdf" !important;
+    gap: 12px !important;
+    align-items: start !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(1) { grid-area: start !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter:nth-of-type(2) { grid-area: end !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterType"] { grid-area: type !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentMethod"] { grid-area: payment !important; }
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select[data-for="filterPaymentAccount"] { grid-area: account !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput { grid-area: searchInput !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton { grid-area: searchBtn !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #clearHistoryRangeButton { grid-area: clear !important; }
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #openRecentTransactionsButton { grid-area: recent !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportExcelButton { grid-area: excel !important; }
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #exportPdfButton { grid-area: pdf !important; }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter {
+    display: grid !important;
+    grid-template-rows: 18px 44px !important;
+    gap: 4px !important;
+    height: 66px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    align-self: start !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    line-height: 1.1 !important;
+    font-size: 0.72rem !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters > .custom-filter-select,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    margin: 22px 0 0 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    align-self: start !important;
+    justify-self: stretch !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  html:not(.history-compact-layout) #historyView .history-filters > .range-filter input,
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > button {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.history-compact-layout) #historyView .history-filters .custom-filter-trigger,
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    padding-left: 44px !important;
+    padding-right: 14px !important;
+    background-position: 16px center !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 1280px) {
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton {
+    margin-top: 22px !important;
+    margin-bottom: 0 !important;
+    align-self: start !important;
+    justify-self: stretch !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    position: relative !important;
+    top: 0 !important;
+    bottom: auto !important;
+    transform: none !important;
+    vertical-align: top !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #historySearchButton {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  html:not(.history-compact-layout) #historyView .history-filters > #searchInput {
+    line-height: 44px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */

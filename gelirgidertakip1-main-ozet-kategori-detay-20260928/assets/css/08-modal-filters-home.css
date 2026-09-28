@@ -1,0 +1,2192 @@
+/* ACIKLAMA: Modal alt aksiyonlari, filtreler, ana sayfa mini listeleri ve bank-import modal duzeni.
+   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
+
+:root {
+  --modal-standard-footer-bg: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.94) 24%, rgba(255,255,255,0.99) 100%);
+  --modal-standard-footer-border: rgba(31, 53, 45, 0.10);
+  --modal-standard-scrollbar: rgba(23, 128, 95, 0.36);
+}
+
+/* ACIKLAMA: html[data-theme="dark"] secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] {
+  --modal-standard-footer-bg: linear-gradient(180deg, rgba(13,20,28,0), rgba(13,20,28,0.95) 24%, rgba(13,20,28,0.99) 100%);
+  --modal-standard-footer-border: rgba(150, 181, 196, 0.14);
+  --modal-standard-scrollbar: rgba(74, 222, 207, 0.34);
+}
+
+/* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+.modal-backdrop {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    max(18px, env(safe-area-inset-right))
+    max(18px, env(safe-area-inset-bottom))
+    max(18px, env(safe-area-inset-left)) !important;
+}
+
+.modal-card.modal-layout-standard,
+.modal-card.modal-layout-standard.delete-modal,
+.modal-card.modal-layout-standard.confirm-modal,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard.wide-modal {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard.wide-modal {
+  width: min(860px, calc(100vw - 36px)) !important;
+  max-width: min(860px, calc(100vw - 36px)) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard:not(.wide-modal) {
+  width: min(620px, calc(100vw - 36px)) !important;
+  max-width: min(620px, calc(100vw - 36px)) !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard > .modal-fixed-heading {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  margin: 0 0 12px !important;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+.modal-card.modal-layout-standard > .modal-body-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0 4px 2px 0 !important;
+  box-sizing: border-box !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+.modal-card.modal-layout-standard > .modal-body-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+.modal-card.modal-layout-standard > .modal-body-scroll::-webkit-scrollbar-thumb {
+  background: var(--modal-standard-scrollbar);
+  border-radius: 999px;
+}
+
+.modal-card.modal-layout-standard > .modal-body-scroll > form,
+.modal-card.modal-layout-standard > .modal-body-scroll > .profile-form,
+.modal-card.modal-layout-standard > .modal-body-scroll .entry-form,
+.modal-card.modal-layout-standard > .modal-body-scroll .profile-form,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+.modal-card.modal-layout-standard > .modal-body-scroll .compact-form {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.modal-card.modal-layout-standard > .modal-body-scroll label,
+.modal-card.modal-layout-standard > .modal-body-scroll input,
+.modal-card.modal-layout-standard > .modal-body-scroll select,
+.modal-card.modal-layout-standard > .modal-body-scroll textarea,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+.modal-card.modal-layout-standard > .modal-body-scroll .color-field {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#genericConfirmModal .modal-card > .modal-footer-actions,
+#deleteAccountModal .modal-card > .modal-footer-actions,
+#confirmDeleteAccountModal .modal-card > .modal-footer-actions,
+#entryModal .modal-card > .modal-footer-actions,
+#assetEditModal .modal-card > .modal-footer-actions,
+#categoryAddModal .modal-card > .modal-footer-actions,
+#categoryManageModal .modal-card > .modal-footer-actions,
+#besModal .modal-card > .modal-footer-actions,
+#transactionEditModal .modal-card > .modal-footer-actions,
+#paymentAccountModal .modal-card > .modal-footer-actions,
+#confirmPaymentAccountDeleteModal .modal-card > .modal-footer-actions,
+#paymentAccountRecordsModal .modal-card > .modal-footer-actions,
+#paymentAccountPayModal .modal-card > .modal-footer-actions,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard > .modal-footer-actions {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  top: auto !important;
+  transform: none !important;
+  flex: 0 0 auto !important;
+  z-index: 5 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 14px 0 0 !important;
+  padding: 14px 0 0 !important;
+  border-top: 1px solid var(--modal-standard-footer-border) !important;
+  border-radius: 0 !important;
+  background: var(--modal-standard-footer-bg) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px) saturate(145%);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+  box-sizing: border-box !important;
+}
+
+#genericConfirmModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#deleteAccountModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#confirmDeleteAccountModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#entryModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#assetEditModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#categoryAddModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#categoryManageModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#besModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#transactionEditModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#paymentAccountModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#confirmPaymentAccountDeleteModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#paymentAccountRecordsModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#paymentAccountPayModal .modal-card > .modal-footer-actions:has(> button:only-child),
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard > .modal-footer-actions:has(> button:only-child) {
+  grid-template-columns: minmax(0, 360px) !important;
+  justify-content: center !important;
+}
+
+#genericConfirmModal .modal-card > .modal-footer-actions > button,
+#deleteAccountModal .modal-card > .modal-footer-actions > button,
+#confirmDeleteAccountModal .modal-card > .modal-footer-actions > button,
+#entryModal .modal-card > .modal-footer-actions > button,
+#assetEditModal .modal-card > .modal-footer-actions > button,
+#categoryAddModal .modal-card > .modal-footer-actions > button,
+#categoryManageModal .modal-card > .modal-footer-actions > button,
+#besModal .modal-card > .modal-footer-actions > button,
+#transactionEditModal .modal-card > .modal-footer-actions > button,
+#paymentAccountModal .modal-card > .modal-footer-actions > button,
+#confirmPaymentAccountDeleteModal .modal-card > .modal-footer-actions > button,
+#paymentAccountRecordsModal .modal-card > .modal-footer-actions > button,
+#paymentAccountPayModal .modal-card > .modal-footer-actions > button,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard > .modal-footer-actions > button {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 52px !important;
+  margin: 0 !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+#genericConfirmModal .modal-card > .modal-footer-actions > button + button,
+#deleteAccountModal .modal-card > .modal-footer-actions > button + button,
+#confirmDeleteAccountModal .modal-card > .modal-footer-actions > button + button,
+#entryModal .modal-card > .modal-footer-actions > button + button,
+#assetEditModal .modal-card > .modal-footer-actions > button + button,
+#categoryAddModal .modal-card > .modal-footer-actions > button + button,
+#categoryManageModal .modal-card > .modal-footer-actions > button + button,
+#besModal .modal-card > .modal-footer-actions > button + button,
+#transactionEditModal .modal-card > .modal-footer-actions > button + button,
+#paymentAccountModal .modal-card > .modal-footer-actions > button + button,
+#confirmPaymentAccountDeleteModal .modal-card > .modal-footer-actions > button + button,
+#paymentAccountRecordsModal .modal-card > .modal-footer-actions > button + button,
+#paymentAccountPayModal .modal-card > .modal-footer-actions > button + button,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard > .modal-footer-actions > button + button {
+  margin-top: 0 !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  /* ACIKLAMA: Acilir pencere arka plani, modal karti ve dialog yerlesimini ayarlar. */
+  .modal-backdrop {
+    padding:
+      max(12px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(12px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left)) !important;
+  }
+
+  .modal-card.modal-layout-standard,
+  .modal-card.modal-layout-standard.delete-modal,
+  .modal-card.modal-layout-standard.confirm-modal,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card.modal-layout-standard.wide-modal {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card.modal-layout-standard > .modal-fixed-heading {
+    margin-bottom: 10px !important;
+  }
+
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  .modal-card.modal-layout-standard > .modal-body-scroll {
+    padding: 0 2px 0 0 !important;
+  }
+
+  #genericConfirmModal .modal-card > .modal-footer-actions,
+#deleteAccountModal .modal-card > .modal-footer-actions,
+#confirmDeleteAccountModal .modal-card > .modal-footer-actions,
+#entryModal .modal-card > .modal-footer-actions,
+#assetEditModal .modal-card > .modal-footer-actions,
+#categoryAddModal .modal-card > .modal-footer-actions,
+#categoryManageModal .modal-card > .modal-footer-actions,
+#besModal .modal-card > .modal-footer-actions,
+#transactionEditModal .modal-card > .modal-footer-actions,
+#paymentAccountModal .modal-card > .modal-footer-actions,
+#confirmPaymentAccountDeleteModal .modal-card > .modal-footer-actions,
+#paymentAccountRecordsModal .modal-card > .modal-footer-actions,
+#paymentAccountPayModal .modal-card > .modal-footer-actions,
+.modal-card.modal-layout-standard > .modal-footer-actions,
+#genericConfirmModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#deleteAccountModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#confirmDeleteAccountModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#entryModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#assetEditModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#categoryAddModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#categoryManageModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#besModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#transactionEditModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#paymentAccountModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#confirmPaymentAccountDeleteModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#paymentAccountRecordsModal .modal-card > .modal-footer-actions:has(> button:only-child),
+#paymentAccountPayModal .modal-card > .modal-footer-actions:has(> button:only-child),
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.modal-card.modal-layout-standard > .modal-footer-actions:has(> button:only-child) {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 12px 0 max(8px, env(safe-area-inset-bottom)) !important;
+    margin-top: 12px !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .modal-card.modal-layout-standard > .modal-footer-actions > button {
+    min-height: 52px !important;
+  }
+}
+
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-screen {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(20, 184, 166, 0.16), transparent 28%),
+    radial-gradient(circle at 88% 6%, rgba(70, 125, 210, 0.12), transparent 26%),
+    linear-gradient(180deg, #0b121a 0%, #101922 100%) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-card {
+  background: linear-gradient(180deg, rgba(18, 27, 36, 0.92), rgba(12, 19, 28, 0.88)) !important;
+  border-color: rgba(137, 173, 190, 0.18) !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-copy {
+  background:
+    radial-gradient(circle at 35% 24%, rgba(42, 210, 189, 0.18), transparent 36%),
+    linear-gradient(160deg, rgba(21, 34, 45, 0.95), rgba(13, 23, 33, 0.92)) !important;
+  border-color: rgba(123, 173, 190, 0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 18px 40px rgba(0,0,0,0.28) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-copy::before {
+  box-shadow: 0 24px 58px rgba(0,0,0,0.46), 0 0 0 1px rgba(123, 224, 207, 0.16) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-copy::after {
+  opacity: 0.18 !important;
+  filter: invert(1) hue-rotate(160deg) saturate(0.75);
+}
+
+html[data-theme="dark"] .auth-panel-stack,
+html[data-theme="dark"] .auth-panel-heading,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] .auth-form {
+  color: #eaf7fb !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .auth-panel-heading h2 {
+  color: #f2fbff !important;
+}
+
+html[data-theme="dark"] .auth-panel-heading p,
+html[data-theme="dark"] .auth-form label,
+/* ACIKLAMA: html[data-theme="dark"] .helper-text secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .helper-text {
+  color: #a9bec8 !important;
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#userView .theme-panel {
+  display: none !important;
+}
+
+html[data-theme="light"] .sidebar-toggle,
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+html[data-theme="light"] .topbar-menu {
+  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(232,245,242,0.92)) !important;
+  border: 1px solid rgba(87, 163, 154, 0.28) !important;
+  box-shadow: 0 10px 24px rgba(17, 55, 64, 0.14), inset 0 1px 0 rgba(255,255,255,0.72) !important;
+}
+
+html[data-theme="light"] .sidebar-toggle span,
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+html[data-theme="light"] .topbar-menu span {
+  background: linear-gradient(90deg, #126575, #1ea69a) !important;
+  height: 2.5px;
+  width: 20px;
+}
+
+html[data-theme="light"] .sidebar-toggle:hover,
+/* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+html[data-theme="light"] .topbar-menu:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(223,241,237,0.96)) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+.login-screen .auth-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+.login-screen .auth-actions > button {
+  width: 100%;
+  min-height: 50px;
+  padding: 13px 18px;
+  border-radius: 14px;
+  font-size: 1rem;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+.login-screen #forgotPasswordButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+  min-height: 48px;
+  padding: 12px 18px;
+  margin-top: 2px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(124, 171, 162, 0.28);
+  color: #185f5a;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-screen #forgotPasswordButton {
+  background: linear-gradient(180deg, rgba(28,39,50,0.84), rgba(20,29,38,0.78)) !important;
+  border: 1px solid rgba(154,182,197,0.14) !important;
+  color: #ecf8fb !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+  .login-screen .auth-actions {
+    grid-template-columns: 1fr;
+  }
+
+  /* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+  .login-screen #forgotPasswordButton {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.payment-account-filters {
+  display: flex;
+  align-items: end;
+  justify-content: flex-start;
+  margin: 0 0 16px;
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.payment-account-filter-control {
+  display: grid;
+  gap: 8px;
+  width: min(340px, 100%);
+  color: var(--muted);
+  font-weight: 800;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.payment-account-filter-control select {
+  width: 100%;
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+html[data-theme="dark"] .payment-account-filter-control {
+  color: #9fb0b7 !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  .payment-account-filters,
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .payment-account-filter-control {
+    width: 100%;
+  }
+}
+
+
+
+html[data-theme="light"] .payment-card,
+html[data-theme="light"] .payment-card.bank_account,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="light"] .payment-card.cash {
+  --payment-card-text-primary: #ffffff;
+  --payment-card-text-secondary: rgba(255, 255, 255, 0.88);
+  --payment-card-text-note: rgba(255, 255, 255, 0.82);
+  --payment-card-text-income: #d5fff2;
+  --payment-card-text-expense: #ffe2da;
+}
+
+html[data-theme="dark"] .payment-card,
+html[data-theme="dark"] .payment-card.bank_account,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card.cash {
+  --payment-card-text-primary: #f7fbff;
+  --payment-card-text-secondary: rgba(244, 249, 255, 0.88);
+  --payment-card-text-note: rgba(233, 243, 248, 0.82);
+  --payment-card-text-income: #8ff7d0;
+  --payment-card-text-expense: #ffb3a3;
+}
+
+html[data-theme="light"] .payment-card .payment-card-bank,
+html[data-theme="light"] .payment-card .payment-card-small,
+html[data-theme="light"] .payment-card .payment-card-details span,
+html[data-theme="dark"] .payment-card .payment-card-bank,
+html[data-theme="dark"] .payment-card .payment-card-small,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-details span {
+  color: var(--payment-card-text-secondary) !important;
+}
+
+html[data-theme="light"] .payment-card h3,
+html[data-theme="light"] .payment-card .payment-card-number,
+html[data-theme="light"] .payment-card .payment-card-details strong,
+html[data-theme="light"] .payment-card .payment-card-note,
+html[data-theme="dark"] .payment-card h3,
+html[data-theme="dark"] .payment-card .payment-card-number,
+html[data-theme="dark"] .payment-card .payment-card-details strong,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-note {
+  color: var(--payment-card-text-primary) !important;
+}
+
+html[data-theme="light"] .payment-card .payment-card-amount.income,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-amount.income {
+  color: var(--payment-card-text-income) !important;
+}
+
+html[data-theme="light"] .payment-card .payment-card-amount.expense,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-amount.expense {
+  color: var(--payment-card-text-expense) !important;
+}
+
+html[data-theme="light"] .payment-card .payment-card-note,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-note {
+  color: var(--payment-card-text-note) !important;
+}
+
+html[data-theme="light"] .payment-card h3,
+html[data-theme="light"] .payment-card .payment-card-number,
+html[data-theme="light"] .payment-card .payment-card-amount,
+html[data-theme="dark"] .payment-card h3,
+html[data-theme="dark"] .payment-card .payment-card-number,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-amount {
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.16);
+}
+
+html[data-theme="light"] .payment-card .payment-card-actions .ghost-btn,
+html[data-theme="light"] .payment-card .payment-card-actions .danger-lite-btn,
+html[data-theme="dark"] .payment-card .payment-card-actions .ghost-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-actions .danger-lite-btn {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .payment-card .payment-card-actions .success-btn,
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .payment-card .payment-card-actions .success-btn {
+  color: #f9fffd !important;
+}
+
+
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .app-splash-screen {
+  background:
+    radial-gradient(circle at 14% 12%, rgba(64, 209, 194, 0.20), transparent 22%),
+    radial-gradient(circle at 86% 82%, rgba(82, 226, 210, 0.20), transparent 25%),
+    radial-gradient(circle at 82% 18%, rgba(255, 214, 128, 0.16), transparent 20%),
+    linear-gradient(135deg, #f6fcfb 0%, #eef7f5 48%, #edf8f7 100%) !important;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .splash-content {
+  color: #102722;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .splash-logo {
+  border: 1px solid rgba(255,255,255,0.62);
+  background:
+    linear-gradient(145deg, rgba(14, 157, 141, 0.92), rgba(20, 184, 166, 0.78) 56%, rgba(10, 108, 116, 0.84));
+  box-shadow:
+    0 26px 60px rgba(13, 125, 116, 0.24),
+    inset 0 1px 0 rgba(255,255,255,0.24),
+    inset 0 -10px 24px rgba(0,0,0,0.08);
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .splash-logo::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 32px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+  pointer-events: none;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="light"] .splash-card-back {
+  background: linear-gradient(135deg, rgba(255,255,255,0.24), rgba(255,255,255,0.08));
+  border: 1px solid rgba(255,255,255,0.18);
+  opacity: 0.82;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .splash-wallet {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24), 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="light"] .splash-wallet-button {
+  background: linear-gradient(135deg, rgba(22, 189, 171, 0.96), rgba(10, 156, 144, 0.76));
+  box-shadow: 0 10px 22px rgba(10, 104, 97, 0.22);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .splash-coin {
+  box-shadow: 0 16px 28px rgba(166, 122, 26, 0.22), inset 0 1px 0 rgba(255,255,255,0.42);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .splash-content h1 {
+  text-shadow: 0 10px 30px rgba(69, 111, 106, 0.10);
+}
+
+html[data-theme="light"] .splash-content p,
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .splash-content small {
+  color: #708683;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="light"] .splash-loader {
+  background: rgba(30, 80, 74, 0.10);
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="light"] .login-screen {
+  background:
+    radial-gradient(circle at 10% 12%, rgba(61, 211, 194, 0.16), transparent 24%),
+    radial-gradient(circle at 88% 14%, rgba(31, 162, 181, 0.12), transparent 24%),
+    radial-gradient(circle at 82% 84%, rgba(107, 225, 201, 0.15), transparent 28%),
+    linear-gradient(135deg, rgba(252,255,255,0.92), rgba(241,249,247,0.92)) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="light"] .login-card {
+  background: linear-gradient(145deg, rgba(255,255,255,0.56), rgba(255,255,255,0.42)) !important;
+  border: 1px solid rgba(255,255,255,0.64) !important;
+  box-shadow: 0 30px 70px rgba(17, 58, 55, 0.12), inset 0 1px 0 rgba(255,255,255,0.62) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="light"] .login-copy {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(95, 225, 205, 0.20), transparent 25%),
+    linear-gradient(160deg, rgba(255,255,255,0.82), rgba(243,252,249,0.54)) !important;
+  border-color: rgba(255,255,255,0.68) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.76), 0 20px 44px rgba(18,52,47,0.10) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="light"] .login-copy::before {
+  opacity: 0.92;
+  border-radius: 42px;
+  box-shadow: 0 22px 44px rgba(14, 74, 69, 0.14), 0 0 0 10px rgba(255,255,255,0.12);
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="light"] .login-copy::after {
+  opacity: 0.18 !important;
+  filter: saturate(0.85) hue-rotate(-6deg);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .app-splash-screen {
+  background:
+    radial-gradient(circle at 14% 12%, rgba(26, 214, 189, 0.18), transparent 24%),
+    radial-gradient(circle at 90% 86%, rgba(31, 154, 185, 0.18), transparent 26%),
+    radial-gradient(circle at 78% 18%, rgba(242, 193, 89, 0.10), transparent 18%),
+    linear-gradient(135deg, #091118 0%, #0d1721 44%, #12202a 100%) !important;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-finance-mark {
+  color: rgba(120, 222, 208, 0.18) !important;
+}
+
+/* ACIKLAMA: html[data-theme="dark"] .wallet-mark secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] .wallet-mark {
+  background: rgba(65, 194, 182, 0.08);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-content {
+  color: #edf9fb;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-logo {
+  border: 1px solid rgba(136, 208, 197, 0.16);
+  background:
+    linear-gradient(145deg, rgba(11, 123, 118, 0.80), rgba(17, 163, 153, 0.66) 54%, rgba(12, 57, 75, 0.82));
+  box-shadow:
+    0 32px 70px rgba(0,0,0,0.36),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 -10px 24px rgba(0,0,0,0.18),
+    0 0 0 1px rgba(129, 221, 207, 0.06);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-logo::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 32px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.01));
+  pointer-events: none;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+html[data-theme="dark"] .splash-card-back {
+  background: linear-gradient(135deg, rgba(161, 237, 230, 0.16), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,255,255,0.08);
+  opacity: 0.82;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-wallet {
+  background: rgba(231, 248, 246, 0.84);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18), 0 10px 28px rgba(0,0,0,0.18);
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+html[data-theme="dark"] .splash-wallet-button {
+  background: linear-gradient(135deg, rgba(18, 177, 163, 0.90), rgba(18, 177, 163, 0.58));
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-content h1 {
+  color: #eefafd;
+  text-shadow: 0 12px 36px rgba(0,0,0,0.32);
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-content h1 span {
+  color: #5fe4d0;
+}
+
+html[data-theme="dark"] .splash-content p,
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-content small {
+  color: #93a8b0;
+}
+
+/* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+html[data-theme="dark"] .splash-loader {
+  background: rgba(255,255,255,0.10);
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-screen {
+  background:
+    radial-gradient(circle at 14% 14%, rgba(29, 181, 162, 0.16), transparent 26%),
+    radial-gradient(circle at 86% 10%, rgba(54, 110, 198, 0.12), transparent 24%),
+    radial-gradient(circle at 82% 88%, rgba(24, 153, 181, 0.10), transparent 22%),
+    linear-gradient(135deg, #081018 0%, #0d1620 46%, #121d28 100%) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-card {
+  background: linear-gradient(145deg, rgba(13,21,30,0.72), rgba(13,20,30,0.58)) !important;
+  border: 1px solid rgba(140, 176, 194, 0.16) !important;
+  box-shadow: 0 34px 78px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-copy {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(42, 210, 189, 0.16), transparent 28%),
+    linear-gradient(160deg, rgba(18,29,39,0.88), rgba(12,21,30,0.76)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 20px 48px rgba(0,0,0,0.26) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-copy::before {
+  opacity: 0.88;
+  border-radius: 42px;
+  box-shadow: 0 26px 56px rgba(0,0,0,0.42), 0 0 0 8px rgba(95, 228, 208, 0.05) !important;
+}
+
+/* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+html[data-theme="dark"] .login-copy::after {
+  opacity: 0.12 !important;
+  filter: invert(1) hue-rotate(160deg) saturate(0.75);
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+  .splash-content {
+    width: min(94vw, 420px);
+  }
+
+  /* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+  .splash-logo {
+    width: 142px;
+    height: 142px;
+    margin-bottom: 24px;
+    border-radius: 34px;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .splash-card-back {
+    width: 76px;
+    height: 50px;
+    left: 38px;
+    top: 34px;
+  }
+
+  /* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+  .splash-wallet {
+    left: 22px;
+    right: 22px;
+    bottom: 28px;
+    height: 58px;
+    border-radius: 17px;
+  }
+
+  /* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+  .splash-wallet-button {
+    top: 16px;
+    width: 40px;
+    height: 28px;
+  }
+
+  /* ACIKLAMA: Uygulama acilis/yukleme ekraninin animasyon ve yerlesimini ayarlar. */
+  .splash-coin {
+    right: 26px;
+    top: 42px;
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  /* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+  .login-card {
+    overflow: hidden;
+  }
+
+  /* ACIKLAMA: Giris, kayit ve parola ekranlarinin yerlesim/gorunum kurallarini ayarlar. */
+  .login-copy::before {
+    width: min(180px, 54vw);
+    opacity: 0.86;
+  }
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card .payment-card-amount.income {
+  color: #6ef2c8 !important;
+  text-shadow: 0 1px 12px rgba(9, 88, 72, 0.20);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.payment-card .payment-card-amount.expense {
+  color: #ff9a86 !important;
+  text-shadow: 0 1px 12px rgba(111, 36, 23, 0.18);
+}
+
+html[data-theme="light"] .payment-card .payment-card-amount.income,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="light"] .payment-card .payment-card-amount.income {
+  color: #2bd19a !important;
+  text-shadow: 0 1px 10px rgba(6, 75, 61, 0.16);
+}
+
+html[data-theme="light"] .payment-card .payment-card-amount.expense,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="light"] .payment-card .payment-card-amount.expense {
+  color: #ff7f73 !important;
+  text-shadow: 0 1px 10px rgba(104, 35, 25, 0.14);
+}
+
+html[data-theme="dark"] .payment-card .payment-card-amount.income,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .payment-card .payment-card-amount.income {
+  color: #8ff7d0 !important;
+}
+
+html[data-theme="dark"] .payment-card .payment-card-amount.expense,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .payment-card .payment-card-amount.expense {
+  color: #ffb3a3 !important;
+}
+
+
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+html[data-theme="dark"] .wealth-chart {
+  box-shadow:
+    inset 0 0 0 1px rgba(171, 203, 216, 0.14),
+    0 18px 40px rgba(0, 0, 0, 0.24) !important;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+html[data-theme="dark"] .wealth-chart > div {
+  background: linear-gradient(180deg, rgba(20, 31, 40, 0.96), rgba(15, 24, 32, 0.96)) !important;
+  border: 1px solid rgba(149, 185, 200, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 22px rgba(0,0,0,0.18);
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+html[data-theme="dark"] .wealth-chart span {
+  color: #9fb0b7 !important;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+html[data-theme="dark"] .wealth-chart strong {
+  color: #eefafd !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.24);
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+html[data-theme="dark"] .wealth-legend-row {
+  background: linear-gradient(180deg, rgba(24, 35, 46, 0.92), rgba(18, 28, 37, 0.88)) !important;
+  border: 1px solid rgba(151, 182, 197, 0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+html[data-theme="dark"] .wealth-legend-row strong,
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+html[data-theme="dark"] .wealth-legend-row span {
+  color: #eef7fb !important;
+}
+
+/* ACIKLAMA: html[data-theme="dark"] #homeWealthLegend .empty-state secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+html[data-theme="dark"] #homeWealthLegend .empty-state {
+  background: linear-gradient(180deg, rgba(24, 35, 46, 0.92), rgba(18, 28, 37, 0.88)) !important;
+  border: 1px solid rgba(151, 182, 197, 0.16) !important;
+  color: #dcecf2 !important;
+}
+
+
+
+.payment-card .payment-card-amount,
+.payment-card .payment-card-amount.income,
+.payment-card .payment-card-amount.expense,
+html[data-theme="light"] .payment-card .payment-card-amount,
+html[data-theme="light"] .payment-card .payment-card-amount.income,
+html[data-theme="light"] .payment-card .payment-card-amount.expense,
+html[data-theme="dark"] .payment-card .payment-card-amount,
+html[data-theme="dark"] .payment-card .payment-card-amount.income,
+html[data-theme="dark"] .payment-card .payment-card-amount.expense,
+body[data-theme="light"] .payment-card .payment-card-amount,
+body[data-theme="light"] .payment-card .payment-card-amount.income,
+body[data-theme="light"] .payment-card .payment-card-amount.expense,
+body[data-theme="dark"] .payment-card .payment-card-amount,
+body[data-theme="dark"] .payment-card .payment-card-amount.income,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .payment-card .payment-card-amount.expense {
+  color: #ffffff !important;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.18) !important;
+}
+
+
+
+.filters select,
+.payment-account-filter-control select,
+.date-filter select,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.history-heading > .history-filters > select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 42px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(116, 172, 164, 0.28) !important;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6.5 8 10.5 12 6.5' fill='none' stroke='%23149b92' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, calc(100% - 14px) 50%;
+  background-size: auto, 16px 16px;
+  box-shadow: 0 10px 24px rgba(15, 56, 53, 0.08), inset 0 1px 0 rgba(255,255,255,0.56) !important;
+  font-weight: 800;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.filters select:hover,
+.payment-account-filter-control select:hover,
+.date-filter select:hover,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.history-heading > .history-filters > select:hover {
+  border-color: rgba(44, 188, 172, 0.48) !important;
+  box-shadow: 0 12px 28px rgba(15, 56, 53, 0.10), inset 0 1px 0 rgba(255,255,255,0.64) !important;
+}
+
+.filters select:focus,
+.payment-account-filter-control select:focus,
+.date-filter select:focus,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.history-heading > .history-filters > select:focus {
+  border-color: rgba(22, 190, 172, 0.72) !important;
+  box-shadow: 0 0 0 4px rgba(26, 199, 180, 0.14), 0 12px 28px rgba(15, 56, 53, 0.12) !important;
+}
+
+.filters select option,
+.payment-account-filter-control select option,
+.date-filter select option,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.history-heading > .history-filters > select option {
+  background: #f7fbfa;
+  color: #16342f;
+}
+
+html[data-theme="light"] .filters select,
+html[data-theme="light"] .payment-account-filter-control select,
+html[data-theme="light"] .date-filter select,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="light"] .history-heading > .history-filters > select {
+  background-color: rgba(255,255,255,0.88) !important;
+  color: #153530 !important;
+}
+
+html[data-theme="light"] .filters select option,
+html[data-theme="light"] .payment-account-filter-control select option,
+html[data-theme="light"] .date-filter select option,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="light"] .history-heading > .history-filters > select option {
+  background: #f8fcfb;
+  color: #173a35;
+}
+
+html[data-theme="dark"] .filters select,
+html[data-theme="dark"] .payment-account-filter-control select,
+html[data-theme="dark"] .date-filter select,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] .history-heading > .history-filters > select {
+  border: 1px solid rgba(131, 178, 196, 0.20) !important;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6.5 8 10.5 12 6.5' fill='none' stroke='%2368e6d4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 28px rgba(0,0,0,0.22) !important;
+  color: #eefafd !important;
+}
+
+html[data-theme="dark"] .filters select:hover,
+html[data-theme="dark"] .payment-account-filter-control select:hover,
+html[data-theme="dark"] .date-filter select:hover,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] .history-heading > .history-filters > select:hover {
+  border-color: rgba(96, 218, 204, 0.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(0,0,0,0.26) !important;
+}
+
+html[data-theme="dark"] .filters select:focus,
+html[data-theme="dark"] .payment-account-filter-control select:focus,
+html[data-theme="dark"] .date-filter select:focus,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] .history-heading > .history-filters > select:focus {
+  border-color: rgba(95, 228, 208, 0.54) !important;
+  box-shadow: 0 0 0 4px rgba(53, 190, 175, 0.14), inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(0,0,0,0.26) !important;
+}
+
+html[data-theme="dark"] .filters select option,
+html[data-theme="dark"] .payment-account-filter-control select option,
+html[data-theme="dark"] .date-filter select option,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+html[data-theme="dark"] .history-heading > .history-filters > select option {
+  background: #16222c;
+  color: #edf9fb;
+}
+
+
+
+.transaction-amount.income,
+html[data-theme="light"] .transaction-amount.income,
+body[data-theme="light"] .transaction-amount.income,
+#summaryView .transaction-amount.income,
+#assetsView .transaction-amount.income,
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#besView .transaction-amount.income {
+  color: #17a673 !important;
+  text-shadow: 0 1px 8px rgba(16, 110, 83, 0.10);
+}
+
+.transaction-amount.expense,
+html[data-theme="light"] .transaction-amount.expense,
+body[data-theme="light"] .transaction-amount.expense,
+#summaryView .transaction-amount.expense,
+#assetsView .transaction-amount.expense,
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+#besView .transaction-amount.expense {
+  color: #d85b46 !important;
+  text-shadow: 0 1px 8px rgba(120, 44, 30, 0.08);
+}
+
+html[data-theme="dark"] .transaction-amount.income,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .transaction-amount.income {
+  color: #7cf0cc !important;
+}
+
+html[data-theme="dark"] .transaction-amount.expense,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .transaction-amount.expense {
+  color: #ff9a86 !important;
+}
+
+
+
+.filters select,
+.payment-account-filter-control select,
+.date-filter select,
+.history-heading > .history-filters > select,
+#filterType,
+#filterPaymentMethod,
+#filterPaymentAccount,
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+#paymentAccountTypeFilter {
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+  -moz-appearance: auto !important;
+  background-image: none !important;
+  padding-right: 16px !important;
+  border-radius: 18px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+html[data-theme="light"] .filters select,
+html[data-theme="light"] .payment-account-filter-control select,
+html[data-theme="light"] .date-filter select,
+html[data-theme="light"] .history-heading > .history-filters > select,
+body[data-theme="light"] .filters select,
+body[data-theme="light"] .payment-account-filter-control select,
+body[data-theme="light"] .date-filter select,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="light"] .history-heading > .history-filters > select {
+  background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(244,248,247,0.90)) !important;
+  color: #183832 !important;
+  border: 1px solid rgba(125, 172, 166, 0.28) !important;
+  box-shadow: 0 10px 24px rgba(16, 57, 54, 0.08), inset 0 1px 0 rgba(255,255,255,0.72) !important;
+  color-scheme: light;
+}
+
+html[data-theme="light"] .filters select:hover,
+html[data-theme="light"] .payment-account-filter-control select:hover,
+html[data-theme="light"] .date-filter select:hover,
+html[data-theme="light"] .history-heading > .history-filters > select:hover,
+body[data-theme="light"] .filters select:hover,
+body[data-theme="light"] .payment-account-filter-control select:hover,
+body[data-theme="light"] .date-filter select:hover,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="light"] .history-heading > .history-filters > select:hover {
+  border-color: rgba(45, 184, 169, 0.42) !important;
+  box-shadow: 0 12px 28px rgba(16, 57, 54, 0.10), inset 0 1px 0 rgba(255,255,255,0.78) !important;
+}
+
+html[data-theme="dark"] .filters select,
+html[data-theme="dark"] .payment-account-filter-control select,
+html[data-theme="dark"] .date-filter select,
+html[data-theme="dark"] .history-heading > .history-filters > select,
+body[data-theme="dark"] .filters select,
+body[data-theme="dark"] .payment-account-filter-control select,
+body[data-theme="dark"] .date-filter select,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .history-heading > .history-filters > select {
+  background: linear-gradient(180deg, rgba(15,24,34,0.94), rgba(11,20,29,0.92)) !important;
+  color: #eef9fb !important;
+  border: 1px solid rgba(133, 177, 193, 0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 28px rgba(0,0,0,0.22) !important;
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] .filters select:hover,
+html[data-theme="dark"] .payment-account-filter-control select:hover,
+html[data-theme="dark"] .date-filter select:hover,
+html[data-theme="dark"] .history-heading > .history-filters > select:hover,
+body[data-theme="dark"] .filters select:hover,
+body[data-theme="dark"] .payment-account-filter-control select:hover,
+body[data-theme="dark"] .date-filter select:hover,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .history-heading > .history-filters > select:hover {
+  border-color: rgba(98, 219, 205, 0.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(0,0,0,0.26) !important;
+}
+
+.filters select:focus,
+.payment-account-filter-control select:focus,
+.date-filter select:focus,
+.history-heading > .history-filters > select:focus,
+#filterType:focus,
+#filterPaymentMethod:focus,
+#filterPaymentAccount:focus,
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+#paymentAccountTypeFilter:focus {
+  outline: none !important;
+}
+
+html[data-theme="light"] .filters select:focus,
+html[data-theme="light"] .payment-account-filter-control select:focus,
+html[data-theme="light"] .date-filter select:focus,
+html[data-theme="light"] .history-heading > .history-filters > select:focus,
+body[data-theme="light"] .filters select:focus,
+body[data-theme="light"] .payment-account-filter-control select:focus,
+body[data-theme="light"] .date-filter select:focus,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="light"] .history-heading > .history-filters > select:focus {
+  border-color: rgba(33, 188, 171, 0.72) !important;
+  box-shadow: 0 0 0 4px rgba(26, 199, 180, 0.14), 0 12px 28px rgba(16, 57, 54, 0.12) !important;
+}
+
+html[data-theme="dark"] .filters select:focus,
+html[data-theme="dark"] .payment-account-filter-control select:focus,
+html[data-theme="dark"] .date-filter select:focus,
+html[data-theme="dark"] .history-heading > .history-filters > select:focus,
+body[data-theme="dark"] .filters select:focus,
+body[data-theme="dark"] .payment-account-filter-control select:focus,
+body[data-theme="dark"] .date-filter select:focus,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .history-heading > .history-filters > select:focus {
+  border-color: rgba(95, 228, 208, 0.56) !important;
+  box-shadow: 0 0 0 4px rgba(53, 190, 175, 0.16), inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(0,0,0,0.26) !important;
+}
+
+.filters select option,
+.payment-account-filter-control select option,
+.date-filter select option,
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.history-heading > .history-filters > select option {
+  font-weight: 700;
+  padding: 10px 12px;
+}
+
+html[data-theme="light"] .filters select option,
+html[data-theme="light"] .payment-account-filter-control select option,
+html[data-theme="light"] .date-filter select option,
+html[data-theme="light"] .history-heading > .history-filters > select option,
+body[data-theme="light"] .filters select option,
+body[data-theme="light"] .payment-account-filter-control select option,
+body[data-theme="light"] .date-filter select option,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="light"] .history-heading > .history-filters > select option {
+  background: #f8fcfb;
+  color: #173a35;
+}
+
+html[data-theme="dark"] .filters select option,
+html[data-theme="dark"] .payment-account-filter-control select option,
+html[data-theme="dark"] .date-filter select option,
+html[data-theme="dark"] .history-heading > .history-filters > select option,
+body[data-theme="dark"] .filters select option,
+body[data-theme="dark"] .payment-account-filter-control select option,
+body[data-theme="dark"] .date-filter select option,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .history-heading > .history-filters > select option {
+  background: #15212b;
+  color: #eef9fb;
+}
+
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-filters .native-filter-source {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.custom-filter-select {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-trigger {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 42px 11px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(125, 172, 166, 0.28);
+  background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(244,248,247,0.90));
+  color: #173a35;
+  text-align: left;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(16,57,54,0.08), inset 0 1px 0 rgba(255,255,255,0.72);
+  position: relative;
+  cursor: pointer;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-trigger::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-65%) rotate(45deg);
+  opacity: 0.72;
+  transition: transform 160ms ease;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.custom-filter-select.is-open .custom-filter-trigger::after {
+  transform: translateY(-30%) rotate(-135deg);
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-trigger:hover {
+  border-color: rgba(45, 184, 169, 0.42);
+  box-shadow: 0 12px 28px rgba(16,57,54,0.10), inset 0 1px 0 rgba(255,255,255,0.78);
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-trigger:focus-visible {
+  outline: none;
+  border-color: rgba(33, 188, 171, 0.72);
+  box-shadow: 0 0 0 4px rgba(26, 199, 180, 0.14), 0 12px 28px rgba(16,57,54,0.12);
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: none;
+  padding: 8px;
+  border-radius: 18px;
+  border: 1px solid rgba(120, 169, 163, 0.24);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,252,250,0.96));
+  box-shadow: 0 18px 42px rgba(15, 42, 38, 0.16), inset 0 1px 0 rgba(255,255,255,0.74);
+  max-height: 256px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.custom-filter-select.is-open .custom-filter-menu {
+  display: grid;
+  gap: 4px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-menu::-webkit-scrollbar-thumb {
+  background: rgba(39, 155, 144, 0.34);
+  border-radius: 999px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-option {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #153933;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-option:hover {
+  background: rgba(34, 196, 177, 0.10);
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-option.is-active {
+  background: linear-gradient(135deg, rgba(27, 196, 176, 0.16), rgba(20, 184, 166, 0.10));
+  color: #0f5e54;
+}
+
+html[data-theme="dark"] .custom-filter-trigger,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .custom-filter-trigger {
+  border-color: rgba(133, 177, 193, 0.22);
+  background: linear-gradient(180deg, rgba(15,24,34,0.94), rgba(11,20,29,0.92));
+  color: #eef9fb;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 28px rgba(0,0,0,0.22);
+}
+
+html[data-theme="dark"] .custom-filter-trigger:hover,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .custom-filter-trigger:hover {
+  border-color: rgba(98, 219, 205, 0.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(0,0,0,0.26);
+}
+
+html[data-theme="dark"] .custom-filter-trigger:focus-visible,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .custom-filter-trigger:focus-visible {
+  border-color: rgba(95, 228, 208, 0.56);
+  box-shadow: 0 0 0 4px rgba(53,190,175,0.16), inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(0,0,0,0.26);
+}
+
+html[data-theme="dark"] .custom-filter-menu,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .custom-filter-menu {
+  border-color: rgba(133, 177, 193, 0.18);
+  background: linear-gradient(180deg, rgba(16,25,35,0.98), rgba(12,20,29,0.96));
+  box-shadow: 0 18px 42px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+html[data-theme="dark"] .custom-filter-option,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .custom-filter-option {
+  color: #eef9fb;
+}
+
+html[data-theme="dark"] .custom-filter-option:hover,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .custom-filter-option:hover {
+  background: rgba(52, 196, 180, 0.10);
+}
+
+html[data-theme="dark"] .custom-filter-option.is-active,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .custom-filter-option.is-active {
+  background: linear-gradient(135deg, rgba(58, 210, 190, 0.16), rgba(56, 180, 168, 0.08));
+  color: #7ef0db;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 980px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .history-heading > .history-filters > select,
+  .history-heading > .history-filters > .custom-filter-select,
+  .history-heading > .history-filters > .range-filter,
+  .history-heading > .history-filters > button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters > .history-search-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .history-search-group {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 104px !important;
+    gap: 8px !important;
+  }
+
+  .history-heading > .history-filters #searchInput,
+  .history-heading > .history-filters #historySearchButton,
+  .history-heading > .history-filters .range-filter input,
+  .history-heading > .history-filters button,
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .custom-filter-trigger {
+    width: 100% !important;
+    min-height: 46px !important;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .range-filter {
+    gap: 6px;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 560px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters .history-search-group {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+
+.modal-card .auth-actions,
+.modal-card .modal-actions,
+.modal-card > .modal-footer-actions,
+.modal-card.modal-layout-standard > .modal-footer-actions,
+#entryModal .modal-actions,
+#besModal .modal-actions,
+#genericConfirmModal .modal-actions,
+#categoryManageModal .modal-actions,
+#paymentAccountModal .auth-actions,
+#paymentAccountPayModal .auth-actions,
+#assetEditModal .auth-actions,
+#categoryAddModal .auth-actions,
+#transactionEditModal .auth-actions,
+#paymentAccountRecordsModal .auth-actions,
+#deleteAccountModal .auth-actions,
+#confirmDeleteAccountModal .auth-actions,
+/* ACIKLAMA: #confirmPaymentAccountDeleteModal .auth-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#confirmPaymentAccountDeleteModal .auth-actions {
+  background: transparent !important;
+  background-image: none !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  .modal-card .auth-actions,
+.modal-card .modal-actions,
+.modal-card > .modal-footer-actions,
+.modal-card.modal-layout-standard > .modal-footer-actions,
+#entryModal .modal-actions,
+#besModal .modal-actions,
+#genericConfirmModal .modal-actions,
+#categoryManageModal .modal-actions,
+#paymentAccountModal .auth-actions,
+#paymentAccountPayModal .auth-actions,
+#assetEditModal .auth-actions,
+#categoryAddModal .auth-actions,
+#transactionEditModal .auth-actions,
+#paymentAccountRecordsModal .auth-actions,
+#deleteAccountModal .auth-actions,
+#confirmDeleteAccountModal .auth-actions,
+/* ACIKLAMA: #confirmPaymentAccountDeleteModal .auth-actions secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#confirmPaymentAccountDeleteModal .auth-actions {
+    padding: 8px 0 calc(2px + env(safe-area-inset-bottom)) !important;
+    margin-top: 10px !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+}
+
+html[data-theme="dark"] .modal-card .auth-actions,
+html[data-theme="dark"] .modal-card .modal-actions,
+html[data-theme="dark"] .modal-card > .modal-footer-actions,
+body[data-theme="dark"] .modal-card .auth-actions,
+body[data-theme="dark"] .modal-card .modal-actions,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .modal-card > .modal-footer-actions {
+  background: transparent !important;
+}
+
+
+
+html:not([data-theme="dark"]) .modal-card .auth-actions,
+html:not([data-theme="dark"]) .modal-card .modal-actions,
+html:not([data-theme="dark"]) .modal-card > .modal-footer-actions,
+html:not([data-theme="dark"]) .modal-card.modal-layout-standard > .modal-footer-actions,
+body:not([data-theme="dark"]) .modal-card .auth-actions,
+body:not([data-theme="dark"]) .modal-card .modal-actions,
+body:not([data-theme="dark"]) .modal-card > .modal-footer-actions,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) .modal-card.modal-layout-standard > .modal-footer-actions {
+  background: transparent !important;
+  background-image: none !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 8px !important;
+}
+
+html:not([data-theme="dark"]) #entryModal #entryFormMount,
+html:not([data-theme="dark"]) #besModal #besFormMount,
+body:not([data-theme="dark"]) #entryModal #entryFormMount,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body:not([data-theme="dark"]) #besModal #besFormMount {
+  padding-bottom: 4px !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 768px) {
+  html:not([data-theme="dark"]) .modal-card .auth-actions,
+  html:not([data-theme="dark"]) .modal-card .modal-actions,
+  html:not([data-theme="dark"]) .modal-card > .modal-footer-actions,
+  html:not([data-theme="dark"]) .modal-card.modal-layout-standard > .modal-footer-actions,
+  body:not([data-theme="dark"]) .modal-card .auth-actions,
+  body:not([data-theme="dark"]) .modal-card .modal-actions,
+  body:not([data-theme="dark"]) .modal-card > .modal-footer-actions,
+  body:not([data-theme="dark"]) .modal-card.modal-layout-standard > .modal-footer-actions,
+  html:not([data-theme="dark"]) #entryModal .modal-actions,
+  html:not([data-theme="dark"]) #besModal .modal-actions,
+  body:not([data-theme="dark"]) #entryModal .modal-actions,
+  /* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+  body:not([data-theme="dark"]) #besModal .modal-actions {
+    background: transparent !important;
+    background-image: none !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-top: 8px !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-chart > div {
+  width: 60% !important;
+  padding: 14px !important;
+  gap: 4px !important;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-chart strong {
+  max-width: 100%;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-chart {
+    width: min(260px, 100%) !important;
+  }
+
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-chart > div {
+    width: 62% !important;
+    padding: 12px !important;
+    gap: 3px !important;
+  }
+
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-chart span {
+    font-size: 0.72rem !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 720px) {
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-chart-layout {
+    grid-template-columns: 1fr !important;
+    justify-items: center !important;
+    align-items: center !important;
+    text-align: center;
+  }
+
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-chart {
+    justify-self: center !important;
+    align-self: center !important;
+    margin-inline: auto !important;
+  }
+
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-legend {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.history-panel {
+  overflow: visible !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading {
+  position: relative;
+  z-index: 30;
+  overflow: visible !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading > .history-filters {
+  position: relative;
+  z-index: 35;
+  overflow: visible !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.custom-filter-select {
+  z-index: 36;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.custom-filter-select.is-open {
+  z-index: 80;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-menu {
+  z-index: 120 !important;
+}
+
+.transaction-list,
+.pagination-controls,
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.transaction-item {
+  position: relative;
+  z-index: 1;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    padding-bottom: 10px !important;
+  }
+}
+
+
+
+.history-heading,
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading > .history-filters {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  scrollbar-width: none !important;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.history-heading > .history-filters::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 981px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .history-heading > .history-filters {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.custom-filter-menu {
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 999 !important;
+}
+
+
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.custom-filter-select[data-for="filterPaymentAccount"] .custom-filter-menu {
+  left: 0 !important;
+  right: auto !important;
+  width: min(420px, calc(100vw - 32px)) !important;
+  max-width: min(420px, calc(100vw - 32px)) !important;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.custom-filter-select[data-for="filterPaymentAccount"] .custom-filter-option {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 900px) {
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-chart-layout {
+    grid-template-columns: 1fr !important;
+    justify-items: center !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-chart-layout > .wealth-chart {
+    justify-self: center !important;
+    align-self: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    transform: none !important;
+  }
+
+  /* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+  .wealth-chart-layout > .wealth-legend {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 640px) {
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .custom-filter-select[data-for="filterPaymentAccount"] .custom-filter-menu {
+    width: min(380px, calc(100vw - 24px)) !important;
+    max-width: min(380px, calc(100vw - 24px)) !important;
+  }
+
+  /* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+  .custom-filter-select[data-for="filterPaymentAccount"] .custom-filter-option {
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+}
+
+
+
+/* ACIKLAMA: .home-mini-pagination secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.home-mini-pagination {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+/* ACIKLAMA: .home-mini-pagination > span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+.home-mini-pagination > span {
+  min-width: 52px;
+  text-align: center;
+  color: var(--muted);
+  font-weight: 900;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.home-mini-pagination > button {
+  width: 100%;
+  min-height: 40px !important;
+  padding: 9px 12px !important;
+  border-radius: 14px !important;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.home-mini-pagination > button:disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+html[data-theme="dark"] .home-mini-pagination > span,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .home-mini-pagination > span {
+  color: #a9bac2 !important;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 520px) {
+  /* ACIKLAMA: .home-mini-pagination secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .home-mini-pagination {
+    grid-template-columns: 1fr;
+  }
+
+  /* ACIKLAMA: .home-mini-pagination > span secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  .home-mini-pagination > span {
+    order: -1;
+  }
+}
+
+
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-legend {
+  max-height: none;
+}
+
+/* ACIKLAMA: Ozet, grafik ve istatistik alanlarinin yerlesimini/gorunumunu ayarlar. */
+.wealth-legend-row span {
+  min-width: 0;
+}
+
+
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 430px) {
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .payment-account-list {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .payment-card,
+  .payment-card.bank_account,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card.cash {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-inline: auto !important;
+    padding: 14px 14px 16px !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+
+  .payment-card-top,
+  .payment-card-chip-line,
+  .payment-card-number,
+  .payment-card-details,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-bottom {
+    width: calc(100% - 86px) !important;
+    max-width: calc(100% - 86px) !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card h3 {
+    max-width: 100% !important;
+    font-size: 0.92rem !important;
+    line-height: 1.08 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .payment-card-bank,
+  .payment-card-small,
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-details span {
+    font-size: 0.54rem !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-number {
+    font-size: 1rem !important;
+    letter-spacing: 0.065em !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-details strong {
+    font-size: 0.69rem !important;
+    line-height: 1.14 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-note {
+    max-width: 94px !important;
+    font-size: 0.57rem !important;
+    line-height: 1.14 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-actions {
+    right: 10px !important;
+    width: 72px !important;
+    gap: 6px !important;
+    transform: translateY(-37%) !important;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .payment-card-actions button {
+    width: 100% !important;
+    min-height: 30px !important;
+    padding: 7px 6px !important;
+    font-size: 0.68rem !important;
+  }
+}
+
+.transaction-item > :first-child,
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.account-record-item > :first-child {
+  min-width: 0;
+}
+
+.transaction-title,
+.transaction-meta,
+.account-record-item .transaction-title,
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.account-record-item .transaction-meta {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+.account-record-item {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+/* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+.account-record-item .transaction-side {
+  justify-self: end;
+  min-width: max-content;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 560px) {
+  /* ACIKLAMA: Kart, hesap ve odeme hesabi arayuzlerinin gorunumunu ayarlar. */
+  .account-record-item{
+    grid-template-columns: 1fr !important;
+    align-items: flex-start !important;
+  }
+
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  .account-record-item .transaction-side{
+    width: 100% !important;
+    justify-content: space-between !important;
+    justify-self: stretch !important;
+    min-width: 0 !important;
+  }
+
+  /* ACIKLAMA: Gelir/gider kayit satirlarinin liste ve tutar gorunumunu ayarlar. */
+  .account-record-item .transaction-amount{
+    margin-left: auto;
+  }
+}
+
+
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.home-summary-filter-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(124, 171, 162, 0.18);
+  background: linear-gradient(180deg, rgba(255,255,255,0.48), rgba(255,255,255,0.30));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.36);
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.home-summary-filter-panel h3 {
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.home-summary-filter-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr)) repeat(2, minmax(130px, auto));
+  gap: 10px;
+  align-items: end;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.home-summary-filter-controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
+.home-summary-filter-controls input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 16px;
+}
+
+/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
+.home-summary-filter-controls button {
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+html[data-theme="dark"] .home-summary-filter-panel,
+/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
+body[data-theme="dark"] .home-summary-filter-panel {
+  border-color: rgba(151, 183, 199, 0.14);
+  background: linear-gradient(180deg, rgba(16, 26, 35, 0.56), rgba(13, 22, 31, 0.40));
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 860px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 560px) {
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-controls {
+    grid-template-columns: 1fr;
+  }
+
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-panel {
+    padding: 14px;
+  }
+}
+
+
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.home-summary-filter-standalone {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.home-summary-filter-standalone .compact-heading {
+  margin-bottom: 0;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.home-summary-filter-standalone .home-summary-filter-panel {
+  margin-top: 0;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (min-width: 861px) {
+  /* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+  .home-summary-filter-standalone .home-summary-filter-panel {
+    padding: 18px;
+  }
+}
+
+
+
+#entryView > .panel + .panel,
+#entryView > .panel + .content-grid,
+#entryView > .content-grid + .panel,
+/* ACIKLAMA: #entryView > .content-grid + .content-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+#entryView > .content-grid + .content-grid {
+  margin-top: 18px;
+}
+
+/* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+.home-summary-filter-standalone {
+  margin-top: 20px !important;
+  margin-bottom: 22px !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+.home-summary-filter-standalone + .bank-import-panel {
+  margin-top: 0 !important;
+}
+
+/* ACIKLAMA: Panel/kart yuzeylerinin bosluk, kenarlik ve gorsel hiyerarsisini ayarlar. */
+#entryView .action-panel {
+  margin-bottom: 0;
+}
+
+/* ACIKLAMA: Bu medya sorgusu ekran genisligine gore responsive tasarim kurallarini uygular. */
+@media (max-width: 900px) {
+  #entryView > .panel + .panel,
+  #entryView > .panel + .content-grid,
+  #entryView > .content-grid + .panel,
+  /* ACIKLAMA: #entryView > .content-grid + .content-grid secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
+  #entryView > .content-grid + .content-grid {
+    margin-top: 16px;
+  }
+
+  /* ACIKLAMA: Kayit gecmisi, arama ve filtreleme alanlarinin responsive gorunumunu ayarlar. */
+  .home-summary-filter-standalone {
+    margin-top: 16px !important;
+    margin-bottom: 18px !important;
+  }
+}
