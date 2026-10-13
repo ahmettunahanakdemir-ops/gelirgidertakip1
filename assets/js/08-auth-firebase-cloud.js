@@ -1,6 +1,9 @@
 // ACIKLAMA: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir.
 // ACIKLAMA: Bu dosya ayrilan JS yapisinin bir parcasidir; index.html icindeki yukleme sirasi onemlidir.
 
+const USERNAME_LOGIN_ALIASES_KEY = "akis-budget-username-login-aliases-v1";
+let usernameLoginAliases = null;
+
 function initCloud() {
   renderAuthState();
 
@@ -125,7 +128,7 @@ function openResetPanel() {
   // ACIKLAMA: loginValue degiskeninin Turkce karsiligi "login deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const loginValue = authEmail.value.trim();
 
-  resetEmail.value = loginValue.includes("@") ? loginValue.toLowerCase() : "";
+  resetEmail.value = loginValue.includes("@") ? loginValue.toLowerCase() : findUsernameLoginAlias(loginValue)?.email || "";
   resetStatus.textContent = "";
   showAuthPanel("reset");
   setTimeout(() => resetEmail.focus(), 0);
@@ -146,10 +149,15 @@ async function signInWithEmail() {
 
   try {
     cloudStatus.textContent = "Giriş yapılıyor...";
-    await firebaseAuth.signInWithEmailAndPassword(credentials.email, credentials.password);
-    saveLastUsername(credentials.username);
+    const result = await firebaseAuth.signInWithEmailAndPassword(credentials.email, credentials.password);
+    rememberUsernameLogin(result.user);
+    saveLastUsername(getUserDisplayName(result.user) || credentials.username);
   } catch (error) {
     cloudStatus.textContent = getFirebaseErrorMessage(error);
+    if (!credentials.username.includes("@") && !findUsernameLoginAlias(credentials.username)
+      && ["auth/user-not-found", "auth/wrong-password", "auth/invalid-credential", "auth/invalid-login-credentials"].includes(error.code)) {
+      cloudStatus.textContent += " Bu cihazda kullanıcı adı henüz e-postayla eşleşmemiş. Bir kez e-posta adresinle giriş yaptığında kullanıcı adınla da yeni parolanı kullanabilirsin.";
+    }
   }
 }
 
@@ -181,6 +189,7 @@ async function createAccountWithEmail(event) {
       currentUser = firebaseAuth.currentUser || userCredential.user;
     }
 
+    rememberUsernameLogin(currentUser || userCredential.user);
     saveLastUsername(credentials.username);
     renderAuthState();
     await syncUserProfileToCloud();
@@ -371,6 +380,7 @@ async function updateProfile(event) {
 
     await currentUser.reload();
     currentUser = firebaseAuth.currentUser || currentUser;
+    rememberUsernameLogin(currentUser);
     saveLastUsername(getUserDisplayName(currentUser));
     renderAuthState();
     if (contactChanged && typeof syncUserProfileToCloud === "function") {
@@ -523,6 +533,7 @@ async function deleteCurrentUserAccountWithEmailVerification() {
     await deleteUserCloudData(user.uid);
     clearUserLocalData(user.uid);
     await user.delete();
+    forgetUsernameLogin(user.uid);
     transactions = [];
     assets = [];
     besAccounts = [];
@@ -637,6 +648,7 @@ async function deleteCurrentUserAccount() {
     await deleteUserCloudData(user.uid);
     clearUserLocalData(user.uid);
     await user.delete();
+    forgetUsernameLogin(user.uid);
     transactions = [];
     assets = [];
     besAccounts = [];
@@ -786,9 +798,62 @@ function usernameToEmail(username) {
     return value.toLowerCase();
   }
 
+  const knownAccount = findUsernameLoginAlias(value);
+  if (knownAccount) return knownAccount.email;
+
   // ACIKLAMA: safeUsername degiskeninin Turkce karsiligi "guvenli kullanici adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const safeUsername = normalizeBankText(value).replace(/\s+/g, "");
   return `${safeUsername}@${USERNAME_EMAIL_DOMAIN}`;
+}
+
+function normalizeLoginUsername(value) {
+  return String(value || "").trim().toLocaleLowerCase("tr-TR").normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i").replace(/\s+/g, " ");
+}
+
+function readUsernameLoginAliases() {
+  if (usernameLoginAliases !== null) return usernameLoginAliases;
+  try {
+    const saved = JSON.parse(localStorage.getItem(USERNAME_LOGIN_ALIASES_KEY) || "[]");
+    usernameLoginAliases = Array.isArray(saved) ? saved.filter((item) => item
+      && typeof item.usernameKey === "string" && typeof item.uid === "string"
+      && typeof item.email === "string" && item.email.includes("@"))
+      .map((item) => ({ usernameKey: item.usernameKey, uid: item.uid, email: item.email.trim().toLowerCase() }))
+      .slice(-30) : [];
+  } catch {
+    usernameLoginAliases = [];
+  }
+  return usernameLoginAliases;
+}
+
+function findUsernameLoginAlias(username) {
+  const key = normalizeLoginUsername(username);
+  if (!key || key.includes("@")) return null;
+  return readUsernameLoginAliases().find((item) => item.usernameKey === key) || null;
+}
+
+function persistUsernameLoginAliases() {
+  try {
+    localStorage.setItem(USERNAME_LOGIN_ALIASES_KEY, JSON.stringify(usernameLoginAliases));
+  } catch {
+    // The authenticated mapping remains available for this session.
+  }
+}
+
+function rememberUsernameLogin(user) {
+  if (!user?.uid || !user.email) return;
+  const usernameKey = normalizeLoginUsername(getUserDisplayName(user));
+  if (!usernameKey || usernameKey.includes("@")) return;
+  // Only a successfully authenticated Firebase user establishes this mapping.
+  usernameLoginAliases = readUsernameLoginAliases().filter((item) => item.uid !== user.uid && item.usernameKey !== usernameKey);
+  usernameLoginAliases.push({ usernameKey, uid: user.uid, email: String(user.email).trim().toLowerCase() });
+  usernameLoginAliases = usernameLoginAliases.slice(-30);
+  persistUsernameLoginAliases();
+}
+
+function forgetUsernameLogin(userId) {
+  usernameLoginAliases = readUsernameLoginAliases().filter((item) => item.uid !== userId);
+  persistUsernameLoginAliases();
 }
 
 // ACIKLAMA: emailToUsername fonksiyonunun Turkce karsiligi "e-posta ile kullanici adi"; AI destekli okuma veya API istegi akisini calistirir.
@@ -864,6 +929,7 @@ async function handleAuthStateChanged(user) {
   // ACIKLAMA: anonymousLocalTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const anonymousLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
   currentUser = user;
+  rememberUsernameLogin(user);
   deletedTransactionIds = loadDeletedTransactionIds();
   deletedTransactionSignatures = loadDeletedTransactionSignatures();
   deletedTransferTombstones = loadDeletedTransferTombstones();

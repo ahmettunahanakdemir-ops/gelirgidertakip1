@@ -1184,11 +1184,7 @@ function fitHomeWealthTotalText() {
 }
 
 // ACIKLAMA: renderHomeWealthChart fonksiyonunun Turkce karsiligi "ekrana bas ana sayfa birikim grafik"; ilgili ekran, liste veya kartlari ekrana basar.
-function renderHomeWealthChart({ cashBalance, assetTotal, besTotalValue }) {
-  if (!homeWealthChart || !homeWealthTotal || !homeWealthLegend) {
-    return;
-  }
-
+function getHomeWealthSegments({ cashBalance, besTotalValue }) {
   // ACIKLAMA: groupedAssetSegments varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
   const groupedAssetSegments = Object.values(
     assets.reduce((acc, item) => {
@@ -1225,6 +1221,12 @@ function renderHomeWealthChart({ cashBalance, assetTotal, besTotalValue }) {
     ...groupedAssetSegments,
     { label: "BES", value: Math.max(besTotalValue, 0), color: "#173f5f" },
   ].filter((segment) => segment.value > 0);
+  return segments;
+}
+
+function renderHomeWealthChart(totals) {
+  if (!homeWealthChart || !homeWealthTotal || !homeWealthLegend) return;
+  const segments = getHomeWealthSegments(totals);
   // ACIKLAMA: total hesaplanan toplam degerin ekranda gosterilecegi alandir.
   const total = segments.reduce((sum, segment) => sum + segment.value, 0);
 

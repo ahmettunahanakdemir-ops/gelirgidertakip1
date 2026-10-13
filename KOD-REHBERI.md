@@ -22,6 +22,8 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 - `assets/css/10-responsive-pwa-overrides.css`: Mobil/PWA, yedekleme, auth, kart ve form responsive duzeltmeleri.
 - `assets/css/11-bulk-recent-final.css`: Coklu gelir/gider modali, son kayitlar penceresi ve son katman mobil duzeltmeleri.
 - `assets/css/12-debts-receivables.css`: Borc/alacak ozetleri, filtreler, kayit satirlari, modal ve mobil yerlesim.
+- `assets/css/16-budget-assistant.css`: Akış Bütçe Asistanı sohbet paneli, sürüklenebilir robot düğmesi, marka renkleri, koyu tema ve mobil güvenli alan.
+- `assets/images/budget-assistant-mascot.png`: Asistan başlığı, mesaj avatarları ve açma düğmesindeki özgün Akış Bütçe robotu.
 
 ## JS Dosyalari
 
@@ -33,11 +35,12 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 - `assets/js/05-assets-payments-bes-market.js`: Varliklar, odeme hesaplari, kredi karti borclari, BES hesaplari ve piyasa fiyatlari.
 - `assets/js/06-summary-history-categories-navigation.js`: Ozet kategori dagilimi, kayit gecmisi, filtreler, kategori yonetimi, ekran gecisi ve yan menu.
 - `assets/js/07-backup-export-import-sync.js`: Yedekleme, PDF/Excel disari aktarma, dosyadan ice aktarma ve paylasim kodu islemleri.
-- `assets/js/08-auth-firebase-cloud.js`: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir.
+- `assets/js/08-auth-firebase-cloud.js`: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir. Basarili giristen sonra kullanici adi-gercek e-posta eslesmesi bu cihazda saklanir; parola saklanmaz. Parola sifirlaninca kullanici adi ayni Firebase hesabina yonlendirilir.
 - `assets/js/09-bank-import-ocr-parsers.js`: Banka hareketi ice aktarma, AI/OCR dosya okuma ve metinden hareket ayrisitirma fonksiyonlari.
 - `assets/js/10-debts-receivables.js`: Borc/alacak veri modeli, yerel kayit, ekran islemleri, filtreler ve ilgili gelir/gider hareketleri.
 - `assets/js/10-startup-pwa.js`: Acilis ekrani ve service worker kaydi yardimcilari.
 - `assets/js/11-state-startup.js`: Uygulama durum degiskenlerini yukler ve tum dosyalar hazir olduktan sonra uygulamayi baslatir. En son yuklenmelidir.
+- `assets/js/12-budget-assistant.js`: Serbest doğal dilde gelir/gider/transfer kaydı, eksik alanlar için adım adım soru, dönem/kategori/işyeri/hesap filtreli hareket arama, borç/taksit/varlık/BES/kart yanıtları ve Türkçe sayı okuyan durdurulabilir sesli yanıt.
 
 ## Diger JS Dosyalari
 
@@ -47,5 +50,15 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 ## Calisma Notlari
 
 - CSS ve JS dosya adlarindaki numaralar yukleme sirasini gosterir. Bu sira korunmalidir.
-- `assets/js/11-state-startup.js` en son yuklenir; localStorage verilerini okur ve `init()` ile uygulamayi baslatir.
+- `assets/js/11-state-startup.js` uygulama durumunu yükleyip `init()` çağrısını yapar; `12-budget-assistant.js` bu başlangıçtan sonra çalışarak asistanı oturum açılmış uygulamaya bağlar.
+- Eski hesaplarda veya yeni bir cihazda kullanici adi eslesmesi yoksa bir kez e-posta ile giris gerekir. Eslesme basarili giris/kayit, mevcut oturum veya profil guncellemesiyle kurulur; eski `.local` e-posta hesaplarinin girisi korunur.
+- Asistanin "bu ayki taksitler" sorgusu takvim ayini, "yakin taksitler" sorgusu onumuzdeki 30 gunu, donemsiz taksit sorgusu tum acik taksitleri kullanir. Tamamlanmis taksitler acik taksit listesine dahil edilmez.
+- Asistan "300 liralik krem aldim" ve "25 TL'ye simit aldim" gibi satin alma cumlelerinden gider tutarini ve urun basligini alir; eksik kategori/odeme/tarih alanlarini sorar. Kategori secenekleri islem turundeki tum aktif kategorilerdir.
+- "Son 10 gundeki kayitlar" bugun dahil 10 takvim gunundeki hareketleri; "son 10 kayit" ise donem belirtilmemisse tum kayitlar arasindaki en yeni 10 hareketi listeler. Belirtilen kategori/hesap/donem filtreleri kayit sayisi sinirindan once uygulanir.
+- v425: "310 TL 50 kurus" ve "310,50 lira" tek tutar olarak 310,50 TL islenir. "700 TL'ye tras oldum" hizmet gideri olarak taninir; turu belirsiz parasal ifadelerde gelir/gider/transfer secimi sorulur. Rapor sorulari islem taslagina donusturulmez.
+- "Gorusmeyi sonlandir" her adimda paneli kapatir, mikrofon ve seslendirmeyi durdurur, onaylanmamis taslagi ve bekleyen sorulari temizler; mevcut kayitlara dokunmaz.
+- "Toplam birikimim" yaniti ve ana sayfadaki dagilim grafigi ortak `getHomeWealthSegments` hesabini kullanir: pozitif guncel bakiye, pozitif varlik degerleri ve BES. Bakiye ana sayfanin aktif tarih filtresine uyar; varliklar ve BES guncel degerleriyle dahil edilir.
+- "Son 10 kayit nr" ifadesindeki nr baslik filtresi degildir. "Yakin tarihli/tarihteki kayitlar" eklenme zamani (`createdAt`) veya kayitta secilen islem tarihi (`date`) siralamasini sorar. Acik bir donem belirtilmemisse tum zamanlarin en yeni 10 kaydi listelenir; donem varsa secilen tarih turune gore filtrelenir. Eklenme tarihi olmayan eski kayitlar bu siralamada sona gelir ve bilinmiyor olarak etiketlenir.
+- `assets/css/17-mobile-viewport.css`: Mobil/kurulu uygulama acilis ekraninin kenardan kenara yerlesimi, iOS seffaf durum cubugu ve guvenli alan bosluklari. Gercek iPhone PWA gorunumu cihazda dogrulanmalidir.
+- v426: "Yakin kayitlari goster" ve "yakin islemleri goster" kisa ifadeleri de tarih turu secimini sorar ve varsayilan olarak en yeni 10 kaydi getirir; aylik tum kayitlar listesine dusmez. Eklenme zamani acikca belirtilmisse yeniden soru sorulmaz.
 - `legacy/app.original.js` ve `legacy/style.original.css` eski tek dosya halleridir; uygulama tarafindan yuklenmez.
