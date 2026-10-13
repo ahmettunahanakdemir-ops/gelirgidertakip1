@@ -320,11 +320,12 @@
   background: var(--surface);
 }
 
-.budget-assistant-composer textarea {
+html .budget-assistant-composer textarea {
   flex: 1 1 auto;
   width: 0;
   min-width: 0;
   min-height: 40px;
+  box-sizing: border-box;
   max-height: 112px;
   resize: vertical;
   padding: 10px 8px;
@@ -351,9 +352,10 @@
 }
 
 .budget-assistant-mic.is-listening {
-  border-color: var(--expense);
-  background: var(--expense);
-  color: #fff;
+  border-color: var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(17, 123, 117, .18), 0 4px 14px rgba(17, 123, 117, .24);
   animation: assistant-pulse 1.1s ease-in-out infinite;
 }
 
@@ -367,7 +369,7 @@
 }
 
 @keyframes assistant-pulse {
-  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--expense) 22%, transparent); }
+  50% { box-shadow: 0 0 0 7px rgba(17, 123, 117, .12), 0 5px 18px rgba(17, 123, 117, .3); }
 }
 
 html.modern-budget[data-theme="dark"] .budget-assistant-launcher {
@@ -392,15 +394,73 @@ html.modern-budget[data-theme="dark"] .budget-assistant-send {
     bottom: calc(94px + env(safe-area-inset-bottom));
   }
 
-  .budget-assistant-panel {
-    top: calc(8px + env(safe-area-inset-top));
-    right: 8px;
-    bottom: calc(88px + env(safe-area-inset-bottom));
-    left: 8px;
-    width: auto;
-    height: auto;
+  html.assistant-mobile-open .budget-assistant-panel {
+    position: fixed !important;
+    top: var(--assistant-viewport-top, 0px) !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: var(--assistant-viewport-height, 100dvh) !important;
     min-height: 0;
-    border-radius: 16px;
+    max-height: none;
+    box-sizing: border-box;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: 0;
+    z-index: 10000;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .budget-assistant-header {
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+
+  html .budget-assistant-composer textarea {
+    font-size: 16px;
+    resize: none;
+    height: 44px;
+    max-height: 112px;
+    line-height: 22px;
+    padding: 10px 8px;
+    border: 0 !important;
+    background: transparent !important;
+    -webkit-appearance: none;
+  }
+
+  html.assistant-mobile-open,
+  html.assistant-mobile-open body {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+
+  html.assistant-mobile-open body {
+    position: fixed;
+    top: var(--assistant-page-top, 0px);
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  html.assistant-mobile-open .mobile-dock,
+  html.assistant-mobile-open .budget-assistant-launcher {
+    display: none !important;
+  }
+
+  .budget-assistant-panel.is-keyboard-open {
+    padding-bottom: 0;
+  }
+
+  .budget-assistant-panel.is-keyboard-open .budget-assistant-privacy {
+    display: none;
+  }
+
+  .budget-assistant-panel.is-keyboard-open .budget-assistant-composer {
+    margin: 0;
+    border-radius: 0;
+    padding: 8px max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
   }
 }
 

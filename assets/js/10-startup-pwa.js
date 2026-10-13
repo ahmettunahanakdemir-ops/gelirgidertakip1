@@ -5,6 +5,7 @@ function hideStartupSplash() {
   // ACIKLAMA: finishStartup degiskeninin Turkce karsiligi "finish baslangic"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const finishStartup = () => {
     startupSplashFinished = true;
+    document.documentElement.classList.remove("startup-splash-active");
     renderAuthState();
 
     if (loginScreen && !currentUser) {

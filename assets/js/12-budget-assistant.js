@@ -9,6 +9,9 @@
   let latestSpokenReply = "";
   let assistantSpeaking = false;
   let speechSession = 0;
+  let assistantScrollY = null;
+  let assistantViewportHeight = 0;
+  let assistantScrollFrame = null;
   const mascotSource = "assets/images/budget-assistant-mascot.png";
   const assistantQuickPrompts = [
     "Bu ayın özeti", "En çok hangi kategoriye harcadım?", "Gider ekle", "Gelir ekle",
@@ -39,7 +42,7 @@
     <div class="budget-assistant-messages" data-assistant-messages aria-live="polite" aria-relevant="additions text"></div>
     <p class="budget-assistant-status" data-assistant-status role="status"></p>
     <form class="budget-assistant-composer" data-assistant-form>
-      <textarea data-assistant-input rows="1" maxlength="240" aria-label="Asistana mesaj yaz" placeholder="Kendi cümlenle sor veya işlem anlat…"></textarea>
+      <textarea data-assistant-input rows="1" maxlength="240" aria-label="Asistana mesaj yaz" placeholder="Mesajını yaz…"></textarea>
       <button type="button" class="budget-assistant-icon-button budget-assistant-mic" data-assistant-mic aria-label="Sesli komut" title="Sesli komut"><i data-lucide="mic" aria-hidden="true"></i></button>
       <button type="submit" class="budget-assistant-send" aria-label="Mesajı gönder" title="Gönder"><i data-lucide="send" aria-hidden="true"></i></button>
     </form>
@@ -120,7 +123,16 @@
   }
 
   function scrollMessagesToEnd() {
-    messageList.scrollTop = messageList.scrollHeight;
+    if (assistantScrollFrame !== null) return;
+    assistantScrollFrame = requestAnimationFrame(() => {
+      assistantScrollFrame = null;
+      messageList.scrollTop = messageList.scrollHeight;
+    });
+  }
+
+  function resizeAssistantInput() {
+    input.style.height = "44px";
+    input.style.height = `${Math.min(112, Math.max(44, input.scrollHeight))}px`;
   }
 
   function appendMessage(text, role = "assistant") {
@@ -1164,8 +1176,7 @@
     pendingEntry = null;
     pendingEntryStep = "";
     messageList.querySelector("[data-assistant-pending]")?.remove();
-    panel.hidden = true;
-    launcher.setAttribute("aria-expanded", "false");
+    closeAssistant();
     openEntryModal();
     typeInput.value = draft.type;
     updateCategoryOptions(draft.type);
@@ -1452,6 +1463,7 @@
     messageList.querySelectorAll(".budget-assistant-prompts").forEach((group) => group.remove());
     appendMessage(message, "user");
     input.value = "";
+    resizeAssistantInput();
     setStatus("");
     if (isAssistantEndCommand(message)) {
       endAssistantConversation();
@@ -1505,17 +1517,55 @@
   function openAssistant() {
     panel.hidden = false;
     launcher.setAttribute("aria-expanded", "true");
+    syncAssistantViewport();
     window.lucide?.createIcons();
-    if (window.innerWidth > 980) setTimeout(() => input.focus({ preventScroll: true }), 20);
+    input.focus({ preventScroll: true });
     scrollMessagesToEnd();
   }
 
   function closeAssistant() {
     if (recognition) recognition.stop();
     stopAssistantSpeech();
+    input.blur();
     panel.hidden = true;
+    releaseAssistantMobileLayout();
     launcher.setAttribute("aria-expanded", "false");
     launcher.focus({ preventScroll: true });
+  }
+
+  function syncAssistantViewport() {
+    if (panel.hidden) return;
+    if (window.innerWidth > 980) {
+      releaseAssistantMobileLayout();
+      return;
+    }
+    const root = document.documentElement;
+    if (assistantScrollY === null) {
+      assistantScrollY = window.scrollY;
+      assistantViewportHeight = window.innerHeight;
+      root.style.setProperty("--assistant-page-top", `${-assistantScrollY}px`);
+      root.classList.add("assistant-mobile-open");
+    }
+    // The keyboard shrinks the visual viewport, not necessarily the layout viewport.
+    const viewport = window.visualViewport;
+    const height = viewport?.height || window.innerHeight;
+    panel.style.setProperty("--assistant-viewport-height", `${height}px`);
+    panel.style.setProperty("--assistant-viewport-top", `${viewport?.offsetTop || 0}px`);
+    panel.classList.toggle("is-keyboard-open", Math.max(assistantViewportHeight, window.innerHeight) - height > 120);
+    panel.setAttribute("aria-modal", "true");
+  }
+
+  function releaseAssistantMobileLayout() {
+    document.documentElement.classList.remove("assistant-mobile-open");
+    document.documentElement.style.removeProperty("--assistant-page-top");
+    panel.classList.remove("is-keyboard-open");
+    panel.setAttribute("aria-modal", "false");
+    if (assistantScrollY !== null) {
+      const top = assistantScrollY;
+      assistantScrollY = null;
+      assistantViewportHeight = 0;
+      window.scrollTo({ top, left: 0, behavior: "instant" });
+    }
   }
 
   function isAssistantEndCommand(text) {
@@ -1626,6 +1676,7 @@
       sendAssistantInput();
     }
   });
+  input.addEventListener("input", resizeAssistantInput);
   speakButton.addEventListener("click", () => {
     if (!latestSpokenReply || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
     if (assistantSpeaking) {
@@ -1710,10 +1761,12 @@
     const visible = Boolean(appShell && !appShell.hidden && !document.documentElement.classList.contains("auth-logged-out") && !modalOpen);
     launcher.hidden = !visible;
     if (!visible && !panel.hidden) {
-      panel.hidden = true;
-      launcher.setAttribute("aria-expanded", "false");
+      closeAssistant();
     }
   };
+  window.visualViewport?.addEventListener("resize", syncAssistantViewport);
+  window.visualViewport?.addEventListener("scroll", syncAssistantViewport);
+  window.addEventListener("resize", syncAssistantViewport);
   if (appShell && window.MutationObserver) {
     new MutationObserver(updateVisibility).observe(appShell, { attributes: true, attributeFilter: ["hidden"] });
     new MutationObserver(updateVisibility).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });

@@ -1,17 +1,19 @@
 // ACIKLAMA NOTU: Bu dosyada kod bloklarinin yaninda ne ise yaradiklarini anlatan yorumlar vardir.
 // ACIKLAMA: Service worker tarafinda kullanilan aktif cache adini tutar.
-const CACHE_NAME = "akis-butce-v426";
+const CACHE_NAME = "akis-butce-v428";
 // ACIKLAMA: Uygulamanin cevrimdisi acilmasi icin cachelenecek temel dosyalari listeler.
 const APP_ASSETS = [
-  "./assets/css/16-budget-assistant.css?v=422",
-  "./assets/js/12-budget-assistant.js?v=426",
-  "./assets/css/17-mobile-viewport.css?v=425",
+  "./assets/css/16-budget-assistant.css?v=428",
+  "./assets/js/12-budget-assistant.js?v=428",
+  "./assets/css/18-interaction-performance.css?v=428",
+  "./assets/js/13-interaction-feedback.js?v=428",
+  "./assets/css/17-mobile-viewport.css?v=427",
   "./assets/images/budget-assistant-mascot.png",
   "./assets/css/15-summary-category-details.css?v=419",
   "./assets/css/14-settings-dialogs.css?v=419",
   "./assets/js/10-settings-layout.js?v=418",
   "./assets/css/13-modern-shell.css?v=418",
-  "./assets/js/10-modern-shell.js?v=418",
+  "./assets/js/10-modern-shell.js?v=428",
   "./assets/vendor/lucide.min.js?v=418",
   "./",
   "./index.html",
@@ -27,7 +29,7 @@ const APP_ASSETS = [
   "./assets/css/10-responsive-pwa-overrides.css?v=418",
   "./assets/css/11-bulk-recent-final.css?v=418",
   "./assets/css/12-debts-receivables.css?v=418",
-  "./assets/js/00-theme-preload.js?v=418",
+  "./assets/js/00-theme-preload.js?v=427",
   "./firebase-config.js?v=418",
   "./assets/js/01-config-dom.js?v=418",
   "./assets/js/02-ui-preferences-reminders.js?v=418",
@@ -39,7 +41,7 @@ const APP_ASSETS = [
   "./assets/js/08-auth-firebase-cloud.js?v=423",
   "./assets/js/09-bank-import-ocr-parsers.js?v=418",
   "./assets/js/10-debts-receivables.js?v=418",
-  "./assets/js/10-startup-pwa.js?v=418",
+  "./assets/js/10-startup-pwa.js?v=427",
   "./assets/js/11-state-startup.js?v=418",
   "./manifest.json?v=418",
   "./icon.svg",

@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <!-- ACIKLAMA NOTU: Bu HTML dosyasinda ana elemanlarin yaninda ne ise yaradiklarini anlatan yorumlar vardir. -->
-<html lang="tr">
+<html lang="tr" class="startup-splash-active">
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#173f5f" />
+    <meta name="theme-color" content="#eef7f5" />
     <meta name="color-scheme" content="light dark" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Akış Bütçe" />
@@ -28,7 +28,7 @@
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <!-- ACIKLAMA: CSS yuklenmeden once kayitli tema tercihini uygulayan kucuk JS dosyasi. -->
-    <script src="assets/js/00-theme-preload.js?v=418"></script>
+    <script src="assets/js/00-theme-preload.js?v=427"></script>
     <!-- ACIKLAMA: Kok degiskenler, global sayfa zemini ve temel form/button ayarlari. -->
     <link rel="stylesheet" href="assets/css/01-base.css?v=418" />
     <!-- ACIKLAMA: Giris/kayit/parola ekranlari, ortak formlar, butonlar ve tehlikeli islem alanlari. -->
@@ -56,8 +56,9 @@
     <link rel="stylesheet" href="assets/css/13-modern-shell.css?v=418" />
     <link rel="stylesheet" href="assets/css/14-settings-dialogs.css?v=419" />
     <link rel="stylesheet" href="assets/css/15-summary-category-details.css?v=419" />
-    <link rel="stylesheet" href="assets/css/16-budget-assistant.css?v=422" />
-    <link rel="stylesheet" href="assets/css/17-mobile-viewport.css?v=425" />
+    <link rel="stylesheet" href="assets/css/16-budget-assistant.css?v=428" />
+    <link rel="stylesheet" href="assets/css/17-mobile-viewport.css?v=427" />
+    <link rel="stylesheet" href="assets/css/18-interaction-performance.css?v=428" />
   </head>
   <body>
 
@@ -2140,12 +2141,13 @@
     <!-- ACIKLAMA: Borc/alacak kayitlari, filtreler, ilgili hareketler ve ekran islemleri. -->
     <script src="assets/js/10-debts-receivables.js?v=418"></script>
     <!-- ACIKLAMA: Acilis ekrani ve service worker kaydi yardimcilari. -->
-    <script src="assets/js/10-startup-pwa.js?v=418"></script>
+    <script src="assets/js/10-startup-pwa.js?v=427"></script>
     <!-- ACIKLAMA: Uygulama durum degiskenlerini yukler ve tum dosyalar hazir olduktan sonra uygulamayi baslatir. En son yuklenmelidir. -->
     <script src="assets/vendor/lucide.min.js?v=418"></script>
-    <script src="assets/js/10-modern-shell.js?v=418"></script>
+    <script src="assets/js/10-modern-shell.js?v=428"></script>
     <script src="assets/js/10-settings-layout.js?v=418"></script>
     <script src="assets/js/11-state-startup.js?v=418"></script>
-    <script src="assets/js/12-budget-assistant.js?v=426"></script>
+    <script src="assets/js/12-budget-assistant.js?v=428"></script>
+    <script src="assets/js/13-interaction-feedback.js?v=428"></script>
   </body>
 </html>

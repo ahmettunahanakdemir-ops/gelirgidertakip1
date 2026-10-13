@@ -11,3 +11,5 @@ try {
     document.documentElement.setAttribute("data-theme", savedTheme);
   }
 } catch (e) {}
+document.querySelector('meta[name="theme-color"]')?.setAttribute("content",
+  document.documentElement.getAttribute("data-theme") === "dark" ? "#091118" : "#eef7f5");

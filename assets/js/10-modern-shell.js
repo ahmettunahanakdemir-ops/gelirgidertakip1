@@ -393,7 +393,7 @@ function renderModernShell() {
       mobileDock.classList.remove("has-active-item");
     }
   }
-  renderModernDashboard();
+  if (activeView === "homeView") renderModernDashboard();
   requestDesktopShellToolbarPinSync();
 }
 
