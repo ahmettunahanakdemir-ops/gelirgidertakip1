@@ -133,7 +133,8 @@ html.modern-budget .login-card {background:var(--surface)!important;border:1px s
 .mobile-dock {display:none;}
 @media(min-width:981px) {
   html.modern-budget .shell-toolbar {display:grid;grid-template-columns:1fr auto 1fr;}
-  html.modern-budget .shell-toolbar .shell-settings {display:none!important;}
+  html.modern-budget .shell-toolbar .shell-settings,
+  html.modern-budget .shell-toolbar .shell-logout {display:none!important;}
   html.modern-budget .shell-toolbar .shell-period {grid-column:2;justify-self:center;}
   html.modern-budget .shell-toolbar .shell-add {grid-column:3;justify-self:end;}
   html.modern-budget #appShell:not([hidden]) {display:block!important;padding:0!important;}
@@ -3840,4 +3841,11 @@ html.modern-budget #summaryDateFilterModal .entry-modal-save:disabled {
     width: 100% !important;
     min-width: 0 !important;
   }
+}
+
+/* v438 - Ayarlar ve alt sayfalarinda yardimci katmanlari gizle. */
+html.modern-budget[data-active-view="settingsView"] .mobile-dock,
+html.modern-budget[data-active-view="settingsView"] .budget-assistant-launcher,
+html.modern-budget[data-active-view="settingsView"] .budget-assistant-panel {
+  display: none !important;
 }

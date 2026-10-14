@@ -1,6 +1,19 @@
 // ACIKLAMA: Mevcut ayar kontrolleri tasinir; kimlikleri ve kaydetme olaylari korunur.
 function setupSettingsLayout() {
   const view = document.getElementById("settingsView");
+  const workspace = view.closest(".workspace");
+  const settingsScrollTop = () => {
+    const overflowY = workspace ? getComputedStyle(workspace).overflowY : "visible";
+    return workspace && overflowY !== "visible" ? workspace.scrollTop : window.scrollY;
+  };
+  const setSettingsScrollTop = (top) => {
+    const overflowY = workspace ? getComputedStyle(workspace).overflowY : "visible";
+    if (workspace && overflowY !== "visible") {
+      workspace.scrollTop = top;
+    } else {
+      window.scrollTo(0, top);
+    }
+  };
   const categories = view.querySelector(".settings-category-panel");
   const filter = view.querySelector(".home-summary-filter-standalone");
   const fonts = document.getElementById("settingsFontFamily").closest(".settings-block");
@@ -45,7 +58,7 @@ function setupSettingsLayout() {
       menu.hidden = false;
       header.hidden = false;
       summary.focus({ preventScroll: true });
-      window.scrollTo(0, scrollPosition);
+      setSettingsScrollTop(scrollPosition);
     };
     if (pageKey === "profile") {
       const saveButton = document.createElement("button");
@@ -142,14 +155,14 @@ function setupSettingsLayout() {
           event.stopImmediatePropagation();
           page.hidden = true;
           nestedPage.hidden = false;
-          window.scrollTo(0, 0);
+          setSettingsScrollTop(0);
           passwordNav.querySelector("h2")?.focus({ preventScroll: true });
         }, true);
 
         passwordNav.querySelector(".preferences-back")?.addEventListener("click", () => {
           nestedPage.hidden = true;
           page.hidden = false;
-          window.scrollTo(0, 0);
+          setSettingsScrollTop(0);
           passwordButton.focus({ preventScroll: true });
         });
         passwordNav.querySelector(".preferences-header-save")?.addEventListener("click", () => profile?.requestSubmit());
@@ -157,12 +170,12 @@ function setupSettingsLayout() {
     }
 
     summary.addEventListener("click", () => {
-      scrollPosition = window.scrollY;
+      scrollPosition = settingsScrollTop();
       menu.hidden = true;
       header.hidden = true;
       page.hidden = false;
       if (pageKey === "help") body.scrollTop = 0;
-      window.scrollTo(0, 0);
+      setSettingsScrollTop(0);
       nav.querySelector("h2").focus({preventScroll:true});
     });
     nav.querySelector("button").addEventListener("click", returnToSettingsMenu);

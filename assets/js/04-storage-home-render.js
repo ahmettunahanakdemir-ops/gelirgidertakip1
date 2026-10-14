@@ -945,7 +945,9 @@ function render() {
   renderHome();
   renderModernDashboard();
   renderCategoryBreakdown();
-  renderTransactions();
+  if (activeView === "historyView") {
+    renderTransactions();
+  }
   if (recentTransactionsModal && !recentTransactionsModal.hidden) {
     renderRecentTransactionsModal();
   }

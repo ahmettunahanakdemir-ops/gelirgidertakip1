@@ -684,6 +684,46 @@ html.modern-budget #deleteAccountCodeModal .delete-code-verify {min-height:48px!
 }
 html.modern-budget #settingsView [data-settings-page="profile"] .settings-delete-account-icon svg {width:20px;height:20px;display:block;}
 
+/* v439 - Ayarlar kullanılabilir ekran yüksekliğini kaplar; gizli alt çubuk için boşluk bırakmaz. */
+html.modern-budget #settingsView.active {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  overflow: visible !important;
+  min-height: calc(100dvh - 56px);
+  padding-bottom: 0 !important;
+}
+html.modern-budget #settingsView .preferences-layout {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+html.modern-budget #settingsView .preferences-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 0 auto;
+  box-sizing: border-box;
+}
+html.modern-budget #settingsView .preferences-section { margin: 0 !important; }
+html.modern-budget #settingsView .preferences-subpage { flex: 1 0 auto; }
+
+@media (max-width: 980px) {
+  html.modern-budget[data-active-view="settingsView"] body::after {
+    display: none !important;
+  }
+  html.modern-budget[data-active-view="settingsView"] #appShell.app-shell > .workspace,
+  html.modern-budget[data-active-view="settingsView"] #appShell.app-shell.sidebar-expanded > .workspace {
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
+  html.modern-budget #settingsView.active {
+    min-height: calc(100dvh - env(safe-area-inset-bottom));
+  }
+}
+
 
 /* Hesap silme akışındaki onay pencerelerini büyüt ve metin görünürlüğünü artır */
 html.modern-budget #genericConfirmModal .confirm-modal,

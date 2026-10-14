@@ -65,12 +65,12 @@
     .trim();
 
   function isAssistantReportIntent(text) {
-    return /\b(ozet\w*|en cok|ne kadar|ne|hangi|nerede|neyi|neye|neler|kategori\w*|analiz|karsilastir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*)\b/.test(normalize(text));
+    return /\b(ozet\w*|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ne kadar|ne|hangi|nerede|neyi|neye|neler|kategori\w*|analiz|karsilastir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*)\b/.test(normalize(text));
   }
 
   function isIndependentReportQuestion(text) {
     const normalized = normalize(text);
-    const asksQuestion = /[?？]/.test(String(text || "")) || /\b(ne|neler|hangi|ne kadar|en cok|ozet|var mi|detay|goster|listele)\b/.test(normalized);
+    const asksQuestion = /[?？]/.test(String(text || "")) || /\b(ne|neler|hangi|ne kadar|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ozet|var mi|detay|goster|listele)\b/.test(normalized);
     const namesFinancialArea = /\b(birikim\w*|kategori\w*|harcama\w*|gider\w*|gelir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*)\b/.test(normalized);
     return asksQuestion && namesFinancialArea;
   }
@@ -279,10 +279,45 @@
     updateSpeakButton();
   }
 
+  function getAssistantExplicitDatePeriod(text, today = getTurkeyTodayISO()) {
+    const [year, currentMonth] = today.split("-").map(Number);
+    const months = ["ocak", "subat", "mart", "nisan", "mayis", "haziran", "temmuz", "agustos", "eylul", "ekim", "kasim", "aralik"];
+    const dates = [];
+    let invalid = false;
+    const addDate = (day, month, requestedYear) => {
+      const dateYear = requestedYear ? Number(requestedYear) : month > currentMonth ? year - 1 : year;
+      const date = new Date(dateYear, month - 1, day, 12);
+      if (date.getFullYear() !== dateYear || date.getMonth() !== month - 1 || date.getDate() !== day) { invalid = true; return; }
+      dates.push(`${dateYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
+    };
+    for (const match of String(text).matchAll(/\b(20\d{2})-(\d{1,2})-(\d{1,2})\b|\b(\d{1,2})[./](\d{1,2})(?:[./](20\d{2}))?\b/g)) {
+      if (match[1]) addDate(Number(match[3]), Number(match[2]), match[1]);
+      else addDate(Number(match[4]), Number(match[5]), match[6]);
+    }
+    const normalized = normalize(text);
+    const shortRange = new RegExp(`\\b(\\d{1,2})\\s+(\\d{1,2})\\s+(${months.join("|")})(?:\\s+(20\\d{2}))?\\b`).exec(normalized);
+    if (!dates.length && shortRange && /\d\s*[-–—]\s*\d/.test(String(text))) {
+      const month = months.indexOf(shortRange[3]) + 1;
+      addDate(Number(shortRange[1]), month, shortRange[4]);
+      addDate(Number(shortRange[2]), month, shortRange[4]);
+    } else {
+      const pattern = new RegExp(`\\b(\\d{1,2})\\s+(${months.join("|")})(?:da|de|ta|te|daki|deki)?(?:\\s+(20\\d{2}))?\\b`, "g");
+      for (const match of normalized.matchAll(pattern)) addDate(Number(match[1]), months.indexOf(match[2]) + 1, match[3]);
+    }
+    if (invalid) return { invalid: true, allTime: false, label: "Geçersiz tarih", key: "" };
+    if (!dates.length) return null;
+    dates.sort();
+    const startDate = dates[0], endDate = dates[dates.length - 1];
+    const label = (value) => new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${value}T12:00:00`));
+    return { allTime: false, key: startDate.slice(0, 7), startDate, endDate, label: startDate === endDate ? label(startDate) : `${label(startDate)} – ${label(endDate)}` };
+  }
+
   function getAssistantPeriod(text) {
     const today = getTurkeyTodayISO();
     const [year, month] = today.split("-").map(Number);
     const normalized = normalize(text);
+    const explicitDates = getAssistantExplicitDatePeriod(text, today);
+    if (explicitDates) return explicitDates;
     const allTime = /\b(genel|tum zaman|tum kayit|bugune kadar|simdiye kadar|hepsinde)\b/.test(normalized);
     if (allTime) return { allTime: true, key: "", label: "Tüm kayıtlar" };
 
@@ -370,11 +405,24 @@
   }
 
   function isInAssistantPeriod(dateValue, period) {
+    if (period.invalid) return false;
     if (period.allTime) return true;
     const date = String(dateValue || "").slice(0, 10);
     if (!date) return false;
     if (period.startDate && period.endDate) return date >= period.startDate && date <= period.endDate;
     return date.slice(0, 7) === period.key;
+  }
+
+  function getAssistantCategoryLimit(text) {
+    const normalized = normalize(text);
+    const numberWords = { bir: 1, iki: 2, uc: 3, dort: 4, bes: 5, alti: 6, yedi: 7, sekiz: 8, dokuz: 9, on: 10, yirmi: 20, otuz: 30, kirk: 40, elli: 50, altmis: 60, yetmis: 70, seksen: 80, doksan: 90, yuz: 100 };
+    const wordPattern = "bir|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|on|yirmi|otuz|kirk|elli|altmis|yetmis|seksen|doksan|yuz";
+    const count = new RegExp(`\\b(\\d{1,3}|(?:${wordPattern})(?:\\s+(?:${wordPattern}))?)\\s+(?:(?:adet|tane)\\s+)?kategori\\w*\\b`).exec(normalized);
+    if (!count) return 3;
+    const requested = /^\d+$/.test(count[1])
+      ? Number(count[1])
+      : count[1].split(" ").reduce((sum, word) => sum + numberWords[word], 0);
+    return Math.min(100, Math.max(1, requested));
   }
 
   function getAssistantReport(text) {
@@ -404,7 +452,7 @@
       entry.count += 1;
       categories.set(category, entry);
     });
-    const topCategories = [...categories.entries()].sort((a, b) => b[1].amount - a[1].amount).slice(0, 3);
+    const topCategories = [...categories.entries()].sort((a, b) => b[1].amount - a[1].amount).slice(0, getAssistantCategoryLimit(text));
     const topics = new Map();
     expenses.forEach((item) => {
       const title = String(item.title || item.category || "Başlıksız harcama").trim();
@@ -519,6 +567,7 @@
 
   function hasExplicitPeriod(text) {
     const normalized = normalize(text);
+    if (getAssistantExplicitDatePeriod(text)) return true;
     return /\b(bugun|dun|bu ay\w*|gecen ay\w*|onceki ay\w*|son \w+ (gun\w*|hafta\w*|ay\w*)|gecen \w+ (gun\w*|hafta\w*|ay\w*)|bu hafta\w*|gecen hafta|onceki hafta|bu yil|genel|tum zaman|bugune kadar|simdiye kadar|20\d{2})\b|\b(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)(?:da|de|ta|te|daki|deki|taki|teki)?\b/.test(normalized);
   }
 
@@ -566,15 +615,17 @@
       ...(transactions || []).map((item) => item.category).filter(Boolean),
     ])];
     const normalized = normalize(text);
-    const explicitCategory = categories.slice().sort((a, b) => normalizeCategoryName(b).length - normalizeCategoryName(a).length)
+    let explicitCategory = categories.slice().sort((a, b) => normalizeCategoryName(b).length - normalizeCategoryName(a).length)
       .find((category) => (` ${normalizeCategoryName(text)} `).includes(` ${normalizeCategoryName(category)} `)) || "";
+    if (["gelir", "gider", "transfer"].includes(normalize(explicitCategory))
+      && !/\bkategori\w*\b/.test(normalized)) explicitCategory = "";
     const accountScope = getAssistantAccountScope(text);
     const ignored = new Set(("bu şu son gecen onceki genel tum zaman kayit bugune kadar simdiye kadar yil ay ayda hafta haftada gun gunde bugun dun yarin bir iki uc dort bes alti yedi sekiz dokuz on kategori kategoride kategorisinde kategorisindeki harcama harcamalar harcamalarim harcamalarimda harcadim harcadigim harcamisim gider giderler giderlerim gelir gelirler gelirlerim transfer transferler aktarim islem islemler kayitlar kayitlarim liste listele goster getir bul bak incele detay detaylari ne neler hangi cok en yaptim yaptigim yaptik yaptigimiz ettim ettigim ettigi aldim almisim satin odedim odenen var mi varmis misin misiniz icin ile ve de benim benimki benimle bu ayki haftaki aylik yillik donem ozet analiz toplam tutar tutari kadar hepsi hepsini ta te tan ten da de dan den kredi kart kartimla kartimdan kartim kartiyla hesabimla hesabimdan hesabim banka bankam kime maas maaşim gonderim gonderdim gondermisim aktarim aktardim tahsil tahsilat" ).split(" "));
     const monthWords = new Set("ocak subat mart nisan mayis haziran temmuz agustos eylul ekim kasim aralik".split(" ").flatMap((word) => [word, `${word}da`, `${word}de`, `${word}ta`, `${word}te`]));
     const accountWords = new Set((accountScope?.account ? [accountScope.account.name, accountScope.account.bank] : [])
       .flatMap((value) => normalize(value).split(" ")).filter(Boolean));
     const ignoredStems = ["kategori", "harcama", "gider", "gelir", "transfer", "aktar", "gonder", "tahsil", "maas", "islem", "kayit", "kayd", "listele", "goster", "getir", "yapt", "ett", "odeme", "alisveris"];
-    ["nr", "nedir", "nelerdir", "yakin", "tarihli", "tarihteki", "guncel", "yeni", "en", "eklenme", "eklendigi", "zamanina", "tarihine", "tarihi", "kaydedilen", "secilen", "gore"].forEach((word) => ignored.add(word));
+    ["nr", "nedir", "nelerdir", "yakin", "tarihli", "tarihte", "tarihteki", "tarihinde", "tarihindeki", "tarih", "guncel", "yeni", "en", "eklenme", "eklendigi", "zamanina", "tarihine", "tarihi", "kaydedilen", "secilen", "gore", "az", "dusuk", "yuksek", "buyuk", "kucuk", "tutarli", "tutarda", "azdan", "coga", "coktan", "aza", "buyukten", "kucuge", "kucukten", "buyuge", "arasinda", "arasi", "ila", "o", "ayin", "ayinda", "gunku", "gundeki", "gunu", "gununde", "gunundeki"].forEach((word) => ignored.add(word));
     const informativeTokens = normalized.split(" ").filter((token) => token.length >= 2
       && !/^\d+$/.test(token)
       && !ignored.has(token)
@@ -598,15 +649,21 @@
     if (!explicitCategory && categoryAliasWords.length && queryTokens.every((token) => categoryAliasWords.includes(token))) queryTokens = [];
 
     const intentText = normalized;
+    const types = [
+      [/\b(transfer\w*|aktarim\w*|aktard\w*|gonder\w*)\b/, "transfer"],
+      [/\b(gelir\w*|maas\w*|kazanc\w*|tahsilat\w*)\b/, "income"],
+      [/\b(gider\w*|harcama\w*|alisveris\w*|odeme\w*|satin al\w*)\b/, "expense"],
+    ].filter(([pattern]) => pattern.test(intentText)).map(([, value]) => value);
     let type = /\b(transfer\w*|aktarim\w*|aktard\w*|gonder\w*)\b/.test(intentText) ? "transfer"
       : /\b(gelir\w*|maas\w*|kazanc\w*|tahsilat\w*)\b/.test(intentText) ? "income"
         : /\b(gider\w*|harcama\w*|alisveris\w*|odeme\w*|satin al\w*)\b/.test(intentText) ? "expense" : "";
-    if (!type && category) {
+    if (types.length > 1) type = "";
+    if (!type && category && !types.length) {
       const isIncomeCategory = (transactionCategories?.income || []).some((item) => normalize(item) === normalize(category));
       const isExpenseCategory = (transactionCategories?.expense || []).some((item) => normalize(item) === normalize(category));
       if (isIncomeCategory !== isExpenseCategory) type = isIncomeCategory ? "income" : "expense";
     }
-    return { categories, category, explicitCategory, accountScope, queryTokens, type };
+    return { categories, category, explicitCategory, accountScope, queryTokens, type, types };
   }
 
   function assistantTokenMatches(queryToken, recordText) {
@@ -620,10 +677,13 @@
 
   function getAssistantRecordsReport(text, { order = getAssistantRecordOrder(text) || "date" } = {}) {
     const query = getAssistantRecordQueryInfo(text);
-    const { category, accountScope, queryTokens, type, categories } = query;
+    const { category, accountScope, queryTokens, type, types, categories } = query;
+    const ranking = getAssistantRecordRanking(text);
+    if (ranking) order = ranking.order;
     const recordLimit = getAssistantRecordLimit(text);
-    const period = recordLimit && !hasExplicitPeriod(text)
+    const period = recordLimit && !ranking && !hasExplicitPeriod(text)
       ? { allTime: true, key: "", label: "Tüm kayıtlar" } : getAssistantPeriod(text);
+    if (period.invalid) return "Tarihi anlayamadım. Geçerli bir gün veya tarih aralığı yazabilir misin? Örneğin: 01.10.2026–14.10.2026.";
     if (accountScope?.ambiguous) {
       return `Birden fazla hesap eşleşti. Hangisini kullanayım?\n${accountScope.ambiguous.map(formatPaymentAccountName).join(" · ")}`;
     }
@@ -635,6 +695,7 @@
       const scopeDate = order === "created" ? (createdAt ? getTurkeyTodayISO(new Date(createdAt)) : "") : item.date;
       if (!isInAssistantPeriod(scopeDate, period)) return false;
       if (type && item.type !== type) return false;
+      if (types.length > 1 && !types.includes(item.type)) return false;
       if (category && normalize(item.category) !== normalize(category) && findAssistantCategory(item.category, categories) !== category) return false;
       if (accountId && String(item.paymentAccountId || "") !== accountId && String(item.transferAccountId || "") !== accountId) return false;
       if (queryTokens.length) {
@@ -645,7 +706,9 @@
         if (matched < Math.max(1, Math.ceil(queryTokens.length * 0.65))) return false;
       }
       return true;
-    }).sort((a, b) => order === "created"
+    }).sort((a, b) => order === "amountAsc" || order === "amountDesc"
+      ? (Math.abs(Number(a.amount) || 0) - Math.abs(Number(b.amount) || 0)) * (order === "amountAsc" ? 1 : -1) || compareTransactionsNewestFirst(a, b)
+      : order === "created"
       ? getRecordTimestamp(b.createdAt) - getRecordTimestamp(a.createdAt) || compareTransactionsNewestFirst(a, b)
       : String(b.date || "").localeCompare(String(a.date || "")) || compareTransactionsNewestFirst(a, b));
 
@@ -658,11 +721,19 @@
     if (recordLimit) records = records.slice(0, recordLimit);
     const total = records.reduce((sum, item) => sum + Number(item.amount || 0), 0);
     const typeLabel = type === "income" ? "gelir" : type === "transfer" ? "transfer" : type === "expense" ? "gider" : "hareket";
-    const label = recordLimit ? `${hasExplicitPeriod(text) ? `${period.label} · ` : ""}Son ${records.length} kayıt` : period.label;
+    const label = ranking ? `${period.label} · En ${order === "amountAsc" ? "düşük" : "yüksek"} tutarlı ${records.length} işlem`
+      : recordLimit ? `${hasExplicitPeriod(text) ? `${period.label} · ` : ""}Son ${records.length} kayıt` : period.label;
     const displayLimit = recordLimit || 14;
     const lines = [`${label} · ${category ? `${category} kategorisi · ` : ""}${records.length} ${typeLabel} kaydı · toplam ${formatMoney(total)}.`];
-    lines.push(order === "created" ? "Sıralama: eklenme zamanına göre (en yeni önce)." : "Sıralama: kayıtta seçilen işlem tarihine göre (en yeni önce).");
-    records.slice(0, displayLimit).forEach((item) => {
+    lines.push(ranking ? `Sıralama: işlem tutarına göre (${order === "amountAsc" ? "küçükten büyüğe" : "büyükten küçüğe"}); her satır tek bir işlem.`
+      : order === "created" ? "Sıralama: eklenme zamanına göre (en yeni önce)." : "Sıralama: kayıtta seçilen işlem tarihine göre (en yeni önce).");
+    if (!type) {
+      ["income", "expense", "transfer"].forEach((kind) => {
+        const matching = records.filter((record) => record.type === kind);
+        if (matching.length) lines.push(`${entryTypeLabel(kind)}: ${formatMoney(matching.reduce((sum, record) => sum + Number(record.amount || 0), 0))} · ${matching.length} kayıt${kind === "transfer" ? " (gelir/gider toplamlarına dahil değil)" : ""}`);
+      });
+    }
+    records.slice(0, displayLimit).forEach((item, index) => {
       const source = paymentAccounts.find((account) => String(account.id) === String(item.paymentAccountId));
       const destination = paymentAccounts.find((account) => String(account.id) === String(item.transferAccountId));
       const accounts = item.type === "transfer"
@@ -670,14 +741,30 @@
         : source ? ` · ${formatPaymentAccountName(source)}` : "";
       const createdAt = getRecordTimestamp(item.createdAt);
       const createdLabel = order === "created" ? ` · Eklenme: ${createdAt ? new Intl.DateTimeFormat("tr-TR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Istanbul" }).format(new Date(createdAt)) : "bilinmiyor"}` : "";
-      lines.push(`• ${formatDate(item.date)} · ${item.title || item.category || "Başlıksız"} · ${item.category || entryTypeLabel(item.type)} · ${formatMoney(item.amount)}${accounts}${createdLabel}`);
+      lines.push(`${ranking ? `${index + 1}.` : "•"} ${formatDate(item.date)} · ${item.title || item.category || "Başlıksız"} · ${item.category || entryTypeLabel(item.type)} · ${formatMoney(item.amount)}${accounts}${createdLabel}`);
     });
     if (records.length > displayLimit) lines.push(`İlk ${displayLimit} kayıt gösteriliyor; toplam ${records.length} kayıt var.`);
     if (recordLimit && matchingCount < recordLimit) lines.push(`İstediğin ${recordLimit} kayıt yerine eşleşen ${matchingCount} kayıt gösterildi.`);
     return lines.join("\n");
   }
 
+  function getAssistantRecordRanking(text) {
+    const normalized = normalize(text);
+    const ascending = /\b(en az|en dusuk|en kucuk|azdan coga|kucukten buyuge)\b/.test(normalized);
+    const descending = /\b(en cok|en yuksek|en buyuk|coktan aza|buyukten kucuge)\b/.test(normalized);
+    if (!ascending && !descending) return null;
+    const recordWords = /\b(islem\w*|kayit\w*|kayd\w*|hareket\w*|gider\w*|gelir\w*|transfer\w*|harcama\w*|harcad\w*)\b/;
+    if (!recordWords.test(normalized)) return null;
+    if (/\b(kategori\w*|kalem\w*|baslik\w*|konu\w*)\b/.test(normalized) && !/\b(islem\w*|kayit\w*|kayd\w*|hareket\w*)\b/.test(normalized)) return null;
+    const words = { bir: 1, iki: 2, uc: 3, dort: 4, bes: 5, alti: 6, yedi: 7, sekiz: 8, dokuz: 9, on: 10, yirmi: 20, otuz: 30 };
+    const count = /\b(\d{1,3}|bir|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|on|yirmi|otuz)\s+(islem\w*|kayit\w*|kayd\w*|hareket\w*|gider\w*|gelir\w*|transfer\w*|harcama\w*)\b/.exec(normalized);
+    const limit = count ? Math.min(100, Math.max(1, Number(count[1]) || words[count[1]] || 10)) : 10;
+    return { order: ascending ? "amountAsc" : "amountDesc", limit };
+  }
+
   function getAssistantRecordLimit(text) {
+    const ranking = getAssistantRecordRanking(text);
+    if (ranking) return ranking.limit;
     const normalized = normalize(text);
     const match = /\bson\s+(\d{1,3}|on)\s+(kayit\w*|kayd\w*|islem\w*|hareket\w*)\b/.exec(normalized);
     if (match) return Math.min(100, Math.max(1, match[1] === "on" ? 10 : Number(match[1])));
@@ -838,7 +925,10 @@
   function getAssistantFinanceIntent(text) {
     const normalized = normalize(text);
     if (getAssistantRecordLimit(text)) return "records";
-    if (isCardQuestion(text)) return "card";
+    const accountSpendingReport = /\b(en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk)\b/.test(normalized)
+      && /\b(harc\w*|alisveris\w*)\b/.test(normalized)
+      && !/\b(borc\w*|limit\w*|bakiye\w*)\b/.test(normalized);
+    if (isCardQuestion(text) && !accountSpendingReport) return "card";
     if (/\b(bes|bireysel emeklilik|emeklilik birikim)\b/.test(normalized)) return "bes";
     if (/\b(birikim\w*|toplam servet\w*)\b/.test(normalized)) return "wealth";
     if (/\b(varlik\w*|portfoy|altinlarim|gumuslerim|dolarim|eurom)\b/.test(normalized)) return "assets";
@@ -1437,7 +1527,7 @@
     const action = hasExplicitEntryAction(text);
     const cue = /\b(harcadim|harcadik|harcama yaptim|alisveris yaptim|alisveris yaptik|satin aldim|aldim|aldik|odedim|odeme yaptim|kazandim|maas aldim|tahsil ettim|para geldi|aktardim|para gonderdim)\b/.test(normalize(text)) || Boolean(extractPurchaseTitle(text));
     const amount = extractEntryAmount(text, action);
-    const reportQuestion = /\b(ozet\w*|en cok|ne kadar|hangi\w*|neler|goster|listele|detay\w*|toplam|karsilastir\w*|mi|mu)\b/.test(normalize(text)) || /[?？]/.test(String(text || ""));
+    const reportQuestion = /\b(ozet\w*|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ne kadar|hangi\w*|neler|goster|listele|detay\w*|toplam|karsilastir\w*|mi|mu)\b/.test(normalize(text)) || /[?？]/.test(String(text || ""));
     if (!action && reportQuestion) return false;
     if (!action && !cue && !amount) return false;
     const draft = { type: "", amount: 0, category: "", title: "", titleWasProvided: false, paymentMethod: "", paymentAccountId: "", transferAccountId: "", date: "", context: String(text || "") };
@@ -1537,7 +1627,7 @@
     scrollMessagesToEnd();
   }
 
-  function closeAssistant() {
+  function closeAssistant({ restoreFocus = true } = {}) {
     if (assistantCloseTimer !== null) window.clearTimeout(assistantCloseTimer);
     assistantCloseTimer = null;
     microphone.cancel();
@@ -1546,7 +1636,7 @@
     panel.hidden = true;
     releaseAssistantMobileLayout();
     launcher.setAttribute("aria-expanded", "false");
-    launcher.focus({ preventScroll: true });
+    if (restoreFocus) launcher.focus({ preventScroll: true });
   }
 
   function syncAssistantViewport() {
@@ -1740,10 +1830,11 @@
 
   const updateVisibility = () => {
     const modalOpen = [...document.querySelectorAll(".modal-backdrop")].some((modal) => !modal.hidden);
-    const visible = Boolean(appShell && !appShell.hidden && !document.documentElement.classList.contains("auth-logged-out") && !modalOpen);
+    const settingsOpen = document.documentElement.dataset.activeView === "settingsView";
+    const visible = Boolean(appShell && !appShell.hidden && !document.documentElement.classList.contains("auth-logged-out") && !modalOpen && !settingsOpen);
     launcher.hidden = !visible;
     if (!visible && !panel.hidden) {
-      closeAssistant();
+      closeAssistant({ restoreFocus: !settingsOpen });
     }
   };
   window.visualViewport?.addEventListener("resize", syncAssistantViewport);
@@ -1751,7 +1842,7 @@
   window.addEventListener("resize", syncAssistantViewport);
   if (appShell && window.MutationObserver) {
     new MutationObserver(updateVisibility).observe(appShell, { attributes: true, attributeFilter: ["hidden"] });
-    new MutationObserver(updateVisibility).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    new MutationObserver(updateVisibility).observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-active-view"] });
     document.querySelectorAll(".modal-backdrop").forEach((modal) => {
       new MutationObserver(updateVisibility).observe(modal, { attributes: true, attributeFilter: ["hidden"] });
     });

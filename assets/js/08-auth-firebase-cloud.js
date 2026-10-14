@@ -1007,9 +1007,14 @@ async function handleAuthStateChanged(user) {
     cloudStatus.textContent = "Bulut kayıtları yükleniyor...";
 
   try {
-    // ACIKLAMA: cloudProfile degiskeninin Turkce karsiligi "bulut profil"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const cloudProfile = await fetchCloudProfile(user.uid, { source: "server" })
+    const cloudProfilePromise = fetchCloudProfile(user.uid, { source: "server" })
       .catch(() => fetchCloudProfile(user.uid));
+    const cloudTransactionsPromise = fetchCloudTransactions(user.uid, { source: "server" })
+      .catch(() => fetchCloudTransactions(user.uid).catch(() => []));
+    const [cloudProfile, cloudCollectionTransactions] = await Promise.all([
+      cloudProfilePromise,
+      cloudTransactionsPromise,
+    ]);
     updateCloudBackupStatus(cloudProfile);
     applyCloudProfileContactInfo(cloudProfile);
     applyDeletedTransactionState(readCloudDeletedTransactionState(cloudProfile), anonymousDeletedTransactionState);
@@ -1019,14 +1024,6 @@ async function handleAuthStateChanged(user) {
     );
     // ACIKLAMA: cloudProfileTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
     const cloudProfileTransactions = readCloudTransactionBackupArray(cloudProfile.transactionsBackup);
-    // ACIKLAMA: cloudCollectionTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
-    let cloudCollectionTransactions = [];
-
-    try {
-      cloudCollectionTransactions = await fetchCloudTransactions(user.uid, { source: "server" });
-    } catch {
-      cloudCollectionTransactions = await fetchCloudTransactions(user.uid).catch(() => []);
-    }
 
     // ACIKLAMA: cloudTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
     const cloudTransactions = mergeTransactions(cloudProfileTransactions, cloudCollectionTransactions);

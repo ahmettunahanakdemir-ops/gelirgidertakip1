@@ -170,3 +170,51 @@
     user-select: none;
   }
 }
+
+/* v436 - Keep logout and settings together in the mobile toolbar grid. */
+@media (max-width: 980px) {
+  html.modern-budget #appShell .shell-toolbar {
+    grid-template-columns: minmax(92px, 1fr) auto minmax(92px, 1fr) !important;
+  }
+
+  html.modern-budget #appShell .shell-toolbar .shell-account-actions {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-self: start !important;
+    gap: 4px !important;
+    width: max-content !important;
+    min-width: max-content !important;
+  }
+
+  html.modern-budget #appShell .shell-toolbar .shell-toolbar-actions {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+}
+
+@media (max-width: 340px) {
+  html.modern-budget #appShell .shell-toolbar {
+    grid-template-columns: minmax(92px, 1fr) minmax(44px, 1fr) !important;
+    grid-template-rows: 44px 44px !important;
+    row-gap: 8px !important;
+  }
+
+  html.modern-budget #appShell .shell-toolbar .shell-period {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    justify-self: center !important;
+  }
+
+  html.modern-budget #appShell .shell-toolbar .shell-toolbar-actions {
+    grid-column: 2 !important;
+  }
+}
+
+@media (min-width: 981px) {
+  html.modern-budget #appShell .shell-toolbar .shell-account-actions {
+    display: none !important;
+  }
+}

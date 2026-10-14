@@ -21,6 +21,19 @@ html.modern-budget .is-touch-pressed {
   box-shadow: inset 0 0 0 2px rgba(17, 123, 117, .24);
 }
 
+html.modern-budget :is(.transaction-content, .standard-data-card, .standard-data-card > [role="button"], .payment-card-top > [role="button"], .shell-transaction).is-touch-pressed {
+  box-shadow: none !important;
+}
+
+html.modern-budget[data-interaction-modality="pointer"] :is(.transaction-content, .standard-data-card, .standard-data-card > [role="button"], .payment-card-top > [role="button"], .shell-transaction):focus {
+  outline: none !important;
+}
+
+html.modern-budget[data-interaction-modality="keyboard"] :is(.transaction-content, .standard-data-card[role="button"], .standard-data-card > [role="button"], .payment-card-top > [role="button"], .shell-transaction):focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 3px;
+}
+
 @media (hover: none) and (pointer: coarse) {
   html.modern-budget .modal-backdrop,
   html.modern-budget .mobile-dock,

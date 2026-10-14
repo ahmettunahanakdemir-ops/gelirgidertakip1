@@ -183,7 +183,7 @@ html.modern-budget #settingsView .preferences-reset-row {
     flex-direction: column;
     height: 100dvh;
     min-height: 0;
-    padding: max(12px, env(safe-area-inset-top)) 16px calc(88px + env(safe-area-inset-bottom));
+    padding: max(12px, env(safe-area-inset-top)) 16px env(safe-area-inset-bottom);
     background: var(--bg);
     box-sizing: border-box;
     animation: none;

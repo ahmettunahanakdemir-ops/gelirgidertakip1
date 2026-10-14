@@ -204,7 +204,10 @@ function setupModernShell() {
   });
   const toolbar = document.createElement("div");
   toolbar.className = "shell-toolbar";
-  toolbar.innerHTML = `<button type="button" class="shell-icon-button shell-settings" data-shell-settings title="Ayarlar" aria-label="Ayarlar">${shellIcon("settings")}</button>
+  toolbar.innerHTML = `<div class="shell-account-actions" role="group" aria-label="Hesap işlemleri">
+    <button type="button" class="shell-icon-button shell-logout" data-shell-logout title="Çıkış yap" aria-label="Çıkış yap">${shellIcon("log-out")}</button>
+    <button type="button" class="shell-icon-button shell-settings" data-shell-settings title="Ayarlar" aria-label="Ayarlar">${shellIcon("settings")}</button>
+    </div>
     <div class="shell-period"><button type="button" class="shell-icon-button" data-month-step="-1" title="Önceki ay" aria-label="Önceki ay">${shellIcon("chevron-left")}</button><span id="shellMonthLabel"></span><button type="button" class="shell-icon-button" data-month-step="1" title="Sonraki ay" aria-label="Sonraki ay">${shellIcon("chevron-right")}</button></div>
     <div class="shell-toolbar-actions">
       <button type="button" id="openHistorySearchModalButton" class="shell-icon-button shell-history-action" title="Kayıtlarda ara" aria-label="Kayıtlarda ara" hidden>${shellIcon("search")}</button>
@@ -224,6 +227,7 @@ function setupModernShell() {
       <button type="button" role="menuitem" data-shell-context="debts" data-shell-action="receivable">${shellIcon("badge-dollar-sign")}<span><strong>Alacak Ekle</strong><small>Tahsil edeceğin yeni bir alacak kaydı oluştur.</small></span></button>
     </div>`;
   document.querySelector(".workspace").prepend(toolbar);
+  toolbar.querySelector("[data-shell-logout]").addEventListener("click", signOutUser);
   toolbar.querySelector("[data-shell-settings]").addEventListener("click", () => switchView("settingsView"));
 
   const shellAddButton = toolbar.querySelector("[data-shell-add]");
@@ -418,16 +422,21 @@ function renderModernDashboard() {
   privacy.setAttribute("aria-label", shellAmountsHidden ? "Tutarları göster" : "Tutarları gizle");
   privacy.setAttribute("aria-pressed", String(shellAmountsHidden));
   privacy.title = privacy.getAttribute("aria-label");
+  const recentRecords = [...transactions]
+    .filter((item) => !isTransactionDeleted(item))
+    .sort((first, second) => getTransactionAddedTimestamp(second) - getTransactionAddedTimestamp(first)
+      || compareTransactionsNewestFirst(first, second))
+    .slice(0, 5);
   const list = document.getElementById("shellRecentList");
   list.replaceChildren();
-  if (!records.length) {
+  if (!recentRecords.length) {
     const empty = document.createElement("div");
     empty.className = "shell-empty";
-    empty.innerHTML = `${shellIcon("inbox")}<p>Bu ay henüz işlem yok</p><button type="button" class="primary-btn">İşlem Ekle</button>`;
+    empty.innerHTML = `${shellIcon("inbox")}<p>Henüz işlem eklenmemiş</p><button type="button" class="primary-btn">İşlem Ekle</button>`;
     empty.querySelector("button").addEventListener("click", openEntryModal);
     list.append(empty);
   }
-  records.slice().sort(compareTransactionsNewestFirst).slice(0,5).forEach(item => {
+  recentRecords.forEach(item => {
     const row = document.createElement("button");
     row.type = "button";
     row.className = `shell-transaction ${item.type}`;
@@ -435,7 +444,7 @@ function renderModernDashboard() {
     icon.className="shell-transaction-icon";
     icon.innerHTML = shellIcon(item.type === "income" ? "arrow-down-left" : item.type === "transfer" ? "arrow-left-right" : "arrow-up-right");
     const copy = document.createElement("span");
-    const title = document.createElement("strong");title.textContent=item.title;
+    const title = document.createElement("strong");title.textContent=item.title || item.category || entryTypeLabel(item.type);
     const meta=document.createElement("small");
     const dateParts=String(item.date).split("-").map(Number);
     const dateLabel=new Intl.DateTimeFormat("tr-TR",{day:"numeric",month:"short",year:"numeric"}).format(new Date(dateParts[0],dateParts[1]-1,dateParts[2],12));

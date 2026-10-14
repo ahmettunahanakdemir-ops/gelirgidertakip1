@@ -417,27 +417,10 @@ function getRecentAddedTransactions(days = RECENT_ADDED_TRANSACTION_DAYS) {
 
 // ACIKLAMA: openRecentTransactionsModal fonksiyonunun Turkce karsiligi "ac son islemler pencere"; ilgili pencereyi veya ekrani acar.
 function openRecentTransactionsModal() {
-  if (currentUser && firebaseDb) {
-    Promise.all([
-      fetchCloudProfile(currentUser.uid).catch(() => ({})),
-      fetchCloudTransactions(currentUser.uid, { source: "server" }).catch(() => []),
-    ])
-      .then(([profile, cloudTransactions]) => {
-        // ACIKLAMA: backupTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
-        const backupTransactions = readCloudTransactionBackupArray(profile.transactionsBackup);
-        transactions = mergeTransactions(transactions, backupTransactions, cloudTransactions);
-        persistTransactions({ syncCloud: false });
-        renderRecentTransactionsModal();
-      })
-      .catch(() => renderRecentTransactionsModal());
-  } else {
-    renderRecentTransactionsModal();
-  }
-
-  if (recentTransactionsModal) {
-    recentTransactionsModal.hidden = false;
-    setTimeout(() => closeRecentTransactionsButton?.focus(), 0);
-  }
+  if (!recentTransactionsModal) return;
+  renderRecentTransactionsModal();
+  recentTransactionsModal.hidden = false;
+  setTimeout(() => closeRecentTransactionsButton?.focus(), 0);
 }
 
 // ACIKLAMA: closeRecentTransactionsModal fonksiyonunun Turkce karsiligi "kapat son islemler pencere"; ilgili pencereyi veya ekrani kapatir.
@@ -448,16 +431,25 @@ function closeRecentTransactionsModal() {
   }
 }
 
+let recentTransactionsModalRenderKey = null;
+
 // ACIKLAMA: renderRecentTransactionsModal fonksiyonunun Turkce karsiligi "ekrana bas son islemler pencere"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderRecentTransactionsModal() {
   if (!recentTransactionsList) {
     return;
   }
 
-  if (paymentAccountOverflowTrigger?.closest("#recentTransactionsModal")) closePaymentAccountOverflowMenu();
-
   // ACIKLAMA: latestTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const latestTransactions = getRecentAddedTransactions(RECENT_ADDED_TRANSACTION_DAYS);
+  const renderKey = JSON.stringify(latestTransactions.map((item) => [
+    item.id, item.createdAt, item.updatedAt, item.title, item.amount, item.type,
+    item.category, item.date, item.note, item.paymentMethod, item.paymentAccountId,
+    item.transferAccountId, item.installmentNumber, item.installmentCount, item.installmentCompleted,
+  ]));
+  if (renderKey === recentTransactionsModalRenderKey && recentTransactionsList.childElementCount) return;
+
+  if (paymentAccountOverflowTrigger?.closest("#recentTransactionsModal")) closePaymentAccountOverflowMenu();
+  recentTransactionsModalRenderKey = renderKey;
   recentTransactionsList.innerHTML = "";
 
   if (!latestTransactions.length) {
@@ -476,10 +468,8 @@ function renderRecentTransactionsModal() {
 
 // ACIKLAMA: getVisibleFilteredTransactions fonksiyonunun Turkce karsiligi "al gorunur filtrelenmis islemler"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getVisibleFilteredTransactions() {
-  // ACIKLAMA: queryText degiskeninin Turkce karsiligi "query metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const queryText = currentHistorySearch;
   // ACIKLAMA: query degiskeninin Turkce karsiligi "query"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const query = queryText.trim().toLocaleLowerCase("tr-TR");
+  const query = currentHistorySearch.trim().toLocaleLowerCase("tr-TR");
   // ACIKLAMA: selectedType degiskeninin Turkce karsiligi "selected tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const selectedType = filterType.value;
   const selectedCategory = filterCategory?.value || "all";
@@ -487,35 +477,32 @@ function getVisibleFilteredTransactions() {
   const selectedPaymentMethod = filterPaymentMethod?.value || "all";
   // ACIKLAMA: selectedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
   const selectedPaymentAccount = filterPaymentAccount?.value || "all";
-  // ACIKLAMA: sourceTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
-  const sourceTransactions = hasHistoryDateRange() ? transactions : getDateFilteredTransactions();
+  const hasDateRange = hasHistoryDateRange();
+  // Kayıtlar en yeniden eskiye sıralı tutulur; filtreleme sıralamayı korur.
+  const sourceTransactions = hasDateRange ? transactions : getDateFilteredTransactions();
 
-  return sourceTransactions
-    .filter((item) => {
-      // ACIKLAMA: itemPaymentMethod degiskeninin Turkce karsiligi "oge odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-      const itemPaymentMethod = normalizePaymentMethod(item.paymentMethod || "cash");
-      // ACIKLAMA: itemPaymentAccountId kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+  return sourceTransactions.filter((item) => {
+    if (hasDateRange && !isInHistoryDateRange(item)) return false;
+    if (selectedType !== "all" && item.type !== selectedType) return false;
+    if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
+    if (selectedPaymentMethod !== "all" && normalizePaymentMethod(item.paymentMethod || "cash") !== selectedPaymentMethod) return false;
+
+    if (selectedPaymentAccount !== "all") {
       const itemPaymentAccountId = String(item.paymentAccountId || "");
-      // ACIKLAMA: itemTransferAccountId degiskeninin Turkce karsiligi "oge aktarim hesap kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const itemTransferAccountId = String(item.transferAccountId || "");
-      // ACIKLAMA: matchesType degiskeninin Turkce karsiligi "eslesmeler tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-      const matchesType = selectedType === "all" || item.type === selectedType;
-      const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
-      // ACIKLAMA: matchesPaymentMethod degiskeninin Turkce karsiligi "eslesmeler odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-      const matchesPaymentMethod = selectedPaymentMethod === "all" || itemPaymentMethod === selectedPaymentMethod;
-      // ACIKLAMA: matchesPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
-      const matchesPaymentAccount =
-        selectedPaymentAccount === "all" ||
-        (selectedPaymentAccount === "none"
-          ? !itemPaymentAccountId && !itemTransferAccountId
-          : itemPaymentAccountId === selectedPaymentAccount || itemTransferAccountId === selectedPaymentAccount);
-      // ACIKLAMA: haystack degiskeninin Turkce karsiligi "haystack"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+      const matchesPaymentAccount = selectedPaymentAccount === "none"
+        ? !itemPaymentAccountId && !itemTransferAccountId
+        : itemPaymentAccountId === selectedPaymentAccount || itemTransferAccountId === selectedPaymentAccount;
+      if (!matchesPaymentAccount) return false;
+    }
+
+    if (query) {
       const haystack = `${item.title} ${item.category} ${item.note} ${getTransactionPaymentInfo(item)}`.toLocaleLowerCase("tr-TR");
-      // ACIKLAMA: matchesQuery degiskeninin Turkce karsiligi "eslesmeler query"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-      const matchesQuery = !query || haystack.includes(query);
-      return matchesType && matchesCategory && matchesPaymentMethod && matchesPaymentAccount && matchesQuery && isInHistoryDateRange(item);
-    })
-    .sort(compareTransactionsNewestFirst);
+      if (!haystack.includes(query)) return false;
+    }
+
+    return true;
+  });
 }
 
 // ACIKLAMA: renderPaymentAccountFilterOptions fonksiyonunun Turkce karsiligi "ekrana bas odeme hesap filtre options"; ilgili ekran, liste veya kartlari ekrana basar.
