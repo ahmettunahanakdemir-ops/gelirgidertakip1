@@ -206,6 +206,17 @@
 .category-detail-record-amount.expense { color: var(--expense); }
 .category-detail-record-amount.transfer { color: var(--accent); }
 
+html[data-theme="dark"] #summaryCategoryDetailModal :is(
+  .category-detail-summary,
+  .category-detail-record-title,
+  .category-detail-record-meta,
+  .category-detail-record-note,
+  #summaryCategoryDetailScope
+) {
+  color: #fff !important;
+  opacity: 1;
+}
+
 @media (max-width: 560px) {
   .category-summary-row {
     align-items: flex-start;

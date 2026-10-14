@@ -257,19 +257,43 @@ function loadProfileContactInfo() {
     return {
       homeAddress: String(parsed?.homeAddress || ""),
       workAddress: String(parsed?.workAddress || ""),
+      updatedAt: Math.max(0, Number(parsed?.updatedAt) || 0),
+      pendingSync: parsed?.pendingSync === true,
     };
   } catch (_error) {
-    return { homeAddress: "", workAddress: "" };
+    return { homeAddress: "", workAddress: "", updatedAt: 0, pendingSync: false };
   }
 }
 
-function saveProfileContactInfo(contact = {}) {
+function saveProfileContactInfo(contact = {}, options = {}) {
   const normalized = {
     homeAddress: String(contact?.homeAddress || "").trim(),
     workAddress: String(contact?.workAddress || "").trim(),
+    updatedAt: options.updatedAt ?? Math.max(Date.now(), loadProfileContactInfo().updatedAt + 1),
+    pendingSync: options.pendingSync ?? true,
   };
   localStorage.setItem(getStorageKey(PROFILE_CONTACT_STORAGE_KEY), JSON.stringify(normalized));
   return normalized;
+}
+
+function readCloudProfileContactInfo(data, fallback) {
+  return {
+    homeAddress: Object.prototype.hasOwnProperty.call(data, "homeAddress") ? String(data.homeAddress || "").trim() : fallback.homeAddress,
+    workAddress: Object.prototype.hasOwnProperty.call(data, "workAddress") ? String(data.workAddress || "").trim() : fallback.workAddress,
+    updatedAt: Math.max(0, Number(data.profileContactUpdatedAt) || 0),
+    pendingSync: false,
+  };
+}
+
+function applyCloudProfileContactInfo(data = {}) {
+  if (!Object.prototype.hasOwnProperty.call(data, "homeAddress") && !Object.prototype.hasOwnProperty.call(data, "workAddress")) return;
+  const before = loadProfileContactInfo();
+  const incoming = readCloudProfileContactInfo(data, before);
+  // Keep pending saves and blurred, unsaved form drafts intact during refreshes.
+  if (before.pendingSync || incoming.updatedAt < before.updatedAt) return;
+  const contact = saveProfileContactInfo(incoming, { updatedAt: incoming.updatedAt, pendingSync: false });
+  if (profileHomeAddress && document.activeElement !== profileHomeAddress && profileHomeAddress.value.trim() === before.homeAddress) profileHomeAddress.value = contact.homeAddress;
+  if (profileWorkAddress && document.activeElement !== profileWorkAddress && profileWorkAddress.value.trim() === before.workAddress) profileWorkAddress.value = contact.workAddress;
 }
 
 function toggleProfilePasswordFields(forceOpen = null) {
@@ -376,20 +400,23 @@ async function updateProfile(event) {
 
     if (contactChanged) {
       saveProfileContactInfo({ homeAddress, workAddress });
+      markUserProfileCloudDirty();
     }
 
-    await currentUser.reload();
+    if (usernameChanged || passwordChanged) await currentUser.reload();
     currentUser = firebaseAuth.currentUser || currentUser;
     rememberUsernameLogin(currentUser);
     saveLastUsername(getUserDisplayName(currentUser));
     renderAuthState();
-    if (contactChanged && typeof syncUserProfileToCloud === "function") {
+    if (contactChanged && navigator.onLine && typeof syncUserProfileToCloud === "function") {
       await syncUserProfileToCloud();
     }
-    await syncTransactionsToCloud({ replace: true });
+    if (usernameChanged || passwordChanged) await syncTransactionsToCloud({ replace: true });
     profileCurrentPassword.value = "";
     profilePassword.value = "";
-    profileStatus.textContent = "Profil güncellendi.";
+    profileStatus.textContent = loadProfileContactInfo().pendingSync
+      ? "Adresler bu cihazda kaydedildi. Bulut eşitlemesi bekleniyor."
+      : "Profil güncellendi.";
     profileForm?.dispatchEvent(new CustomEvent("settings-profile-saved"));
   } catch (error) {
     profileStatus.textContent = getFirebaseErrorMessage(error);
@@ -869,6 +896,7 @@ function emailToUsername(email) {
 // ACIKLAMA: getUserDisplayName fonksiyonunun Turkce karsiligi "al kullanici display adi"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getUserDisplayName(user = currentUser) {
   if (!user) {
+    setBudgetValuesStatus("ready");
     return "";
   }
 
@@ -929,6 +957,7 @@ async function handleAuthStateChanged(user) {
   // ACIKLAMA: anonymousLocalTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const anonymousLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
   currentUser = user;
+  setBudgetValuesStatus("loading");
   rememberUsernameLogin(user);
   deletedTransactionIds = loadDeletedTransactionIds();
   deletedTransactionSignatures = loadDeletedTransactionSignatures();
@@ -982,6 +1011,7 @@ async function handleAuthStateChanged(user) {
     const cloudProfile = await fetchCloudProfile(user.uid, { source: "server" })
       .catch(() => fetchCloudProfile(user.uid));
     updateCloudBackupStatus(cloudProfile);
+    applyCloudProfileContactInfo(cloudProfile);
     applyDeletedTransactionState(readCloudDeletedTransactionState(cloudProfile), anonymousDeletedTransactionState);
     applyDeletedProfileRecordState(
       readCloudDeletedProfileRecordState(cloudProfile),
@@ -1066,6 +1096,7 @@ async function handleAuthStateChanged(user) {
     persistTransactionCategories({ syncCloud: false });
     syncCategorySelects();
     render();
+    if (currentUser?.uid === user.uid) setBudgetValuesStatus("ready");
     // ACIKLAMA: syncTasks degiskeninin Turkce karsiligi "esitle tasks"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const syncTasks = [syncUserProfileToCloud()];
     if (hasPendingLocalTransactionSync) {
@@ -1097,6 +1128,7 @@ async function handleAuthStateChanged(user) {
     cloudStatus.textContent = `${transactions.length} kayıt Firebase profil yedeğiyle eşitlendi.`;
   } catch (error) {
     cloudStatus.textContent = `Bulut kayıtları yüklenemedi: ${error.message}`;
+    if (currentUser?.uid === user.uid) setBudgetValuesStatus(transactions.length || assets.length || besAccounts.length || paymentAccounts.length ? "ready" : "error");
   }
 }
 
@@ -1200,14 +1232,7 @@ function applyCloudAssetAndBesProfile(data = {}, options = {}) {
   const { renderAfterApply = true } = options;
   applyDeletedProfileRecordState(readCloudDeletedProfileRecordState(data));
 
-  if (Object.prototype.hasOwnProperty.call(data, "homeAddress") || Object.prototype.hasOwnProperty.call(data, "workAddress")) {
-    const contactInfo = saveProfileContactInfo({
-      homeAddress: data.homeAddress || "",
-      workAddress: data.workAddress || "",
-    });
-    if (profileHomeAddress && document.activeElement !== profileHomeAddress) profileHomeAddress.value = contactInfo.homeAddress;
-    if (profileWorkAddress && document.activeElement !== profileWorkAddress) profileWorkAddress.value = contactInfo.workAddress;
-  }
+  applyCloudProfileContactInfo(data);
 
   if (Array.isArray(data.assets) || Array.isArray(data.deletedAssetTombstones)) {
     assets = applyDeletedProfileTombstones(
@@ -1800,6 +1825,8 @@ function syncUserProfileToCloud() {
   // ACIKLAMA: user degiskeninin Turkce karsiligi "kullanici"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const user = currentUser;
   markUserProfileCloudDirty();
+  const contactSnapshot = loadProfileContactInfo();
+  let committedContact = contactSnapshot;
   // ACIKLAMA: syncVersion degiskeninin Turkce karsiligi "esitle version"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const syncVersion = ++cloudProfileSyncVersion;
   // ACIKLAMA: safeAssets varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
@@ -1825,6 +1852,9 @@ function syncUserProfileToCloud() {
     .runTransaction(async (transaction) => {
       const snapshot = await transaction.get(userRef);
       const remoteProfile = snapshot.exists ? snapshot.data() || {} : {};
+      const remoteContact = readCloudProfileContactInfo(remoteProfile, contactSnapshot);
+      committedContact = !contactSnapshot.pendingSync && remoteContact.updatedAt > contactSnapshot.updatedAt
+        ? remoteContact : contactSnapshot;
 
       committedDeletedProfileState = mergeDeletedProfileRecordStates(
         readCloudDeletedProfileRecordState(remoteProfile),
@@ -1851,8 +1881,9 @@ function syncUserProfileToCloud() {
         {
           email: user.email || "",
           username: getUserDisplayName(user),
-          homeAddress: loadProfileContactInfo().homeAddress,
-          workAddress: loadProfileContactInfo().workAddress,
+          homeAddress: committedContact.homeAddress,
+          workAddress: committedContact.workAddress,
+          profileContactUpdatedAt: committedContact.updatedAt,
           assets: committedAssets,
           besAccounts: committedBesAccounts,
           debtReceivables: committedDebtRecords,
@@ -1866,6 +1897,14 @@ function syncUserProfileToCloud() {
       );
     })
     .then(() => {
+      if (currentUser?.uid === user.uid) {
+        const latestContact = loadProfileContactInfo();
+        if (latestContact.updatedAt === contactSnapshot.updatedAt &&
+            latestContact.homeAddress === contactSnapshot.homeAddress &&
+            latestContact.workAddress === contactSnapshot.workAddress) {
+          saveProfileContactInfo(committedContact, { updatedAt: committedContact.updatedAt, pendingSync: false });
+        }
+      }
       applyDeletedProfileRecordState(committedDeletedProfileState);
       assets = applyDeletedProfileTombstones(
         mergeVersionedRecordsById(committedAssets, assets),
@@ -1887,7 +1926,7 @@ function syncUserProfileToCloud() {
       borcAlacaklariEkranaBas();
       renderHome();
       if (syncVersion === cloudProfileSyncVersion) {
-        clearUserProfileCloudDirty();
+        if (!loadProfileContactInfo().pendingSync) clearUserProfileCloudDirty();
         cloudStatus.textContent = "Kart, hesap, varlık, BES, borç/alacak ve kategori bilgileri buluta kaydedildi.";
       }
     })

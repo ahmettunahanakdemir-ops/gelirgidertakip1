@@ -934,8 +934,6 @@ const paymentAccountRecordsSummary = document.getElementById("paymentAccountReco
 const paymentAccountRecordsList = document.getElementById("paymentAccountRecordsList");
 // ACIKLAMA: paymentAccountRecordsPeriodFilter kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
 const paymentAccountRecordsPeriodFilter = document.getElementById("paymentAccountRecordsPeriodFilter");
-// ACIKLAMA: refreshPaymentAccountFromRecordsButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
-const refreshPaymentAccountFromRecordsButton = document.getElementById("refreshPaymentAccountFromRecordsButton");
 // ACIKLAMA: closePaymentAccountRecordsButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
 const closePaymentAccountRecordsButton = document.getElementById("closePaymentAccountRecordsButton");
 // ACIKLAMA: cloudStatus kullaniciya durum, hata veya basari mesaji gostermek icin kullanilir.

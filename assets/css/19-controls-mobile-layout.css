@@ -1,0 +1,463 @@
+@media (max-width: 980px) {
+html.modern-budget {
+  --action-button-radius: 999px;
+}
+
+html.modern-budget button:not(.shell-transaction) {
+  border-radius: var(--action-button-radius) !important;
+}
+
+.payment-card-overflow-button {
+  display: none;
+}
+
+.payment-card-overflow-menu {
+  position: fixed;
+  z-index: 10002;
+  width: min(224px, calc(100vw - 16px));
+  padding: 6px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(15, 40, 40, .18);
+  box-sizing: border-box;
+}
+
+html.modern-budget .payment-card-overflow-menu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px !important;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+}
+
+.payment-card-overflow-menu button:hover,
+.payment-card-overflow-menu button:focus-visible {
+  background: var(--accent-soft);
+}
+
+html.modern-budget .payment-card-overflow-menu .is-danger {
+  color: var(--expense);
+}
+
+.payment-card-overflow-menu svg {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.transaction-item,
+.standard-data-card {
+  position: relative;
+  padding-right: 52px !important;
+  border-radius: 8px !important;
+}
+
+.transaction-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+}
+
+.transaction-item .transaction-side {
+  display: block !important;
+  width: 100%;
+  text-align: left;
+}
+
+html.modern-budget[data-theme="dark"] select,
+html.modern-budget[data-theme="dark"] input[type="color"] { color-scheme: dark; }
+html.modern-budget[data-theme="light"] select,
+html.modern-budget[data-theme="light"] input[type="color"] { color-scheme: light; }
+
+.transaction-content {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.transaction-content:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+html.modern-budget .color-field {
+  background: var(--surface) !important;
+  border: 1px solid var(--stroke) !important;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+html.modern-budget .color-field span { color: var(--muted) !important; }
+
+html.modern-budget .modal-card > .unified-modal-nav {
+  background: var(--surface-soft) !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid var(--stroke) !important;
+}
+
+.budget-help-content details { padding: 16px 0; border-bottom: 1px solid var(--stroke); }
+.budget-help-content summary { cursor: pointer; font-weight: 700; line-height: 1.5; }
+.budget-help-content p { margin: 12px 0 0; line-height: 1.6; overflow-wrap: anywhere; }
+.budget-help-tip { color: var(--muted); }
+
+html.modern-budget #appShell .is-value-loading { position: relative; color: transparent !important; }
+.is-value-loading::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border: 2px solid var(--stroke);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: budget-values-loading .75s linear infinite;
+}
+html[data-values-status="error"] .is-value-loading::after {
+  content: "—";
+  color: var(--muted);
+  border: 0;
+  animation: none;
+}
+@keyframes budget-values-loading { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .is-value-loading::after { animation: none; } }
+
+html.modern-budget .transaction-overflow-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px;
+  background: transparent !important;
+  color: var(--muted);
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.transaction-overflow-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.data-card-legacy-action {
+  display: none !important;
+}
+
+.data-card-detail-fields {
+  margin: 0;
+}
+
+.data-card-detail-fields > div {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr);
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--stroke);
+}
+
+.data-card-detail-fields dt {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.data-card-detail-fields dd {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+html.modern-budget .shell-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(44px, 1fr) auto minmax(44px, 1fr) !important;
+  align-items: center !important;
+  column-gap: 4px !important;
+}
+
+html.modern-budget .shell-toolbar .shell-toolbar-actions {
+  grid-column: 3;
+  gap: 4px !important;
+  justify-self: end;
+}
+
+html.modern-budget .shell-toolbar .shell-period {
+  grid-column: 2;
+  min-width: 0;
+  gap: 0 !important;
+}
+
+html.modern-budget .shell-toolbar [data-shell-settings] {
+  grid-column: 1;
+}
+
+html.modern-budget .shell-toolbar .shell-icon-button {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  padding: 10px !important;
+  box-sizing: border-box;
+}
+
+html.modern-budget .shell-toolbar .shell-icon-button svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+html.modern-budget .summary-category-filter-label {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 2px !important;
+  box-sizing: border-box;
+}
+
+html.modern-budget #summaryCategoryTypeFilter {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 44px;
+  box-sizing: border-box;
+  outline-offset: -2px !important;
+}
+
+@media (max-width: 980px) {
+  html.modern-budget .modal-card > .unified-modal-nav {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: auto auto !important;
+    gap: 10px !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  html.modern-budget .modal-card > .unified-modal-nav .unified-modal-title {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    white-space: normal !important;
+    font-size: 17px !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+  }
+  .modal-card > .unified-modal-nav .unified-modal-nav-actions {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+  html.modern-budget #settingsView .preferences-subpage .preferences-header:has(.preferences-header-actions) {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    gap: 10px !important;
+  }
+
+  html.modern-budget #settingsView .preferences-subpage .preferences-header:has(.preferences-header-actions) h2 {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    white-space: normal !important;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  #settingsView .preferences-header-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    min-width: 0;
+  }
+
+  html.modern-budget #preferencesTheme {
+    width: 128px !important;
+    min-width: 128px !important;
+    min-height: 44px;
+    padding: 10px 28px 10px 12px !important;
+    font-size: 16px !important;
+    text-align: left !important;
+    box-sizing: border-box;
+  }
+
+  html.modern-budget :is(#entryModal, #bulkEntryModal, #categoryAddModal) select {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    min-height: 44px;
+    border-radius: 12px !important;
+    outline-offset: -2px !important;
+  }
+  html.modern-budget #cardsView .payment-card .payment-card-actions {
+    display: none !important;
+  }
+
+  html.modern-budget #cardsView .payment-card-top {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+
+  #cardsView .payment-card-top > div {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #cardsView .payment-card-top h3 {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  #cardsView .payment-card-top .payment-card-logo {
+    display: none;
+  }
+
+  html.modern-budget #cardsView .payment-card-overflow-button {
+    display: grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    margin: -6px -6px 0 0;
+    padding: 10px;
+    border: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+    box-shadow: none !important;
+  }
+
+  .payment-card-overflow-button svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  html.modern-budget #bankImportModal .bank-import-menu {
+    width: min(280px, calc(100vw - 32px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px) !important;
+    box-sizing: border-box;
+  }
+
+  html.modern-budget #bankImportModal .bank-import-menu-item {
+    display: flex !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 10px 16px !important;
+    min-height: 44px !important;
+    box-sizing: border-box;
+  }
+
+  html.modern-budget #bankImportModal .bank-import-menu-item > span {
+    flex: 1 1 auto !important;
+    white-space: normal !important;
+    text-align: left !important;
+    overflow-wrap: normal !important;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal .unified-modal-nav,
+  html.modern-budget #bulkEntryModal .bulk-entry-modal-nav {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: auto auto !important;
+    gap: 10px 12px !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal #paymentAccountRecordsTitle,
+  html.modern-budget #bulkEntryModal #bulkEntryModalTitle {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    width: 100% !important;
+    max-width: none !important;
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+  }
+
+  #paymentAccountRecordsModal .unified-modal-cancel,
+  #bulkEntryModal #closeBulkEntryModalButton {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    justify-self: start !important;
+  }
+
+  #bulkEntryModal .bulk-entry-modal-nav-actions {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+  }
+
+  #paymentAccountRecordsModal .unified-modal-nav-spacer {
+    display: none !important;
+  }
+
+  html.modern-budget #dataCardDetailModal .unified-modal-nav {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  #dataCardDetailModal .unified-modal-cancel {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    justify-self: start !important;
+  }
+
+  html.modern-budget #dataCardDetailTitle {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+  }
+
+  #dataCardDetailModal .unified-modal-nav-spacer {
+    display: none;
+  }
+
+  .data-card-detail-fields > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal .account-records-filter label {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 10px 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  html.modern-budget #paymentAccountRecordsModal #paymentAccountRecordsPeriodFilter {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 12px 36px 12px 12px !important;
+    font-size: 16px !important;
+    box-sizing: border-box;
+  }
+}
+}
+
+@media (min-width: 981px) {
+  .payment-card-overflow-button,
+  .transaction-overflow-button { display: none !important; }
+}

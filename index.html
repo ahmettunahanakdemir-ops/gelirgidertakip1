@@ -26,7 +26,7 @@
     <!-- ACIKLAMA: PWA kurulum bilgilerini ve uygulama ikonlarini tarayiciya tanitir. -->
     <link rel="manifest" href="manifest.json?v=418" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-512.png" />
     <!-- ACIKLAMA: CSS yuklenmeden once kayitli tema tercihini uygulayan kucuk JS dosyasi. -->
     <script src="assets/js/00-theme-preload.js?v=427"></script>
     <!-- ACIKLAMA: Kok degiskenler, global sayfa zemini ve temel form/button ayarlari. -->
@@ -55,10 +55,14 @@
     <link rel="stylesheet" href="assets/css/12-debts-receivables.css?v=418" />
     <link rel="stylesheet" href="assets/css/13-modern-shell.css?v=418" />
     <link rel="stylesheet" href="assets/css/14-settings-dialogs.css?v=419" />
-    <link rel="stylesheet" href="assets/css/15-summary-category-details.css?v=419" />
+    <link rel="stylesheet" href="assets/css/15-summary-category-details.css?v=434" />
     <link rel="stylesheet" href="assets/css/16-budget-assistant.css?v=428" />
     <link rel="stylesheet" href="assets/css/17-mobile-viewport.css?v=427" />
     <link rel="stylesheet" href="assets/css/18-interaction-performance.css?v=428" />
+    <link rel="stylesheet" href="assets/css/19-controls-mobile-layout.css?v=430" />
+    <link rel="stylesheet" href="assets/css/20-mobile-corrections.css?v=430" />
+    <link rel="stylesheet" href="assets/css/21-card-help-layout.css?v=432" />
+    <link rel="stylesheet" href="assets/css/22-modal-menu-layout.css?v=434" />
   </head>
   <body>
 
@@ -2054,9 +2058,8 @@
           <!-- ACIKLAMA: paymentAccountRecordsList dinamik kayit/kart satirlarinin JS ile basildigi listedir. -->
           <div id="paymentAccountRecordsList" class="transaction-list account-records-list"></div>
           <div class="auth-actions">
-            <!-- ACIKLAMA: refreshPaymentAccountFromRecordsButton tiklama olayi JS tarafinda baglanan butondur. -->
-            <button id="refreshPaymentAccountFromRecordsButton" class="success-btn" type="button">Güncelle</button>
             <!-- ACIKLAMA: closePaymentAccountRecordsButton tiklama olayi JS tarafinda baglanan butondur. -->
+            <button id="desktopRefreshAccountRecordsButton" class="success-btn desktop-card-action" type="button">Güncelle</button>
             <button id="closePaymentAccountRecordsButton" class="ghost-btn" type="button">Kapat</button>
           </div>
         </div>
@@ -2100,14 +2103,12 @@
     <!-- ACIKLAMA: transactionTemplate JS tarafinda klonlanarak tekrar eden satir uretmek icin kullanilan sablondur. -->
     <template id="transactionTemplate">
       <article class="transaction-item">
-        <div>
+        <div class="transaction-content" role="button" tabindex="0">
           <p class="transaction-title"></p>
           <p class="transaction-meta"></p>
         </div>
         <div class="transaction-side">
           <strong class="transaction-amount"></strong>
-          <button class="ghost-btn edit-transaction-btn" type="button">Düzenle</button>
-          <button class="ghost-btn delete-transaction-btn" type="button">Sil</button>
         </div>
       </article>
     </template>
@@ -2121,33 +2122,36 @@
     <!-- ACIKLAMA: Firestore veritabani okuma/yazma islemleri icin kutuphaneyi yukler. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <!-- ACIKLAMA: Sabitler, varsayilan veriler ve HTML elemanlarinin DOM referanslari. -->
-    <script src="assets/js/01-config-dom.js?v=418"></script>
+    <script src="assets/js/01-config-dom.js?v=429"></script>
     <!-- ACIKLAMA: Tema, yazi tipi, kart odeme hatirlaticilari, genel onay penceresi ve mobil kaydirma yardimcilari. -->
     <script src="assets/js/02-ui-preferences-reminders.js?v=418"></script>
     <!-- ACIKLAMA: Uygulama baslatma fonksiyonu, olay baglantilari, gelir/gider ve coklu kayit formlari. -->
-    <script src="assets/js/03-init-entry-forms.js?v=419"></script>
+    <script src="assets/js/03-init-entry-forms.js?v=434"></script>
     <!-- ACIKLAMA: Yerel depolama, silinmis kayit izleri, kategori listeleri ve ana sayfa render islemleri. -->
     <script src="assets/js/04-storage-home-render.js?v=425"></script>
     <!-- ACIKLAMA: Varliklar, odeme hesaplari, kredi karti borclari, BES hesaplari ve piyasa fiyatlari. -->
-    <script src="assets/js/05-assets-payments-bes-market.js?v=418"></script>
+    <script src="assets/js/05-assets-payments-bes-market.js?v=433"></script>
     <!-- ACIKLAMA: Ozet kategori dagilimi, kayit gecmisi, filtreler, kategori yonetimi, ekran gecisi ve yan menu. -->
-    <script src="assets/js/06-summary-history-categories-navigation.js?v=419"></script>
+    <script src="assets/js/06-summary-history-categories-navigation.js?v=434"></script>
+    <script src="assets/js/14-transaction-details.js?v=430"></script>
     <!-- ACIKLAMA: Yedekleme, PDF/Excel disari aktarma, dosyadan ice aktarma ve paylasim kodu islemleri. -->
     <script src="assets/js/07-backup-export-import-sync.js?v=418"></script>
     <!-- ACIKLAMA: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir. -->
-    <script src="assets/js/08-auth-firebase-cloud.js?v=423"></script>
+    <script src="assets/js/08-auth-firebase-cloud.js?v=432"></script>
     <!-- ACIKLAMA: Banka hareketi ice aktarma, AI/OCR dosya okuma ve metinden hareket ayrisitirma fonksiyonlari. -->
     <script src="assets/js/09-bank-import-ocr-parsers.js?v=418"></script>
     <!-- ACIKLAMA: Borc/alacak kayitlari, filtreler, ilgili hareketler ve ekran islemleri. -->
-    <script src="assets/js/10-debts-receivables.js?v=418"></script>
+    <script src="assets/js/10-debts-receivables.js?v=429"></script>
     <!-- ACIKLAMA: Acilis ekrani ve service worker kaydi yardimcilari. -->
     <script src="assets/js/10-startup-pwa.js?v=427"></script>
     <!-- ACIKLAMA: Uygulama durum degiskenlerini yukler ve tum dosyalar hazir olduktan sonra uygulamayi baslatir. En son yuklenmelidir. -->
     <script src="assets/vendor/lucide.min.js?v=418"></script>
-    <script src="assets/js/10-modern-shell.js?v=428"></script>
-    <script src="assets/js/10-settings-layout.js?v=418"></script>
+    <script src="assets/js/10-modern-shell.js?v=430"></script>
+    <script src="assets/js/10-settings-layout.js?v=433"></script>
+    <script src="assets/js/15-help-loading.js?v=431"></script>
     <script src="assets/js/11-state-startup.js?v=418"></script>
-    <script src="assets/js/12-budget-assistant.js?v=428"></script>
+    <script src="assets/js/16-assistant-microphone.js?v=430"></script>
+    <script src="assets/js/12-budget-assistant.js?v=430"></script>
     <script src="assets/js/13-interaction-feedback.js?v=428"></script>
   </body>
 </html>

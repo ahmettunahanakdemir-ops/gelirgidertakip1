@@ -1305,6 +1305,7 @@ function borcAlacakIsaretliTaksitleriniEkranaBas(durumFiltresi = "open") {
           `${item.title} taksitini ${item.installmentCompleted ? "yeniden aç" : "tamamlandı olarak işaretle"}`
         );
         yanAlan?.insertBefore(durumButtonu, duzenleButtonu || null);
+        standardizeDataCard(satir, item.title || "Taksit", getTransactionDetailFields(item));
         liste.append(kart);
       });
     } else {
@@ -1506,6 +1507,12 @@ function borcAlacaklariEkranaBas() {
           <button class="ghost-btn delete-transaction-btn debt-record-delete-btn" type="button" data-debt-action="delete" data-debt-id="${escapeHtml(kayit.id)}">Sil</button>
         </div>
       `;
+      standardizeDataCard(satir, kayit.person, [
+        ["Tür", kayit.kind === "receivable" ? "Alacak" : "Borç"], ["Liste", borcAlacakListeTuruEtiketi(kayit.listType)],
+        ["Toplam", currency.format(kayit.originalAmount)], ["Ödenen / tahsil edilen", currency.format(odenen)],
+        ["Kalan", currency.format(kayit.amount)], ["Başlangıç", borcAlacakTarihiniYaz(kayit.startDate)],
+        ["Vade", borcAlacakTarihiniYaz(kayit.dueDate)], ["Durum", durum.text], ["Not", kayit.note || "Not eklenmemiş"],
+      ], ".debt-record-actions button");
       hedefListe.append(satir);
     });
   }
@@ -1567,6 +1574,19 @@ function borcAlacakTaksitleriniEkranaBas() {
       </div>
       ${satirlar}
     `;
+    standardizeDataCard(grup, kayit.person, [
+      ["Tür", kayit.kind === "receivable" ? "Alacak" : "Borç"],
+      ["Toplam", currency.format(kayit.originalAmount)], ["Kalan", currency.format(kayit.amount)],
+      ["Taksit sayısı", kayit.installmentCount], ["Not", kayit.note || "Not eklenmemiş"],
+    ], ".debt-installment-group-actions button");
+    [...grup.querySelectorAll(".debt-installment-row")].forEach((row, index) => {
+      const taksit = taksitler[index];
+      standardizeDataCard(row, `${kayit.person} · ${taksit.number}. taksit`, [
+        ["Taksit", `${taksit.number} / ${kayit.installmentCount}`], ["Vade", borcAlacakTarihiniYaz(taksit.dueDate)],
+        ["Tutar", currency.format(taksit.amount)], ["Ödenen", currency.format(borcAlacakTaksitOdenenTutari(kayit, taksit.id))],
+        ["Kalan", currency.format(borcAlacakTaksitKalanTutari(kayit, taksit))],
+      ]);
+    });
     borcTaksitListesi.append(grup);
   });
 

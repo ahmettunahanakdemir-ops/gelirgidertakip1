@@ -1,0 +1,209 @@
+html.modern-budget .payment-card-overflow-menu {
+  position: fixed;
+  z-index: 10002;
+  max-height: calc(100dvh - 16px);
+  overflow-y: auto;
+}
+
+html.modern-budget #bankImportModal #bankImportMenu {
+  width: min(248px, calc(100vw - 32px)) !important;
+  max-width: calc(100vw - 32px) !important;
+  min-width: 0 !important;
+  padding: 6px !important;
+  box-sizing: border-box;
+}
+html.modern-budget #bankImportModal #bankImportMenu .bank-import-menu-item {
+  display: grid !important;
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  align-items: center !important;
+  justify-content: start !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+  text-align: left !important;
+  box-sizing: border-box;
+}
+html.modern-budget #bankImportModal #bankImportMenu .bank-import-menu-item > svg {
+  grid-column: 1;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+}
+html.modern-budget #bankImportModal #bankImportMenu .bank-import-menu-item > span {
+  grid-column: 2;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+  line-height: 1.4;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+html.modern-budget #settingsView .preferences-reset-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px !important;
+  margin: 16px 0 0 !important;
+  padding: 12px 16px !important;
+  border: 0 !important;
+  border-radius: 22px !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+  font: inherit;
+  font-size: 16px !important;
+  text-align: left !important;
+}
+.preferences-reset-row svg { width: 22px; height: 22px; flex: 0 0 22px; color: var(--accent); }
+.preferences-reset-row span { min-width: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 980px) {
+  html.modern-budget :is(#besModal, #paymentAccountModal, #debtModal, #recentTransactionsModal, #paymentAccountRecordsModal, #assetEditModal, #transactionEditModal) > .modal-card {
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  html.modern-budget :is(#besModal, #paymentAccountModal, #debtModal, #recentTransactionsModal, #paymentAccountRecordsModal, #transactionEditModal) .modal-card > .unified-modal-nav {
+    display: grid !important;
+    grid-template-columns: 72px minmax(0, 1fr) 72px !important;
+    grid-template-rows: auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-height: 64px !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    position: relative !important;
+    top: 0 !important;
+    flex: 0 0 auto !important;
+    background: var(--surface-soft) !important;
+    box-sizing: border-box;
+  }
+  html.modern-budget :is(#besModal, #paymentAccountModal, #debtModal, #recentTransactionsModal, #paymentAccountRecordsModal) .unified-modal-nav .unified-modal-title,
+  html.modern-budget #paymentAccountRecordsModal #paymentAccountRecordsTitle,
+  html.modern-budget #transactionEditModal #transactionEditTitle {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    font-size: 16px !important;
+    line-height: 1.3 !important;
+    text-align: center !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+  html.modern-budget :is(#besModal, #paymentAccountModal, #debtModal, #recentTransactionsModal, #paymentAccountRecordsModal, #transactionEditModal) .unified-modal-cancel { grid-column: 1 !important; grid-row: 1 !important; justify-self: start !important; }
+  html.modern-budget :is(#besModal, #paymentAccountModal, #debtModal, #recentTransactionsModal, #paymentAccountRecordsModal, #transactionEditModal) .unified-modal-nav-actions { grid-column: 3 !important; grid-row: 1 !important; justify-self: end !important; min-width: 0 !important; }
+  html.modern-budget :is(#besModal, #paymentAccountModal, #debtModal, #recentTransactionsModal, #paymentAccountRecordsModal, #transactionEditModal) .unified-modal-nav-button,
+  html.modern-budget #recentTransactionsModal #closeRecentTransactionsButton {
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+    flex: 0 0 72px !important;
+    box-sizing: border-box;
+  }
+  html.modern-budget #besModal :is(#closeBesModalButton, #besSubmitButton),
+  html.modern-budget #paymentAccountModal :is(#closePaymentAccountModalButton, #paymentAccountSubmitButton),
+  html.modern-budget #debtModal :is(#closeDebtModalButton, #debtSubmitButton),
+  html.modern-budget #paymentAccountRecordsModal #closePaymentAccountRecordsButton,
+  html.modern-budget #assetEditModal :is(#closeAssetEditModalButton, #assetEditSubmitButton) {
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    margin: 0 !important;
+    padding: 0 8px !important;
+  }
+  html.modern-budget :is(#besModal, #paymentAccountModal, #debtModal, #recentTransactionsModal, #paymentAccountRecordsModal, #transactionEditModal) .modal-body-scroll { padding: 16px !important; margin: 0 !important; }
+  html.modern-budget #transactionEditModal #transactionEditForm > .panel-heading { display: none !important; }
+  html.modern-budget :is(#recentTransactionsModal, #paymentAccountRecordsModal) .modal-fixed-heading { padding: 0 16px 8px !important; margin: 0 !important; }
+  html.modern-budget :is(#recentTransactionsModal, #paymentAccountRecordsModal) .modal-fixed-heading .panel-note { margin: 0 !important; }
+  html.modern-budget #debtModal .unified-modal-nav.has-secondary-action { grid-template-columns: 72px minmax(0, 1fr) auto !important; }
+  html.modern-budget #debtModal .unified-modal-nav-actions { display: flex !important; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  html.modern-budget #debtModal .unified-modal-nav.has-secondary-action .unified-modal-title { font-size: 14px !important; }
+
+  html.modern-budget #assetEditModal #assetEditForm { padding: 16px !important; margin: 0 !important; }
+  html.modern-budget #assetEditModal .asset-entry-modal-nav {
+    display: grid !important;
+    grid-template-columns: 72px minmax(0, 1fr) 72px !important;
+    grid-template-rows: auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: -16px -16px 16px !important;
+    width: calc(100% + 32px) !important;
+    max-width: none !important;
+    padding: 12px !important;
+    min-height: 64px !important;
+    background: var(--surface-soft) !important;
+    box-sizing: border-box;
+  }
+  html.modern-budget #assetEditModal .asset-entry-modal-nav > h2 {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    font-size: 16px !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+  html.modern-budget #assetEditModal #closeAssetEditModalButton { grid-column: 1 !important; grid-row: 1 !important; }
+  html.modern-budget #assetEditModal #assetEditSubmitButton { grid-column: 3 !important; grid-row: 1 !important; }
+
+  html.modern-budget #settingsView [data-settings-page="typography"] .preferences-header {
+    grid-template-columns: 44px minmax(0, 1fr) 44px !important;
+    grid-template-rows: auto !important;
+  }
+  html.modern-budget #settingsView [data-settings-page="typography"] .preferences-header h2 { grid-row: 1 !important; grid-column: 2 !important; }
+  html.modern-budget #settingsView [data-settings-page="typography"] .preferences-header-spacer { min-width: 44px !important; }
+
+  html.modern-budget #settingsView [data-settings-page="help"] {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    min-height: 0;
+    padding: max(12px, env(safe-area-inset-top)) 16px calc(88px + env(safe-area-inset-bottom));
+    background: var(--bg);
+    box-sizing: border-box;
+    animation: none;
+  }
+  html.modern-budget #settingsView [data-settings-page="help"] > .preferences-header {
+    position: relative !important;
+    top: 0 !important;
+    flex: 0 0 auto;
+    margin: 0 !important;
+    padding: 0 0 16px !important;
+    background: var(--bg);
+  }
+  html.modern-budget #settingsView [data-settings-page="help"] > .preferences-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0 !important;
+    padding: 0 0 16px !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+}

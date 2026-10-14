@@ -100,11 +100,10 @@ function setupSettingsLayout() {
     if (pageKey === "typography") {
       const resetButton = document.getElementById("resetAppearanceButton");
       if (resetButton) {
-        resetButton.classList.add("preferences-header-reset");
-        const headerActions = document.createElement("div");
-        headerActions.className = "preferences-header-actions";
-        headerActions.append(resetButton);
-        nav.querySelector(".preferences-header-spacer")?.replaceWith(headerActions);
+        resetButton.classList.remove("preferences-header-reset", "ghost-btn");
+        resetButton.classList.add("preferences-reset-row");
+        resetButton.innerHTML = shellIcon("rotate-ccw") + "<span>Varsayılana dön</span>";
+        content.append(resetButton);
       }
       const typographyActions = content.querySelector(".settings-actions");
       if (typographyActions) typographyActions.remove();
@@ -162,6 +161,7 @@ function setupSettingsLayout() {
       menu.hidden = true;
       header.hidden = true;
       page.hidden = false;
+      if (pageKey === "help") body.scrollTop = 0;
       window.scrollTo(0, 0);
       nav.querySelector("h2").focus({preventScroll:true});
     });
@@ -180,6 +180,7 @@ function setupSettingsLayout() {
   disclosure(general,"Tarih işlemleri","calendar-days",filter,"date-filter");
   disclosure(group("Yedekleme ve Veri"),"Yedekleme işlemleri","database-backup",backups,"backup");
   disclosure(group("Daha Fazla"),"Kategoriler","layout-grid",categories,"categories");
+  disclosure(group("Yardım"),"Kullanım rehberi ve ipuçları","circle-help",createBudgetHelpContent(),"help");
   // Eski kapsayicilar kaldirilir; iclerindeki canli kontroller yukarida tasinmistir.
   view.replaceChildren(layout);
   window.lucide?.createIcons();

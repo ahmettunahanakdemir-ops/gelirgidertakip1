@@ -71,6 +71,10 @@ function renderAssets() {
 
     side.append(amount, editButton, removeButton);
     row.append(content, side);
+    standardizeDataCard(row, title.textContent, [
+      ["Varlık türü", definition.label], ["Miktar", `${formatQuantity(item.amount)} ${definition.unit}`],
+      ["Birim değer", currency.format(unitPrice)], ["Toplam değer", currency.format(totalValue)],
+    ]);
     assetList.append(row);
   });
 }
@@ -78,6 +82,7 @@ function renderAssets() {
 
 // ACIKLAMA: renderPaymentAccounts fonksiyonunun Turkce karsiligi "ekrana bas odeme hesaplar"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderPaymentAccounts() {
+  closePaymentAccountOverflowMenu();
   if (!paymentAccountList) {
     return;
   }
@@ -161,7 +166,21 @@ function renderPaymentAccounts() {
     logo.className = "payment-card-logo";
     logo.setAttribute("aria-hidden", "true");
 
-    top.append(brandBlock, logo);
+    top.append(brandBlock, logo, createPaymentAccountOverflowButton(item));
+    brandBlock.setAttribute("role", "button");
+    brandBlock.setAttribute("tabindex", "0");
+    brandBlock.setAttribute("aria-label", `${item.name || "Kart / hesap"} kayıtlarını aç`);
+    card.addEventListener("click", (event) => {
+      if (window.innerWidth > 980) return;
+      if (!event.target.closest("button")) openPaymentAccountRecordsModal(item);
+    });
+    brandBlock.addEventListener("keydown", (event) => {
+      if (window.innerWidth > 980) return;
+      if (["Enter", " "].includes(event.key)) {
+        event.preventDefault();
+        openPaymentAccountRecordsModal(item);
+      }
+    });
 
     // ACIKLAMA: chipLine degiskeninin Turkce karsiligi "chip satir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const chipLine = document.createElement("div");
@@ -263,13 +282,6 @@ function renderPaymentAccounts() {
     recordsButton.textContent = "Kayıtlar";
     recordsButton.addEventListener("click", () => openPaymentAccountRecordsModal(item));
 
-    // ACIKLAMA: refreshButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
-    const refreshButton = document.createElement("button");
-    refreshButton.className = "ghost-btn payment-card-refresh-btn";
-    refreshButton.type = "button";
-    refreshButton.textContent = "Güncelle";
-    refreshButton.addEventListener("click", () => refreshPaymentAccountFromRecords(item.id));
-
     // ACIKLAMA: editButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
     const editButton = document.createElement("button");
     editButton.className = "ghost-btn";
@@ -284,11 +296,109 @@ function renderPaymentAccounts() {
     removeButton.textContent = "Sil";
     removeButton.addEventListener("click", () => openPaymentAccountDeleteModal(item));
 
+    const refreshButton = document.createElement("button");
+    refreshButton.className = "ghost-btn payment-card-refresh-btn desktop-card-action";
+    refreshButton.type = "button";
+    refreshButton.textContent = "Güncelle";
+    refreshButton.addEventListener("click", () => refreshPaymentAccountFromRecords(item.id));
+    syncLegacyCardAction(refreshButton);
     actions.append(recordsButton, refreshButton, editButton, removeButton);
     card.append(shine, top, chipLine, number, details, bottom, actions);
     paymentAccountList.append(card);
   });
 }
+
+let paymentAccountOverflowMenu = null;
+let paymentAccountOverflowTrigger = null;
+
+function closePaymentAccountOverflowMenu({ restoreFocus = false } = {}) {
+  paymentAccountOverflowMenu?.remove();
+  paymentAccountOverflowMenu = null;
+  paymentAccountOverflowTrigger?.setAttribute("aria-expanded", "false");
+  if (restoreFocus) paymentAccountOverflowTrigger?.focus({ preventScroll: true });
+  paymentAccountOverflowTrigger = null;
+}
+
+function createPaymentAccountOverflowButton(account) {
+  return createActionOverflowButton(`${account.name || "Kart / hesap"} seçenekleri`, [
+    ["Kayıtlar", "List", () => openPaymentAccountRecordsModal(account)],
+    ["Düzenle", "SquarePen", () => openPaymentAccountModal(account)],
+    ["Sil", "Trash2", () => openPaymentAccountDeleteModal(account)],
+  ], "payment-card-overflow-button");
+}
+
+function createActionOverflowButton(label, commands, className) {
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = className;
+  trigger.setAttribute("aria-label", label);
+  trigger.setAttribute("aria-haspopup", "menu");
+  trigger.setAttribute("aria-expanded", "false");
+  trigger.title = "Seçenekler";
+  if (window.lucide?.Ellipsis) trigger.append(window.lucide.createElement(window.lucide.Ellipsis));
+  else trigger.textContent = "...";
+  trigger.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (paymentAccountOverflowTrigger === trigger) {
+      closePaymentAccountOverflowMenu();
+      return;
+    }
+    closePaymentAccountOverflowMenu();
+    const menu = document.createElement("div");
+    menu.className = "payment-card-overflow-menu";
+    menu.setAttribute("role", "menu");
+    menu.setAttribute("aria-label", trigger.getAttribute("aria-label"));
+    commands.forEach(([label, icon, action, disabled = false]) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.disabled = Boolean(disabled);
+      button.setAttribute("role", "menuitem");
+      if (label === "Sil") button.className = "is-danger";
+      if (window.lucide?.[icon]) button.append(window.lucide.createElement(window.lucide[icon]));
+      const text = document.createElement("span");
+      text.textContent = label;
+      button.append(text);
+      button.addEventListener("click", () => {
+        closePaymentAccountOverflowMenu();
+        action();
+      });
+      menu.append(button);
+    });
+    const menuHost = trigger.closest(".modal-backdrop") || document.body;
+    menuHost.append(menu);
+    paymentAccountOverflowMenu = menu;
+    paymentAccountOverflowTrigger = trigger;
+    trigger.setAttribute("aria-expanded", "true");
+    const rect = trigger.getBoundingClientRect();
+    const size = menu.getBoundingClientRect();
+    menu.style.left = `${Math.max(8, Math.min(rect.right - size.width, window.innerWidth - size.width - 8))}px`;
+    menu.style.top = `${Math.max(8, Math.min(rect.bottom + 4, window.innerHeight - size.height - 8))}px`;
+    menu.querySelector("button")?.focus({ preventScroll: true });
+  });
+  return trigger;
+}
+
+document.addEventListener("click", (event) => {
+  if (paymentAccountOverflowMenu && !paymentAccountOverflowMenu.contains(event.target)) closePaymentAccountOverflowMenu();
+});
+document.addEventListener("keydown", (event) => {
+  if (!paymentAccountOverflowMenu) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closePaymentAccountOverflowMenu({ restoreFocus: true });
+  } else if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+    event.preventDefault();
+    const items = [...paymentAccountOverflowMenu.querySelectorAll("button")];
+    const index = items.indexOf(document.activeElement);
+    const next = event.key === "Home" ? 0 : event.key === "End" ? items.length - 1
+      : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+    items[next]?.focus();
+  }
+});
+window.addEventListener("resize", () => closePaymentAccountOverflowMenu());
+document.addEventListener("scroll", (event) => {
+  if (!paymentAccountOverflowMenu?.contains(event.target)) closePaymentAccountOverflowMenu();
+}, { passive: true, capture: true });
 
 // ACIKLAMA: createPaymentCardDetail fonksiyonunun Turkce karsiligi "olustur odeme kart ayrinti"; AI destekli okuma veya API istegi akisini calistirir.
 function createPaymentCardDetail(label, value) {
@@ -1291,9 +1401,6 @@ function renderPaymentAccountRecordsModalContent(account, options = {}) {
     }
   }
 
-  if (refreshPaymentAccountFromRecordsButton) {
-    refreshPaymentAccountFromRecordsButton.disabled = false;
-  }
 }
 
 // ACIKLAMA: openPaymentAccountRecordsModal fonksiyonunun Turkce karsiligi "ac odeme hesap kayitlar pencere"; ilgili pencereyi veya ekrani acar.
@@ -2613,6 +2720,11 @@ function renderBesAccounts() {
 
     side.append(amount, editButton, removeButton);
     row.append(content, side);
+    standardizeDataCard(row, item.provider, [
+      ["Sözleşme", item.policyNo || "Belirtilmedi"], ["Kendi birikimin", currency.format(item.contribution || 0)],
+      ["Devlet katkısı", currency.format(item.stateContribution || 0)], ["Devlet katkısı getirisi", currency.format(item.stateGain || 0)],
+      ["Fon getirisi", currency.format(item.gain || 0)], ["Toplam", currency.format(total)], ["Not", item.note || "Not eklenmemiş"],
+    ]);
     besList.append(row);
   });
 }

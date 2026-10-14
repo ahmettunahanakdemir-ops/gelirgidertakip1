@@ -410,7 +410,10 @@ function renderModernDashboard() {
   document.getElementById("shellIncome").textContent = money(totals.income);
   document.getElementById("shellExpense").textContent = money(totals.expense);
   const rate = totals.income > 0 ? Math.round((totals.income - totals.expense) / totals.income * 100) : 0;
-  document.getElementById("shellSaving").textContent = shellAmountsHidden ? "••" : `%${rate}`;
+  const savingLabel = shellAmountsHidden ? "••" : `%${rate}`;
+  const savingValue = document.getElementById("shellSaving");
+  savingValue.textContent = savingLabel;
+  savingValue.style.setProperty("--saving-rate-size", `${getMobileSavingRateFontSize(savingLabel)}px`);
   const privacy = document.getElementById("shellPrivacy");
   privacy.setAttribute("aria-label", shellAmountsHidden ? "Tutarları göster" : "Tutarları gizle");
   privacy.setAttribute("aria-pressed", String(shellAmountsHidden));
@@ -444,4 +447,8 @@ function renderModernDashboard() {
     list.append(row);
   });
   window.lucide?.createIcons();
+}
+
+function getMobileSavingRateFontSize(label) {
+  return Math.min(22, Math.max(6, Math.floor(60 / (Math.max(1, label.length) * .68))));
 }

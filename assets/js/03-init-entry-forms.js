@@ -50,6 +50,8 @@ function init() {
   });
   standardizeModalLayouts();
   standardizeModalHeaderActions();
+  syncTransactionEditHeaderLayout();
+  window.addEventListener("resize", syncTransactionEditHeaderLayout);
   authEmail.value = loadLastUsername();
   authPassword.value = "";
   initThemePreference();
@@ -271,9 +273,9 @@ function init() {
     }
   });
   closePaymentAccountRecordsButton?.addEventListener("click", closePaymentAccountRecordsModal);
-  refreshPaymentAccountFromRecordsButton?.addEventListener("click", () => {
-    refreshPaymentAccountFromRecords(viewingPaymentAccountRecordsId);
-  });
+  const desktopAccountRefresh = document.getElementById("desktopRefreshAccountRecordsButton");
+  desktopAccountRefresh?.addEventListener("click", () => refreshPaymentAccountFromRecords(viewingPaymentAccountRecordsId));
+  if (desktopAccountRefresh) syncLegacyCardAction(desktopAccountRefresh);
   paymentAccountRecordsModal?.addEventListener("click", (event) => {
     if (event.target === paymentAccountRecordsModal) {
       closePaymentAccountRecordsModal();
@@ -1414,10 +1416,10 @@ function standardizeModalHeaderActions() {
     { modal: "besModal", title: "besModalTitle", cancel: "#closeBesModalButton", action: "#besSubmitButton", actionText: "Kaydet" },
     { modal: "debtModal", title: "debtModalTitle", cancel: "#closeDebtModalButton", action: "#debtSubmitButton", secondaryAction: "#debtEditPaymentButton", actionText: "Kaydet" },
     { modal: "debtPaymentModal", title: "debtPaymentModalTitle", cancel: "#closeDebtPaymentModalButton", action: "#debtPaymentSubmitButton", actionText: "Kaydet" },
-    { modal: "transactionEditModal", title: "transactionEditTitle", cancel: "#closeTransactionEditButton", action: "#transactionEditForm button[type='submit']", actionText: "Kaydet" },
+    { modal: "transactionEditModal", title: "transactionEditTitle", cancel: "#closeTransactionEditButton", action: window.innerWidth <= 980 ? "button[type='submit']" : "#transactionEditForm button[type='submit']", actionText: "Kaydet" },
     { modal: "paymentAccountModal", title: "paymentAccountModalTitle", cancel: "#closePaymentAccountModalButton", action: "#paymentAccountSubmitButton", actionText: "Kaydet" },
     { modal: "confirmPaymentAccountDeleteModal", title: "confirmPaymentAccountDeleteTitle", cancel: "#cancelDeletePaymentAccountButton", action: "#confirmDeletePaymentAccountButton" },
-    { modal: "paymentAccountRecordsModal", title: "paymentAccountRecordsTitle", cancel: "#closePaymentAccountRecordsButton", action: "#refreshPaymentAccountFromRecordsButton" },
+    { modal: "paymentAccountRecordsModal", title: "paymentAccountRecordsTitle", cancel: "#closePaymentAccountRecordsButton", action: "#desktopRefreshAccountRecordsButton" },
     { modal: "paymentAccountPayModal", title: "paymentAccountPayTitle", cancel: "#closePaymentAccountPayButton", action: "#paymentAccountPayForm button[type='submit']", actionText: "Öde" },
   ];
 
@@ -1486,6 +1488,42 @@ function standardizeModalHeaderActions() {
 
     modal.dataset.headerActionsStandardized = "true";
   });
+}
+
+function syncTransactionEditHeaderLayout() {
+  const modal = document.getElementById("transactionEditModal");
+  const card = modal?.querySelector(":scope > .modal-card");
+  const nav = card?.querySelector(":scope > .unified-modal-nav");
+  const form = document.getElementById("transactionEditForm");
+  const save = modal?.querySelector("button[type='submit']");
+  if (!nav || !form || !save) return;
+
+  let footer = card.querySelector(":scope > .modal-footer-actions");
+  const mobile = window.innerWidth <= 980;
+  if (mobile) {
+    let actions = nav.querySelector(".unified-modal-nav-actions");
+    if (!actions) {
+      actions = document.createElement("div");
+      actions.className = "unified-modal-nav-actions";
+      nav.append(actions);
+    }
+    save.classList.remove("primary-btn");
+    save.classList.add("unified-modal-nav-button", "unified-modal-action");
+    save.setAttribute("form", form.id);
+    if (save.parentElement !== actions) actions.append(save);
+    if (footer) footer.style.setProperty("display", "none", "important");
+  } else {
+    if (!footer) {
+      footer = document.createElement("div");
+      footer.className = "auth-actions modal-footer-actions";
+      card.append(footer);
+    }
+    save.classList.remove("unified-modal-nav-button", "unified-modal-action");
+    save.classList.add("primary-btn");
+    footer.style.removeProperty("display");
+    if (save.parentElement !== footer) footer.append(save);
+    nav.querySelector(".unified-modal-nav-actions")?.remove();
+  }
 }
 
 // ACIKLAMA: loadTransactions fonksiyonunun Turkce karsiligi "yukle islemler"; ilgili uygulama islemini calistirir.

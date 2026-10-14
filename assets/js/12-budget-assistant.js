@@ -1,7 +1,6 @@
 // Akis Butce Asistani: hareketleri cihazdaki uygulama verisinden yorumlar.
 (() => {
   const recognitionType = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
   let pendingEntry = null;
   let pendingEntryStep = "";
   let pendingFinanceQuestion = null;
@@ -12,6 +11,7 @@
   let assistantScrollY = null;
   let assistantViewportHeight = 0;
   let assistantScrollFrame = null;
+  let assistantCloseTimer = null;
   const mascotSource = "assets/images/budget-assistant-mascot.png";
   const assistantQuickPrompts = [
     "Bu ayın özeti", "En çok hangi kategoriye harcadım?", "Gider ekle", "Gelir ekle",
@@ -482,8 +482,8 @@
 
   function findAssistantCategory(text, categories = transactionCategories?.expense || []) {
     const normalized = normalize(text);
-    const available = [...new Set(categories)];
-    const exact = available.find((category) => normalized.includes(normalize(category)));
+    const available = [...new Set(categories)].sort((a, b) => normalizeCategoryName(b).length - normalizeCategoryName(a).length);
+    const exact = available.find((category) => (` ${normalizeCategoryName(text)} `).includes(` ${normalizeCategoryName(category)} `));
     if (exact) return exact;
 
     const aliases = {
@@ -503,7 +503,7 @@
     const tokens = normalized.split(" ").filter((word) => word.length >= 3 && !ignored.has(word));
     if (!tokens.length) return "";
     const ranked = available.map((category) => {
-      const categoryWords = normalize(category).split(" ").filter(Boolean);
+      const categoryWords = normalizeCategoryName(category).split(" ").filter(Boolean);
       const scores = categoryWords.map((word) => Math.max(...tokens.map((token) => {
         const distance = assistantEditDistance(word, token);
         return 1 - distance / Math.max(word.length, token.length);
@@ -513,14 +513,20 @@
     return ranked[0]?.score >= 0.64 ? ranked[0].category : "";
   }
 
+  function normalizeCategoryName(value) {
+    return normalize(value).split(" ").filter((word) => word !== "ve" && word !== "ile").join(" ");
+  }
+
   function hasExplicitPeriod(text) {
     const normalized = normalize(text);
     return /\b(bugun|dun|bu ay\w*|gecen ay\w*|onceki ay\w*|son \w+ (gun\w*|hafta\w*|ay\w*)|gecen \w+ (gun\w*|hafta\w*|ay\w*)|bu hafta\w*|gecen hafta|onceki hafta|bu yil|genel|tum zaman|bugune kadar|simdiye kadar|20\d{2})\b|\b(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)(?:da|de|ta|te|daki|deki|taki|teki)?\b/.test(normalized);
   }
 
   function getAssistantCategoryDetail(text, categoryOverride = "") {
-    const categories = [...new Set([...(transactionCategories?.expense || []), ...transactions.map((item) => item.category).filter(Boolean)])];
-    const category = categoryOverride || findAssistantCategory(text, categories);
+    const query = getAssistantRecordQueryInfo(text);
+    const categories = query.categories;
+    const category = categoryOverride || query.category;
+    const type = query.type || (lastCategoryReport && !hasExplicitPeriod(text) ? lastCategoryReport.type || "expense" : "");
     if (!category) return "Hangi kategoriyi kastettiğini anlayamadım. Kategori adını biraz daha açık yazabilir misin?";
 
     const scope = getAssistantAccountScope(text);
@@ -534,12 +540,12 @@
     const period = usePreviousPeriod ? lastCategoryReport.period : getAssistantPeriod(text);
     const selectedAccountId = scope?.account?.id || (!scope?.account && !hasExplicitPeriod(text) ? lastCategoryReport?.accountId : "") || "";
     const records = transactions.filter((item) => {
-      if (item.type !== "expense") return false;
+      if (type && item.type !== type) return false;
       if (!isInAssistantPeriod(item.date, period)) return false;
-      if (selectedAccountId && String(item.paymentAccountId || "") !== String(selectedAccountId)) return false;
+      if (selectedAccountId && String(item.paymentAccountId || "") !== String(selectedAccountId) && String(item.transferAccountId || "") !== String(selectedAccountId)) return false;
       return normalize(item.category) === normalize(category) || findAssistantCategory(item.category, categories) === category;
     }).sort(compareTransactionsNewestFirst);
-    if (!records.length) return `${period.label} döneminde ${category} kategorisinde eşleşen gider kaydı bulamadım.`;
+    if (!records.length) return `${period.label} döneminde ${category} kategorisinde eşleşen ${type === "income" ? "gelir" : type === "transfer" ? "transfer" : type === "expense" ? "gider" : "hareket"} kaydı bulamadım.`;
 
     const total = records.reduce((sum, item) => sum + Number(item.amount || 0), 0);
     const lines = [`${period.label} · ${category} kategorisi: ${formatMoney(total)} toplam, ${records.length} kayıt.`];
@@ -549,7 +555,7 @@
       lines.push(`• ${formatDate(item.date)} · ${item.title || item.category} · ${formatMoney(item.amount)}${accountLabel}`);
     });
     if (records.length > 12) lines.push(`İlk 12 kayıt gösteriliyor; toplam ${records.length} kayıt var.`);
-    lastCategoryReport = { period, accountId: selectedAccountId };
+    lastCategoryReport = { period, accountId: selectedAccountId, type };
     return lines.join("\n");
   }
 
@@ -560,7 +566,8 @@
       ...(transactions || []).map((item) => item.category).filter(Boolean),
     ])];
     const normalized = normalize(text);
-    const explicitCategory = categories.find((category) => normalized.includes(normalize(category))) || "";
+    const explicitCategory = categories.slice().sort((a, b) => normalizeCategoryName(b).length - normalizeCategoryName(a).length)
+      .find((category) => (` ${normalizeCategoryName(text)} `).includes(` ${normalizeCategoryName(category)} `)) || "";
     const accountScope = getAssistantAccountScope(text);
     const ignored = new Set(("bu şu son gecen onceki genel tum zaman kayit bugune kadar simdiye kadar yil ay ayda hafta haftada gun gunde bugun dun yarin bir iki uc dort bes alti yedi sekiz dokuz on kategori kategoride kategorisinde kategorisindeki harcama harcamalar harcamalarim harcamalarimda harcadim harcadigim harcamisim gider giderler giderlerim gelir gelirler gelirlerim transfer transferler aktarim islem islemler kayitlar kayitlarim liste listele goster getir bul bak incele detay detaylari ne neler hangi cok en yaptim yaptigim yaptik yaptigimiz ettim ettigim ettigi aldim almisim satin odedim odenen var mi varmis misin misiniz icin ile ve de benim benimki benimle bu ayki haftaki aylik yillik donem ozet analiz toplam tutar tutari kadar hepsi hepsini ta te tan ten da de dan den kredi kart kartimla kartimdan kartim kartiyla hesabimla hesabimdan hesabim banka bankam kime maas maaşim gonderim gonderdim gondermisim aktarim aktardim tahsil tahsilat" ).split(" "));
     const monthWords = new Set("ocak subat mart nisan mayis haziran temmuz agustos eylul ekim kasim aralik".split(" ").flatMap((word) => [word, `${word}da`, `${word}de`, `${word}ta`, `${word}te`]));
@@ -1460,6 +1467,11 @@
   function sendAssistantInput(value = input.value, { focus = true } = {}) {
     const message = String(value || "").trim();
     if (!message) return;
+    if (assistantCloseTimer !== null) {
+      window.clearTimeout(assistantCloseTimer);
+      assistantCloseTimer = null;
+      stopAssistantSpeech();
+    }
     messageList.querySelectorAll(".budget-assistant-prompts").forEach((group) => group.remove());
     appendMessage(message, "user");
     input.value = "";
@@ -1515,16 +1527,20 @@
   }
 
   function openAssistant() {
+    if (assistantCloseTimer !== null) window.clearTimeout(assistantCloseTimer);
+    assistantCloseTimer = null;
     panel.hidden = false;
     launcher.setAttribute("aria-expanded", "true");
     syncAssistantViewport();
     window.lucide?.createIcons();
-    input.focus({ preventScroll: true });
+    if (window.innerWidth > 980) input.focus({ preventScroll: true });
     scrollMessagesToEnd();
   }
 
   function closeAssistant() {
-    if (recognition) recognition.stop();
+    if (assistantCloseTimer !== null) window.clearTimeout(assistantCloseTimer);
+    assistantCloseTimer = null;
+    microphone.cancel();
     stopAssistantSpeech();
     input.blur();
     panel.hidden = true;
@@ -1569,7 +1585,7 @@
   }
 
   function isAssistantEndCommand(text) {
-    return /^(?:(?:lutfen|artik) )?(?:(?:gorusmeyi|gorusme|sohbeti|sohbet|konusmayi|konusma) (?:sonlandir|bitir|kapat)|asistani kapat)(?: lutfen)?$/.test(normalize(text));
+    return /^(?:(?:lutfen|artik) )?(?:(?:gorusmeyi|gorusme|sohbeti|sohbet|konusmayi|konusma) (?:sonlandir|bitir|kapat)|asistani kapat|bitir|kapat|konusmak istemiyorum)(?: lutfen)?$/.test(normalize(text));
   }
 
   function endAssistantConversation() {
@@ -1578,14 +1594,17 @@
     pendingFinanceQuestion = null;
     lastCategoryReport = null;
     messageList.querySelector("[data-assistant-pending]")?.remove();
-    if (recognition) {
-      recognition.abort();
-      recognition = null;
-    }
+    microphone.cancel();
     micButton.classList.remove("is-listening");
-    appendMessage("Görüşme sonlandırıldı. Onaylanmamış işlem kaydedilmedi.");
-    latestSpokenReply = "";
-    closeAssistant();
+    stopAssistantSpeech();
+    const farewell = "Görüşmek üzere. Onaylanmamış işlem kaydedilmedi.";
+    appendMessage(farewell);
+    latestSpokenReply = farewell;
+    if (window.speechSynthesis) speakButton.click();
+    assistantCloseTimer = window.setTimeout(() => {
+      assistantCloseTimer = null;
+      closeAssistant();
+    }, 3000);
   }
 
   const launcherPositionKey = "akisButceAssistantLauncherPositionV1";
@@ -1711,49 +1730,12 @@
     speakButton.disabled = true;
     speakButton.title = "Bu tarayıcı sesli yanıtı desteklemiyor";
   }
-  micButton.addEventListener("click", () => {
-    if (!recognitionType) {
-      setStatus("Bu tarayıcıda ses tanıma kullanılamıyor. Mesajını yazarak devam edebilirsin.");
-      return;
-    }
-    if (recognition) {
-      recognition.stop();
-      recognition = null;
-      micButton.classList.remove("is-listening");
-      return;
-    }
-    try {
-      recognition = new recognitionType();
-      recognition.lang = "tr-TR";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-      recognition.onstart = () => {
-        micButton.classList.add("is-listening");
-        setStatus("Dinliyorum…");
-      };
-      recognition.onresult = (event) => {
-        const transcript = event.results?.[0]?.[0]?.transcript || "";
-        recognition = null;
-        micButton.classList.remove("is-listening");
-        setStatus("");
-        if (transcript.trim()) sendAssistantInput(transcript.trim(), { focus: false });
-      };
-      recognition.onerror = (event) => {
-        recognition = null;
-        micButton.classList.remove("is-listening");
-        setStatus(event.error === "not-allowed" ? "Mikrofon izni verilmedi. İstersen mesajını yazabilirsin." : "Ses algılanamadı. Tekrar deneyebilir veya yazabilirsin.");
-      };
-      recognition.onend = () => {
-        recognition = null;
-        micButton.classList.remove("is-listening");
-        if (status.textContent === "Dinliyorum…") setStatus("");
-      };
-      recognition.start();
-    } catch {
-      recognition = null;
-      micButton.classList.remove("is-listening");
-      setStatus("Mikrofon açılamadı. Mesajını yazarak devam edebilirsin.");
-    }
+  const microphone = createBudgetMicrophone({
+    button: micButton,
+    Recognition: recognitionType,
+    onSend: (text) => sendAssistantInput(text, { focus: false }),
+    onStatus: setStatus,
+    stopPlayback: stopAssistantSpeech,
   });
 
   const updateVisibility = () => {

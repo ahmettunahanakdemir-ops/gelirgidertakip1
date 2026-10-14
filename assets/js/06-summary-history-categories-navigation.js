@@ -306,10 +306,6 @@ function createTransactionListItem(item, options = {}) {
   const meta = fragment.querySelector(".transaction-meta");
   // ACIKLAMA: amount degiskeninin Turkce karsiligi "tutar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const amount = fragment.querySelector(".transaction-amount");
-  // ACIKLAMA: editButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
-  const editButton = fragment.querySelector(".edit-transaction-btn");
-  // ACIKLAMA: removeButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
-  const removeButton = fragment.querySelector(".delete-transaction-btn");
   // ACIKLAMA: addedAt degiskeninin Turkce karsiligi "eklenen at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const addedAt = getTransactionAddedTimestamp(item);
 
@@ -340,16 +336,38 @@ function createTransactionListItem(item, options = {}) {
     meta.textContent = `${meta.textContent} · Eklenme: ${addedText}`;
   }
 
-  editButton.addEventListener("click", () => {
-    closeRecentTransactionsModal();
-    editTransaction(item);
+  const actions = [
+    ["Düzenle", "SquarePen", () => { closeRecentTransactionsModal(); editTransaction(item); }],
+    ["Sil", "Trash2", () => {
+      if (options.closeModalBeforeDelete) closeRecentTransactionsModal();
+      requestTransactionDelete(item);
+    }],
+  ];
+  row._cardActions = actions;
+  actions.forEach(([label, icon, action]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "ghost-btn desktop-card-action";
+    button.textContent = label;
+    button.addEventListener("click", action);
+    syncLegacyCardAction(button);
+    row.querySelector(".transaction-side").append(button);
   });
-
-  removeButton.addEventListener("click", () => {
-    if (options.closeModalBeforeDelete) {
-      closeRecentTransactionsModal();
+  row.dataset.dataCardDetails = "true";
+  const menu = createActionOverflowButton(`${item.title || "İşlem"} seçenekleri`, actions, "transaction-overflow-button");
+  row.append(menu);
+  const content = row.querySelector(".transaction-content");
+  content.setAttribute("aria-label", `${item.title || "İşlem"} detayını aç`);
+  row.addEventListener("click", (event) => {
+    if (window.innerWidth > 980) return;
+    if (!event.target.closest("button")) openTransactionDetailModal(item);
+  });
+  content.addEventListener("keydown", (event) => {
+    if (window.innerWidth > 980) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openTransactionDetailModal(item);
     }
-    requestTransactionDelete(item);
   });
 
   return fragment;
@@ -424,6 +442,7 @@ function openRecentTransactionsModal() {
 
 // ACIKLAMA: closeRecentTransactionsModal fonksiyonunun Turkce karsiligi "kapat son islemler pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeRecentTransactionsModal() {
+  closePaymentAccountOverflowMenu();
   if (recentTransactionsModal) {
     recentTransactionsModal.hidden = true;
   }
@@ -434,6 +453,8 @@ function renderRecentTransactionsModal() {
   if (!recentTransactionsList) {
     return;
   }
+
+  if (paymentAccountOverflowTrigger?.closest("#recentTransactionsModal")) closePaymentAccountOverflowMenu();
 
   // ACIKLAMA: latestTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const latestTransactions = getRecentAddedTransactions(RECENT_ADDED_TRANSACTION_DAYS);
@@ -1035,6 +1056,7 @@ function editTransaction(item) {
   }
   syncTransactionTransferVisibility();
   transactionEditStatus.textContent = "";
+  syncTransactionEditHeaderLayout();
   transactionEditModal.hidden = false;
   setTimeout(() => {
     transactionTitleInput.focus();
