@@ -4,10 +4,13 @@
   let pendingEntry = null;
   let pendingEntryStep = "";
   let pendingFinanceQuestion = null;
+  let pendingTopicChange = null;
+  let lastReportQuestion = "";
+  let awaitingReportContinue = false;
+  let awaitingNextEntry = false;
   let lastCategoryReport = null;
   let latestSpokenReply = "";
   let assistantSpeaking = false;
-  let speechSession = 0;
   let assistantScrollY = null;
   let assistantViewportHeight = 0;
   let assistantScrollFrame = null;
@@ -15,7 +18,7 @@
   const mascotSource = "assets/images/budget-assistant-mascot.png";
   const assistantQuickPrompts = [
     "Bu ayın özeti", "En çok hangi kategoriye harcadım?", "Gider ekle", "Gelir ekle",
-    "Transfer ekle", "Borçlarım neler?", "Alacaklarım neler?", "Yakın taksitlerim neler?",
+    "Transfer ekle", "Bu ay geçen ay giderlerini karşılaştır", "Ne sorabilirim?", "Yakın taksitlerim neler?",
   ];
 
   const launcher = document.createElement("button");
@@ -41,9 +44,10 @@
     </header>
     <div class="budget-assistant-messages" data-assistant-messages aria-live="polite" aria-relevant="additions text"></div>
     <p class="budget-assistant-status" data-assistant-status role="status"></p>
+    <div class="budget-assistant-voice-preview" data-assistant-voice-preview hidden><p data-assistant-transcript></p><button type="button" class="budget-assistant-icon-button" data-assistant-cancel-voice aria-label="Sesli mesajı iptal et" title="Sesli mesajı iptal et"><i data-lucide="x" aria-hidden="true"></i></button></div>
     <form class="budget-assistant-composer" data-assistant-form>
       <textarea data-assistant-input rows="1" maxlength="240" aria-label="Asistana mesaj yaz" placeholder="Mesajını yaz…"></textarea>
-      <button type="button" class="budget-assistant-icon-button budget-assistant-mic" data-assistant-mic aria-label="Sesli komut" title="Sesli komut"><i data-lucide="mic" aria-hidden="true"></i></button>
+      <button type="button" class="budget-assistant-icon-button budget-assistant-mic" data-assistant-mic aria-label="Sesli mesaj: basılı tut veya dokunarak başlat" aria-pressed="false" title="Sesli mesaj: basılı tut veya dokunarak başlat"><i data-lucide="mic" aria-hidden="true"></i></button>
       <button type="submit" class="budget-assistant-send" aria-label="Mesajı gönder" title="Gönder"><i data-lucide="send" aria-hidden="true"></i></button>
     </form>
     <p class="budget-assistant-privacy">Sesli giriş tarayıcı desteği ve mikrofon iznine bağlıdır. Kayıtlar, onayınızla uygulamanın mevcut kayıt akışına eklenir.</p>`;
@@ -64,14 +68,32 @@
     .replace(/\s+/g, " ")
     .trim();
 
+  const insights = createBudgetAssistantInsights({
+    normalize, money: formatMoney, formatDate, today: getTurkeyTodayISO,
+    getState: () => ({ transactions, accounts: paymentAccounts, debts: borcAlacakKayitlari, bes: besAccounts }),
+    getPeriod: getAssistantPeriod, hasPeriod: hasExplicitPeriod, inPeriod: isInAssistantPeriod,
+    queryInfo: getAssistantRecordQueryInfo, accountScope: getAssistantAccountScope,
+    accountName: formatPaymentAccountName, besTotal: getBesAccountTotal, assetsReport: getAssistantAssetReport,
+  });
+
+  function respondWithInsights(text) {
+    const reply = insights.respond(text);
+    if (!reply) return false;
+    pendingFinanceQuestion = null;
+    rememberReportQuestion(text);
+    appendMessage(reply.text);
+    if (reply.prompts.length) addPromptButtons(reply.prompts);
+    return true;
+  }
+
   function isAssistantReportIntent(text) {
     return /\b(ozet\w*|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ne kadar|ne|hangi|nerede|neyi|neye|neler|kategori\w*|analiz|karsilastir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*)\b/.test(normalize(text));
   }
 
   function isIndependentReportQuestion(text) {
     const normalized = normalize(text);
-    const asksQuestion = /[?？]/.test(String(text || "")) || /\b(ne|neler|hangi|ne kadar|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ozet|var mi|detay|goster|listele)\b/.test(normalized);
-    const namesFinancialArea = /\b(birikim\w*|kategori\w*|harcama\w*|gider\w*|gelir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*)\b/.test(normalized);
+    const asksQuestion = /[?？]/.test(String(text || "")) || /\b(ne|neler|hangi|ne kadar|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ozet|var mi|detay|goster|listele|kontrol et|incele|hesapla|toplam\w*)\b/.test(normalized);
+    const namesFinancialArea = /\b(birikim\w*|kategori\w*|harcama\w*|gider\w*|gelir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*|islem\w*|kayit\w*|mukerrer\w*|tasarruf\w*|ortalama\w*)\b/.test(normalized);
     return asksQuestion && namesFinancialArea;
   }
 
@@ -83,6 +105,11 @@
     const normalized = normalize(text);
     const genericTokens = new Set(["kredi", "kart", "karti", "banka", "bankasi", "hesap", "hesabi"]);
     const accounts = Array.isArray(paymentAccounts) ? paymentAccounts : [];
+    if (/\b(?:tum|butun)\s+(?:kredi\s+)?(?:kart\w*|hesap\w*)\b|\b(?:kartlarim\w*|hesaplarim\w*)\b/.test(normalized)) return null;
+    const lastFour = normalized.match(/\b\d{4}\b/g) || [];
+    const byDigits = accounts.filter(account => lastFour.includes(String(account.last4 || account.lastFour || "")));
+    if (byDigits.length === 1) return { account: byDigits[0] };
+    if (byDigits.length > 1) return { ambiguous: byDigits };
     const shortNames = new Set(accounts.flatMap((account) => normalize(account.name).split(" ")).filter((token) => token.length > 0 && token.length <= 2));
     const queryTokens = normalized.split(" ").filter((token) => (token.length >= 3 || shortNames.has(token)) && !genericTokens.has(token));
     const candidates = accounts.map((account) => {
@@ -118,7 +145,7 @@
   }
 
   function setStatus(message = "") {
-    status.textContent = message;
+    if (status.textContent !== message) status.textContent = message;
     status.hidden = !message;
   }
 
@@ -273,8 +300,7 @@
   }
 
   function stopAssistantSpeech() {
-    speechSession += 1;
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    speaker.cancel();
     assistantSpeaking = false;
     updateSpeakButton();
   }
@@ -316,6 +342,8 @@
     const today = getTurkeyTodayISO();
     const [year, month] = today.split("-").map(Number);
     const normalized = normalize(text);
+    const extended = getBudgetAssistantPeriodOverride(text, today, normalize);
+    if (extended) return extended;
     const explicitDates = getAssistantExplicitDatePeriod(text, today);
     if (explicitDates) return explicitDates;
     const allTime = /\b(genel|tum zaman|tum kayit|bugune kadar|simdiye kadar|hepsinde)\b/.test(normalized);
@@ -414,15 +442,7 @@
   }
 
   function getAssistantCategoryLimit(text) {
-    const normalized = normalize(text);
-    const numberWords = { bir: 1, iki: 2, uc: 3, dort: 4, bes: 5, alti: 6, yedi: 7, sekiz: 8, dokuz: 9, on: 10, yirmi: 20, otuz: 30, kirk: 40, elli: 50, altmis: 60, yetmis: 70, seksen: 80, doksan: 90, yuz: 100 };
-    const wordPattern = "bir|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|on|yirmi|otuz|kirk|elli|altmis|yetmis|seksen|doksan|yuz";
-    const count = new RegExp(`\\b(\\d{1,3}|(?:${wordPattern})(?:\\s+(?:${wordPattern}))?)\\s+(?:(?:adet|tane)\\s+)?kategori\\w*\\b`).exec(normalized);
-    if (!count) return 3;
-    const requested = /^\d+$/.test(count[1])
-      ? Number(count[1])
-      : count[1].split(" ").reduce((sum, word) => sum + numberWords[word], 0);
-    return Math.min(100, Math.max(1, requested));
+    return getBudgetAssistantCount(text, normalize, 3);
   }
 
   function getAssistantReport(text) {
@@ -438,7 +458,7 @@
     const accountLabel = account ? [account.bank, account.name].filter(Boolean).join(" ") : "";
     const periodRecords = (Array.isArray(transactions) ? transactions : []).filter((item) => isInAssistantPeriod(item.date, period));
     const records = account
-      ? periodRecords.filter((item) => String(item.paymentAccountId || "") === String(account.id || ""))
+      ? periodRecords.filter((item) => String(item.paymentAccountId || "") === String(account.id || "") || String(item.transferAccountId || "") === String(account.id || ""))
       : periodRecords;
     const totals = getTransactionTotals(records);
     const expenses = records.filter((item) => item.type === "expense");
@@ -567,6 +587,7 @@
 
   function hasExplicitPeriod(text) {
     const normalized = normalize(text);
+    if (getBudgetAssistantPeriodOverride(text, getTurkeyTodayISO(), normalize)) return true;
     if (getAssistantExplicitDatePeriod(text)) return true;
     return /\b(bugun|dun|bu ay\w*|gecen ay\w*|onceki ay\w*|son \w+ (gun\w*|hafta\w*|ay\w*)|gecen \w+ (gun\w*|hafta\w*|ay\w*)|bu hafta\w*|gecen hafta|onceki hafta|bu yil|genel|tum zaman|bugune kadar|simdiye kadar|20\d{2})\b|\b(ocak|subat|mart|nisan|mayis|haziran|temmuz|agustos|eylul|ekim|kasim|aralik)(?:da|de|ta|te|daki|deki|taki|teki)?\b/.test(normalized);
   }
@@ -625,6 +646,8 @@
     const accountWords = new Set((accountScope?.account ? [accountScope.account.name, accountScope.account.bank] : [])
       .flatMap((value) => normalize(value).split(" ")).filter(Boolean));
     const ignoredStems = ["kategori", "harcama", "gider", "gelir", "transfer", "aktar", "gonder", "tahsil", "maas", "islem", "kayit", "kayd", "listele", "goster", "getir", "yapt", "ett", "odeme", "alisveris"];
+    ignoredStems.push("hesab", "kart", "bugun", "dun");
+    "adet tane ilk peki olanlar daha detayli yirmi otuz kirk elli altmis yetmis seksen doksan yuz nakit havale eft birini ikisini ucunu dordunu besini altisini yedisini sekizini dokuzunu onunu yirmisini otuzunu".split(" ").forEach(word => ignored.add(word));
     ["nr", "nedir", "nelerdir", "yakin", "tarihli", "tarihte", "tarihteki", "tarihinde", "tarihindeki", "tarih", "guncel", "yeni", "en", "eklenme", "eklendigi", "zamanina", "tarihine", "tarihi", "kaydedilen", "secilen", "gore", "az", "dusuk", "yuksek", "buyuk", "kucuk", "tutarli", "tutarda", "azdan", "coga", "coktan", "aza", "buyukten", "kucuge", "kucukten", "buyuge", "arasinda", "arasi", "ila", "o", "ayin", "ayinda", "gunku", "gundeki", "gunu", "gununde", "gunundeki"].forEach((word) => ignored.add(word));
     const informativeTokens = normalized.split(" ").filter((token) => token.length >= 2
       && !/^\d+$/.test(token)
@@ -652,18 +675,18 @@
     const types = [
       [/\b(transfer\w*|aktarim\w*|aktard\w*|gonder\w*)\b/, "transfer"],
       [/\b(gelir\w*|maas\w*|kazanc\w*|tahsilat\w*)\b/, "income"],
-      [/\b(gider\w*|harcama\w*|alisveris\w*|odeme\w*|satin al\w*)\b/, "expense"],
+      [/\b(gider\w*|harcama\w*|harcad\w*|harcamis\w*|masraf\w*|alisveris\w*|odeme\w*|satin al\w*)\b/, "expense"],
     ].filter(([pattern]) => pattern.test(intentText)).map(([, value]) => value);
     let type = /\b(transfer\w*|aktarim\w*|aktard\w*|gonder\w*)\b/.test(intentText) ? "transfer"
       : /\b(gelir\w*|maas\w*|kazanc\w*|tahsilat\w*)\b/.test(intentText) ? "income"
-        : /\b(gider\w*|harcama\w*|alisveris\w*|odeme\w*|satin al\w*)\b/.test(intentText) ? "expense" : "";
+        : /\b(gider\w*|harcama\w*|harcad\w*|harcamis\w*|masraf\w*|alisveris\w*|odeme\w*|satin al\w*)\b/.test(intentText) ? "expense" : "";
     if (types.length > 1) type = "";
     if (!type && category && !types.length) {
       const isIncomeCategory = (transactionCategories?.income || []).some((item) => normalize(item) === normalize(category));
       const isExpenseCategory = (transactionCategories?.expense || []).some((item) => normalize(item) === normalize(category));
       if (isIncomeCategory !== isExpenseCategory) type = isIncomeCategory ? "income" : "expense";
     }
-    return { categories, category, explicitCategory, accountScope, queryTokens, type, types };
+    return { categories, category, explicitCategory, accountScope, queryTokens, type, types, paymentMethod: inferPaymentMethod(text) };
   }
 
   function assistantTokenMatches(queryToken, recordText) {
@@ -695,6 +718,11 @@
       const scopeDate = order === "created" ? (createdAt ? getTurkeyTodayISO(new Date(createdAt)) : "") : item.date;
       if (!isInAssistantPeriod(scopeDate, period)) return false;
       if (type && item.type !== type) return false;
+      if (query.paymentMethod) {
+        const source = paymentAccounts.find(account => String(account.id) === String(item.paymentAccountId));
+        const method = item.paymentMethod || (item.type === "transfer" ? "transfer" : source?.type);
+        if (method !== query.paymentMethod) return false;
+      }
       if (types.length > 1 && !types.includes(item.type)) return false;
       if (category && normalize(item.category) !== normalize(category) && findAssistantCategory(item.category, categories) !== category) return false;
       if (accountId && String(item.paymentAccountId || "") !== accountId && String(item.transferAccountId || "") !== accountId) return false;
@@ -756,9 +784,7 @@
     const recordWords = /\b(islem\w*|kayit\w*|kayd\w*|hareket\w*|gider\w*|gelir\w*|transfer\w*|harcama\w*|harcad\w*)\b/;
     if (!recordWords.test(normalized)) return null;
     if (/\b(kategori\w*|kalem\w*|baslik\w*|konu\w*)\b/.test(normalized) && !/\b(islem\w*|kayit\w*|kayd\w*|hareket\w*)\b/.test(normalized)) return null;
-    const words = { bir: 1, iki: 2, uc: 3, dort: 4, bes: 5, alti: 6, yedi: 7, sekiz: 8, dokuz: 9, on: 10, yirmi: 20, otuz: 30 };
-    const count = /\b(\d{1,3}|bir|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|on|yirmi|otuz)\s+(islem\w*|kayit\w*|kayd\w*|hareket\w*|gider\w*|gelir\w*|transfer\w*|harcama\w*)\b/.exec(normalized);
-    const limit = count ? Math.min(100, Math.max(1, Number(count[1]) || words[count[1]] || 10)) : 10;
+    const limit = getBudgetAssistantCount(text, normalize, 10);
     return { order: ascending ? "amountAsc" : "amountDesc", limit };
   }
 
@@ -766,8 +792,11 @@
     const ranking = getAssistantRecordRanking(text);
     if (ranking) return ranking.limit;
     const normalized = normalize(text);
-    const match = /\bson\s+(\d{1,3}|on)\s+(kayit\w*|kayd\w*|islem\w*|hareket\w*)\b/.exec(normalized);
-    if (match) return Math.min(100, Math.max(1, match[1] === "on" ? 10 : Number(match[1])));
+    if (/\bilk\s+(?:\d+|bir|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|on|yirmi|otuz)/.test(normalized)) return getBudgetAssistantCount(text, normalize, 10);
+    const requested = getBudgetAssistantCount(text, normalize, 0);
+    if (requested && /\b(islem\w*|kayit\w*|kayd\w*|hareket\w*)\b/.test(normalized)) return requested;
+    const match = /\bson\s+(?:\d{1,3}|bir|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|on|yirmi|otuz)(?:\s+\w+)?\s+(?:kayit\w*|kayd\w*|islem\w*|hareket\w*)\b/.exec(normalized);
+    if (match) return getBudgetAssistantCount(text, normalize, 10);
     return /\b(yakin(?: tarihli| tarihteki)?|en yeni|son|guncel) (kayit\w*|kayd\w*|islem\w*|hareket\w*)\b/.test(normalized) ? 10 : 0;
   }
 
@@ -807,7 +836,7 @@
         if (remaining > 0) rows.push({ date: installment.dueDate, title: `${item.person} · ${installment.number}/${item.installmentCount}. taksit`, amount: remaining, overdue: installment.dueDate < today });
       });
     });
-    transactions.filter((item) => item.isInstallment && !item.installmentCompleted).forEach((item) => {
+    transactions.filter((item) => item.type === "expense" && item.isInstallment && !item.installmentCompleted).forEach((item) => {
       rows.push({ date: item.date, title: `${item.title || item.category} · ${item.installmentNumber || 1}/${item.installmentCount || 1}. taksit`, amount: Number(item.amount || 0), overdue: String(item.date || "") < today });
     });
     const selected = period ? rows.filter((item) => isInAssistantPeriod(item.date, period))
@@ -831,8 +860,13 @@
   function getAssistantAssetReport(text) {
     let list = assets;
     const normalized = normalize(text);
-    const typeFilter = /\b(dolar|usd)\b/.test(normalized) ? "USD"
-      : /\b(euro|eur)\b/.test(normalized) ? "EUR"
+    const typeFilter = /\b(dolar\w*|usd)\b/.test(normalized) ? "USD"
+      : /\b(euro\w*|eur)\b/.test(normalized) ? "EUR"
+        : /\b(sterlin\w*|gbp)\b/.test(normalized) ? "GBP"
+          : /\b(bitcoin\w*|btc)\b/.test(normalized) ? "BTC"
+            : /\b(ethereum\w*|eth)\b/.test(normalized) ? "ETH"
+              : /\b(platin\w*|xpt)\b/.test(normalized) ? "XPT_GRAM"
+                : /\b(turk lirasi|tl birikim\w*)\b/.test(normalized) ? "TRY"
         : /\b(gumus|gumuslerim)\b/.test(normalized) ? "TR_GAG"
           : /\b(altin|altinlarim)\b/.test(normalized) ? "gold" : "";
     if (typeFilter === "gold") list = list.filter((item) => /altin/.test(normalize(getAssetDefinition(item.type).label)));
@@ -928,7 +962,9 @@
     const accountSpendingReport = /\b(en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk)\b/.test(normalized)
       && /\b(harc\w*|alisveris\w*)\b/.test(normalized)
       && !/\b(borc\w*|limit\w*|bakiye\w*)\b/.test(normalized);
-    if (isCardQuestion(text) && !accountSpendingReport) return "card";
+    const accountRecordQuestion = /\b(harc\w*|gider\w*|gelir\w*|transfer\w*|hareket\w*|islem\w*|kayit\w*|kart odeme\w*)\b/.test(normalized)
+      && !/\b(borc\w*|limit\w*|bakiye\w*)\b/.test(normalized);
+    if (isCardQuestion(text) && !accountSpendingReport && !accountRecordQuestion) return "card";
     if (/\b(bes|bireysel emeklilik|emeklilik birikim)\b/.test(normalized)) return "bes";
     if (/\b(birikim\w*|toplam servet\w*)\b/.test(normalized)) return "wealth";
     if (/\b(varlik\w*|portfoy|altinlarim|gumuslerim|dolarim|eurom)\b/.test(normalized)) return "assets";
@@ -951,6 +987,7 @@
   }
 
   function respondToFinanceQuestion(text) {
+    if (respondWithInsights(text)) return true;
     const intent = getAssistantFinanceIntent(text);
     if (intent === "card") {
       pendingFinanceQuestion = null;
@@ -1000,7 +1037,29 @@
     } else {
       return false;
     }
+    rememberReportQuestion(text);
     return true;
+  }
+
+  function rememberReportQuestion(text) {
+    awaitingReportContinue = false;
+    lastReportQuestion = /\b(ne sorabilirim|nasil|yardim|kullanim|soru ornekleri)\b/.test(normalize(text)) ? "" : String(text);
+  }
+
+  function resolveReportFollowup(text) {
+    if (!lastReportQuestion || pendingEntry || pendingFinanceQuestion) return text;
+    const normalized = normalize(text).replace(/^(peki|ya|bir de|ayrica)\s+/, "");
+    if (!/^(?:(?:bu|gecen|onceki|gelecek) (?:ay|hafta|yil)|bugun|dun|yarin|ilk [\p{L}\d ]+|en az olanlar|en cok olanlar|hepsini|daha detayli|detaylari|gelir\w*|gider\w*|transfer\w*)(?: icin| da| de| goster)?$/u.test(normalized)) return text;
+    let base = lastReportQuestion;
+    if (/^(gelir|gider|transfer)/.test(normalized)) base = base.replace(/\b(?:gelir|gider|transfer|harcama|harcad|harcamis)\S*/giu, "");
+    if (hasExplicitPeriod(text)) base = base
+      .replace(/\b\d{4}-\d{1,2}-\d{1,2}\b|\b\d{1,2}[./]\d{1,2}(?:[./]\d{4})?\b/g, " ")
+      .replace(/(?:bu|geçen|gecen|önceki|onceki|gelecek)\s+(?:ay\S*|hafta\S*|yıl\S*|yil\S*)|bugün|bugun|dün|dun|yarın|yarin|son\s+\S+\s+(?:gün\S*|gun\S*|hafta\S*|ay\S*)/giu, " ")
+      .replace(/(?:\d{1,2}\s+)?(?:ocak|şubat|subat|mart|nisan|mayıs|mayis|haziran|temmuz|ağustos|agustos|eylül|eylul|ekim|kasım|kasim|aralık|aralik)(?:\s+20\d{2})?/giu, " ");
+    if (/\ben az\b/.test(normalized)) base = base.replace(/en\s+(?:çok|cok|yüksek|yuksek|büyük|buyuk)/giu, "");
+    if (/\ben cok\b/.test(normalized)) base = base.replace(/en\s+(?:az|düşük|dusuk|küçük|kucuk)/giu, "");
+    if (/^ilk /.test(normalized)) base = base.replace(/(?:\d+|bir|iki|üç|uc|dört|dort|beş|bes|altı|alti|yedi|sekiz|dokuz|on|yirmi|otuz)(?:\s+(?:bir|iki|üç|uc|dört|dort|beş|bes))?\s+(?=(?:kategori|işlem|islem|kayıt|kayit|harcama))/giu, "");
+    return `${base} ${text}`;
   }
 
   function parseAmount(raw) {
@@ -1103,7 +1162,7 @@
 
   function inferPaymentMethod(text) {
     const normalized = normalize(text);
-    if (/\b(kredi karti\w*|credit card)\b/.test(normalized)) return "credit_card";
+    if (/\b(kredi karti\w*|kredi kartlar\w*|credit card)\b/.test(normalized)) return "credit_card";
     if (/\b(banka hesabi\w*|banka karti\w*|banka|iban|hesabimdan|hesabimla)\b/.test(normalized)) return "bank_account";
     if (/\b(havale|eft)\b/.test(normalized)) return "transfer";
     if (/\b(nakit|nakit olarak|pesin)\b/.test(normalized)) return "cash";
@@ -1318,11 +1377,13 @@
     if (added) {
       pendingEntry = null;
       pendingEntryStep = "";
+      pendingTopicChange = null; lastReportQuestion = ""; insights.reset(); awaitingNextEntry = true;
       messageList.querySelector("[data-assistant-pending]")?.remove();
       const description = draft.type === "transfer"
         ? `${formatEntryAccount(draft.paymentAccountId)} hesabından ${formatEntryAccount(draft.transferAccountId)} hesabına ${formatMoney(draft.amount)} transfer eklendi (${formatDate(draft.date)}).`
         : `${draft.category} kategorisinde ${draft.titleWasProvided !== false && draft.title ? `${draft.title} başlıklı ` : ""}${formatEntryAccount(draft.paymentAccountId) === "Hesap seçilmedi" ? paymentMethodLabel(draft.paymentMethod) : formatEntryAccount(draft.paymentAccountId)} ile yapılan ${formatMoney(draft.amount)} tutarındaki ${entryTypeLabel(draft.type).toLocaleLowerCase("tr-TR")} ${formatDate(draft.date)} tarihli olarak eklendi.`;
-      appendMessage(description);
+      appendMessage(`${description}\nBaşka bir işlem ekleyeyim mi?`);
+      addPromptButtons(["Evet, yeni işlem", "Hayır, bitir", "Başka konu"]);
     } else {
       pendingEntry = draft;
       appendMessage(entryFormStatus?.textContent || "Kayıt formu doğrulamasından geçmedi. Bilgileri düzenleyip yeniden deneyebiliriz.");
@@ -1338,6 +1399,7 @@
   function cancelEntryConversation() {
     pendingEntry = null;
     pendingEntryStep = "";
+    pendingTopicChange = null;
     messageList.querySelector("[data-assistant-pending]")?.remove();
     appendMessage("Kayıt taslağını iptal ettim; hiçbir hareket eklenmedi.");
   }
@@ -1548,10 +1610,12 @@
       addPromptButtons(assistantQuickPrompts);
       return;
     }
-    if (beginEntryConversation(text)) return;
+    if (respondWithInsights(text)) return;
+    if (beginEntryConversation(text)) { lastReportQuestion = ""; insights.reset(); return; }
     if (respondToFinanceQuestion(text)) return;
-    appendMessage("İsteğini kendi cümlenle anlatabilirsin. Kayıtlarında kategori, işyeri/başlık, tarih ve hesap eşleştiririm; belirsiz kalan bir bilgi varsa önce onu netleştiririm.");
-    addPromptButtons(assistantQuickPrompts);
+    appendMessage("Bu isteği güvenilir bir raporla eşleştiremedim. Dönemle birlikte gelir/gider, kategori, işyeri veya hesap adını belirtebilirsin. Kayıtlarında olmayan bir tutarı tahmin etmem. “Ne sorabilirim?” ile tüm konuları görebilirsin.");
+    lastReportQuestion = ""; awaitingReportContinue = false; insights.reset();
+    addPromptButtons(["Ne sorabilirim?", "Bu ayın özeti", "Bugünkü giderlerim neler?", "Gider ekle"]);
   }
 
   function sendAssistantInput(value = input.value, { focus = true } = {}) {
@@ -1571,11 +1635,39 @@
       endAssistantConversation();
       return;
     }
-    if (pendingEntry && isIndependentReportQuestion(message) && !hasExplicitEntryAction(message)) {
-      pendingEntry = null;
-      pendingEntryStep = "";
-      messageList.querySelector("[data-assistant-pending]")?.remove();
-      if (!respondToFinanceQuestion(message)) appendMessage(getAssistantReport(message));
+    const normalized = normalize(message);
+    if (awaitingNextEntry) {
+      awaitingNextEntry = false;
+      if (/^(evet|tamam|devam|devam et|evet yeni islem|yeni islem)$/.test(normalized)) {
+        beginEntryConversation("Yeni işlem ekle"); return;
+      }
+      if (/^(hayir|hayir bitir|istemiyorum|bitti)$/.test(normalized)) {
+        appendMessage("Tamam, kayıt işlemini bitirdik. Başka bir konuda sorabilirsin."); addPromptButtons(assistantQuickPrompts); return;
+      }
+    }
+    if (pendingTopicChange) {
+      const nextQuestion = pendingTopicChange.message;
+      if (/^(evet|tamam|devam|isleme devam et|bu isleme devam et|devam et)$/.test(normalized)) {
+        pendingTopicChange = null;
+        appendMessage("Tamam, yarım kalan işleme devam edelim. Henüz kaydetmedim.");
+        advanceEntryConversation();
+      } else if (/^(hayir|yeni soruya gec|yeni konuya gec|baska konu|yeni sorum|soruma gec)$/.test(normalized)) {
+        pendingTopicChange = null; pendingEntry = null; pendingEntryStep = ""; pendingFinanceQuestion = null; lastReportQuestion = ""; insights.reset();
+        messageList.querySelector("[data-assistant-pending]")?.remove();
+        appendMessage("Önceki taslak kaydedilmedi. Yeni soruna geçiyorum.");
+        respondToCommand(nextQuestion);
+      } else if (/^(iptal|vazgec|hepsini iptal et)$/.test(normalized)) {
+        pendingTopicChange = null; cancelEntryConversation(); lastReportQuestion = ""; insights.reset();
+      } else {
+        appendMessage("Yarım kalan işleme devam edeyim mi, yoksa yeni soruna mı geçeyim? “Evet” yalnızca işleme devam eder; kayıt onayı değildir.");
+        addPromptButtons(["İşleme devam et", "Yeni soruya geç", "Hepsini iptal et"]);
+      }
+      return;
+    }
+    if (pendingEntry && ((isIndependentReportQuestion(message) || /\b(ne sorabilirim|nasil|yardim)\b/.test(normalize(message))) && !hasExplicitEntryAction(message) || /\b(gelir|gider|transfer) ekle\b/.test(normalized))) {
+      pendingTopicChange = { message };
+      appendMessage("Yarım kalan bir kayıt var. Bu işleme devam edeyim mi, yoksa yeni soruna mı geçeyim? Onaylamadığın kayıt kaydedilmedi.");
+      addPromptButtons(["İşleme devam et", "Yeni soruya geç", "Hepsini iptal et"]);
     } else if (pendingFinanceQuestion?.kind === "recordOrder") {
       const order = getAssistantRecordOrder(message) || (/\b(secilen|kaydedilen) tarihe\b/.test(normalize(message)) ? "date" : "");
       if (order) {
@@ -1611,7 +1703,17 @@
     } else if (pendingEntry) {
       applyStepAnswer(message);
     } else {
-      respondToCommand(message);
+      if (/^(devam|devam et|evet|tamam)$/.test(normalized) && lastReportQuestion) {
+        if (awaitingReportContinue) respondToCommand(resolveReportFollowup("Daha detaylı"));
+        else {
+          awaitingReportContinue = true;
+          appendMessage("Son raporun ayrıntılarıyla devam edeyim mi? Tarihi veya istediğin adedi söyleyebilir, “başka konu” da diyebilirsin.");
+          addPromptButtons(["Daha detaylı", "Peki geçen ay?", "Başka konu"]);
+        }
+      } else if (/^(yeni konu|baska konu|konuyu degistir)$/.test(normalized)) {
+        lastReportQuestion = ""; awaitingReportContinue = false; pendingFinanceQuestion = null; insights.reset();
+        appendMessage("Tamam, yeni konuya geçelim. Ne hakkında yardımcı olayım?"); addPromptButtons(assistantQuickPrompts);
+      } else respondToCommand(resolveReportFollowup(message));
     }
     if (focus && window.innerWidth > 980) input.focus({ preventScroll: true });
   }
@@ -1682,7 +1784,11 @@
     pendingEntry = null;
     pendingEntryStep = "";
     pendingFinanceQuestion = null;
+    pendingTopicChange = null;
+    lastReportQuestion = "";
+    awaitingNextEntry = false;
     lastCategoryReport = null;
+    insights.reset();
     messageList.querySelector("[data-assistant-pending]")?.remove();
     microphone.cancel();
     micButton.classList.remove("is-listening");
@@ -1792,29 +1898,8 @@
       stopAssistantSpeech();
       return;
     }
-    speechSession += 1;
-    const session = speechSession;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(prepareAssistantSpeech(latestSpokenReply));
-    utterance.lang = "tr-TR";
-    utterance.onstart = () => {
-      if (session !== speechSession) return;
-      assistantSpeaking = true;
-      updateSpeakButton();
-    };
-    utterance.onend = () => {
-      if (session !== speechSession) return;
-      assistantSpeaking = false;
-      updateSpeakButton();
-    };
-    utterance.onerror = () => {
-      if (session !== speechSession) return;
-      assistantSpeaking = false;
-      updateSpeakButton();
-    };
-    assistantSpeaking = true;
-    updateSpeakButton();
-    window.speechSynthesis.speak(utterance);
+    microphone.cancel();
+    speaker.read(prepareAssistantSpeech(latestSpokenReply));
   });
   if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
     speakButton.disabled = true;
@@ -1826,9 +1911,30 @@
     onSend: (text) => sendAssistantInput(text, { focus: false }),
     onStatus: setStatus,
     stopPlayback: stopAssistantSpeech,
+    onTranscript: (text, active) => {
+      panel.querySelector("[data-assistant-voice-preview]").hidden = !active;
+      panel.querySelector("[data-assistant-transcript]").textContent = text || "Dinliyorum…";
+    },
   });
+  const speaker = createBudgetAssistantSpeaker({
+    onState: speaking => { assistantSpeaking = speaking; updateSpeakButton(); },
+    onError: () => setStatus("Sesli yanıt okunamadı. Yanıtı yazılı olarak inceleyebilir veya tekrar deneyebilirsin."),
+  });
+  panel.querySelector("[data-assistant-cancel-voice]").addEventListener("click", () => { microphone.cancel(); setStatus("Sesli mesaj iptal edildi."); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) { microphone.cancel(); stopAssistantSpeech(); } });
 
+  let assistantOwner = currentUser?.uid || "";
   const updateVisibility = () => {
+    const owner = currentUser?.uid || "";
+    if (owner !== assistantOwner) {
+      assistantOwner = owner;
+      pendingEntry = null; pendingEntryStep = ""; pendingTopicChange = null; pendingFinanceQuestion = null;
+      lastReportQuestion = ""; lastCategoryReport = null; awaitingReportContinue = false; awaitingNextEntry = false; insights.reset();
+      microphone.cancel(); stopAssistantSpeech(); setStatus(""); input.value = "";
+      messageList.replaceChildren();
+      appendMessage("Merhaba! Bu oturumdaki kayıtların hakkında sorabilir veya yeni işlem ekleyebilirsin.");
+      addPromptButtons(assistantQuickPrompts);
+    }
     const modalOpen = [...document.querySelectorAll(".modal-backdrop")].some((modal) => !modal.hidden);
     const settingsOpen = document.documentElement.dataset.activeView === "settingsView";
     const visible = Boolean(appShell && !appShell.hidden && !document.documentElement.classList.contains("auth-logged-out") && !modalOpen && !settingsOpen);
@@ -1840,6 +1946,7 @@
   window.visualViewport?.addEventListener("resize", syncAssistantViewport);
   window.visualViewport?.addEventListener("scroll", syncAssistantViewport);
   window.addEventListener("resize", syncAssistantViewport);
+  window.addEventListener("pagehide", () => { microphone.cancel(); stopAssistantSpeech(); });
   if (appShell && window.MutationObserver) {
     new MutationObserver(updateVisibility).observe(appShell, { attributes: true, attributeFilter: ["hidden"] });
     new MutationObserver(updateVisibility).observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-active-view"] });

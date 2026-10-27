@@ -1,11 +1,12 @@
 // ACIKLAMA NOTU: Bu dosyada kod bloklarinin yaninda ne ise yaradiklarini anlatan yorumlar vardir.
 // ACIKLAMA: Service worker tarafinda kullanilan aktif cache adini tutar.
-const CACHE_NAME = "akis-butce-v439";
+const CACHE_NAME = "akis-butce-v441";
 // ACIKLAMA: Uygulamanin cevrimdisi acilmasi icin cachelenecek temel dosyalari listeler.
 const APP_ASSETS = [
-  "./assets/css/16-budget-assistant.css?v=428",
-  "./assets/js/12-budget-assistant.js?v=438",
-  "./assets/js/16-assistant-microphone.js?v=430",
+  "./assets/css/16-budget-assistant.css?v=441",
+  "./assets/js/17-assistant-insights.js?v=441",
+  "./assets/js/12-budget-assistant.js?v=441",
+  "./assets/js/16-assistant-microphone.js?v=441",
   "./assets/css/19-controls-mobile-layout.css?v=430",
   "./assets/css/20-mobile-corrections.css?v=436",
   "./assets/css/21-card-help-layout.css?v=432",
