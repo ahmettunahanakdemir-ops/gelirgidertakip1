@@ -1397,11 +1397,42 @@
   }
 
   function cancelEntryConversation() {
+    const hadEntry = Boolean(pendingEntry);
+    const hadPending = Boolean(pendingEntry || pendingTopicChange || pendingFinanceQuestion || awaitingNextEntry || awaitingReportContinue);
     pendingEntry = null;
     pendingEntryStep = "";
     pendingTopicChange = null;
+    pendingFinanceQuestion = null;
+    awaitingNextEntry = false;
+    awaitingReportContinue = false;
+    lastReportQuestion = "";
+    lastCategoryReport = null;
+    insights.reset();
+    microphone.cancel();
+    stopAssistantSpeech();
     messageList.querySelector("[data-assistant-pending]")?.remove();
-    appendMessage("Kayıt taslağını iptal ettim; hiçbir hareket eklenmedi.");
+    messageList.querySelectorAll(".budget-assistant-prompts").forEach(group => group.remove());
+    appendMessage(hadEntry ? "Kayıt taslağını iptal ettim; hiçbir hareket eklenmedi."
+      : hadPending ? "Bekleyen işlemi iptal ettim. Daha önce kaydedilmiş kayıtların değişmedi."
+        : "İptal edilecek açık bir kayıt taslağı yok. Daha önce kaydedilmiş kayıtların değişmedi.");
+    addPromptButtons(["Gider ekle", "Gelir ekle", "Bu ayın özeti"]);
+  }
+
+  function isAssistantCancelNegation(text) {
+    return /\b(iptal\s*(?:etme|etmeyelim|etmeyin|etmeyiniz)|vaz\s*gecme|vaz\s*gecmeyelim|vaz\s*gecmiyorum|iptal (?:etmek )?istemiyorum)\b/.test(normalize(text));
+  }
+
+  function isAssistantCancelCommand(text) {
+    const normalized = normalize(text);
+    if (/\b(nasil|nereden|nedir|ne demek)\b/.test(normalized)) return false;
+    if (isAssistantCancelNegation(text)) return false;
+    return /\b(iptal\s*(?:et|edelim|edin|etsene|edip|eder misin|eder misiniz|edebilir misin|etmek istiyorum)|vaz\s*gec(?:tim|elim|in|iniz)?|bos\s*ver|kaydetme(?:yin|yelim)?|ekleme(?:yin|yelim)?|(?:kaydetmek|eklemek) istemiyorum)\b/.test(normalized)
+      || /\biptal$/.test(normalized)
+      || /\b(?:islemi|kaydi|taslagi) durdur\b/.test(normalized);
+  }
+
+  function isAssistantSaveConfirmation(text) {
+    return /^(?:evet|tamam|onayliyorum|onayla|kaydet|ekle)(?: (?:bu|kaydi|islemi|kaydet|ekle|onayla|lutfen))*$/.test(normalize(text));
   }
 
   function advanceEntryConversation() {
@@ -1469,7 +1500,7 @@
   function applyStepAnswer(text) {
     const draft = pendingEntry;
     const normalized = normalize(text);
-    if (/\b(iptal|vazgec|vazgeç|bosver|boşver)\b/.test(normalized)) {
+    if (isAssistantCancelCommand(text)) {
       cancelEntryConversation();
       return;
     }
@@ -1636,6 +1667,15 @@
       return;
     }
     const normalized = normalize(message);
+    if (isAssistantCancelCommand(message)) {
+      cancelEntryConversation();
+      return;
+    }
+    if (pendingEntry && isAssistantCancelNegation(message)) {
+      appendMessage("İptal etmedim; taslak duruyor. Kaydetmeden önce işleme devam edelim.");
+      advanceEntryConversation();
+      return;
+    }
     if (awaitingNextEntry) {
       awaitingNextEntry = false;
       if (/^(evet|tamam|devam|devam et|evet yeni islem|yeni islem)$/.test(normalized)) {
@@ -1690,12 +1730,12 @@
       }
     } else if (pendingEntry && pendingEntryStep === "confirm") {
       const normalized = normalize(message);
-      if (/\b(evet|onayla|kaydet|ekle|tamam)\b/.test(normalized)) {
-        savePendingEntry();
-      } else if (/\b(hayir|iptal|vazgec|vazgeç)\b/.test(normalized)) {
+      if (/^hayir$/.test(normalized)) {
         cancelEntryConversation();
-      } else if (/\b(duzenle|degistir|değiştir)\b/.test(normalized)) {
+      } else if (/\b(duzenle|degistir|duzelt)\b/.test(normalized)) {
         editPendingEntry();
+      } else if (isAssistantSaveConfirmation(message)) {
+        savePendingEntry();
       } else {
         appendMessage("Bu bilgileri kaydedeyim mi? Kaydetmek için “Evet”, değiştirmek için “Düzenle” diyebilirsin.");
         addPromptButtons(["Evet, kaydet", "Düzenle", "Vazgeç"]);
@@ -1805,13 +1845,25 @@
 
   const launcherPositionKey = "akisButceAssistantLauncherPositionV1";
   let launcherDrag = null;
-  let suppressLauncherClick = false;
+  let suppressLauncherClickUntil = 0;
 
   function clampLauncherPosition(left, top) {
     const size = launcher.getBoundingClientRect();
+    const rootStyle = getComputedStyle(document.documentElement);
+    const safe = (name) => Number.parseFloat(rootStyle.getPropertyValue(name)) || 0;
+    const safeLeft = document.documentElement.dataset.mobilePlatform === "ios" ? safe("--assistant-safe-left") : 0;
+    const safeRight = document.documentElement.dataset.mobilePlatform === "ios" ? safe("--assistant-safe-right") : 0;
+    const safeTop = document.documentElement.dataset.mobilePlatform === "ios" ? safe("--assistant-safe-top") : 0;
+    const safeBottom = document.documentElement.dataset.mobilePlatform === "ios" ? safe("--assistant-safe-bottom") : 0;
+    const dock = document.querySelector(".mobile-dock");
+    const dockRect = dock?.getClientRects().length ? dock.getBoundingClientRect() : null;
+    const bottom = Math.min(
+      window.innerHeight - size.height - 8 - safeBottom,
+      dockRect ? dockRect.top - size.height - 12 : Infinity,
+    );
     return {
-      left: Math.max(8, Math.min(window.innerWidth - size.width - 8, left)),
-      top: Math.max(8, Math.min(window.innerHeight - size.height - 8, top)),
+      left: Math.max(8 + safeLeft, Math.min(window.innerWidth - size.width - 8 - safeRight, left)),
+      top: Math.max(8 + safeTop, Math.min(bottom, top)),
     };
   }
 
@@ -1838,44 +1890,44 @@
   launcher.addEventListener("pointerdown", (event) => {
     if (!event.isPrimary || event.button !== 0) return;
     const rect = launcher.getBoundingClientRect();
-    launcherDrag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, left: rect.left, top: rect.top, moved: false };
-    launcher.setPointerCapture(event.pointerId);
+    launcherDrag = { pointerId: event.pointerId, pointerType: event.pointerType, startX: event.clientX, startY: event.clientY, left: rect.left, top: rect.top, moved: false };
+    try { launcher.setPointerCapture(event.pointerId); } catch { }
   });
   launcher.addEventListener("pointermove", (event) => {
     if (!launcherDrag || event.pointerId !== launcherDrag.pointerId) return;
     const dx = event.clientX - launcherDrag.startX;
     const dy = event.clientY - launcherDrag.startY;
-    if (!launcherDrag.moved && Math.hypot(dx, dy) < 7) return;
+    const dragThreshold = launcherDrag.pointerType === "touch" ? 3 : 7;
+    if (!launcherDrag.moved && Math.hypot(dx, dy) < dragThreshold) return;
     launcherDrag.moved = true;
     event.preventDefault();
     launcher.classList.add("is-dragging");
     setLauncherPosition(launcherDrag.left + dx, launcherDrag.top + dy);
   });
-  const finishLauncherDrag = (event, persist) => {
+  const finishLauncherDrag = (event) => {
     if (!launcherDrag || event.pointerId !== launcherDrag.pointerId) return;
     const drag = launcherDrag;
     launcherDrag = null;
     launcher.classList.remove("is-dragging");
     if (drag.moved) {
       const rect = launcher.getBoundingClientRect();
-      setLauncherPosition(rect.left, rect.top, persist);
-      suppressLauncherClick = true;
-      setTimeout(() => { suppressLauncherClick = false; }, 0);
+      setLauncherPosition(rect.left, rect.top, true);
+      suppressLauncherClickUntil = Date.now() + 500;
     }
   };
-  launcher.addEventListener("pointerup", (event) => finishLauncherDrag(event, true));
-  launcher.addEventListener("pointercancel", (event) => finishLauncherDrag(event, false));
+  launcher.addEventListener("pointerup", finishLauncherDrag);
+  launcher.addEventListener("pointercancel", finishLauncherDrag);
+  launcher.addEventListener("lostpointercapture", finishLauncherDrag);
   window.addEventListener("resize", () => {
-    if (launcher.style.left && launcher.style.top) {
+    if (launcher.getClientRects().length && launcher.style.left && launcher.style.top) {
       const rect = launcher.getBoundingClientRect();
       setLauncherPosition(rect.left, rect.top, true);
     }
   });
   launcher.addEventListener("click", (event) => {
-    if (suppressLauncherClick) {
+    if (event.detail !== 0 && Date.now() < suppressLauncherClickUntil) {
       event.preventDefault();
       event.stopPropagation();
-      suppressLauncherClick = false;
       return;
     }
     panel.hidden ? openAssistant() : closeAssistant();

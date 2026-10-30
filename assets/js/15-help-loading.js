@@ -37,7 +37,35 @@ function createBudgetHelpContent() {
     const hint = document.createElement("p");
     hint.className = "budget-help-tip";
     hint.textContent = `İpucu: ${tip}`;
-    item.append(summary, text, hint);
+    const body = document.createElement("div");
+    body.className = "budget-help-topic-body";
+    body.append(text, hint);
+    item.append(summary, body);
+    let animation = null;
+    let targetOpen = false;
+    summary.addEventListener("click", event => {
+      event.preventDefault();
+      targetOpen = animation ? !targetOpen : !item.open;
+      const startHeight = item.open ? body.getBoundingClientRect().height : 0;
+      animation?.cancel();
+      animation = null;
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches || typeof body.animate !== "function") {
+        item.open = targetOpen;
+        return;
+      }
+      item.open = true;
+      const next = body.animate([
+        { height: `${startHeight}px`, opacity: startHeight ? 1 : 0 },
+        { height: `${targetOpen ? body.scrollHeight : 0}px`, opacity: targetOpen ? 1 : 0 },
+      ], { duration: 180, easing: "cubic-bezier(.2,.75,.25,1)", fill: "both" });
+      animation = next;
+      next.onfinish = () => {
+        if (animation !== next) return;
+        item.open = targetOpen;
+        animation = null;
+        next.cancel();
+      };
+    });
     content.append(item);
   });
   return content;

@@ -2,6 +2,8 @@
 // ACIKLAMA: Bu dosya ayrilan JS yapisinin bir parcasidir; index.html icindeki yukleme sirasi onemlidir.
 
 // ACIKLAMA: CSS yuklenmeden once kayitli tema tercihini uygular; boylece tema gecisinde ekran parlamasi azalir.
+document.documentElement.dataset.mobilePlatform = /iPhone|iPad|iPod/.test(navigator.userAgent)
+  || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ? "ios" : "other";
 try {
   const savedTheme = localStorage.getItem("akis-budget-theme");
   if (savedTheme === "system") {

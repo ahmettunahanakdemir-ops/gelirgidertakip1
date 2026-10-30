@@ -1,4 +1,8 @@
 function createBudgetMicrophone({ button, Recognition, onSend, onStatus, stopPlayback, onTranscript = () => {} }) {
+  const singlePassDevice = typeof navigator !== "undefined" && (
+    /iPhone|iPad|iPod/i.test(navigator.userAgent || "") ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
   let session = null;
   let press = null;
   let ignoreClickUntil = 0;
@@ -82,7 +86,7 @@ function createBudgetMicrophone({ button, Recognition, onSend, onStatus, stopPla
       engine = new Recognition();
       state.engine = engine;
       engine.lang = "tr-TR";
-      engine.continuous = true;
+      engine.continuous = !state.singlePass;
       engine.interimResults = true;
       engine.maxAlternatives = 1;
       engine.onstart = () => {
@@ -113,6 +117,7 @@ function createBudgetMicrophone({ button, Recognition, onSend, onStatus, stopPla
       };
       engine.onerror = (event) => {
         if (session !== state || state.done || state.engine !== engine || event.error === "no-speech") return;
+        if (state.stopping && event.error === "aborted") return;
         reset(state);
         try { engine.abort(); } catch { }
         const messages = {
@@ -127,10 +132,19 @@ function createBudgetMicrophone({ button, Recognition, onSend, onStatus, stopPla
       engine.onend = () => {
         if (session !== state || state.done || state.engine !== engine) return;
         clearTimer(state, "startTimer");
+        if (state.stopping) { commit(state); return; }
+        if (state.singlePass) {
+          clearTimer(state, "silenceTimer");
+          clearTimer(state, "speechTimer");
+          state.stopping = true;
+          visual("processing");
+          onStatus("Metne çevriliyor…");
+          state.finalTimer = window.setTimeout(() => commit(state), 180);
+          return;
+        }
         state.before = join(state.before, state.current);
         state.current = "";
         state.engine = null;
-        if (state.stopping) { commit(state); return; }
         if (++state.retries > 3) { cancel(); onStatus("Ses tanıma sürekli kesiliyor. İzinleri ve bağlantıyı kontrol edip tekrar dene."); return; }
         visual("starting");
         // Mobile engines may end a segment even with continuous recognition enabled.
@@ -154,7 +168,7 @@ function createBudgetMicrophone({ button, Recognition, onSend, onStatus, stopPla
     if (session) return;
     if (!Recognition) { onStatus("Bu tarayıcıda ses tanıma kullanılamıyor. Mesajını yazabilirsin."); return; }
     stopPlayback();
-    session = { engine: null, before: "", current: "", done: false, stopping: false, retries: 0, silenceTimer: null, restartTimer: null, finalTimer: null, speechTimer: null, startTimer: null, hardTimer: null };
+    session = { engine: null, before: "", current: "", done: false, stopping: false, singlePass: singlePassDevice, retries: 0, silenceTimer: null, restartTimer: null, finalTimer: null, speechTimer: null, startTimer: null, hardTimer: null };
     visual("starting"); onTranscript("", true);
     session.hardTimer = window.setTimeout(finish, 90000);
     onStatus("Mikrofon açılıyor…");

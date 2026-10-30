@@ -1,0 +1,61 @@
+/* Keep headers stable while only incoming settings content animates. */
+html.modern-budget #settingsView .preferences-subpage {
+  animation: none !important;
+}
+.budget-help-topic-body { overflow: hidden; }
+.budget-help-content summary svg:last-child { transition: transform 180ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .budget-help-content summary svg:last-child { transition: none; }
+}
+
+@media (max-width: 980px) {
+  html.modern-budget[data-mobile-platform="ios"] {
+    --ios-safe-top: env(safe-area-inset-top, 0px);
+    --ios-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --ios-safe-left: env(safe-area-inset-left, 0px);
+    --ios-safe-right: env(safe-area-inset-right, 0px);
+  }
+
+  html.modern-budget[data-mobile-platform="ios"] body #appShell.app-shell > .workspace {
+    padding-top: 0 !important;
+    padding-left: max(16px, var(--ios-safe-left)) !important;
+    padding-right: max(16px, var(--ios-safe-right)) !important;
+    padding-bottom: calc(82px + var(--ios-safe-bottom)) !important;
+  }
+
+  /* Apply the safe top inset once, inside the sticky toolbar. */
+  html.modern-budget[data-mobile-platform="ios"] body #appShell.app-shell > .workspace > .shell-toolbar {
+    padding-top: calc(6px + var(--ios-safe-top)) !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  html.modern-budget[data-mobile-platform="ios"] .mobile-dock { bottom: calc(6px + var(--ios-safe-bottom)) !important; }
+  html.modern-budget[data-mobile-platform="ios"] .budget-assistant-launcher { bottom: calc(82px + var(--ios-safe-bottom)); }
+
+  html.modern-budget[data-mobile-platform="ios"][data-active-view="settingsView"] body #appShell.app-shell > .workspace {
+    padding-top: calc(6px + var(--ios-safe-top)) !important;
+    padding-bottom: calc(6px + var(--ios-safe-bottom)) !important;
+  }
+
+  html.modern-budget[data-mobile-platform="ios"] #settingsView.active {
+    min-height: calc(100dvh - var(--ios-safe-top) - var(--ios-safe-bottom) - 12px);
+  }
+
+  html.modern-budget[data-mobile-platform="ios"] #settingsView [data-settings-page="help"] {
+    padding-top: calc(6px + var(--ios-safe-top)) !important;
+    padding-bottom: calc(6px + var(--ios-safe-bottom)) !important;
+    padding-left: max(16px, var(--ios-safe-left)) !important;
+    padding-right: max(16px, var(--ios-safe-right)) !important;
+  }
+
+  html.modern-budget[data-mobile-platform="ios"] .modal-backdrop {
+    padding-top: max(6px, var(--ios-safe-top)) !important;
+    padding-bottom: max(6px, var(--ios-safe-bottom)) !important;
+  }
+
+  html.modern-budget[data-mobile-platform="ios"] .login-screen {
+    padding-top: max(8px, var(--ios-safe-top));
+    padding-bottom: max(8px, var(--ios-safe-bottom));
+  }
+}

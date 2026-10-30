@@ -3,6 +3,9 @@
 
 const USERNAME_LOGIN_ALIASES_KEY = "akis-budget-username-login-aliases-v1";
 let usernameLoginAliases = null;
+let authStateChangeSequence = 0;
+let userProfileCloudSyncTimer = null;
+let authProfileHydrationPending = false;
 
 function initCloud() {
   renderAuthState();
@@ -905,6 +908,15 @@ function getUserDisplayName(user = currentUser) {
 
 // ACIKLAMA: handleAuthStateChanged fonksiyonunun Turkce karsiligi "handle kimlik dogrulama durum changed"; Firebase veya kimlik dogrulama islemlerini yonetir.
 async function handleAuthStateChanged(user) {
+  const stateChangeSequence = ++authStateChangeSequence;
+  const isCurrentStateChange = () => stateChangeSequence === authStateChangeSequence;
+  authProfileHydrationPending = false;
+
+  if (userProfileCloudSyncTimer) {
+    window.clearTimeout(userProfileCloudSyncTimer);
+    userProfileCloudSyncTimer = null;
+  }
+
   if (cloudUnsubscribe) {
     cloudUnsubscribe();
     cloudUnsubscribe = null;
@@ -957,6 +969,7 @@ async function handleAuthStateChanged(user) {
   // ACIKLAMA: anonymousLocalTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const anonymousLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
   currentUser = user;
+  authProfileHydrationPending = true;
   setBudgetValuesStatus("loading");
   rememberUsernameLogin(user);
   deletedTransactionIds = loadDeletedTransactionIds();
@@ -1003,10 +1016,12 @@ async function handleAuthStateChanged(user) {
   persistTransactionCategories({ syncCloud: false });
   syncCategorySelects();
   renderAuthState();
-    render();
-    cloudStatus.textContent = "Bulut kayıtları yükleniyor...";
+  render();
+  setBudgetValuesStatus("ready");
+  cloudStatus.textContent = "Yerel kayıtlar hazır; canlı veriler getiriliyor...";
 
   try {
+    subscribeCloudTransactions(user.uid);
     const cloudProfilePromise = fetchCloudProfile(user.uid, { source: "server" })
       .catch(() => fetchCloudProfile(user.uid));
     const cloudTransactionsPromise = fetchCloudTransactions(user.uid, { source: "server" })
@@ -1015,6 +1030,8 @@ async function handleAuthStateChanged(user) {
       cloudProfilePromise,
       cloudTransactionsPromise,
     ]);
+    if (!isCurrentStateChange() || currentUser?.uid !== user.uid) return;
+
     updateCloudBackupStatus(cloudProfile);
     applyCloudProfileContactInfo(cloudProfile);
     applyDeletedTransactionState(readCloudDeletedTransactionState(cloudProfile), anonymousDeletedTransactionState);
@@ -1028,7 +1045,7 @@ async function handleAuthStateChanged(user) {
     // ACIKLAMA: cloudTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
     const cloudTransactions = mergeTransactions(cloudProfileTransactions, cloudCollectionTransactions);
     // ACIKLAMA: localTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
-    const localTransactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions);
+    const localTransactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions, transactions);
     // ACIKLAMA: localTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
     const localTransactionsUpdatedAt = Math.max(
       userLocalTransactionsUpdatedAt,
@@ -1043,14 +1060,15 @@ async function handleAuthStateChanged(user) {
 
     transactions = mergeTransactions(cloudTransactions, localTransactions);
     assets = applyDeletedProfileTombstones(
-      mergeVersionedRecordsById(readCloudAssets(cloudProfile.assets), userLocalAssets, anonymousLocalAssets),
+      mergeVersionedRecordsById(readCloudAssets(cloudProfile.assets), userLocalAssets, anonymousLocalAssets, assets),
       deletedAssetTombstones
     );
     besAccounts = applyDeletedProfileTombstones(
       mergeVersionedRecordsById(
         readCloudBesAccounts(cloudProfile.besAccounts),
         userLocalBesAccounts,
-        anonymousLocalBesAccounts
+        anonymousLocalBesAccounts,
+        besAccounts
       ),
       deletedBesTombstones
     );
@@ -1058,19 +1076,22 @@ async function handleAuthStateChanged(user) {
       mergeVersionedRecordsById(
         buluttanBorcAlacakKayitlariniOku(cloudProfile.debtReceivables),
         userLocalDebtRecords,
-        anonymousLocalDebtRecords
+        anonymousLocalDebtRecords,
+        borcAlacakKayitlari
       ),
       silinenBorcAlacakIzleri
     );
     paymentAccounts = mergeRecordsById(
       readCloudPaymentAccounts(cloudProfile.paymentAccounts),
       userLocalPaymentAccounts,
-      anonymousLocalPaymentAccounts
+      anonymousLocalPaymentAccounts,
+      paymentAccounts
     );
     transactionCategories = mergeCategoryStates(
       readCloudTransactionCategories(cloudProfile.transactionCategories),
       userLocalCategories,
       anonymousLocalCategories,
+      transactionCategories,
       getTransactionCategoriesFromRecords(transactions)
     );
     // ACIKLAMA: pendingLocalTransactionUpserts degiskeninin Turkce karsiligi "bekleyen yerel islem upserts"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
@@ -1093,6 +1114,7 @@ async function handleAuthStateChanged(user) {
     persistTransactionCategories({ syncCloud: false });
     syncCategorySelects();
     render();
+    authProfileHydrationPending = false;
     if (currentUser?.uid === user.uid) setBudgetValuesStatus("ready");
     // ACIKLAMA: syncTasks degiskeninin Turkce karsiligi "esitle tasks"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const syncTasks = [syncUserProfileToCloud()];
@@ -1106,13 +1128,14 @@ async function handleAuthStateChanged(user) {
       clearTransactionsCloudFullSyncRequired();
       clearTransactionsCloudDirty();
     }
+    bindPendingCloudSyncEvents();
     // ACIKLAMA: syncResults degiskeninin Turkce karsiligi "esitle results"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const syncResults = await Promise.allSettled(syncTasks);
+    if (!isCurrentStateChange() || currentUser?.uid !== user.uid) return;
+
     // ACIKLAMA: failedSync degiskeninin Turkce karsiligi "failed esitle"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const failedSync = syncResults.find((result) => result.status === "rejected");
-    subscribeCloudTransactions(user.uid);
     subscribeCloudProfile(user.uid);
-    bindPendingCloudSyncEvents();
     retryPendingTransactionsCloudSync();
     if (failedSync) {
       cloudStatus.textContent = `Bulut eşitleme tamamlanamadı: ${failedSync.reason?.message || "Bilinmeyen hata"}`;
@@ -1124,6 +1147,9 @@ async function handleAuthStateChanged(user) {
     return;
     cloudStatus.textContent = `${transactions.length} kayıt Firebase profil yedeğiyle eşitlendi.`;
   } catch (error) {
+    if (!isCurrentStateChange() || currentUser?.uid !== user.uid) return;
+
+    authProfileHydrationPending = false;
     cloudStatus.textContent = `Bulut kayıtları yüklenemedi: ${error.message}`;
     if (currentUser?.uid === user.uid) setBudgetValuesStatus(transactions.length || assets.length || besAccounts.length || paymentAccounts.length ? "ready" : "error");
   }
@@ -1408,7 +1434,7 @@ function subscribeCloudTransactions(userId) {
       persistTransactionCategories({ syncCloud: false });
       syncCategorySelects();
       persistTransactions({ syncCloud: false });
-      refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: true });
+      refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: !authProfileHydrationPending });
       render();
       // ACIKLAMA: sourceLabel degiskeninin Turkce karsiligi "kaynak etiket"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const sourceLabel = snapshot.metadata?.fromCache ? "yerel önbellekten" : "buluttan";
@@ -1813,10 +1839,26 @@ function retryPendingUserProfileCloudSync() {
   return dirtyAt > 0 ? syncUserProfileToCloud() : Promise.resolve();
 }
 
+function scheduleUserProfileCloudSync(delay = 180) {
+  if (!currentUser || !firebaseDb) return;
+
+  markUserProfileCloudDirty();
+  if (userProfileCloudSyncTimer) window.clearTimeout(userProfileCloudSyncTimer);
+  userProfileCloudSyncTimer = window.setTimeout(() => {
+    userProfileCloudSyncTimer = null;
+    syncUserProfileToCloud();
+  }, delay);
+}
+
 // ACIKLAMA: syncUserProfileToCloud fonksiyonunun Turkce karsiligi "esitle kullanici profil ile bulut"; bulut ve yerel veri esitleme akisini yonetir.
 function syncUserProfileToCloud() {
   if (!currentUser || !firebaseDb) {
     return Promise.resolve();
+  }
+
+  if (userProfileCloudSyncTimer) {
+    window.clearTimeout(userProfileCloudSyncTimer);
+    userProfileCloudSyncTimer = null;
   }
 
   // ACIKLAMA: user degiskeninin Turkce karsiligi "kullanici"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.

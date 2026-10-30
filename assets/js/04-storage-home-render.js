@@ -663,7 +663,7 @@ function persistTransactionCategories(options = {}) {
   const { syncCloud = true } = options;
   localStorage.setItem(getStorageKey(CATEGORY_STORAGE_KEY), JSON.stringify(transactionCategories));
   if (syncCloud) {
-    syncUserProfileToCloud();
+    scheduleUserProfileCloudSync();
   }
 }
 
@@ -856,7 +856,7 @@ function persistAssets(options = {}) {
   localStorage.setItem(getStorageKey(ASSETS_STORAGE_KEY), JSON.stringify(assets));
 
   if (syncCloud) {
-    syncUserProfileToCloud();
+    scheduleUserProfileCloudSync();
   }
 }
 
@@ -869,7 +869,7 @@ function persistBesAccounts(options = {}) {
   localStorage.setItem(getStorageKey(BES_STORAGE_KEY), JSON.stringify(besAccounts));
 
   if (syncCloud) {
-    syncUserProfileToCloud();
+    scheduleUserProfileCloudSync();
   }
 }
 
@@ -881,7 +881,7 @@ function persistPaymentAccounts(options = {}) {
   window.setTimeout(() => checkCardPaymentReminders(), 0);
 
   if (syncCloud) {
-    syncUserProfileToCloud();
+    scheduleUserProfileCloudSync();
   }
 }
 

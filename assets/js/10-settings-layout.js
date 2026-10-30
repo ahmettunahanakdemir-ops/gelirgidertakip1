@@ -2,6 +2,16 @@
 function setupSettingsLayout() {
   const view = document.getElementById("settingsView");
   const workspace = view.closest(".workspace");
+  const pageAnimations = new WeakMap();
+  const animateSettingsContent = (element, returning = false) => {
+    pageAnimations.get(element)?.cancel();
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || typeof element.animate !== "function") return;
+    const animation = element.animate([
+      { opacity: .3, transform: `translate3d(0, ${returning ? -6 : 8}px, 0)` },
+      { opacity: 1, transform: "translate3d(0, 0, 0)" },
+    ], { duration: returning ? 160 : 190, easing: "cubic-bezier(.2,.75,.25,1)" });
+    pageAnimations.set(element, animation);
+  };
   const settingsScrollTop = () => {
     const overflowY = workspace ? getComputedStyle(workspace).overflowY : "visible";
     return workspace && overflowY !== "visible" ? workspace.scrollTop : window.scrollY;
@@ -9,9 +19,9 @@ function setupSettingsLayout() {
   const setSettingsScrollTop = (top) => {
     const overflowY = workspace ? getComputedStyle(workspace).overflowY : "visible";
     if (workspace && overflowY !== "visible") {
-      workspace.scrollTop = top;
+      workspace.scrollTo({ top, behavior: "instant" });
     } else {
-      window.scrollTo(0, top);
+      window.scrollTo({ top, left: 0, behavior: "instant" });
     }
   };
   const categories = view.querySelector(".settings-category-panel");
@@ -59,6 +69,7 @@ function setupSettingsLayout() {
       header.hidden = false;
       summary.focus({ preventScroll: true });
       setSettingsScrollTop(scrollPosition);
+      animateSettingsContent(menu, true);
     };
     if (pageKey === "profile") {
       const saveButton = document.createElement("button");
@@ -157,6 +168,7 @@ function setupSettingsLayout() {
           nestedPage.hidden = false;
           setSettingsScrollTop(0);
           passwordNav.querySelector("h2")?.focus({ preventScroll: true });
+          animateSettingsContent(passwordBody);
         }, true);
 
         passwordNav.querySelector(".preferences-back")?.addEventListener("click", () => {
@@ -164,6 +176,7 @@ function setupSettingsLayout() {
           page.hidden = false;
           setSettingsScrollTop(0);
           passwordButton.focus({ preventScroll: true });
+          animateSettingsContent(body, true);
         });
         passwordNav.querySelector(".preferences-header-save")?.addEventListener("click", () => profile?.requestSubmit());
       }
@@ -177,6 +190,7 @@ function setupSettingsLayout() {
       if (pageKey === "help") body.scrollTop = 0;
       setSettingsScrollTop(0);
       nav.querySelector("h2").focus({preventScroll:true});
+      animateSettingsContent(body);
     });
     nav.querySelector("button").addEventListener("click", returnToSettingsMenu);
   };
