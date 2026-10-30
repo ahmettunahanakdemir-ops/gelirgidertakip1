@@ -1,4 +1,4 @@
-/* v444: Move the workspace with the expanding desktop/tablet sidebar. */
+/* v445: A fixed sidebar needs viewport-independent widths in both states. */
 @media (min-width: 981px) {
   html.modern-budget #appShell.app-shell:not([hidden]),
   html.modern-budget #appShell.app-shell.sidebar-expanded:not([hidden]) {
@@ -11,9 +11,14 @@
   }
 
   html.modern-budget body #appShell.app-shell > #sidebar.sidebar {
-    width: 100% !important;
-    max-width: none !important;
-    transition: none !important;
+    width: 66px !important;
+    max-width: 66px !important;
+    transition: width 220ms cubic-bezier(.2, .75, .25, 1), max-width 220ms cubic-bezier(.2, .75, .25, 1) !important;
+  }
+
+  html.modern-budget body #appShell.app-shell.sidebar-expanded > #sidebar.sidebar {
+    width: 230px !important;
+    max-width: 230px !important;
   }
 
   html.modern-budget body #appShell.app-shell > .workspace,
