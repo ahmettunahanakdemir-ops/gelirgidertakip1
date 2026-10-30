@@ -23,6 +23,7 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 - `assets/css/11-bulk-recent-final.css`: Coklu gelir/gider modali, son kayitlar penceresi ve son katman mobil duzeltmeleri.
 - `assets/css/12-debts-receivables.css`: Borc/alacak ozetleri, filtreler, kayit satirlari, modal ve mobil yerlesim.
 - `assets/css/16-budget-assistant.css`: Akış Bütçe Asistanı sohbet paneli, sürüklenebilir robot düğmesi, marka renkleri, koyu tema ve mobil güvenli alan.
+- `assets/css/23-compact-navigation.css`: iPhone icin tek sefer uygulanan guvenli alan ve azaltılmış ust/alt bosluklar; ayarlarin sabit baslikli gecis duzeni.
 - `assets/images/budget-assistant-mascot.png`: Asistan başlığı, mesaj avatarları ve açma düğmesindeki özgün Akış Bütçe robotu.
 
 ## JS Dosyalari
@@ -41,6 +42,9 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 - `assets/js/10-startup-pwa.js`: Acilis ekrani ve service worker kaydi yardimcilari.
 - `assets/js/11-state-startup.js`: Uygulama durum degiskenlerini yukler ve tum dosyalar hazir olduktan sonra uygulamayi baslatir. En son yuklenmelidir.
 - `assets/js/12-budget-assistant.js`: Serbest doğal dilde gelir/gider/transfer kaydı, eksik alanlar için adım adım soru, dönem/kategori/işyeri/hesap filtreli hareket arama, borç/taksit/varlık/BES/kart yanıtları ve Türkçe sayı okuyan durdurulabilir sesli yanıt.
+- `assets/js/16-assistant-microphone.js`: Mikrofon durumlari, canli metin, iptal ve gec gelen olay korumasi; Turkce ses secimi ve parcali yanit okuma.
+- `assets/js/17-assistant-insights.js`: Adet/tarih cozumleme, kategori ve donem analizleri, borc/hesap/BES ayrimi, kayit kontrolu ve konuya uygun kullanim yanitlari.
+- `ASISTAN-SORU-REHBERI.md`: Asistanin destekledigi soru ornekleri, devam/onay akislari ve veri/ses destegi sinirlari.
 
 ## Diger JS Dosyalari
 
