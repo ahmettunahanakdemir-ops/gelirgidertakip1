@@ -1,6 +1,3 @@
-// ACIKLAMA: Firebase giris/kayit, profil yonetimi, bulut yedek ve Firestore esitleme akislarini yonetir.
-// ACIKLAMA: Bu dosya ayrilan JS yapisinin bir parcasidir; index.html icindeki yukleme sirasi onemlidir.
-
 const USERNAME_LOGIN_ALIASES_KEY = "akis-budget-username-login-aliases-v1";
 let usernameLoginAliases = null;
 let authStateChangeSequence = 0;
@@ -15,7 +12,6 @@ function initCloud() {
     return;
   }
 
-  // ACIKLAMA: config degiskeninin Turkce karsiligi "config"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const config = window.AKIS_FIREBASE_CONFIG;
 
   if (!hasUsableFirebaseConfig(config)) {
@@ -38,7 +34,6 @@ function initCloud() {
   }
 }
 
-// ACIKLAMA: enableFirestoreOfflineCache fonksiyonunun Turkce karsiligi "enable Firestore offline onbellek"; ilgili uygulama islemini calistirir.
 function enableFirestoreOfflineCache() {
   if (!firebaseDb || firestorePersistenceEnabled || typeof firebaseDb.enablePersistence !== "function") {
     return;
@@ -57,14 +52,13 @@ function enableFirestoreOfflineCache() {
   });
 }
 
-// ACIKLAMA: ensureCloudReady fonksiyonunun Turkce karsiligi "garanti et bulut hazir"; bulut ve yerel veri esitleme akisini yonetir.
 function ensureCloudReady(statusElement = cloudStatus) {
   if (firebaseAuth && firebaseDb) {
     return true;
   }
 
   initCloud();
-  // ACIKLAMA: ready degiskeninin Turkce karsiligi "hazir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const ready = Boolean(firebaseAuth && firebaseDb);
 
   if (!ready && statusElement && statusElement !== cloudStatus) {
@@ -74,24 +68,22 @@ function ensureCloudReady(statusElement = cloudStatus) {
   return ready;
 }
 
-// ACIKLAMA: hasUsableFirebaseConfig fonksiyonunun Turkce karsiligi "var mi kullanilabilir Firebase config"; Firebase veya kimlik dogrulama islemlerini yonetir.
 function hasUsableFirebaseConfig(config) {
-  // ACIKLAMA: requiredKeys degiskeninin Turkce karsiligi "gerekli anahtarlar"; ilgili veri veya servis icin anahtar bilgisini tutar.
+
   const requiredKeys = ["apiKey", "authDomain", "projectId", "appId"];
 
   return (
     config &&
     requiredKeys.every((key) => {
-      // ACIKLAMA: value degiskeninin Turkce karsiligi "deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const value = String(config[key] || "");
       return value && !value.includes("BURAYA_") && !value.includes("PROJECT_ID");
     })
   );
 }
 
-// ACIKLAMA: showAuthPanel fonksiyonunun Turkce karsiligi "goster kimlik dogrulama panel"; Firebase veya kimlik dogrulama islemlerini yonetir.
 function showAuthPanel(panelName) {
-  // ACIKLAMA: panels degiskeninin Turkce karsiligi "panels"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const panels = [authForm, signupForm, resetPasswordForm];
 
   panels.forEach((panel) => {
@@ -106,9 +98,8 @@ function showAuthPanel(panelName) {
   }
 }
 
-// ACIKLAMA: openSignupPanel fonksiyonunun Turkce karsiligi "ac signup panel"; ilgili pencereyi veya ekrani acar.
 function openSignupPanel() {
-  // ACIKLAMA: loginValue degiskeninin Turkce karsiligi "login deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const loginValue = authEmail.value.trim();
 
   if (loginValue.includes("@")) {
@@ -126,9 +117,8 @@ function openSignupPanel() {
   setTimeout(() => (signupEmail.value ? signupUsername.focus() : signupEmail.focus()), 0);
 }
 
-// ACIKLAMA: openResetPanel fonksiyonunun Turkce karsiligi "ac sifirla panel"; ilgili pencereyi veya ekrani acar.
 function openResetPanel() {
-  // ACIKLAMA: loginValue degiskeninin Turkce karsiligi "login deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const loginValue = authEmail.value.trim();
 
   resetEmail.value = loginValue.includes("@") ? loginValue.toLowerCase() : findUsernameLoginAlias(loginValue)?.email || "";
@@ -137,9 +127,8 @@ function openResetPanel() {
   setTimeout(() => resetEmail.focus(), 0);
 }
 
-// ACIKLAMA: signInWithEmail fonksiyonunun Turkce karsiligi "isaret in with e-posta"; AI destekli okuma veya API istegi akisini calistirir.
 async function signInWithEmail() {
-  // ACIKLAMA: credentials degiskeninin Turkce karsiligi "credentials"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const credentials = getAuthCredentials();
 
   if (!credentials) {
@@ -164,10 +153,9 @@ async function signInWithEmail() {
   }
 }
 
-// ACIKLAMA: createAccountWithEmail fonksiyonunun Turkce karsiligi "olustur hesap with e-posta"; AI destekli okuma veya API istegi akisini calistirir.
 async function createAccountWithEmail(event) {
   event.preventDefault();
-  // ACIKLAMA: credentials degiskeninin Turkce karsiligi "credentials"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const credentials = getSignupCredentials();
 
   if (!credentials) {
@@ -180,7 +168,7 @@ async function createAccountWithEmail(event) {
 
   try {
     signupStatus.textContent = "Hesap oluşturuluyor...";
-    // ACIKLAMA: userCredential degiskeninin Turkce karsiligi "kullanici credential"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const userCredential = await firebaseAuth.createUserWithEmailAndPassword(
       credentials.email,
       credentials.password
@@ -202,10 +190,9 @@ async function createAccountWithEmail(event) {
   }
 }
 
-// ACIKLAMA: sendPasswordReset fonksiyonunun Turkce karsiligi "send sifre sifirla"; ilgili uygulama islemini calistirir.
 async function sendPasswordReset(event) {
   event.preventDefault();
-  // ACIKLAMA: email degiskeninin Turkce karsiligi "e-posta"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const email = resetEmail.value.trim().toLowerCase();
 
   if (!ensureCloudReady()) {
@@ -227,7 +214,6 @@ async function sendPasswordReset(event) {
   }
 }
 
-// ACIKLAMA: signOutUser fonksiyonunun Turkce karsiligi "isaret out kullanici"; ilgili uygulama islemini calistirir.
 async function signOutUser() {
   if (!firebaseAuth) {
     return;
@@ -237,20 +223,6 @@ async function signOutUser() {
   currentUser = null;
   renderAuthState();
   await firebaseAuth.signOut();
-}
-
-// ACIKLAMA: openProfileModal fonksiyonunun Turkce karsiligi "profil penceresini ac"; ilgili pencereyi veya ekrani acar.
-function openProfileModal() {
-  if (!currentUser) {
-    return;
-  }
-
-  switchView("settingsView");
-  fillProfileForm();
-  setTimeout(() => {
-    document.querySelector("#settingsView .user-actions-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    profileUsername?.focus();
-  }, 0);
 }
 
 function loadProfileContactInfo() {
@@ -308,7 +280,6 @@ function toggleProfilePasswordFields(forceOpen = null) {
   if (nextOpen) setTimeout(() => profileCurrentPassword?.focus(), 10);
 }
 
-// ACIKLAMA: fillProfileForm fonksiyonunun Turkce karsiligi "fill profil form"; ilgili uygulama islemini calistirir.
 function fillProfileForm() {
   if (!currentUser || !profileForm) {
     return;
@@ -330,7 +301,6 @@ function fillProfileForm() {
   }
 }
 
-// ACIKLAMA: closeProfileModal fonksiyonunun Turkce karsiligi "kapat profil pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeProfileModal() {
   if (!profileModal) {
     return;
@@ -339,7 +309,6 @@ function closeProfileModal() {
   profileModal.hidden = true;
 }
 
-// ACIKLAMA: updateProfile fonksiyonunun Turkce karsiligi "guncelle profil"; mevcut ekran durumunu veya hesaplanan degerleri gunceller.
 async function updateProfile(event) {
   event.preventDefault();
 
@@ -348,14 +317,13 @@ async function updateProfile(event) {
     return;
   }
 
-  // ACIKLAMA: username degiskeninin Turkce karsiligi "kullanici adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const username = profileUsername.value.trim();
   const contactBefore = loadProfileContactInfo();
   const homeAddress = profileHomeAddress?.value.trim() || "";
   const workAddress = profileWorkAddress?.value.trim() || "";
-  // ACIKLAMA: currentPassword degiskeninin Turkce karsiligi "mevcut sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const currentPassword = profileCurrentPassword.value;
-  // ACIKLAMA: nextPassword degiskeninin Turkce karsiligi "sonraki sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const nextPassword = profilePassword.value;
 
   if (!username) {
@@ -368,10 +336,9 @@ async function updateProfile(event) {
     return;
   }
 
-  // ACIKLAMA: usernameChanged degiskeninin Turkce karsiligi "kullanici adi changed"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const usernameChanged = username !== getUserDisplayName(currentUser);
   const contactChanged = homeAddress !== contactBefore.homeAddress || workAddress !== contactBefore.workAddress;
-  // ACIKLAMA: passwordChanged degiskeninin Turkce karsiligi "sifre changed"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const passwordChanged = Boolean(nextPassword);
 
   if (!usernameChanged && !passwordChanged && !contactChanged) {
@@ -426,9 +393,8 @@ async function updateProfile(event) {
   }
 }
 
-// ACIKLAMA: reauthenticateCurrentUser fonksiyonunun Turkce karsiligi "reauthenticate mevcut kullanici"; Firebase veya kimlik dogrulama islemlerini yonetir.
 async function reauthenticateCurrentUser(password) {
-  // ACIKLAMA: credential degiskeninin Turkce karsiligi "credential"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const credential = window.firebase.auth.EmailAuthProvider.credential(currentUser.email, password);
   await currentUser.reauthenticateWithCredential(credential);
 }
@@ -580,7 +546,6 @@ async function deleteCurrentUserAccountWithEmailVerification() {
   }
 }
 
-// ACIKLAMA: openDeleteAccountModal fonksiyonunun Turkce karsiligi "ac sil hesap pencere"; ilgili pencereyi veya ekrani acar.
 function openDeleteAccountModal() {
   if (!currentUser) {
     deleteUserStatus.textContent = "Kullanıcı silmek için giriş yapmalısın.";
@@ -595,7 +560,6 @@ function openDeleteAccountModal() {
   setTimeout(() => deleteUserPassword.focus(), 0);
 }
 
-// ACIKLAMA: closeDeleteAccountModal fonksiyonunun Turkce karsiligi "kapat sil hesap pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeDeleteAccountModal() {
   if (!deleteAccountModal) {
     return;
@@ -609,7 +573,6 @@ function closeDeleteAccountModal() {
   deleteAccountModal.hidden = true;
 }
 
-// ACIKLAMA: requestDeleteAccountConfirmation fonksiyonunun Turkce karsiligi "istek sil hesap confirmation"; secilen kaydi siler veya listeden kaldirir.
 function requestDeleteAccountConfirmation(event) {
   event.preventDefault();
 
@@ -618,9 +581,8 @@ function requestDeleteAccountConfirmation(event) {
     return;
   }
 
-  // ACIKLAMA: password degiskeninin Turkce karsiligi "sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const password = deleteUserPassword.value;
-  // ACIKLAMA: passwordConfirm degiskeninin Turkce karsiligi "sifre onay"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const passwordConfirm = deleteUserPasswordConfirm.value;
 
   if (!password) {
@@ -642,7 +604,6 @@ function requestDeleteAccountConfirmation(event) {
   setTimeout(() => cancelConfirmDeleteButton.focus(), 0);
 }
 
-// ACIKLAMA: closeConfirmDeleteAccountModal fonksiyonunun Turkce karsiligi "kapat onay sil hesap pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeConfirmDeleteAccountModal() {
   if (!confirmDeleteAccountModal) {
     return;
@@ -655,7 +616,6 @@ function closeConfirmDeleteAccountModal() {
   confirmDeleteAccountModal.hidden = true;
 }
 
-// ACIKLAMA: deleteCurrentUserAccount fonksiyonunun Turkce karsiligi "sil mevcut kullanici hesap"; secilen kaydi siler veya listeden kaldirir.
 async function deleteCurrentUserAccount() {
   if (!currentUser || !firebaseAuth || !firebaseDb) {
     confirmDeleteAccountStatus.textContent = "Kullanıcı silmek için giriş yapmalısın.";
@@ -669,7 +629,6 @@ async function deleteCurrentUserAccount() {
     return;
   }
 
-  // ACIKLAMA: user degiskeninin Turkce karsiligi "kullanici"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const user = currentUser;
 
   try {
@@ -694,15 +653,14 @@ async function deleteCurrentUserAccount() {
   }
 }
 
-// ACIKLAMA: deleteUserCloudData fonksiyonunun Turkce karsiligi "sil kullanici bulut veri"; secilen kaydi siler veya listeden kaldirir.
 async function deleteUserCloudData(userId) {
-  // ACIKLAMA: collection degiskeninin Turkce karsiligi "koleksiyon"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const collection = getUserTransactionsCollection(userId);
-  // ACIKLAMA: snapshot degiskeninin Turkce karsiligi "snapshot"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const snapshot = await collection.get();
-  // ACIKLAMA: batch degiskeninin Turkce karsiligi "toplu islem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   let batch = firebaseDb.batch();
-  // ACIKLAMA: operationCount degiskeninin Turkce karsiligi "operation sayi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   let operationCount = 0;
 
   for (const doc of snapshot.docs) {
@@ -721,7 +679,6 @@ async function deleteUserCloudData(userId) {
   await batch.commit();
 }
 
-// ACIKLAMA: clearUserLocalData fonksiyonunun Turkce karsiligi "temizle kullanici yerel veri"; ilgili uygulama islemini calistirir.
 function clearUserLocalData(userId) {
   [
     STORAGE_KEY,
@@ -741,11 +698,10 @@ function clearUserLocalData(userId) {
   });
 }
 
-// ACIKLAMA: getAuthCredentials fonksiyonunun Turkce karsiligi "al kimlik dogrulama credentials"; Firebase veya kimlik dogrulama islemlerini yonetir.
 function getAuthCredentials() {
-  // ACIKLAMA: username degiskeninin Turkce karsiligi "kullanici adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const username = authEmail.value.trim();
-  // ACIKLAMA: password degiskeninin Turkce karsiligi "sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const password = authPassword.value;
 
   if (!username || password.length < 6) {
@@ -756,15 +712,14 @@ function getAuthCredentials() {
   return { email: usernameToEmail(username), password, username };
 }
 
-// ACIKLAMA: getSignupCredentials fonksiyonunun Turkce karsiligi "al signup credentials"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getSignupCredentials() {
-  // ACIKLAMA: email degiskeninin Turkce karsiligi "e-posta"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const email = signupEmail.value.trim().toLowerCase();
-  // ACIKLAMA: username degiskeninin Turkce karsiligi "kullanici adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const username = signupUsername.value.trim();
-  // ACIKLAMA: password degiskeninin Turkce karsiligi "sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const password = signupPassword.value;
-  // ACIKLAMA: confirmPassword degiskeninin Turkce karsiligi "onay sifre"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const confirmPassword = signupPasswordConfirm.value;
 
   if (!email || !email.includes("@")) {
@@ -794,7 +749,6 @@ function getSignupCredentials() {
   return { email, username, password };
 }
 
-// ACIKLAMA: loadLastUsername fonksiyonunun Turkce karsiligi "yukle son kullanici adi"; ilgili uygulama islemini calistirir.
 function loadLastUsername() {
   try {
     return localStorage.getItem(LAST_USERNAME_KEY) || "";
@@ -803,9 +757,8 @@ function loadLastUsername() {
   }
 }
 
-// ACIKLAMA: saveLastUsername fonksiyonunun Turkce karsiligi "kaydet son kullanici adi"; formdan gelen bilgiyi kaydeder veya yeni kayit ekler.
 function saveLastUsername(emailOrUsername) {
-  // ACIKLAMA: username degiskeninin Turkce karsiligi "kullanici adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const username = emailToUsername(emailOrUsername).trim();
 
   if (!username) {
@@ -819,9 +772,8 @@ function saveLastUsername(emailOrUsername) {
   }
 }
 
-// ACIKLAMA: usernameToEmail fonksiyonunun Turkce karsiligi "kullanici adi ile e-posta"; AI destekli okuma veya API istegi akisini calistirir.
 function usernameToEmail(username) {
-  // ACIKLAMA: value degiskeninin Turkce karsiligi "deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const value = String(username || "").trim();
 
   if (value.includes("@")) {
@@ -831,7 +783,6 @@ function usernameToEmail(username) {
   const knownAccount = findUsernameLoginAlias(value);
   if (knownAccount) return knownAccount.email;
 
-  // ACIKLAMA: safeUsername degiskeninin Turkce karsiligi "guvenli kullanici adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const safeUsername = normalizeBankText(value).replace(/\s+/g, "");
   return `${safeUsername}@${USERNAME_EMAIL_DOMAIN}`;
 }
@@ -886,17 +837,15 @@ function forgetUsernameLogin(userId) {
   persistUsernameLoginAliases();
 }
 
-// ACIKLAMA: emailToUsername fonksiyonunun Turkce karsiligi "e-posta ile kullanici adi"; AI destekli okuma veya API istegi akisini calistirir.
 function emailToUsername(email) {
-  // ACIKLAMA: value degiskeninin Turkce karsiligi "deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const value = String(email || "");
-  // ACIKLAMA: suffix degiskeninin Turkce karsiligi "suffix"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const suffix = `@${USERNAME_EMAIL_DOMAIN}`;
 
   return value.endsWith(suffix) ? value.slice(0, -suffix.length) : value;
 }
 
-// ACIKLAMA: getUserDisplayName fonksiyonunun Turkce karsiligi "al kullanici display adi"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getUserDisplayName(user = currentUser) {
   if (!user) {
     setBudgetValuesStatus("ready");
@@ -906,7 +855,6 @@ function getUserDisplayName(user = currentUser) {
   return (user.displayName || emailToUsername(user.email) || "").trim();
 }
 
-// ACIKLAMA: handleAuthStateChanged fonksiyonunun Turkce karsiligi "handle kimlik dogrulama durum changed"; Firebase veya kimlik dogrulama islemlerini yonetir.
 async function handleAuthStateChanged(user) {
   const stateChangeSequence = ++authStateChangeSequence;
   const isCurrentStateChange = () => stateChangeSequence === authStateChangeSequence;
@@ -951,22 +899,21 @@ async function handleAuthStateChanged(user) {
     return;
   }
 
-  // ACIKLAMA: anonymousLocalTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const anonymousLocalTransactions = getCloudReadyTransactions(transactions);
-  // ACIKLAMA: anonymousLocalAssets varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
+
   const anonymousLocalAssets = getCloudReadyAssets(assets);
-  // ACIKLAMA: anonymousLocalBesAccounts degiskeninin Turkce karsiligi "anonymous yerel BES hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const anonymousLocalBesAccounts = getCloudReadyBesAccounts(besAccounts);
   const anonymousLocalDebtRecords = bulutaHazirBorcAlacakKayitlari(borcAlacakKayitlari);
-  // ACIKLAMA: anonymousLocalPaymentAccounts kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+
   const anonymousLocalPaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
-  // ACIKLAMA: anonymousLocalCategories degiskeninin Turkce karsiligi "anonymous yerel kategoriler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const anonymousLocalCategories = normalizeCategoryState(transactionCategories);
-  // ACIKLAMA: anonymousDeletedTransactionState gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   const anonymousDeletedTransactionState = getDeletedTransactionStateSnapshot();
-  // ACIKLAMA: Giris oncesindeki varlik ve BES silme izleri kullanici hesabiyla birlestirilir.
+
   const anonymousDeletedProfileRecordState = getDeletedProfileRecordStateSnapshot();
-  // ACIKLAMA: anonymousLocalTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   const anonymousLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
   currentUser = user;
   authProfileHydrationPending = true;
@@ -981,18 +928,18 @@ async function handleAuthStateChanged(user) {
   applyDeletedTransactionState(anonymousDeletedTransactionState, getDeletedTransactionStateSnapshot());
   applyDeletedProfileRecordState(anonymousDeletedProfileRecordState, getDeletedProfileRecordStateSnapshot());
   refreshCardReminderSettingsForCurrentUser();
-  // ACIKLAMA: userLocalTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   const userLocalTransactions = getCloudReadyTransactions(loadTransactions());
-  // ACIKLAMA: userLocalTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   const userLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
-  // ACIKLAMA: userLocalAssets varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
+
   const userLocalAssets = getCloudReadyAssets(loadAssets());
-  // ACIKLAMA: userLocalBesAccounts degiskeninin Turkce karsiligi "kullanici yerel BES hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const userLocalBesAccounts = getCloudReadyBesAccounts(loadBesAccounts());
   const userLocalDebtRecords = bulutaHazirBorcAlacakKayitlari(borcAlacakKayitlariniYukle());
-  // ACIKLAMA: userLocalPaymentAccounts kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+
   const userLocalPaymentAccounts = getCloudReadyPaymentAccounts(loadPaymentAccounts());
-  // ACIKLAMA: userLocalCategories degiskeninin Turkce karsiligi "kullanici yerel kategoriler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const userLocalCategories = loadTransactionCategories();
   transactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions);
   assets = applyDeletedProfileTombstones(
@@ -1039,20 +986,19 @@ async function handleAuthStateChanged(user) {
       readCloudDeletedProfileRecordState(cloudProfile),
       anonymousDeletedProfileRecordState
     );
-    // ACIKLAMA: cloudProfileTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
     const cloudProfileTransactions = readCloudTransactionBackupArray(cloudProfile.transactionsBackup);
 
-    // ACIKLAMA: cloudTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
     const cloudTransactions = mergeTransactions(cloudProfileTransactions, cloudCollectionTransactions);
-    // ACIKLAMA: localTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
     const localTransactions = mergeTransactions(userLocalTransactions, anonymousLocalTransactions, transactions);
-    // ACIKLAMA: localTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
     const localTransactionsUpdatedAt = Math.max(
       userLocalTransactionsUpdatedAt,
       anonymousLocalTransactionsUpdatedAt,
       getTransactionsNewestMutationTimestamp(localTransactions)
     );
-    // ACIKLAMA: cloudTransactionsUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
     const cloudTransactionsUpdatedAt =
       getRecordTimestamp(cloudProfile?.transactionsStateUpdatedAt) ||
       getRecordTimestamp(cloudProfile?.transactionsBackupUpdatedAt) ||
@@ -1094,13 +1040,13 @@ async function handleAuthStateChanged(user) {
       transactionCategories,
       getTransactionCategoriesFromRecords(transactions)
     );
-    // ACIKLAMA: pendingLocalTransactionUpserts degiskeninin Turkce karsiligi "bekleyen yerel islem upserts"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const pendingLocalTransactionUpserts = getPendingLocalTransactionUpserts(localTransactions, cloudTransactions);
-    // ACIKLAMA: pendingLocalTransactionDeletes degiskeninin Turkce karsiligi "bekleyen yerel islem deletes"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const pendingLocalTransactionDeletes = getPendingLocalTransactionDeletes(cloudTransactions);
-    // ACIKLAMA: hasStaleLocalSyncFlag degiskeninin Turkce karsiligi "var mi stale yerel esitle flag"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const hasStaleLocalSyncFlag = loadTransactionsCloudDirtyAt() > 0 || isTransactionsCloudFullSyncRequired();
-    // ACIKLAMA: hasPendingLocalTransactionSync gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
     const hasPendingLocalTransactionSync =
       pendingLocalTransactionUpserts.length > 0 ||
       pendingLocalTransactionDeletes.length > 0;
@@ -1116,7 +1062,7 @@ async function handleAuthStateChanged(user) {
     render();
     authProfileHydrationPending = false;
     if (currentUser?.uid === user.uid) setBudgetValuesStatus("ready");
-    // ACIKLAMA: syncTasks degiskeninin Turkce karsiligi "esitle tasks"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const syncTasks = [syncUserProfileToCloud()];
     if (hasPendingLocalTransactionSync) {
       syncTasks.unshift(syncTransactionsToCloud({
@@ -1129,11 +1075,10 @@ async function handleAuthStateChanged(user) {
       clearTransactionsCloudDirty();
     }
     bindPendingCloudSyncEvents();
-    // ACIKLAMA: syncResults degiskeninin Turkce karsiligi "esitle results"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const syncResults = await Promise.allSettled(syncTasks);
     if (!isCurrentStateChange() || currentUser?.uid !== user.uid) return;
 
-    // ACIKLAMA: failedSync degiskeninin Turkce karsiligi "failed esitle"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const failedSync = syncResults.find((result) => result.status === "rejected");
     subscribeCloudProfile(user.uid);
     retryPendingTransactionsCloudSync();
@@ -1155,8 +1100,6 @@ async function handleAuthStateChanged(user) {
   }
 }
 
-
-// ACIKLAMA: setLoggedOutVisualState fonksiyonunun Turkce karsiligi "ayarla logged out visual durum"; ilgili uygulama islemini calistirir.
 function setLoggedOutVisualState() {
   document.documentElement.classList.add("auth-logged-out");
   document.body.classList.add("auth-logged-out");
@@ -1183,7 +1126,6 @@ function setLoggedOutVisualState() {
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 }
 
-// ACIKLAMA: setLoggedInVisualState fonksiyonunun Turkce karsiligi "ayarla logged in visual durum"; ilgili uygulama islemini calistirir.
 function setLoggedInVisualState() {
   document.documentElement.classList.remove("auth-logged-out");
   document.body.classList.remove("auth-logged-out");
@@ -1199,11 +1141,10 @@ function setLoggedInVisualState() {
   }
 }
 
-// ACIKLAMA: renderAuthState fonksiyonunun Turkce karsiligi "ekrana bas kimlik dogrulama durum"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderAuthState() {
-  // ACIKLAMA: signedIn degiskeninin Turkce karsiligi "isaretli in"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const signedIn = Boolean(currentUser);
-  // ACIKLAMA: hasOpenAuthSubPanel degiskeninin Turkce karsiligi "var mi ac kimlik dogrulama sub panel"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const hasOpenAuthSubPanel =
     !signedIn && ((signupForm && !signupForm.hidden) || (resetPasswordForm && !resetPasswordForm.hidden));
 
@@ -1223,7 +1164,6 @@ function renderAuthState() {
     footerLogoutButton.hidden = !signedIn;
   }
   authUserBadge.textContent = signedIn ? getUserDisplayName(currentUser) || "Giriş yapıldı" : "Giriş yapılmadı";
-  appUserEmail.textContent = signedIn ? getUserDisplayName(currentUser) || "Bulut hesabı" : "";
   setMobileSidebarOpen(false);
 
   if (signedIn) {
@@ -1240,7 +1180,6 @@ function renderAuthState() {
   }
 }
 
-// ACIKLAMA: fetchCloudProfile fonksiyonunun Turkce karsiligi "getir bulut profil"; bulut ve yerel veri esitleme akisini yonetir.
 function fetchCloudProfile(userId, options = {}) {
   const getOptions = options.source ? { source: options.source } : undefined;
   return firebaseDb
@@ -1250,7 +1189,6 @@ function fetchCloudProfile(userId, options = {}) {
     .then((doc) => (doc.exists ? doc.data() || {} : {}));
 }
 
-// ACIKLAMA: Sunucudan gelen varlik, BES ve borc/alacak verisini zaman damgalarina gore yerel durumla birlestirir.
 function applyCloudAssetAndBesProfile(data = {}, options = {}) {
   const { renderAfterApply = true } = options;
   applyDeletedProfileRecordState(readCloudDeletedProfileRecordState(data));
@@ -1292,7 +1230,6 @@ function applyCloudAssetAndBesProfile(data = {}, options = {}) {
   }
 }
 
-// ACIKLAMA: Sayfa yenileme, uygulamaya donme ve menu gecislerinde profili dogrudan sunucudan kontrol eder.
 function refreshUserProfileFromServer(options = {}) {
   const { force = false } = options;
 
@@ -1329,7 +1266,6 @@ function refreshUserProfileFromServer(options = {}) {
   return cloudProfileRefreshPromise;
 }
 
-// ACIKLAMA: subscribeCloudProfile fonksiyonunun Turkce karsiligi "abonelik baslat bulut profil"; bulut ve yerel veri esitleme akisini yonetir.
 function subscribeCloudProfile(userId) {
   profileUnsubscribe = firebaseDb
     .collection("users")
@@ -1337,7 +1273,7 @@ function subscribeCloudProfile(userId) {
     .onSnapshot(
       { includeMetadataChanges: true },
       (doc) => {
-        // ACIKLAMA: data degiskeninin Turkce karsiligi "veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
         const data = doc.data() || {};
         updateCloudBackupStatus(data);
         applyCloudAssetAndBesProfile(data, { renderAfterApply: false });
@@ -1363,7 +1299,7 @@ function subscribeCloudProfile(userId) {
         }
 
         if (Array.isArray(data.transactionsBackup)) {
-          // ACIKLAMA: profileTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
           const profileTransactions = readCloudTransactionBackupArray(data.transactionsBackup);
           if (profileTransactions.length) {
             transactions = mergeTransactions(transactions, profileTransactions);
@@ -1387,21 +1323,19 @@ function subscribeCloudProfile(userId) {
     );
 }
 
-// ACIKLAMA: fetchCloudTransactions fonksiyonunun Turkce karsiligi "getir bulut islemler"; bulut ve yerel veri esitleme akisini yonetir.
 function fetchCloudTransactions(userId, options = {}) {
-  // ACIKLAMA: getOptions degiskeninin Turkce karsiligi "al options"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const getOptions = options.source ? { source: options.source } : undefined;
   return getUserTransactionsCollection(userId)
     .get(getOptions)
     .then((snapshot) => snapshot.docs.map(readCloudTransaction).filter(Boolean).filter((item) => !isTransactionDeleted(item)));
 }
 
-// ACIKLAMA: subscribeCloudTransactions fonksiyonunun Turkce karsiligi "abonelik baslat bulut islemler"; bulut ve yerel veri esitleme akisini yonetir.
 function subscribeCloudTransactions(userId) {
   cloudUnsubscribe = getUserTransactionsCollection(userId).onSnapshot(
     { includeMetadataChanges: true },
     (snapshot) => {
-      // ACIKLAMA: cloudTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
       const cloudTransactions = snapshot.docs
         .map(readCloudTransaction)
         .filter(Boolean)
@@ -1412,14 +1346,13 @@ function subscribeCloudTransactions(userId) {
         return;
       }
 
-      // ACIKLAMA: localUpdatedAt degiskeninin Turkce karsiligi "yerel updated at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const localUpdatedAt = Math.max(
         loadTransactionsStateUpdatedAt(),
         getTransactionsNewestMutationTimestamp(transactions)
       );
-      // ACIKLAMA: cloudProfileUpdatedAt degiskeninin Turkce karsiligi "bulut profil updated at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const cloudProfileUpdatedAt = 0;
-      // ACIKLAMA: cloudUpdatedAt degiskeninin Turkce karsiligi "bulut updated at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const cloudUpdatedAt = getTransactionsNewestMutationTimestamp(cloudTransactions);
 
       if (transactions.length && localUpdatedAt > cloudUpdatedAt && snapshot.metadata?.fromCache) {
@@ -1436,7 +1369,7 @@ function subscribeCloudTransactions(userId) {
       persistTransactions({ syncCloud: false });
       refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: !authProfileHydrationPending });
       render();
-      // ACIKLAMA: sourceLabel degiskeninin Turkce karsiligi "kaynak etiket"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const sourceLabel = snapshot.metadata?.fromCache ? "yerel önbellekten" : "buluttan";
       cloudStatus.textContent = `${transactions.length} kayıt ${sourceLabel} güncel.`;
     },
@@ -1446,21 +1379,19 @@ function subscribeCloudTransactions(userId) {
   );
 }
 
-// ACIKLAMA: getCloudWriteBatchLimit fonksiyonunun Turkce karsiligi "al bulut yaz toplu islem limit"; bulut ve yerel veri esitleme akisini yonetir.
 function getCloudWriteBatchLimit() {
   // Firestore batch limiti 500'dür. Profil güncellemesi ve güvenli pay için 450 kullanıyoruz.
   return 450;
 }
 
-// ACIKLAMA: commitCloudOperationsInChunks fonksiyonunun Turkce karsiligi "kaydet bulut operations in parcalar"; bulut ve yerel veri esitleme akisini yonetir.
 async function commitCloudOperationsInChunks(operations = []) {
-  // ACIKLAMA: limit degiskeninin Turkce karsiligi "limit"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const limit = getCloudWriteBatchLimit();
 
   for (let index = 0; index < operations.length; index += limit) {
-    // ACIKLAMA: batch degiskeninin Turkce karsiligi "toplu islem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const batch = firebaseDb.batch();
-    // ACIKLAMA: chunk degiskeninin Turkce karsiligi "parca"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const chunk = operations.slice(index, index + limit);
 
     chunk.forEach((operation) => {
@@ -1476,7 +1407,6 @@ async function commitCloudOperationsInChunks(operations = []) {
   }
 }
 
-// ACIKLAMA: getJsonByteSize fonksiyonunun Turkce karsiligi "al JSON byte boyut"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getJsonByteSize(value) {
   try {
     return new Blob([JSON.stringify(value) || ""]).size;
@@ -1485,11 +1415,10 @@ function getJsonByteSize(value) {
   }
 }
 
-// ACIKLAMA: createProfileTransactionBackupFields fonksiyonunun Turkce karsiligi "olustur profil islem yedekle alanlar"; kullanilacak veri yapisini veya HTML elemanini olusturur.
 function createProfileTransactionBackupFields(safeTransactions = [], transactionsStateUpdatedAt = Date.now()) {
-  // ACIKLAMA: backup degiskeninin Turkce karsiligi "yedekle"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const backup = safeTransactions.map(toCloudTransactionBackup);
-  // ACIKLAMA: fullBackupFields degiskeninin Turkce karsiligi "tam yedekle alanlar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const fullBackupFields = {
     transactionsBackup: backup,
     transactionsBackupUpdatedAt: transactionsStateUpdatedAt,
@@ -1510,7 +1439,6 @@ function createProfileTransactionBackupFields(safeTransactions = [], transaction
   };
 }
 
-// ACIKLAMA: syncTransactionsToCloud fonksiyonunun Turkce karsiligi "islemleri bulutla esitle"; bulut ve yerel veri esitleme akisini yonetir.
 function syncTransactionsToCloud(options = {}) {
   const { replace = false, upserts = null, deletes = null } = options;
 
@@ -1518,44 +1446,41 @@ function syncTransactionsToCloud(options = {}) {
     return Promise.resolve();
   }
 
-  // ACIKLAMA: user degiskeninin Turkce karsiligi "kullanici"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const user = currentUser;
-  // ACIKLAMA: safeTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   let safeTransactions = getCloudReadyTransactions(transactions).filter((item) => !isTransactionDeleted(item));
-  // ACIKLAMA: deltaUpserts degiskeninin Turkce karsiligi "delta upserts"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   let deltaUpserts = Array.isArray(upserts)
     ? getCloudReadyTransactions(upserts).filter((item) => !isTransactionDeleted(item))
     : null;
-  // ACIKLAMA: deltaDeletes degiskeninin Turkce karsiligi "delta deletes"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   let deltaDeletes = Array.isArray(deletes)
     ? deletes.map((id) => String(id || "")).filter(Boolean)
     : null;
-  // ACIKLAMA: hasDeltaOperations degiskeninin Turkce karsiligi "var mi delta operations"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const hasDeltaOperations = !replace && (deltaUpserts !== null || deltaDeletes !== null);
-  // ACIKLAMA: deletedPayload aktarim veya API istegi icin hazirlanan veri paketini tutar.
+
   const deletedPayload = getCloudDeletedTransactionPayload();
-  // ACIKLAMA: transactionsStateUpdatedAt gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   const transactionsStateUpdatedAt = saveTransactionsStateUpdatedAt();
-  // ACIKLAMA: syncVersion degiskeninin Turkce karsiligi "esitle version"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const syncVersion = ++cloudTransactionsSyncVersion;
-  // ACIKLAMA: isLatestSync degiskeninin Turkce karsiligi "mi latest esitle"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const isLatestSync = () => syncVersion === cloudTransactionsSyncVersion;
-  // ACIKLAMA: shouldAbortStaleFullSync degiskeninin Turkce karsiligi "mali mi abort stale tam esitle"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const shouldAbortStaleFullSync = () => !hasDeltaOperations && !isLatestSync();
   cloudTransactionsSyncInFlight = true;
 
-  // ACIKLAMA: writeTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const writeTransactions = async () => {
     try {
     if (shouldAbortStaleFullSync()) {
       return;
     }
 
-    // ACIKLAMA: collection degiskeninin Turkce karsiligi "koleksiyon"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const collection = getUserTransactionsCollection(user.uid);
 
     if (!replace && !hasDeltaOperations) {
-      // ACIKLAMA: latestCloudTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
       const latestCloudTransactions = await withTimeout(
         fetchCloudTransactions(user.uid).catch(() => []),
         CLOUD_WRITE_TIMEOUT_MS,
@@ -1575,9 +1500,8 @@ function syncTransactionsToCloud(options = {}) {
       deltaUpserts = getCloudReadyTransactions(deltaUpserts).filter((item) => !isTransactionDeleted(item));
     }
 
-    // ACIKLAMA: profileBackupFields degiskeninin Turkce karsiligi "profil yedekle alanlar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const profileBackupFields = createProfileTransactionBackupFields(safeTransactions, transactionsStateUpdatedAt);
-    // ACIKLAMA: profileBackupPayload aktarim veya API istegi icin hazirlanan veri paketini tutar.
+
     const profileBackupPayload = {
       email: user.email || "",
       username: getUserDisplayName(user),
@@ -1587,10 +1511,8 @@ function syncTransactionsToCloud(options = {}) {
       updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
     };
 
-    // ACIKLAMA: operations degiskeninin Turkce karsiligi "operations"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const operations = [];
 
-    // ACIKLAMA: deletedIds degiskeninin Turkce karsiligi "silinmis kimlikler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const deletedIds = new Set(
       hasDeltaOperations
         ? deltaDeletes || []
@@ -1607,7 +1529,7 @@ function syncTransactionsToCloud(options = {}) {
     });
 
     if (replace) {
-      // ACIKLAMA: snapshot degiskeninin Turkce karsiligi "snapshot"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const snapshot = await withTimeout(
         collection.get(),
         CLOUD_WRITE_TIMEOUT_MS,
@@ -1618,7 +1540,6 @@ function syncTransactionsToCloud(options = {}) {
         return;
       }
 
-      // ACIKLAMA: currentIds degiskeninin Turkce karsiligi "mevcut kimlikler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
       const currentIds = new Set(safeTransactions.map((item) => item.id));
       snapshot.docs.forEach((doc) => {
         if (!currentIds.has(doc.id)) {
@@ -1627,7 +1548,6 @@ function syncTransactionsToCloud(options = {}) {
       });
     }
 
-    // ACIKLAMA: transactionsToWrite gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
     const transactionsToWrite = hasDeltaOperations ? deltaUpserts || [] : safeTransactions;
     transactionsToWrite.forEach((transaction) => {
       operations.push({
@@ -1653,7 +1573,7 @@ function syncTransactionsToCloud(options = {}) {
         schedulePendingTransactionsCloudSync();
       }
       if (isLatestSync()) {
-        // ACIKLAMA: rulesHint degiskeninin Turkce karsiligi "rules hint"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
         const rulesHint = error?.code === "permission-denied"
           ? " Firebase Console'da firestore.rules dosyasını yayınla."
           : "";
@@ -1667,7 +1587,6 @@ function syncTransactionsToCloud(options = {}) {
       }
     }
 
-    // ACIKLAMA: profileWarning degiskeninin Turkce karsiligi "profil warning"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     let profileWarning = "";
     try {
       await withTimeout(
@@ -1687,11 +1606,11 @@ function syncTransactionsToCloud(options = {}) {
         clearTransactionsCloudFullSyncRequired();
         clearTransactionsCloudDirty(transactionsStateUpdatedAt);
       }
-      // ACIKLAMA: backupNote degiskeninin Turkce karsiligi "yedekle note"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const backupNote = profileBackupFields.transactionsBackupMode === "collection_only"
         ? " Profil yedeği büyüdüğü için kayıtların ana kaynağı transactions alt koleksiyonu."
         : "";
-      // ACIKLAMA: savedCountText degiskeninin Turkce karsiligi "saved sayi metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const savedCountText = hasDeltaOperations
         ? `${transactionsToWrite.length + deletedIds.size} değişiklik`
         : `${safeTransactions.length} kayıt`;
@@ -1704,7 +1623,6 @@ function syncTransactionsToCloud(options = {}) {
     }
   };
 
-  // ACIKLAMA: runSync degiskeninin Turkce karsiligi "calistir esitle"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const runSync = () =>
     writeTransactions().catch((error) => {
       if (isLatestSync()) {
@@ -1716,7 +1634,7 @@ function syncTransactionsToCloud(options = {}) {
         schedulePendingTransactionsCloudSync();
       }
       if (isLatestSync()) {
-        // ACIKLAMA: message degiskeninin Turkce karsiligi "mesaj"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
         const message = error?.code === "permission-denied"
           ? "Firebase kuralları eski görünüyor. firestore.rules dosyasını Firebase Console'da yayınla."
           : `Firebase'e kaydedilemedi: ${error.message}`;
@@ -1729,11 +1647,8 @@ function syncTransactionsToCloud(options = {}) {
   return cloudWriteQueue;
 }
 
-
-// ACIKLAMA: pendingTransactionsCloudSyncTimer gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
 let pendingTransactionsCloudSyncTimer = null;
 
-// ACIKLAMA: schedulePendingTransactionsCloudSync fonksiyonunun Turkce karsiligi "zamanla bekleyen islemler bulut esitle"; bulut ve yerel veri esitleme akisini yonetir.
 function schedulePendingTransactionsCloudSync(delay = 3500) {
   if (pendingTransactionsCloudSyncTimer) {
     window.clearTimeout(pendingTransactionsCloudSyncTimer);
@@ -1745,7 +1660,6 @@ function schedulePendingTransactionsCloudSync(delay = 3500) {
   }, delay);
 }
 
-// ACIKLAMA: retryPendingTransactionsCloudSync fonksiyonunun Turkce karsiligi "yeniden dene bekleyen islemler bulut esitle"; bulut ve yerel veri esitleme akisini yonetir.
 function retryPendingTransactionsCloudSync() {
   if (!currentUser || !firebaseDb || cloudTransactionsSyncInFlight || !loadTransactionsCloudDirtyAt()) {
     return Promise.resolve(false);
@@ -1761,9 +1675,9 @@ function retryPendingTransactionsCloudSync() {
   return fetchCloudTransactions(currentUser.uid, { source: "server" })
     .catch(() => fetchCloudTransactions(currentUser.uid).catch(() => []))
     .then((cloudTransactions) => {
-      // ACIKLAMA: pendingUpserts degiskeninin Turkce karsiligi "bekleyen upserts"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const pendingUpserts = getPendingLocalTransactionUpserts(transactions, cloudTransactions);
-      // ACIKLAMA: pendingDeletes degiskeninin Turkce karsiligi "bekleyen deletes"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const pendingDeletes = getPendingLocalTransactionDeletes(cloudTransactions);
 
       if (!pendingUpserts.length && !pendingDeletes.length) {
@@ -1782,7 +1696,6 @@ function retryPendingTransactionsCloudSync() {
     .catch(() => false);
 }
 
-// ACIKLAMA: bindPendingCloudSyncEvents fonksiyonunun Turkce karsiligi "bagla bekleyen bulut esitle events"; bulut ve yerel veri esitleme akisini yonetir.
 function bindPendingCloudSyncEvents() {
   if (window.__akisBudgetPendingCloudSyncBound) {
     return;
@@ -1850,7 +1763,6 @@ function scheduleUserProfileCloudSync(delay = 180) {
   }, delay);
 }
 
-// ACIKLAMA: syncUserProfileToCloud fonksiyonunun Turkce karsiligi "esitle kullanici profil ile bulut"; bulut ve yerel veri esitleme akisini yonetir.
 function syncUserProfileToCloud() {
   if (!currentUser || !firebaseDb) {
     return Promise.resolve();
@@ -1861,23 +1773,22 @@ function syncUserProfileToCloud() {
     userProfileCloudSyncTimer = null;
   }
 
-  // ACIKLAMA: user degiskeninin Turkce karsiligi "kullanici"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const user = currentUser;
   markUserProfileCloudDirty();
   const contactSnapshot = loadProfileContactInfo();
   let committedContact = contactSnapshot;
-  // ACIKLAMA: syncVersion degiskeninin Turkce karsiligi "esitle version"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const syncVersion = ++cloudProfileSyncVersion;
-  // ACIKLAMA: safeAssets varlik/portfoy ekraniyla ilgili veriyi veya DOM elemanini tutar.
+
   const safeAssets = getCloudReadyAssets(assets);
-  // ACIKLAMA: safeBesAccounts degiskeninin Turkce karsiligi "guvenli BES hesaplar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const safeBesAccounts = getCloudReadyBesAccounts(besAccounts);
   const safeDebtRecords = bulutaHazirBorcAlacakKayitlari(borcAlacakKayitlari);
-  // ACIKLAMA: safePaymentAccounts kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+
   const safePaymentAccounts = getCloudReadyPaymentAccounts(paymentAccounts);
-  // ACIKLAMA: safeTransactionCategories degiskeninin Turkce karsiligi "guvenli islem kategoriler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const safeTransactionCategories = normalizeCategoryState(transactionCategories);
-  // ACIKLAMA: deletedPayload aktarim veya API istegi icin hazirlanan veri paketini tutar.
+
   const deletedPayload = getCloudDeletedTransactionPayload();
   const localDeletedProfileState = getDeletedProfileRecordStateSnapshot();
   const userRef = firebaseDb.collection("users").doc(user.uid);
@@ -1886,7 +1797,6 @@ function syncUserProfileToCloud() {
   let committedDebtRecords = safeDebtRecords;
   let committedDeletedProfileState = localDeletedProfileState;
 
-  // ACIKLAMA: syncPromise degiskeninin Turkce karsiligi "esitle promise"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const syncPromise = firebaseDb
     .runTransaction(async (transaction) => {
       const snapshot = await transaction.get(userRef);
@@ -1978,15 +1888,12 @@ function syncUserProfileToCloud() {
   return syncPromise;
 }
 
-
-// ACIKLAMA: getUserTransactionsCollection fonksiyonunun Turkce karsiligi "al kullanici islemler koleksiyon"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getUserTransactionsCollection(userId) {
   return firebaseDb.collection("users").doc(userId).collection("transactions");
 }
 
-// ACIKLAMA: toCloudTransaction fonksiyonunun Turkce karsiligi "ile bulut islem"; bulut ve yerel veri esitleme akisini yonetir.
 function toCloudTransaction(transaction) {
-  // ACIKLAMA: createdAt degiskeninin Turkce karsiligi "created at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const createdAt = ensureTransactionCreatedAt(transaction);
   return {
     id: transaction.id,
@@ -2017,9 +1924,8 @@ function toCloudTransaction(transaction) {
   };
 }
 
-// ACIKLAMA: toCloudTransactionBackup fonksiyonunun Turkce karsiligi "ile bulut islem yedekle"; bulut ve yerel veri esitleme akisini yonetir.
 function toCloudTransactionBackup(transaction) {
-  // ACIKLAMA: createdAt degiskeninin Turkce karsiligi "created at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const createdAt = ensureTransactionCreatedAt(transaction);
   return {
     id: transaction.id,
@@ -2050,19 +1956,18 @@ function toCloudTransactionBackup(transaction) {
   };
 }
 
-// ACIKLAMA: readCloudTransaction fonksiyonunun Turkce karsiligi "oku bulut islem"; bulut ve yerel veri esitleme akisini yonetir.
 function readCloudTransaction(doc) {
-  // ACIKLAMA: data degiskeninin Turkce karsiligi "veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const data = doc.data() || {};
-  // ACIKLAMA: updatedAt degiskeninin Turkce karsiligi "updated at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const updatedAt = normalizeCloudTimestamp(data.updatedAt);
-  // ACIKLAMA: createdAt degiskeninin Turkce karsiligi "created at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const createdAt =
     normalizeCloudTimestamp(data.createdAt) ||
     normalizeCloudTimestamp(data.addedAt) ||
     updatedAt ||
     String(data.createdAt || data.addedAt || "");
-  // ACIKLAMA: transaction degiskeninin Turkce karsiligi "islem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const transaction = {
     id: doc.id,
     type: data.type,
@@ -2094,7 +1999,6 @@ function readCloudTransaction(doc) {
   return isValidTransaction(transaction) ? transaction : null;
 }
 
-// ACIKLAMA: readCloudTransactionBackupArray fonksiyonunun Turkce karsiligi "oku bulut islem yedekle dizi"; bulut ve yerel veri esitleme akisini yonetir.
 function readCloudTransactionBackupArray(source) {
   if (!Array.isArray(source)) {
     return [];
@@ -2111,55 +2015,45 @@ function readCloudTransactionBackupArray(source) {
     .filter((item) => !isTransactionDeleted(item));
 }
 
-// ACIKLAMA: getCloudReadyTransactions fonksiyonunun Turkce karsiligi "al bulut hazir islemler"; bulut ve yerel veri esitleme akisini yonetir.
 function getCloudReadyTransactions(source) {
   return source.filter((item) => isValidTransaction(item) && !isSampleTransaction(item) && !isTransactionDeleted(item));
 }
 
-// ACIKLAMA: getCloudReadyAssets fonksiyonunun Turkce karsiligi "al bulut hazir varliklar"; bulut ve yerel veri esitleme akisini yonetir.
 function getCloudReadyAssets(source) {
   return applyDeletedProfileTombstones(readCloudAssets(source), deletedAssetTombstones);
 }
 
-// ACIKLAMA: getCloudReadyBesAccounts fonksiyonunun Turkce karsiligi "al bulut hazir BES hesaplar"; bulut ve yerel veri esitleme akisini yonetir.
 function getCloudReadyBesAccounts(source) {
   return applyDeletedProfileTombstones(readCloudBesAccounts(source), deletedBesTombstones);
 }
 
-// ACIKLAMA: getCloudReadyPaymentAccounts fonksiyonunun Turkce karsiligi "al bulut hazir odeme hesaplar"; bulut ve yerel veri esitleme akisini yonetir.
 function getCloudReadyPaymentAccounts(source) {
   return readCloudPaymentAccounts(source);
 }
 
-// ACIKLAMA: readCloudAssets fonksiyonunun Turkce karsiligi "oku bulut varliklar"; bulut ve yerel veri esitleme akisini yonetir.
 function readCloudAssets(source) {
   return Array.isArray(source) ? source.map(normalizeAsset).filter(Boolean) : [];
 }
 
-// ACIKLAMA: readCloudBesAccounts fonksiyonunun Turkce karsiligi "oku bulut BES hesaplar"; bulut ve yerel veri esitleme akisini yonetir.
 function readCloudBesAccounts(source) {
   return Array.isArray(source) ? source.map(normalizeBesAccount).filter(Boolean) : [];
 }
 
-// ACIKLAMA: readCloudPaymentAccounts fonksiyonunun Turkce karsiligi "oku bulut odeme hesaplar"; bulut ve yerel veri esitleme akisini yonetir.
 function readCloudPaymentAccounts(source) {
   return Array.isArray(source) ? source.map(normalizePaymentAccount).filter(Boolean) : [];
 }
 
-// ACIKLAMA: normalizeAsset fonksiyonunun Turkce karsiligi "standartlastir varlik"; veriyi uygulamanin bekledigi temiz formata cevirir.
 function normalizeAsset(item) {
   if (!item || typeof item.id !== "string" || !assetDefinitions[item.type]) {
     return null;
   }
 
-  // ACIKLAMA: amount degiskeninin Turkce karsiligi "tutar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const amount = Number(item.amount);
 
   if (!Number.isFinite(amount) || amount < 0) {
     return null;
   }
 
-  // ACIKLAMA: definition degiskeninin Turkce karsiligi "definition"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const definition = getAssetDefinition(item.type);
   return {
     id: item.id,
@@ -2171,21 +2065,19 @@ function normalizeAsset(item) {
   };
 }
 
-// ACIKLAMA: normalizeBesAccount fonksiyonunun Turkce karsiligi "standartlastir BES hesap"; veriyi uygulamanin bekledigi temiz formata cevirir.
 function normalizeBesAccount(item) {
   if (!item || typeof item.id !== "string") {
     return null;
   }
 
-  // ACIKLAMA: provider degiskeninin Turkce karsiligi "saglayici"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const provider = String(item.provider || "").trim();
-  // ACIKLAMA: contribution degiskeninin Turkce karsiligi "contribution"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const contribution = Number(item.contribution || 0);
-  // ACIKLAMA: stateContribution degiskeninin Turkce karsiligi "durum contribution"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const stateContribution = Number(item.stateContribution || 0);
-  // ACIKLAMA: stateGain degiskeninin Turkce karsiligi "durum gain"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const stateGain = Number(item.stateGain || 0);
-  // ACIKLAMA: gain degiskeninin Turkce karsiligi "gain"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const gain = Number(item.gain || 0);
 
   if (
@@ -2212,35 +2104,33 @@ function normalizeBesAccount(item) {
   };
 }
 
-// ACIKLAMA: normalizePaymentAccount fonksiyonunun Turkce karsiligi "standartlastir odeme hesap"; veriyi uygulamanin bekledigi temiz formata cevirir.
 function normalizePaymentAccount(item) {
   if (!item || typeof item.id !== "string") {
     return null;
   }
 
-  // ACIKLAMA: type degiskeninin Turkce karsiligi "tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const type = normalizePaymentAccountType(item.type);
-  // ACIKLAMA: name degiskeninin Turkce karsiligi "adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const name = String(item.name || "").trim();
-  // ACIKLAMA: balance degiskeninin Turkce karsiligi "bakiye"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const balance = Number(item.balance || 0);
-  // ACIKLAMA: debt degiskeninin Turkce karsiligi "debt"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const debt = Number(item.debt || 0);
-  // ACIKLAMA: currentStatementDebt degiskeninin Turkce karsiligi "mevcut statement debt"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const currentStatementDebt = Number(item.currentStatementDebt ?? debt);
-  // ACIKLAMA: creditPaidTotal hesaplanan toplam degerin ekranda gosterilecegi alandir.
+
   const creditPaidTotal = Number(item.creditPaidTotal || 0);
-  // ACIKLAMA: currentStatementPaidTotal hesaplanan toplam degerin ekranda gosterilecegi alandir.
+
   const currentStatementPaidTotal = Number(item.currentStatementPaidTotal || 0);
-  // ACIKLAMA: debtBaselineVersion degiskeninin Turkce karsiligi "debt baseline version"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const debtBaselineVersion = Number(item.debtBaselineVersion || 0);
-  // ACIKLAMA: limit degiskeninin Turkce karsiligi "limit"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const limit = Number(item.limit || 0);
-  // ACIKLAMA: openingBalance degiskeninin Turkce karsiligi "opening bakiye"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const openingBalance = hasStoredMoneyValue(item.openingBalance) ? Number(item.openingBalance) : null;
-  // ACIKLAMA: openingDebt degiskeninin Turkce karsiligi "opening debt"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const openingDebt = hasStoredMoneyValue(item.openingDebt) ? Number(item.openingDebt) : null;
-  // ACIKLAMA: openingCurrentStatementDebt degiskeninin Turkce karsiligi "opening mevcut statement debt"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const openingCurrentStatementDebt = hasStoredMoneyValue(item.openingCurrentStatementDebt)
     ? Number(item.openingCurrentStatementDebt)
     : null;
@@ -2288,7 +2178,6 @@ function normalizePaymentAccount(item) {
   };
 }
 
-// ACIKLAMA: Ayni varlik veya BES kaydi birden fazla cihazda varsa en yeni surumu korur.
 function mergeVersionedRecordsById(...sources) {
   const merged = new Map();
 
@@ -2310,9 +2199,8 @@ function mergeVersionedRecordsById(...sources) {
   return Array.from(merged.values());
 }
 
-// ACIKLAMA: mergeRecordsById fonksiyonunun Turkce karsiligi "birlestir kayitlar tarafindan kimlik"; ilgili uygulama islemini calistirir.
 function mergeRecordsById(...sources) {
-  // ACIKLAMA: merged degiskeninin Turkce karsiligi "merged"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const merged = new Map();
 
   sources
@@ -2325,7 +2213,6 @@ function mergeRecordsById(...sources) {
   return Array.from(merged.values());
 }
 
-// ACIKLAMA: normalizeCloudTimestamp fonksiyonunun Turkce karsiligi "standartlastir bulut zaman damgasi"; bulut ve yerel veri esitleme akisini yonetir.
 function normalizeCloudTimestamp(value) {
   if (!value) {
     return "";
@@ -2346,7 +2233,6 @@ function normalizeCloudTimestamp(value) {
   return "";
 }
 
-// ACIKLAMA: ensureTransactionCreatedAt fonksiyonunun Turkce karsiligi "garanti et islem created at"; kullanilacak veri yapisini veya HTML elemanini olusturur.
 function ensureTransactionCreatedAt(item) {
   if (!item) {
     return getTurkeyNowDateTime();
@@ -2361,7 +2247,6 @@ function ensureTransactionCreatedAt(item) {
   );
 }
 
-// ACIKLAMA: normalizeTransactionRecord fonksiyonunun Turkce karsiligi "standartlastir islem kayit"; veriyi uygulamanin bekledigi temiz formata cevirir.
 function normalizeTransactionRecord(item) {
   if (!isValidTransaction(item)) {
     return null;
@@ -2387,7 +2272,6 @@ function normalizeTransactionRecord(item) {
   };
 }
 
-// ACIKLAMA: getTransactionMergeTimestamp fonksiyonunun Turkce karsiligi "al islem birlestir zaman damgasi"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getTransactionMergeTimestamp(item) {
   return (
     getRecordTimestamp(item?.updatedAt) ||
@@ -2397,7 +2281,6 @@ function getTransactionMergeTimestamp(item) {
   );
 }
 
-// ACIKLAMA: shouldReplaceMergedTransaction fonksiyonunun Turkce karsiligi "mali mi replace merged islem"; ilgili uygulama islemini calistirir.
 function shouldReplaceMergedTransaction(existing, next) {
   if (!existing) {
     return true;
@@ -2413,9 +2296,8 @@ function shouldReplaceMergedTransaction(existing, next) {
     }
   }
 
-  // ACIKLAMA: existingTime degiskeninin Turkce karsiligi "existing saat"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const existingTime = getTransactionMergeTimestamp(existing);
-  // ACIKLAMA: nextTime degiskeninin Turkce karsiligi "sonraki saat"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const nextTime = getTransactionMergeTimestamp(next);
 
   if (nextTime !== existingTime) {
@@ -2425,9 +2307,8 @@ function shouldReplaceMergedTransaction(existing, next) {
   return String(next.id || "") > String(existing.id || "");
 }
 
-// ACIKLAMA: mergeTransactions fonksiyonunun Turkce karsiligi "birlestir islemler"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function mergeTransactions(...sources) {
-  // ACIKLAMA: byId degiskeninin Turkce karsiligi "tarafindan kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const byId = new Map();
 
   sources
@@ -2436,19 +2317,18 @@ function mergeTransactions(...sources) {
     .filter(Boolean)
     .filter((item) => !isTransactionDeleted(item))
     .forEach((transaction) => {
-      // ACIKLAMA: existing degiskeninin Turkce karsiligi "existing"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const existing = byId.get(transaction.id);
       if (shouldReplaceMergedTransaction(existing, transaction)) {
         byId.set(transaction.id, transaction);
       }
     });
 
-  // ACIKLAMA: bySignature degiskeninin Turkce karsiligi "tarafindan imza"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const bySignature = new Map();
   Array.from(byId.values()).forEach((transaction) => {
-    // ACIKLAMA: signature degiskeninin Turkce karsiligi "imza"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const signature = getTransactionSignature(transaction);
-    // ACIKLAMA: existing degiskeninin Turkce karsiligi "existing"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const existing = bySignature.get(signature);
 
     if (shouldReplaceMergedTransaction(existing, transaction)) {
@@ -2456,14 +2336,12 @@ function mergeTransactions(...sources) {
     }
   });
 
-  // ACIKLAMA: records degiskeninin Turkce karsiligi "kayitlar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const records = Array.from(bySignature.values());
   return coalesceLegacyTransferPairs(removeLegacyRowsCoveredByTransfers(records)).sort(compareTransactionsNewestFirst);
 }
 
-// ACIKLAMA: isTransferLikeRecord fonksiyonunun Turkce karsiligi "mi aktarim benzeri kayit"; ilgili uygulama islemini calistirir.
 function isTransferLikeRecord(item) {
-  // ACIKLAMA: text degiskeninin Turkce karsiligi "metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const text = normalizeBankText([item?.title, item?.category, item?.note].filter(Boolean).join(" "));
 
   if (!text) {
@@ -2490,28 +2368,24 @@ function isTransferLikeRecord(item) {
   ].some((keyword) => text.includes(keyword));
 }
 
-// ACIKLAMA: areSameTransactionAmount fonksiyonunun Turkce karsiligi "mi ayni islem tutar"; ilgili uygulama islemini calistirir.
 function areSameTransactionAmount(first, second) {
   return Math.abs(Number(first?.amount || 0) - Number(second?.amount || 0)) < 0.01;
 }
 
-// ACIKLAMA: getComparableTransactionMinute fonksiyonunun Turkce karsiligi "al comparable islem minute"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getComparableTransactionMinute(item) {
-  // ACIKLAMA: time degiskeninin Turkce karsiligi "saat"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const time = getTransactionTime(item);
   return time ? time.slice(0, 5) : "";
 }
 
-// ACIKLAMA: haveCompatibleTransferTimes fonksiyonunun Turkce karsiligi "have compatible aktarim times"; ilgili uygulama islemini calistirir.
 function haveCompatibleTransferTimes(first, second) {
-  // ACIKLAMA: firstMinute degiskeninin Turkce karsiligi "ilk minute"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const firstMinute = getComparableTransactionMinute(first);
-  // ACIKLAMA: secondMinute degiskeninin Turkce karsiligi "second minute"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const secondMinute = getComparableTransactionMinute(second);
   return !firstMinute || !secondMinute || firstMinute === secondMinute;
 }
 
-// ACIKLAMA: hasSameTransferDayAndAmount fonksiyonunun Turkce karsiligi "var mi ayni aktarim gun and tutar"; ilgili uygulama islemini calistirir.
 function hasSameTransferDayAndAmount(first, second) {
   return (
     String(first?.date || "") === String(second?.date || "") &&
@@ -2520,7 +2394,6 @@ function hasSameTransferDayAndAmount(first, second) {
   );
 }
 
-// ACIKLAMA: isLegacySplitRowForTransfer fonksiyonunun Turkce karsiligi "mi legacy bol satir icin aktarim"; ilgili uygulama islemini calistirir.
 function isLegacySplitRowForTransfer(transfer, candidate) {
   if (!transfer || !candidate || transfer.type !== "transfer" || candidate.type === "transfer") {
     return false;
@@ -2530,28 +2403,25 @@ function isLegacySplitRowForTransfer(transfer, candidate) {
     return false;
   }
 
-  // ACIKLAMA: sourceId degiskeninin Turkce karsiligi "kaynak kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const sourceId = String(transfer.paymentAccountId || "");
-  // ACIKLAMA: targetId degiskeninin Turkce karsiligi "hedef kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const targetId = String(transfer.transferAccountId || "");
-  // ACIKLAMA: candidateAccountId degiskeninin Turkce karsiligi "candidate hesap kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const candidateAccountId = String(candidate.paymentAccountId || "");
 
   if (!sourceId || !targetId || !candidateAccountId) {
     return false;
   }
 
-  // ACIKLAMA: isSourceExpense degiskeninin Turkce karsiligi "mi kaynak gider"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const isSourceExpense = candidate.type === "expense" && candidateAccountId === sourceId;
-  // ACIKLAMA: isTargetIncome degiskeninin Turkce karsiligi "mi hedef gelir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const isTargetIncome = candidate.type === "income" && candidateAccountId === targetId;
 
   return (isSourceExpense || isTargetIncome) && isTransferLikeRecord(candidate);
 }
 
-// ACIKLAMA: removeLegacyRowsCoveredByTransfers fonksiyonunun Turkce karsiligi "kaldir legacy satirlar kapsanmis tarafindan transfers"; secilen kaydi siler veya listeden kaldirir.
 function removeLegacyRowsCoveredByTransfers(source = []) {
-  // ACIKLAMA: transfers degiskeninin Turkce karsiligi "transfers"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const transfers = source.filter((item) => item.type === "transfer");
 
   if (!transfers.length) {
@@ -2567,7 +2437,6 @@ function removeLegacyRowsCoveredByTransfers(source = []) {
   });
 }
 
-// ACIKLAMA: isLikelySplitTransferPair fonksiyonunun Turkce karsiligi "mi olasi bol aktarim pair"; AI destekli okuma veya API istegi akisini calistirir.
 function isLikelySplitTransferPair(first, second) {
   if (!first || !second || first.type === second.type || first.type === "transfer" || second.type === "transfer") {
     return false;
@@ -2577,9 +2446,8 @@ function isLikelySplitTransferPair(first, second) {
     return false;
   }
 
-  // ACIKLAMA: firstAccountId degiskeninin Turkce karsiligi "ilk hesap kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const firstAccountId = String(first.paymentAccountId || "");
-  // ACIKLAMA: secondAccountId degiskeninin Turkce karsiligi "second hesap kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const secondAccountId = String(second.paymentAccountId || "");
 
   if (!firstAccountId || !secondAccountId || firstAccountId === secondAccountId) {
@@ -2589,9 +2457,8 @@ function isLikelySplitTransferPair(first, second) {
   return isTransferLikeRecord(first) || isTransferLikeRecord(second);
 }
 
-// ACIKLAMA: getTransactionPairScore fonksiyonunun Turkce karsiligi "al islem pair puan"; AI destekli okuma veya API istegi akisini calistirir.
 function getTransactionPairScore(first, second) {
-  // ACIKLAMA: score degiskeninin Turkce karsiligi "puan"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   let score = 0;
 
   if (getComparableTransactionMinute(first) && getComparableTransactionMinute(first) === getComparableTransactionMinute(second)) {
@@ -2608,21 +2475,20 @@ function getTransactionPairScore(first, second) {
   return score;
 }
 
-// ACIKLAMA: buildTransferFromSplitPair fonksiyonunun Turkce karsiligi "olustur aktarim kaynakli bol pair"; AI destekli okuma veya API istegi akisini calistirir.
 function buildTransferFromSplitPair(first, second) {
-  // ACIKLAMA: expense degiskeninin Turkce karsiligi "gider"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const expense = first.type === "expense" ? first : second;
-  // ACIKLAMA: income degiskeninin Turkce karsiligi "gelir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const income = first.type === "income" ? first : second;
-  // ACIKLAMA: updatedAt degiskeninin Turkce karsiligi "updated at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const updatedAt = [expense.updatedAt, income.updatedAt]
     .filter(Boolean)
     .sort((left, right) => getRecordTimestamp(right) - getRecordTimestamp(left))[0] || getTurkeyNowDateTime();
-  // ACIKLAMA: createdAt degiskeninin Turkce karsiligi "created at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const createdAt = [expense.createdAt, income.createdAt].filter(Boolean).sort()[0] || expense.createdAt || income.createdAt || updatedAt;
-  // ACIKLAMA: notes degiskeninin Turkce karsiligi "notes"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const notes = [expense.note, income.note].map((value) => String(value || "").trim()).filter(Boolean);
-  // ACIKLAMA: uniqueNotes degiskeninin Turkce karsiligi "unique notes"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const uniqueNotes = [...new Set(notes)];
 
   return {
@@ -2644,13 +2510,12 @@ function buildTransferFromSplitPair(first, second) {
   };
 }
 
-// ACIKLAMA: coalesceLegacyTransferPairs fonksiyonunun Turkce karsiligi "bir araya getir legacy aktarim pairs"; AI destekli okuma veya API istegi akisini calistirir.
 function coalesceLegacyTransferPairs(source = []) {
-  // ACIKLAMA: records degiskeninin Turkce karsiligi "kayitlar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const records = [...source];
-  // ACIKLAMA: usedIds degiskeninin Turkce karsiligi "used kimlikler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const usedIds = new Set();
-  // ACIKLAMA: result degiskeninin Turkce karsiligi "result"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const result = [];
 
   records.forEach((item) => {
@@ -2662,7 +2527,6 @@ function coalesceLegacyTransferPairs(source = []) {
       return;
     }
 
-    // ACIKLAMA: candidates degiskeninin Turkce karsiligi "aday metinler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const candidates = records
       .filter((candidate) => !usedIds.has(candidate.id) && candidate.id !== item.id && candidate.type === "income")
       .filter((candidate) => isLikelySplitTransferPair(item, candidate))
@@ -2672,7 +2536,6 @@ function coalesceLegacyTransferPairs(source = []) {
       return;
     }
 
-    // ACIKLAMA: income degiskeninin Turkce karsiligi "gelir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const income = candidates[0];
     usedIds.add(item.id);
     usedIds.add(income.id);
@@ -2688,9 +2551,8 @@ function coalesceLegacyTransferPairs(source = []) {
   return result;
 }
 
-// ACIKLAMA: getLegacyTransferCounterpartIds fonksiyonunun Turkce karsiligi "al legacy aktarim counterpart kimlikler"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getLegacyTransferCounterpartIds(transfer, previousTransaction = null) {
-  // ACIKLAMA: ids degiskeninin Turkce karsiligi "kimlikler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const ids = new Set();
 
   if (!transfer || transfer.type !== "transfer") {
@@ -2708,13 +2570,13 @@ function getLegacyTransferCounterpartIds(transfer, previousTransaction = null) {
     }
 
     if (previousTransaction && isLikelySplitTransferPair(previousTransaction, candidate)) {
-      // ACIKLAMA: previousWasSourceExpense degiskeninin Turkce karsiligi "previous was kaynak gider"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const previousWasSourceExpense = previousTransaction.type === "expense";
-      // ACIKLAMA: candidateIsTargetIncome degiskeninin Turkce karsiligi "candidate mi hedef gelir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const candidateIsTargetIncome = candidate.type === "income" && String(candidate.paymentAccountId || "") === String(transfer.transferAccountId || "");
-      // ACIKLAMA: previousWasTargetIncome degiskeninin Turkce karsiligi "previous was hedef gelir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const previousWasTargetIncome = previousTransaction.type === "income";
-      // ACIKLAMA: candidateIsSourceExpense degiskeninin Turkce karsiligi "candidate mi kaynak gider"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const candidateIsSourceExpense = candidate.type === "expense" && String(candidate.paymentAccountId || "") === String(transfer.paymentAccountId || "");
 
       if ((previousWasSourceExpense && candidateIsTargetIncome) || (previousWasTargetIncome && candidateIsSourceExpense)) {
@@ -2726,14 +2588,12 @@ function getLegacyTransferCounterpartIds(transfer, previousTransaction = null) {
   return ids;
 }
 
-// ACIKLAMA: isSampleTransaction fonksiyonunun Turkce karsiligi "mi sample islem"; ilgili uygulama islemini calistirir.
 function isSampleTransaction(item) {
   return ["Nisan Maaşı", "Haftalık Market", "Elektrik Faturası"].includes(item.title);
 }
 
-// ACIKLAMA: getFirebaseErrorMessage fonksiyonunun Turkce karsiligi "al Firebase hata mesaj"; Firebase veya kimlik dogrulama islemlerini yonetir.
 function getFirebaseErrorMessage(error) {
-  // ACIKLAMA: code degiskeninin Turkce karsiligi "code"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const code = error && error.code;
 
   if (code === "auth/email-already-in-use") {

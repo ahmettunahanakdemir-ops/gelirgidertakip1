@@ -102,11 +102,6 @@
   object-fit: contain;
 }
 
-.budget-assistant-message-avatar {
-  width: 32px;
-  height: 32px;
-}
-
 .budget-assistant-heading {
   display: grid;
   flex: 1 1 auto;
@@ -367,6 +362,7 @@ html .budget-assistant-composer textarea {
   min-width: 44px;
   min-height: 44px;
   overflow: visible;
+  transition: box-shadow .2s ease, background-color .2s ease, color .2s ease;
 }
 
 .budget-assistant-mic::before,

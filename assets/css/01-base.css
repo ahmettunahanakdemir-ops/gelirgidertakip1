@@ -1,9 +1,4 @@
-/* ACIKLAMA: Kok degiskenler, global sayfa zemini ve temel form/button ayarlari.
-   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
-
-/* ACIKLAMA NOTU: Bu CSS dosyasinda selector bloklarinin yaninda ne ise yaradiklarini anlatan yorumlar vardir. */
-﻿/* ACIKLAMA: Kok degiskenler; renk, font ve golge gibi tema degerlerini merkezi olarak tutar. */
-﻿:root {
+:root {
   --bg: #f3f6f4;
   --surface: #ffffff;
   --surface-soft: #f7faf8;
@@ -24,25 +19,14 @@
   --app-font-weight: 500;
   --app-font-weight-strong: 700;
 }
-
-/* ACIKLAMA: Tum elemanlarda olcu hesaplamasini tutarli hale getirir. */
 * {
   box-sizing: border-box;
 }
-
-/* ACIKLAMA: html secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
 html {
   min-height: 100%;
   background: var(--bg);
   font-size: var(--app-font-size, 16px);
 }
-
-/* ACIKLAMA: [hidden] secicisi ilgili arayuz parcasinin gorunum ve yerlesim kurallarini tanimlar. */
-[hidden] {
-  display: none !important;
-}
-
-/* ACIKLAMA: Sayfanin genel font, arka plan, kaydirma ve temel yerlesim gorunumunu ayarlar. */
 body {
   margin: 0;
   min-height: 100vh;
@@ -61,33 +45,21 @@ body {
     var(--bg);
   background-size: auto, min(680px, 92vw) auto, 28px 28px, 28px 28px, auto;
 }
-
-/* ACIKLAMA: Bu blok tarayicinin destekledigi ozellige gore ek CSS kurali uygular. */
 @supports (min-height: 100dvh) {
   body,
   .login-screen,
-  /* ACIKLAMA: Ana uygulama iskeleti, icerik alani ve ust bar yerlesimini ayarlar. */
+  
   .app-shell {
     min-height: 100dvh;
   }
 }
 
-button,
 input,
 select,
-/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
-textarea {
-  font: inherit;
-}
 
-input,
-select,
-/* ACIKLAMA: Form elemanlarinin okunabilir ve dokunulabilir gorunumunu ayarlar. */
 textarea {
   font-size: 16px;
 }
-
-/* ACIKLAMA: Butonlarin renk, boyut, hover ve tiklanabilirlik gorunumunu ayarlar. */
 button {
   cursor: pointer;
   touch-action: manipulation;

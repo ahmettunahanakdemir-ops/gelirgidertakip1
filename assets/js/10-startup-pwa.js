@@ -1,8 +1,5 @@
-// ACIKLAMA: Acilis ekrani ve service worker kaydi yardimcilari.
-// ACIKLAMA: Bu dosya ayrilan JS yapisinin bir parcasidir; index.html icindeki yukleme sirasi onemlidir.
-
 function hideStartupSplash() {
-  // ACIKLAMA: finishStartup degiskeninin Turkce karsiligi "finish baslangic"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const finishStartup = () => {
     startupSplashFinished = true;
     document.documentElement.classList.remove("startup-splash-active");
@@ -37,13 +34,11 @@ function hideStartupSplash() {
   }, 2100);
 }
 
-// ACIKLAMA: registerServiceWorker fonksiyonunun Turkce karsiligi "service worker kaydet"; ilgili uygulama islemini calistirir.
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) {
     return;
   }
 
-  // ACIKLAMA: isHttp degiskeninin Turkce karsiligi "mi http"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const isHttp = window.location.protocol === "http:" || window.location.protocol === "https:";
   if (!isHttp) {
     return;

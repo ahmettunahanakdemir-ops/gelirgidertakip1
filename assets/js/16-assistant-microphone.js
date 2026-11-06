@@ -1,231 +1,213 @@
-function createBudgetMicrophone({ button, Recognition, onSend, onStatus, stopPlayback, onTranscript = () => {} }) {
-  const singlePassDevice = typeof navigator !== "undefined" && (
-    /iPhone|iPad|iPod/i.test(navigator.userAgent || "") ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+// Each click creates a fresh in-memory recording. No automatic message submission.
+function createBudgetMicrophone({button, input, onStatus, stopPlayback}) {
+const status = {set textContent(value) {onStatus(value);}};
+let active = null;
+function paint(mode) {
+  button.dataset.voiceState = mode;
+  button.classList.toggle("is-listening", mode === "listening");
+  button.classList.toggle("is-processing", mode === "processing");
+  button.classList.remove("is-speaking");
+  button.setAttribute("aria-pressed", String(mode === "listening"));
+  button.setAttribute(
+    "aria-busy",
+    String(mode === "processing" || mode === "starting"),
   );
-  let session = null;
-  let press = null;
-  let ignoreClickUntil = 0;
-  const join = (...parts) => parts.filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
-  const clearTimer = (state, key) => {
-    if (state[key] !== null) window.clearTimeout(state[key]);
-    state[key] = null;
-  };
-  const visual = (mode) => {
-    button.dataset.voiceState = mode;
-    button.classList.toggle("is-listening", mode !== "idle");
-    button.classList.toggle("is-speaking", mode === "speaking");
-    button.classList.toggle("is-processing", mode === "processing");
-    button.setAttribute("aria-pressed", String(mode !== "idle"));
-    const label = mode === "idle" ? "Sesli mesaj: basılı tut veya dokunarak başlat" : mode === "processing" ? "Sesli mesaj metne çevriliyor" : "Dinlemeyi bitir ve mesajı gönder";
-    button.setAttribute("aria-label", label); button.title = label;
-  };
-  function detected(state) {
-    if (session !== state || state.done || state.stopping) return;
-    visual("speaking"); onStatus("Sesin algılanıyor…");
-    clearTimer(state, "speechTimer");
-    state.speechTimer = window.setTimeout(() => {
-      if (session === state && !state.stopping) { visual("listening"); onStatus("Dinliyorum…"); }
-    }, 1100);
-  }
-
-  function reset(state) {
-    ["silenceTimer", "restartTimer", "finalTimer", "speechTimer", "startTimer", "hardTimer"].forEach((key) => clearTimer(state, key));
-    state.done = true;
-    if (session === state) session = null;
-    press = null;
-    visual("idle"); onTranscript("", false);
-  }
-
-  function cancel() {
-    press = null;
-    if (!session) return;
-    const state = session;
-    reset(state);
-    try { state.engine?.abort(); } catch { }
-  }
-
-  function commit(state) {
-    if (session !== state || state.done) return;
-    const transcript = join(state.before, state.current);
-    reset(state);
-    try { state.engine?.abort(); } catch { }
-    onStatus(transcript ? "" : "Ses algılanamadı. Tekrar deneyebilir veya yazabilirsin.");
-    if (transcript) onSend(transcript);
-  }
-
-  function finish() {
-    const state = session;
-    if (!state || state.stopping) return;
-    state.stopping = true;
-    clearTimer(state, "silenceTimer");
-    clearTimer(state, "restartTimer");
-    clearTimer(state, "speechTimer");
-    clearTimer(state, "startTimer");
-    visual("processing");
-    onStatus("Metne çevriliyor…");
-    if (!state.engine) { commit(state); return; }
-    try { state.engine.stop(); } catch { commit(state); return; }
-    // Some engines delay or omit end; late results cannot send a second message.
-    if (session === state) state.finalTimer = window.setTimeout(() => commit(state), 1500);
-  }
-
-  function armSilence(state, delay = 5000) {
-    clearTimer(state, "silenceTimer");
-    state.silenceTimer = window.setTimeout(() => {
-      state.silenceTimer = null;
-      if (press && Date.now() - press.start >= 350) { armSilence(state, delay); return; }
-      if (session === state) finish();
-    }, delay);
-  }
-
-  function startEngine(state) {
-    if (session !== state || state.done || state.stopping) return;
-    let engine;
-    try {
-      engine = new Recognition();
-      state.engine = engine;
-      engine.lang = "tr-TR";
-      engine.continuous = !state.singlePass;
-      engine.interimResults = true;
-      engine.maxAlternatives = 1;
-      engine.onstart = () => {
-        if (session !== state || state.done) { try { engine.abort(); } catch { } return; }
-        if (state.engine !== engine || state.stopping) return;
-        clearTimer(state, "startTimer");
-        visual("listening");
-        onStatus("Dinliyorum…");
-        if (state.silenceTimer === null) armSilence(state, state.before || state.current ? 5000 : 10000);
-      };
-      engine.onspeechstart = () => {
-        if (session === state && state.engine === engine && !state.stopping) { detected(state); clearTimer(state, "silenceTimer"); }
-      };
-      engine.onspeechend = () => {
-        if (session === state && state.engine === engine && !state.stopping) { visual("listening"); onStatus("Dinliyorum…"); armSilence(state); }
-      };
-      engine.onsoundstart = engine.onspeechstart;
-      engine.onsoundend = engine.onspeechend;
-      engine.onresult = (event) => {
-        if (session !== state || state.done || state.engine !== engine) return;
-        const text = join(...Array.from(event.results || []).map((result) => result[0]?.transcript || ""));
-        if (text !== state.current) {
-          state.current = text;
-          state.retries = 0;
-          onTranscript(join(state.before, state.current), true);
-          if (!state.stopping) { detected(state); armSilence(state); }
-        }
-      };
-      engine.onerror = (event) => {
-        if (session !== state || state.done || state.engine !== engine || event.error === "no-speech") return;
-        if (state.stopping && event.error === "aborted") return;
-        reset(state);
-        try { engine.abort(); } catch { }
-        const messages = {
-          "not-allowed": "Mikrofon izni verilmedi. Site/uygulama izinlerini kontrol et; mesajını yazarak devam edebilirsin.",
-          "service-not-allowed": "Ses tanıma servisine izin verilmedi veya cihazda kullanılamıyor. Mesajını yazarak devam edebilirsin.",
-          "audio-capture": "Mikrofona erişilemedi. Başka uygulamaların mikrofon kullanımını ve cihaz ayarlarını kontrol et.",
-          network: "Ses tanıma bağlantısı kesildi. İnterneti kontrol edip tekrar dene; mesaj gönderilmedi.",
-          "language-not-supported": "Cihazın ses tanıma servisi Türkçeyi desteklemiyor. Mesajını yazarak devam edebilirsin.",
-        };
-        onStatus(messages[event.error] || "Ses tanıma tamamlanamadı. Mesaj gönderilmedi; tekrar deneyebilirsin.");
-      };
-      engine.onend = () => {
-        if (session !== state || state.done || state.engine !== engine) return;
-        clearTimer(state, "startTimer");
-        if (state.stopping) { commit(state); return; }
-        if (state.singlePass) {
-          clearTimer(state, "silenceTimer");
-          clearTimer(state, "speechTimer");
-          state.stopping = true;
-          visual("processing");
-          onStatus("Metne çevriliyor…");
-          state.finalTimer = window.setTimeout(() => commit(state), 180);
-          return;
-        }
-        state.before = join(state.before, state.current);
-        state.current = "";
-        state.engine = null;
-        if (++state.retries > 3) { cancel(); onStatus("Ses tanıma sürekli kesiliyor. İzinleri ve bağlantıyı kontrol edip tekrar dene."); return; }
-        visual("starting");
-        // Mobile engines may end a segment even with continuous recognition enabled.
-        state.restartTimer = window.setTimeout(() => {
-          state.restartTimer = null;
-          startEngine(state);
-        }, 250);
-      };
-      state.startTimer = window.setTimeout(() => {
-        if (session !== state || state.engine !== engine) return;
-        cancel(); onStatus("Mikrofon başlatılamadı. İzin isteğini ve cihazın ses tanıma desteğini kontrol et.");
-      }, 12000);
-      engine.start();
-    } catch {
-      reset(state);
-      onStatus("Mikrofon açılamadı. Mesajını yazarak devam edebilirsin.");
-    }
-  }
-
-  function start() {
-    if (session) return;
-    if (!Recognition) { onStatus("Bu tarayıcıda ses tanıma kullanılamıyor. Mesajını yazabilirsin."); return; }
-    stopPlayback();
-    session = { engine: null, before: "", current: "", done: false, stopping: false, singlePass: singlePassDevice, retries: 0, silenceTimer: null, restartTimer: null, finalTimer: null, speechTimer: null, startTimer: null, hardTimer: null };
-    visual("starting"); onTranscript("", true);
-    session.hardTimer = window.setTimeout(finish, 90000);
-    onStatus("Mikrofon açılıyor…");
-    startEngine(session);
-  }
-
-  button.addEventListener("pointerdown", (event) => {
-    if (!event.isPrimary || event.button !== 0) return;
-    press = { id: event.pointerId, start: Date.now(), alreadyListening: Boolean(session) };
-    try { button.setPointerCapture(event.pointerId); } catch { }
-    if (!session) start();
-  });
-  button.addEventListener("pointerup", (event) => {
-    if (!press || press.id !== event.pointerId) return;
-    const shouldFinish = press.alreadyListening || Date.now() - press.start >= 350;
-    press = null;
-    ignoreClickUntil = Date.now() + 700;
-    if (shouldFinish) finish();
-  });
-  button.addEventListener("pointercancel", cancel);
-  button.addEventListener("click", (event) => {
-    if (event.detail !== 0 && Date.now() < ignoreClickUntil) return;
-    session ? finish() : start();
-  });
-  return { start, finish, cancel, isListening: () => Boolean(session) };
+  button.setAttribute(
+    "aria-label",
+    mode === "listening" ? "Kaydı bitir ve yazıya çevir" : "Ses kaydı başlat",
+  );
 }
-
-function createBudgetAssistantSpeaker({ onState, onError, synthesis = window.speechSynthesis, Utterance = window.SpeechSynthesisUtterance }) {
-  let token = 0, activeUtterance = null, queue = [];
-  const cancel = () => { token++; queue = []; activeUtterance = null; synthesis?.cancel(); onState(false); };
-  function read(text) {
-    cancel();
-    if (!synthesis || !Utterance || !String(text).trim()) return;
-    const session = token;
-    // Short chunks avoid long-response truncation on mobile speech engines.
-    for (const segment of String(text).match(/[^.!?\n]+[.!?]?/g) || []) {
-      let chunk = "";
-      for (const word of segment.trim().split(/\s+/)) {
-        if (chunk && chunk.length + word.length > 220) { queue.push(chunk); chunk = ""; }
-        chunk = chunk ? `${chunk} ${word}` : word;
-      }
-      if (chunk) queue.push(chunk);
-    }
-    const next = () => {
-      if (session !== token) return;
-      if (!queue.length) { activeUtterance = null; onState(false); return; }
-      const utterance = new Utterance(queue.shift()); activeUtterance = utterance;
-      utterance.lang = "tr-TR"; utterance.rate = 1;
-      const voices = synthesis.getVoices?.() || [];
-      const turkish = voices.find(voice => /^tr(?:-|_)/i.test(voice.lang) && voice.localService) || voices.find(voice => /^tr(?:-|_|$)/i.test(voice.lang));
-      if (turkish) utterance.voice = turkish;
-      utterance.onend = next;
-      utterance.onerror = event => { if (session !== token) return; cancel(); if (!/^(canceled|interrupted)$/.test(event.error || "")) onError(); };
-      onState(true);
-      try { synthesis.speak(utterance); } catch { cancel(); onError(); }
-    };
-    next();
+function release(s) {
+  clearInterval(s.timer);
+  clearTimeout(s.limit);
+  s.stream?.getTracks().forEach((t) => t.stop());
+  s.stream = null;
+  s.source?.disconnect();
+  s.source = null;
+  if (s.context) {
+    void s.context.close().catch(() => {});
+    s.context = null;
   }
-  return { cancel, read };
+  s.analyser = null;
+}
+function cancel() {
+  const s = active;
+  if (!s) return;
+  active = null;
+  s.cancelled = true;
+  s.controller.abort();
+  if (s.recorder?.state === "recording") s.recorder.stop();
+  release(s);
+  s.parts = [];
+  s.recorder = null;
+  paint("idle");
+}
+async function convert(s) {
+  release(s);
+  if (s.cancelled || active !== s) {
+    s.parts = [];
+    return;
+  }
+  paint("processing");
+  status.textContent = "Ses kaydınız yazıya çevriliyor…";
+  let blob = new Blob(s.parts, { type: s.mime });
+  s.parts = [];
+  s.recorder = null;
+  const timeout = setTimeout(() => s.controller.abort(), 125000);
+  try {
+    if (!blob.size)
+      throw new Error("Ses alınamadı. Yeniden kayıt yapabilirsiniz.");
+    const response = await fetch("/.netlify/functions/transcribe", {
+      method: "POST",
+      headers: { "Content-Type": s.mime, Authorization: "Bearer " + await currentUser.getIdToken() },
+      body: blob,
+      signal: s.controller.signal,
+    });
+    blob = null;
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Ses metne çevrilemedi.");
+    if (active !== s || s.cancelled) return;
+    const text = String(result.text || "").trim();
+    if (!text)
+      throw new Error("Konuşma anlaşılamadı. Yeniden deneyebilirsiniz.");
+    input.value = [input.value.trim(), text].filter(Boolean).join(" ");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    status.textContent = "";
+  } catch (error) {
+    if (active === s && !s.cancelled)
+      status.textContent =
+        error.name === "AbortError"
+          ? "Ses çözümleme tamamlanamadı. Yeniden kayıt yapabilirsiniz."
+          : error.message;
+  } finally {
+    clearTimeout(timeout);
+    blob = null;
+    s.parts = [];
+    if (active === s) {
+      active = null;
+      paint("idle");
+    }
+  }
+}
+function stop(s) {
+  if (active !== s || s.stopping) return;
+  s.stopping = true;
+  if (s.recorder?.state === "recording") s.recorder.stop();
+  else cancel();
+}
+async function start() {
+  if (active) return;
+  stopPlayback?.();
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+    status.textContent =
+      "Ses kaydı için güvenilir HTTPS bağlantısı ve mikrofon izni gerekir.";
+    return;
+  }
+  if (!window.MediaRecorder) {
+    status.textContent =
+      "Tarayıcı ses kaydını desteklemiyor. Sorunuzu yazabilirsiniz.";
+    return;
+  }
+  const s = {
+    parts: [],
+    controller: new AbortController(),
+    cancelled: false,
+    stopping: false,
+  };
+  active = s;
+  paint("starting");
+  status.textContent = "";
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) {
+      s.context = new AC();
+      await s.context.resume();
+    }
+    if (active !== s) return;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+      video: false,
+    });
+    if (active !== s || s.cancelled) {
+      stream.getTracks().forEach((t) => t.stop());
+      return;
+    }
+    s.stream = stream;
+    const mime = [
+      "audio/webm;codecs=opus",
+      "audio/mp4",
+      "audio/ogg;codecs=opus",
+    ].find((t) => MediaRecorder.isTypeSupported(t));
+    s.recorder = new MediaRecorder(
+      stream,
+      mime ? { mimeType: mime } : undefined,
+    );
+    s.mime = s.recorder.mimeType || mime || "audio/webm";
+    s.recorder.ondataavailable = (e) => {
+      if (!s.cancelled && e.data.size) s.parts.push(e.data);
+    };
+    s.recorder.onstop = () => void convert(s);
+    s.recorder.onerror = () => {
+      if (active === s) {
+        cancel();
+        status.textContent = "Ses kaydı kesildi. Yeniden deneyebilirsiniz.";
+      }
+    };
+    s.recorder.start(250);
+    paint("listening");
+    status.textContent = "";
+    s.lastSound = Date.now();
+    if (s.context) {
+      s.source = s.context.createMediaStreamSource(stream);
+      s.analyser = s.context.createAnalyser();
+      s.analyser.fftSize = 2048;
+      s.source.connect(s.analyser);
+      const samples = new Float32Array(2048);
+      s.timer = setInterval(() => {
+        if (active !== s || s.stopping) return;
+        s.analyser.getFloatTimeDomainData(samples);
+        const rms = Math.sqrt(
+          samples.reduce((sum, v) => sum + v * v, 0) / samples.length,
+        );
+        if (rms > 0.015) s.lastSound = Date.now();
+        if (Date.now() - s.lastSound >= 5000) stop(s);
+      }, 100);
+    } else
+      status.textContent =
+        "Kayıt açık. Bitirmek için mikrofon düğmesine tekrar dokunun.";
+    s.limit = setTimeout(() => stop(s), 90000);
+  } catch (error) {
+    if (active === s) {
+      cancel();
+      status.textContent =
+        error.name === "NotAllowedError"
+          ? "Mikrofon izni verilmedi. Site mikrofon iznini kontrol ediniz."
+          : "Mikrofon açılamadı. Cihazın mikrofonunu kontrol ediniz.";
+    }
+  }
+}
+button.addEventListener("click", () => {
+  if (active) {
+    if (active.stopping) {
+      status.textContent = "Önceki kayıt yazıya çevriliyor…";
+      return;
+    }
+    stop(active);
+  } else void start();
+});
+
+
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) cancel();
+});
+window.addEventListener("pagehide", cancel);
+input.closest("form")?.addEventListener("submit", cancel);
+paint("idle");
+
+return {cancel};
 }

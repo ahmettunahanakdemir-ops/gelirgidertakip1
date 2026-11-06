@@ -144,7 +144,6 @@ html.modern-budget .transaction-overflow-button {
   min-width: 40px;
   min-height: 40px;
   padding: 8px;
-  background: transparent !important;
   color: var(--muted);
   border: 0 !important;
   box-shadow: none !important;

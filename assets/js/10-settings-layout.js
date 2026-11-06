@@ -1,4 +1,3 @@
-// ACIKLAMA: Mevcut ayar kontrolleri tasinir; kimlikleri ve kaydetme olaylari korunur.
 function setupSettingsLayout() {
   const view = document.getElementById("settingsView");
   const workspace = view.closest(".workspace");
@@ -207,6 +206,7 @@ function setupSettingsLayout() {
   disclosure(general,"Tarih işlemleri","calendar-days",filter,"date-filter");
   disclosure(group("Yedekleme ve Veri"),"Yedekleme işlemleri","database-backup",backups,"backup");
   disclosure(group("Daha Fazla"),"Kategoriler","layout-grid",categories,"categories");
+  if (window.AkisAssistantLogs) disclosure(group("Asistan"),"Asistan soru kayıtları","list-filter",window.AkisAssistantLogs.createPanel(),"assistant-logs");
   disclosure(group("Yardım"),"Kullanım rehberi ve ipuçları","circle-help",createBudgetHelpContent(),"help");
   // Eski kapsayicilar kaldirilir; iclerindeki canli kontroller yukarida tasinmistir.
   view.replaceChildren(layout);

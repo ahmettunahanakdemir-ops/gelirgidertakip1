@@ -1,6 +1,3 @@
-// ACIKLAMA: Manuel borc, taksit ve alacak listeleri ile kismi/tam odeme akislari.
-// ACIKLAMA: Bu dosya state-startup dosyasindan once yuklenmelidir.
-
 const borcEklemePenceresi = document.getElementById("debtModal");
 const borcEklemeFormu = document.getElementById("debtForm");
 const borcPencereBasligi = document.getElementById("debtModalTitle");
@@ -409,7 +406,6 @@ function borcTaksitZorunlulugunuGuncelle() {
   borcVadeTarihiAlani.required = borcEklemeFormu?.dataset.listType === "installment";
 }
 
-// ACIKLAMA: Yeni kayit ekranlari ayni takip secimini ve mevcut borc kaydetme yolunu kullanir.
 function createNewTransactionFollowControl(options = {}) {
   const control = document.createElement("fieldset");
   control.className = "new-transaction-follow transaction-follow-settings";
@@ -472,7 +468,6 @@ function borcAlacakIslemTakipKaydiniBul(islemId) {
     : null;
 }
 
-// ACIKLAMA: Gelir/gider duzenleme formundaki takip secimini, mevcut odeme gecmisini bozmadan dogrular.
 function borcAlacakIslemDuzenlemeTakibiniDogrula(islem, options = {}) {
   const mevcutKayit = borcAlacakIslemTakipKaydiniBul(islem?.id);
   if (!options.selected) {
@@ -499,7 +494,6 @@ function borcAlacakIslemDuzenlemeTakibiniDogrula(islem, options = {}) {
   return "";
 }
 
-// ACIKLAMA: Islem duzenlenirken isaretlenen takip secimini ekler, gunceller veya odemesiz kaydi kaldirir.
 function borcAlacakIslemDuzenlemesiniTakibeUygula(islem, options = {}) {
   const mevcutKayit = borcAlacakIslemTakipKaydiniBul(islem?.id);
   if (!options.selected) {
@@ -867,7 +861,6 @@ function borcAlacakOdemeYonteminiHesaptanBul(hesap) {
   return "bank_account";
 }
 
-// ACIKLAMA: Ana gelir/gider formundaki islemin secilen acik borc veya alacaga uygulanabilirligini denetler.
 function borcAlacakGelirGiderOdemesiniDogrula(islem, kayitId, options = {}) {
   const kayit = borcAlacakKayitlari.find((item) => item.id === String(kayitId || ""));
   const oncekiOdeme = options.previousPayment || null;
@@ -901,7 +894,6 @@ function borcAlacakGelirGiderOdemesiniDogrula(islem, kayitId, options = {}) {
   return "";
 }
 
-// ACIKLAMA: Yeni gelir/gider hareketine borc/alacak odeme baglantisini ve tekil odeme kimligini ekler.
 function borcAlacakGelirGiderOdemesiniHazirla(islem, kayitId) {
   const kayit = borcAlacakKayitlari.find((item) => item.id === String(kayitId || ""));
   if (!kayit) return islem;
@@ -922,7 +914,6 @@ function borcAlacakGelirGiderOdemesiniHazirla(islem, kayitId) {
   };
 }
 
-// ACIKLAMA: Bagli gelir/gider hareketini secilen borc veya alacagin odeme gecmisine ekler.
 function borcAlacakGelirGiderOdemesiniUygula(islem, options = {}) {
   const { persist = true, renderLists = true } = options;
   const kayit = borcAlacakKayitlari.find((item) => item.id === String(islem?.debtReceivableId || ""));
@@ -954,7 +945,6 @@ function borcAlacakGelirGiderOdemesiniUygula(islem, options = {}) {
   return true;
 }
 
-// ACIKLAMA: Bagli bir odeme hareketi silindiginde borc/alacak odeme gecmisindeki karsiligini da geri alir.
 function borcAlacakGelirGiderOdemesiniGeriAl(islem) {
   const kayit = borcAlacakKayitlari.find((item) => item.id === String(islem?.debtReceivableId || ""));
   if (!kayit) return false;
@@ -978,7 +968,6 @@ function borcAlacakGelirGiderOdemesiniGeriAl(islem) {
   return true;
 }
 
-// ACIKLAMA: Bagli bir odeme hareketi duzenlenirken yeni tutarin kalan kaydi asmadigini dogrular.
 function borcAlacakGelirGiderDuzenlemesiniDogrula(oncekiIslem, sonrakiIslem) {
   if (!oncekiIslem?.debtReceivableId || !oncekiIslem?.debtPaymentId) return "";
   const kayit = borcAlacakKayitlari.find((item) => item.id === String(oncekiIslem.debtReceivableId));
@@ -991,7 +980,6 @@ function borcAlacakGelirGiderDuzenlemesiniDogrula(oncekiIslem, sonrakiIslem) {
   return borcAlacakGelirGiderOdemesiniDogrula(sonrakiIslem, kayit.id, { previousPayment: oncekiOdeme });
 }
 
-// ACIKLAMA: Bagli gelir/gider hareketindeki tutar, tarih veya not degisikligini odeme gecmisine uygular.
 function borcAlacakGelirGiderDuzenlemesiniUygula(oncekiIslem, sonrakiIslem) {
   if (!oncekiIslem?.debtReceivableId || !oncekiIslem?.debtPaymentId) return false;
   const kayit = borcAlacakKayitlari.find((item) => item.id === String(oncekiIslem.debtReceivableId));
@@ -1199,10 +1187,6 @@ function borcAlacakOdemesiniKaydet(event) {
   borcAlacakKayitlariniKaliciKaydet();
   borcAlacakOdemePenceresiniKapat();
   render();
-}
-
-function borcAlacakTuruEtiketi(tur) {
-  return tur === "receivable" ? "Alacağım" : "Borcum";
 }
 
 function borcAlacakListeTuruEtiketi(listeTuru) {

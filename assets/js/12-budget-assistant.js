@@ -1,6 +1,5 @@
 // Akis Butce Asistani: hareketleri cihazdaki uygulama verisinden yorumlar.
 (() => {
-  const recognitionType = window.SpeechRecognition || window.webkitSpeechRecognition;
   let pendingEntry = null;
   let pendingEntryStep = "";
   let pendingFinanceQuestion = null;
@@ -47,7 +46,7 @@
     <div class="budget-assistant-voice-preview" data-assistant-voice-preview hidden><p data-assistant-transcript></p><button type="button" class="budget-assistant-icon-button" data-assistant-cancel-voice aria-label="Sesli mesajı iptal et" title="Sesli mesajı iptal et"><i data-lucide="x" aria-hidden="true"></i></button></div>
     <form class="budget-assistant-composer" data-assistant-form>
       <textarea data-assistant-input rows="1" maxlength="240" aria-label="Asistana mesaj yaz" placeholder="Mesajını yaz…"></textarea>
-      <button type="button" class="budget-assistant-icon-button budget-assistant-mic" data-assistant-mic aria-label="Sesli mesaj: basılı tut veya dokunarak başlat" aria-pressed="false" title="Sesli mesaj: basılı tut veya dokunarak başlat"><i data-lucide="mic" aria-hidden="true"></i></button>
+      <button type="button" class="budget-assistant-icon-button budget-assistant-mic" data-assistant-mic aria-label="Mikrofonu aç" aria-pressed="false" title="Mikrofonu aç"><i data-lucide="mic" aria-hidden="true"></i></button>
       <button type="submit" class="budget-assistant-send" aria-label="Mesajı gönder" title="Gönder"><i data-lucide="send" aria-hidden="true"></i></button>
     </form>
     <p class="budget-assistant-privacy">Sesli giriş tarayıcı desteği ve mikrofon iznine bağlıdır. Kayıtlar, onayınızla uygulamanın mevcut kayıt akışına eklenir.</p>`;
@@ -189,7 +188,7 @@
       button.type = "button";
       button.className = "budget-assistant-prompt";
       button.textContent = prompt;
-      button.addEventListener("click", () => sendAssistantInput(prompt));
+      button.addEventListener("click", () => sendAssistantInput(prompt, { source: "prompt" }));
       group.append(button);
     });
     messageList.append(group);
@@ -1649,7 +1648,7 @@
     addPromptButtons(["Ne sorabilirim?", "Bu ayın özeti", "Bugünkü giderlerim neler?", "Gider ekle"]);
   }
 
-  function sendAssistantInput(value = input.value, { focus = true } = {}) {
+  function sendAssistantInput(value = input.value, { focus = true, source = "typed" } = {}) {
     const message = String(value || "").trim();
     if (!message) return;
     if (assistantCloseTimer !== null) {
@@ -1659,6 +1658,7 @@
     }
     messageList.querySelectorAll(".budget-assistant-prompts").forEach((group) => group.remove());
     appendMessage(message, "user");
+    void window.AkisAssistantLogs?.record(message, source);
     input.value = "";
     resizeAssistantInput();
     setStatus("");
@@ -1959,8 +1959,7 @@
   }
   const microphone = createBudgetMicrophone({
     button: micButton,
-    Recognition: recognitionType,
-    onSend: (text) => sendAssistantInput(text, { focus: false }),
+    input,
     onStatus: setStatus,
     stopPlayback: stopAssistantSpeech,
     onTranscript: (text, active) => {

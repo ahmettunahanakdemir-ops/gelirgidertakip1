@@ -1,7 +1,3 @@
-// ACIKLAMA: Uygulama baslatma fonksiyonu, olay baglantilari, gelir/gider ve coklu kayit formlari.
-// ACIKLAMA: Bu dosya ayrilan JS yapisinin bir parcasidir; index.html icindeki yukleme sirasi onemlidir.
-
-// ACIKLAMA: Iki formda da dort secim sabit kalir; ayrintilar secimlerin altinda acilir.
 function arrangeEntryOptionalFields(root, bulk = false) {
   const oldChoices = root.querySelector(bulk ? ".bulk-entry-choice-row" : ".entry-form-choice-row");
   const note = root.querySelector(bulk ? ".bulk-entry-note-field" : ".entry-note-field");
@@ -424,7 +420,7 @@ function init() {
   });
   paymentAccountRecordsPeriodFilter?.addEventListener("change", () => {
     viewingPaymentAccountRecordsPeriod = paymentAccountRecordsPeriodFilter.value || "";
-    // ACIKLAMA: account degiskeninin Turkce karsiligi "hesap"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const account = paymentAccounts.find((item) => item.id === viewingPaymentAccountRecordsId);
     if (account) {
       renderPaymentAccountRecordsModalContent(account, { rebuildFilter: false });
@@ -437,11 +433,10 @@ function init() {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
 
-    // ACIKLAMA: formData degiskeninin Turkce karsiligi "form veri"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const formData = new FormData(form);
-    // ACIKLAMA: now degiskeninin Turkce karsiligi "su anki"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const now = getTurkeyNowDateTime();
-    // ACIKLAMA: entry degiskeninin Turkce karsiligi "entry"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const values = {
       type: formData.get("type"),
       title: formData.get("title"),
@@ -490,7 +485,6 @@ function init() {
       return;
     }
 
-    // ACIKLAMA: changedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
     let changedPaymentAccount = false;
     entries.forEach((item) => {
       changedPaymentAccount = applyTransactionPaymentEffect(item, 1) || changedPaymentAccount;
@@ -529,7 +523,6 @@ function init() {
   });
 }
 
-// ACIKLAMA: mountModalForms fonksiyonunun Turkce karsiligi "yerlestir pencere forms"; ilgili uygulama islemini calistirir.
 function mountModalForms() {
   const bankImportPanel = document.getElementById("bankImportPanel");
   const bankImportMount = document.getElementById("bankImportFormMount");
@@ -548,7 +541,6 @@ function mountModalForms() {
   }
 }
 
-// ACIKLAMA: createEntryTransaction fonksiyonunun Turkce karsiligi "gelir gider kaydi olustur"; tekli ve coklu form verisini ortak islem nesnesine cevirir.
 function createEntryTransaction(values = {}, now = getTurkeyNowDateTime(), time = getTurkeyNowTime()) {
   const entryType = values.type === "transfer" ? "transfer" : values.type === "income" ? "income" : "expense";
   const amount = Math.abs(roundMoney(readSignedNumber(values.amount, 0)));
@@ -587,7 +579,6 @@ function createEntryTransaction(values = {}, now = getTurkeyNowDateTime(), time 
   };
 }
 
-// ACIKLAMA: Ay sonu tasmasini onleyerek bir ISO tarihini istenen ay kadar ileri alir.
 function gelirGiderTarihiniAyaEkle(value, monthOffset) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))) {
     return "";
@@ -602,7 +593,6 @@ function gelirGiderTarihiniAyaEkle(value, monthOffset) {
   return `${targetYear}-${String(targetMonth + 1).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}`;
 }
 
-// ACIKLAMA: Secilen aylik taksit sayisina gore ayni tutar ve baslikla bagimsiz gelir/gider kayitlari olusturur.
 function gelirGiderTaksitSerisiniOlustur(values = {}, now = getTurkeyNowDateTime(), time = getTurkeyNowTime()) {
   const isInstallment = values.type !== "transfer" && Boolean(values.isInstallment);
   const installmentCount = isInstallment
@@ -624,7 +614,6 @@ function gelirGiderTaksitSerisiniOlustur(values = {}, now = getTurkeyNowDateTime
   ));
 }
 
-// ACIKLAMA: Tekli formda taksit sayisi alanini kutu ve islem tipine gore gosterir.
 function tekliTaksitAlanlariniGuncelle() {
   const transferMi = typeInput?.value === "transfer";
   const borcAlacakOdemesiMi = !transferMi && Boolean(entryDebtPaymentCheckbox?.checked);
@@ -644,7 +633,6 @@ function tekliTaksitAlanlariniGuncelle() {
   }
 }
 
-// ACIKLAMA: Gelir/gider turune uygun acik borc veya alacak kayitlarini ana formdaki secime doldurur.
 function tekliBorcAlacakOdemeKayitlariniDoldur(seciliKayitId = "") {
   if (!entryDebtPaymentTarget) return;
   const islemTuru = typeInput?.value || "income";
@@ -677,7 +665,6 @@ function tekliBorcAlacakOdemeKayitlariniDoldur(seciliKayitId = "") {
     : "";
 }
 
-// ACIKLAMA: Secilen borc veya alacagin kalan tutarini formun altinda gosterir.
 function tekliBorcAlacakOdemeSecimNotunuGuncelle() {
   if (!entryDebtPaymentHint) return;
   const kayit = typeof borcAlacakKayitlari !== "undefined"
@@ -692,7 +679,6 @@ function tekliBorcAlacakOdemeSecimNotunuGuncelle() {
     : "Yalnızca kalan borç ve taksit kayıtları gösterilir.";
 }
 
-// ACIKLAMA: Ana formdaki borc/alacak odeme secimini islem turu ve taksit secenegiyle uyumlu tutar.
 function tekliBorcAlacakOdemeAlanlariniGuncelle() {
   const transferMi = typeInput?.value === "transfer";
   if (entryDebtPaymentCheckbox) {
@@ -716,7 +702,6 @@ function tekliBorcAlacakOdemeAlanlariniGuncelle() {
   tekliBorcAlacakOdemeSecimNotunuGuncelle();
 }
 
-// ACIKLAMA: setupBulkEntryForm fonksiyonunun Turkce karsiligi "coklu kayit formunu kur"; coklu gelir/gider panelinin olaylarini ve ilk satirlarini hazirlar.
 function setupBulkEntryForm() {
   if (!bulkEntryForm || !bulkEntryRows || bulkEntryForm.dataset.bulkEntryReady === "true") {
     return;
@@ -732,7 +717,6 @@ function setupBulkEntryForm() {
   bulkEntryForm.addEventListener("submit", addBulkTransactions);
 }
 
-// ACIKLAMA: openBulkEntryModal fonksiyonunun Turkce karsiligi "coklu gelir gider penceresini ac"; coklu kayit formunu modal icinde kullanima acar.
 function openBulkEntryModal() {
   if (!bulkEntryModal) {
     return;
@@ -746,7 +730,6 @@ function openBulkEntryModal() {
   setTimeout(() => getBulkEntryFields(getBulkEntryRows()[0]).title?.focus(), 0);
 }
 
-// ACIKLAMA: closeBulkEntryModal fonksiyonunun Turkce karsiligi "coklu gelir gider penceresini kapat"; modal pencereyi kapatip gecici hata mesajlarini temizler.
 function closeBulkEntryModal() {
   if (bulkEntryModal) {
     bulkEntryModal.hidden = true;
@@ -754,12 +737,10 @@ function closeBulkEntryModal() {
   resetBulkEntryRows();
 }
 
-// ACIKLAMA: getBulkEntryRows fonksiyonunun Turkce karsiligi "coklu kayit satirlarini al"; ekrandaki coklu gelir/gider satirlarini liste olarak dondurur.
 function getBulkEntryRows() {
   return Array.from(bulkEntryRows?.querySelectorAll("[data-bulk-entry-row]") || []);
 }
 
-// ACIKLAMA: getBulkEntryFields fonksiyonunun Turkce karsiligi "coklu kayit alanlarini al"; bir satirdaki input ve select elemanlarini toplar.
 function getBulkEntryFields(row) {
   return {
     type: row?.querySelector('[data-bulk-field="type"]'),
@@ -788,7 +769,6 @@ function getBulkEntryFields(row) {
   };
 }
 
-// ACIKLAMA: createBulkEntryRow fonksiyonunun Turkce karsiligi "coklu kayit satiri olustur"; toplu form icin yeni gelir/gider satiri uretir.
 function createBulkEntryRow() {
   const row = document.createElement("div");
   row.className = "bulk-entry-row";
@@ -887,7 +867,6 @@ function createBulkEntryRow() {
   return row;
 }
 
-// ACIKLAMA: bindBulkEntryRow fonksiyonunun Turkce karsiligi "coklu kayit satirini bagla"; satirdaki degisim ve silme olaylarini baglar.
 function bindBulkEntryRow(row) {
   const fields = getBulkEntryFields(row);
   fields.type?.addEventListener("change", () => {
@@ -908,7 +887,6 @@ function bindBulkEntryRow(row) {
   row.querySelector('[data-bulk-action="remove"]')?.addEventListener("click", () => removeBulkEntryRow(row));
 }
 
-// ACIKLAMA: addBulkEntryRow fonksiyonunun Turkce karsiligi "coklu kayit satiri ekle"; toplu forma yeni satir ekler.
 function addBulkEntryRow(options = {}) {
   if (!bulkEntryRows) {
     return null;
@@ -925,7 +903,6 @@ function addBulkEntryRow(options = {}) {
   return row;
 }
 
-// ACIKLAMA: removeBulkEntryRow fonksiyonunun Turkce karsiligi "coklu kayit satirini sil"; son satir kalirsa sadece satiri temizler.
 function removeBulkEntryRow(row) {
   const rows = getBulkEntryRows();
   if (rows.length <= 1) {
@@ -939,7 +916,6 @@ function removeBulkEntryRow(row) {
   }
 }
 
-// ACIKLAMA: resetBulkEntryRows fonksiyonunun Turkce karsiligi "coklu kayit satirlarini sifirla"; toplu formu ilk bos satir durumuna dondurur.
 function resetBulkEntryRows(options = {}) {
   if (!bulkEntryRows) {
     return;
@@ -955,7 +931,6 @@ function resetBulkEntryRows(options = {}) {
   }
 }
 
-// ACIKLAMA: resetBulkEntryRow fonksiyonunun Turkce karsiligi "coklu kayit satirini sifirla"; tek bir toplu kayit satirini varsayilan hale getirir.
 function resetBulkEntryRow(row) {
   resetNewTransactionFollowControl(row);
   resetEntryNoteOption(row);
@@ -979,7 +954,6 @@ function resetBulkEntryRow(row) {
   cokluTaksitAlanlariniGuncelle(row);
 }
 
-// ACIKLAMA: updateBulkEntryRowNumbers fonksiyonunun Turkce karsiligi "coklu kayit satir numaralarini guncelle"; satir numaralarini ekrana yeniden yazar.
 function updateBulkEntryRowNumbers() {
   getBulkEntryRows().forEach((row, index) => {
     const number = row.querySelector("[data-bulk-row-number]");
@@ -989,7 +963,6 @@ function updateBulkEntryRowNumbers() {
   });
 }
 
-// ACIKLAMA: refreshBulkEntryRows fonksiyonunun Turkce karsiligi "coklu kayit satirlarini yenile"; kategori ve hesap seceneklerini mevcut verilere gore gunceller.
 function refreshBulkEntryRows() {
   getBulkEntryRows().forEach((row) => {
     updateBulkEntryCategoryOptions(row);
@@ -1000,7 +973,6 @@ function refreshBulkEntryRows() {
   updateBulkEntryRowNumbers();
 }
 
-// ACIKLAMA: updateBulkEntryCategoryOptions fonksiyonunun Turkce karsiligi "coklu kayit kategorilerini guncelle"; satirin tipine uygun kategori listesini basar.
 function updateBulkEntryCategoryOptions(row, options = {}) {
   const fields = getBulkEntryFields(row);
   if (!fields.category) {
@@ -1014,7 +986,6 @@ function updateBulkEntryCategoryOptions(row, options = {}) {
   );
 }
 
-// ACIKLAMA: updateBulkEntryPaymentAccountOptions fonksiyonunun Turkce karsiligi "coklu kayit hesaplarini guncelle"; satirin odeme yontemine uygun kart/hesap listesini basar.
 function updateBulkEntryPaymentAccountOptions(row) {
   const fields = getBulkEntryFields(row);
   if (!fields.paymentAccount) {
@@ -1040,7 +1011,6 @@ function updateBulkEntryPaymentAccountOptions(row) {
   );
 }
 
-// ACIKLAMA: Coklu kayit satirinda transfer alanlarini tipe gore gosterir ve hesap secimlerini hazirlar.
 function syncBulkEntryTransferFields(row) {
   const fields = getBulkEntryFields(row);
   const isTransfer = fields.type?.value === "transfer";
@@ -1070,7 +1040,6 @@ function syncBulkEntryTransferFields(row) {
   updateBulkEntryPaymentAccountOptions(row);
 }
 
-// ACIKLAMA: Coklu kayit satirinda taksit kutusunu ve toplam taksit sayisi alanini birlikte yonetir.
 function cokluTaksitAlanlariniGuncelle(row) {
   const fields = getBulkEntryFields(row);
   const transferMi = fields.type?.value === "transfer";
@@ -1091,7 +1060,6 @@ function cokluTaksitAlanlariniGuncelle(row) {
   }
 }
 
-// ACIKLAMA: Coklu satirin gelir/gider turune uygun acik borc veya alacak kayitlarini secime doldurur.
 function cokluBorcAlacakOdemeKayitlariniDoldur(row, seciliKayitId = "") {
   const fields = getBulkEntryFields(row);
   if (!fields.debtPaymentTarget) return;
@@ -1124,7 +1092,6 @@ function cokluBorcAlacakOdemeKayitlariniDoldur(row, seciliKayitId = "") {
     : "";
 }
 
-// ACIKLAMA: Coklu satirda secilen borc veya alacagin kalan tutarini gosterir.
 function cokluBorcAlacakOdemeSecimNotunuGuncelle(row) {
   const fields = getBulkEntryFields(row);
   if (!fields.debtPaymentHint) return;
@@ -1140,7 +1107,6 @@ function cokluBorcAlacakOdemeSecimNotunuGuncelle(row) {
     : "Yalnızca kalan borç ve taksit kayıtları gösterilir.";
 }
 
-// ACIKLAMA: Coklu satirdaki borc/alacak secimini transfer ve taksit secenekleriyle uyumlu tutar.
 function cokluBorcAlacakOdemeAlanlariniGuncelle(row) {
   const fields = getBulkEntryFields(row);
   const transferMi = fields.type?.value === "transfer";
@@ -1165,7 +1131,6 @@ function cokluBorcAlacakOdemeAlanlariniGuncelle(row) {
   cokluBorcAlacakOdemeSecimNotunuGuncelle(row);
 }
 
-// ACIKLAMA: setBulkEntryRowError fonksiyonunun Turkce karsiligi "coklu kayit satir hatasini yaz"; satira ait hata mesajini gosterir veya temizler.
 function setBulkEntryRowError(row, message = "") {
   const error = getBulkEntryFields(row).error;
   if (error) {
@@ -1173,7 +1138,6 @@ function setBulkEntryRowError(row, message = "") {
   }
 }
 
-// ACIKLAMA: isBulkEntryRowEmpty fonksiyonunun Turkce karsiligi "coklu kayit satiri bos mu"; varsayilan tarih ve secimleri saymadan satirin dolu olup olmadigini kontrol eder.
 function isBulkEntryRowEmpty(row) {
   const fields = getBulkEntryFields(row);
   if (fields.installment?.checked || fields.debtPayment?.checked) {
@@ -1189,7 +1153,6 @@ function isBulkEntryRowEmpty(row) {
   ].some((value) => String(value || "").trim());
 }
 
-// ACIKLAMA: readBulkEntryTransaction fonksiyonunun Turkce karsiligi "coklu kayit satirini oku"; satirdaki veriyi dogrulanmis gelir/gider kaydina cevirir.
 function readBulkEntryTransaction(row, index, now, ayrilanTutarlar = new Map()) {
   const fields = getBulkEntryFields(row);
   setBulkEntryRowError(row, "");
@@ -1260,7 +1223,6 @@ function readBulkEntryTransaction(row, index, now, ayrilanTutarlar = new Map()) 
   return { status: "ready", entries, followOptions };
 }
 
-// ACIKLAMA: addBulkTransactions fonksiyonunun Turkce karsiligi "coklu gelir gider kaydet"; dolu satirlarin tamamini tek seferde kayitlara ekler.
 function addBulkTransactions(event) {
   event.preventDefault();
 
@@ -1340,15 +1302,12 @@ function addBulkTransactions(event) {
   }
 }
 
-
-// ACIKLAMA: standardizeModalLayouts fonksiyonunun Turkce karsiligi "standardize pencere yerlesimler"; ilgili uygulama islemini calistirir.
 function standardizeModalLayouts() {
   document.querySelectorAll(".modal-backdrop > .modal-card").forEach((card) => {
     if (!card || card.dataset.modalLayoutStandardized === "true") {
       return;
     }
 
-    // ACIKLAMA: footer degiskeninin Turkce karsiligi "footer"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
     const footer =
       card.querySelector(":scope > .auth-actions, :scope > .modal-actions") ||
       card.querySelector(":scope > form > .auth-actions, :scope > form > .modal-actions") ||
@@ -1358,12 +1317,11 @@ function standardizeModalLayouts() {
       return;
     }
 
-    // ACIKLAMA: sourceForm ilgili formun DOM referansidir; submit ve veri okuma islemlerinde kullanilir.
     const sourceForm = footer.closest("form");
 
     if (sourceForm?.id) {
       footer.querySelectorAll("button").forEach((button) => {
-        // ACIKLAMA: buttonType degiskeninin Turkce karsiligi "buton tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
         const buttonType = (button.getAttribute("type") || "submit").toLowerCase();
         if (buttonType === "submit" && !button.hasAttribute("form")) {
           button.setAttribute("form", sourceForm.id);
@@ -1378,7 +1336,7 @@ function standardizeModalLayouts() {
     }
 
     if (!card.querySelector(":scope > .modal-body-scroll")) {
-      // ACIKLAMA: body degiskeninin Turkce karsiligi "govde"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const body = document.createElement("div");
       body.className = "modal-body-scroll";
 
@@ -1403,8 +1361,6 @@ function standardizeModalLayouts() {
   });
 }
 
-
-// ACIKLAMA: standardizeModalHeaderActions tum acilir pencerelerde ana aksiyon butonlarini ayni ust cubukta toplar.
 function standardizeModalHeaderActions() {
   const modalConfigs = [
     { modal: "genericConfirmModal", title: "genericConfirmTitle", cancel: "#genericConfirmCancelButton", action: "#genericConfirmButton" },
@@ -1525,9 +1481,6 @@ function syncTransactionEditHeaderLayout() {
     nav.querySelector(".unified-modal-nav-actions")?.remove();
   }
 }
-
-// ACIKLAMA: loadTransactions fonksiyonunun Turkce karsiligi "yukle islemler"; ilgili uygulama islemini calistirir.
-
 
 // v394 - Kart hareketleri içe aktarma üç nokta menüsü.
 (function setupBankImportOverflowMenu() {

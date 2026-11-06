@@ -1,4 +1,3 @@
-/* ACIKLAMA: Sade mobil uygulama ve masaustu gorunumu. Onceki islevsel yerlesimleri koruyan son tema katmani. */
 html.modern-budget {
   --bg: #f1f2f6; --surface: #fff; --surface-soft: #f4f5f7;
   --text: #172325; --muted: #798185; --stroke: #e1e5e7; --border: #e1e5e7;
@@ -27,8 +26,7 @@ html.modern-budget .topbar, html.modern-budget .bank-import-panel {
   border: 0 !important; border-radius:0 !important;
 }
 html.modern-budget .panel {padding:20px 0!important;}
-html.modern-budget .panel-kicker, html.modern-budget #pageSubtitle,
-html.modern-budget .action-panel > div > .panel-note {display:none!important;}
+html.modern-budget .panel-kicker, html.modern-budget .action-panel > div > .panel-note {display:none!important;}
 html.modern-budget .topbar {padding: 8px 0 22px!important;min-height:0!important;margin:0!important;}
 html.modern-budget[data-active-view="homeView"] .topbar {display:none!important;}
 html.modern-budget .topbar-side {margin-left:auto;}
@@ -178,7 +176,6 @@ html.modern-budget .login-card {background:var(--surface)!important;border:1px s
 }
 @media(prefers-reduced-motion:reduce) {.modern-budget * {scroll-behavior:auto!important;animation:none!important;transition:none!important;}}
 
-
 /* v319 - Tekli gelir/gider penceresinde iOS benzeri ust Kaydet / Iptal cubugu. */
 #entryModal .entry-modal-card {
   position: relative;
@@ -321,7 +318,6 @@ html.modern-budget #entryModal .entry-modal-save:disabled {
   }
 }
 
-
 /* v321 - Basligi iki ust butonun tam ortasina sabitle; Kaydet'i Iptal ile ayni gorunum/efekte getir. */
 html.modern-budget #entryModal .entry-modal-cancel:active,
 html.modern-budget #entryModal .entry-modal-save:active {
@@ -348,7 +344,6 @@ html.modern-budget #entryModal .entry-modal-save:active {
   }
 }
 
-
 /* v323 - Coklu gelir/gider modali ust cubugunu tekli kayit modalindeki sisteme yaklastir. */
 #bulkEntryModal .bulk-entry-modal {
   position: relative;
@@ -359,7 +354,6 @@ html.modern-budget #entryModal .entry-modal-save:active {
   top: -16px;
   z-index: 8;
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   margin: -16px -16px 10px;
@@ -462,7 +456,6 @@ html.modern-budget #bulkEntryModal .bulk-entry-nav-icon-button {
 
 @media (max-width: 640px) {
   #bulkEntryModal .bulk-entry-modal-nav {
-    grid-template-columns: 92px minmax(0, 1fr) auto;
     gap: 6px;
     padding-left: 6px;
     padding-right: 6px;
@@ -489,7 +482,6 @@ html.modern-budget #bulkEntryModal .bulk-entry-nav-icon-button {
   }
 }
 
-
 /* v324 - Coklu kayit basligini buton bloklarina gore ortala. */
 #bulkEntryModal .bulk-entry-modal-nav {
   grid-template-columns: 112px minmax(0, 1fr) auto;
@@ -508,7 +500,6 @@ html.modern-budget #bulkEntryModal .bulk-entry-nav-icon-button {
     min-width: 136px;
   }
 }
-
 
 /* v328 - Kart hareketleri modalini tekli/coklu kayit modalleriyle ayni ust sistemde goster. */
 #bankImportModal .bank-import-modal {
@@ -541,11 +532,7 @@ html.modern-budget #bulkEntryModal .bulk-entry-nav-icon-button {
   align-self: center;
   width: 100%;
   max-width: 100%;
-  margin: 0 !important;
   overflow: hidden;
-  color: var(--text) !important;
-  font-size: 18px !important;
-  font-weight: 700 !important;
   line-height: 1.25;
   text-align: center;
   text-overflow: ellipsis;
@@ -562,7 +549,6 @@ html.modern-budget #bulkEntryModal .bulk-entry-nav-icon-button {
   justify-self: end;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   min-width: 216px;
 }
 
@@ -665,7 +651,6 @@ html.modern-budget #bankImportModal .bank-import-reset-button {
 
   #bankImportModal .bank-import-modal-nav-actions {
     min-width: 136px;
-    gap: 6px;
   }
 
   html.modern-budget #bankImportModal #closeBankImportModalButton,
@@ -685,7 +670,6 @@ html.modern-budget #bankImportModal .bank-import-reset-button {
     grid-template-columns: 1fr;
   }
 }
-
 
 /* v329 - Banka aktarim modalinde yukleyi ikonlastir; AI ve kayitlara ekle butonlarini ust cubuga tasi. */
 #bankImportModal .bank-import-modal-nav-actions {
@@ -731,9 +715,6 @@ html.modern-budget #bankImportModal #bankImportLocalButton {
   }
 
   html.modern-budget #bankImportModal .bank-upload-nav-trigger {
-    width: 40px !important;
-    min-width: 40px !important;
-    max-width: 40px !important;
     min-height: 40px !important;
     max-height: 40px !important;
     flex-basis: 40px;
@@ -746,7 +727,6 @@ html.modern-budget #bankImportModal #bankImportLocalButton {
     font-size: 13px !important;
   }
 }
-
 
 /* v330 - Banka aktarim basligini gizle; tum ust aksiyonlari tek satirda yan yana goster; AI butonunu altin yap. */
 #bankImportModal .bank-import-visually-hidden {
@@ -762,11 +742,7 @@ html.modern-budget #bankImportModal #bankImportLocalButton {
 }
 
 #bankImportModal .bank-import-modal-nav {
-  display: flex !important;
-  align-items: center !important;
   justify-content: flex-start !important;
-  flex-wrap: nowrap !important;
-  gap: 8px !important;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -787,10 +763,7 @@ html.modern-budget #bankImportModal #bankImportLocalButton {
   grid-column: auto !important;
   justify-self: auto !important;
   display: inline-flex !important;
-  align-items: center !important;
   justify-content: flex-start !important;
-  flex-wrap: nowrap !important;
-  gap: 8px !important;
   min-width: max-content !important;
   flex: 0 0 auto;
 }
@@ -832,10 +805,8 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton {
 
   html.modern-budget #bankImportModal #closeBankImportModalButton {
     width: 76px !important;
-    min-width: 76px !important;
     max-width: 76px !important;
     padding: 0 8px !important;
-    font-size: 13px !important;
   }
 
   html.modern-budget #bankImportModal .bank-upload-nav-trigger {
@@ -857,14 +828,12 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton {
   }
 }
 
-
 /* v331 - Kart hareketleri basligini Iptal ile diger aksiyonlar arasinda yeniden goster. */
 #bankImportModal .bank-import-modal-nav {
   overflow-x: hidden !important;
 }
 
-#bankImportModal .bank-import-modal-nav h2,
-#bankImportModal #bankImportModalTitle {
+#bankImportModal .bank-import-modal-nav h2 {
   position: static !important;
   display: block !important;
   flex: 1 1 auto !important;
@@ -872,7 +841,6 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton {
   min-width: 150px !important;
   max-width: none !important;
   margin: 0 8px !important;
-  padding: 0 !important;
   overflow: visible !important;
   clip: auto !important;
   color: var(--text) !important;
@@ -886,17 +854,12 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton {
   pointer-events: none !important;
 }
 
-#bankImportModal .bank-import-modal-nav-actions {
-  margin-left: auto !important;
-}
-
 @media (max-width: 640px) {
   #bankImportModal .bank-import-modal-nav {
     gap: 5px !important;
   }
 
-  #bankImportModal .bank-import-modal-nav h2,
-  #bankImportModal #bankImportModalTitle {
+  #bankImportModal .bank-import-modal-nav h2 {
     flex: 1 1 92px !important;
     min-width: 82px !important;
     margin: 0 2px !important;
@@ -945,11 +908,9 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton {
   }
 }
 
-
 /* v332 - Telefon gorunumunde banka aktarim basligini gizle; masaustunde gorunur kalsin. */
 @media (max-width: 640px) {
-  #bankImportModal .bank-import-modal-nav h2,
-  #bankImportModal #bankImportModalTitle {
+  #bankImportModal .bank-import-modal-nav h2 {
     display: none !important;
     width: 0 !important;
     min-width: 0 !important;
@@ -969,24 +930,8 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton {
   }
 }
 
-
 /* v333 - Telefon/tablet dar gorunumunde basligi tamamen gizle; Iptal solda, aksiyonlar sagda. */
 @media (max-width: 900px) {
-  #bankImportModal .bank-import-modal-nav > h2#bankImportModalTitle,
-  #bankImportModal #bankImportModalTitle {
-    display: none !important;
-    visibility: hidden !important;
-    position: absolute !important;
-    width: 0 !important;
-    height: 0 !important;
-    min-width: 0 !important;
-    max-width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    flex: 0 0 0 !important;
-    pointer-events: none !important;
-  }
 
   #bankImportModal .bank-import-modal-nav {
     display: flex !important;
@@ -1007,7 +952,6 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton {
     justify-content: flex-end !important;
   }
 }
-
 
 /* v334 - Banka hareketi onizleme modalini diger sablonlarla ayni ust gezinime donustur. */
 #bankImportPreviewModal .bank-import-preview-modal {
@@ -1123,7 +1067,6 @@ html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
   }
 }
 
-
 /* v335 - Banka önizleme işlem kartlarının modal yüksekliğine sıkışıp kırpılmasını engelle. */
 #bankImportPreviewModal .bank-import-preview-list {
   flex: 1 1 auto !important;
@@ -1156,7 +1099,6 @@ html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
   flex: 0 0 auto !important;
 }
 
-
 /* v336 - Banka onizleme ekraninda tek secim butonu kullan ve islem kartlarini tekli/coklu kayit formlarina yaklastir. */
 #bankImportPreviewModal .bank-import-preview-actions {
   display: flex !important;
@@ -1170,28 +1112,17 @@ html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
 }
 
 #bankImportPreviewModal .bank-import-edit-item {
-  display: grid !important;
-  grid-template-columns: 28px minmax(0, 1fr) !important;
-  align-items: start !important;
-  gap: 12px !important;
-  padding: 16px !important;
-  border-radius: 12px !important;
   background: var(--surface) !important;
   border: 1px solid var(--stroke) !important;
   box-shadow: none !important;
 }
 
 #bankImportPreviewModal .bank-import-check {
-  width: 20px !important;
-  height: 20px !important;
   margin: 28px 0 0 !important;
-  accent-color: var(--accent);
 }
 
 #bankImportPreviewModal .bank-import-edit-body {
-  display: grid !important;
   gap: 12px !important;
-  min-width: 0 !important;
 }
 
 #bankImportPreviewModal .bank-import-edit-grid {
@@ -1289,15 +1220,8 @@ html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
 }
 
 @media (max-width: 640px) {
-  #bankImportPreviewModal .bank-import-edit-item {
-    grid-template-columns: 24px minmax(0, 1fr) !important;
-    padding: 14px !important;
-    gap: 10px !important;
-  }
 
   #bankImportPreviewModal .bank-import-check {
-    width: 18px !important;
-    height: 18px !important;
     margin-top: 26px !important;
   }
 
@@ -1310,7 +1234,6 @@ html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
     min-width: 108px !important;
   }
 }
-
 
 /* v337 - Kart hareketi onizleme kartlarini yeni kayit olustur formuna benzet. */
 #bankImportPreviewModal .bank-import-edit-item {
@@ -1351,10 +1274,6 @@ html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
 
 #bankImportPreviewModal .bank-import-entry-payment-row {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
-
-#bankImportPreviewModal .bank-import-entry-choice-row {
-  grid-template-columns: minmax(0, 1fr) !important;
 }
 
 #bankImportPreviewModal .bank-import-edit-body > label,
@@ -1471,9 +1390,6 @@ html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 }
-
-
-
 
 /* v339 - Banka hareketi onay kartlarini gelir/gider ekle alanlarindaki secim yapisina yaklastir. */
 #bankImportPreviewModal .bank-import-entry-choice-row {
@@ -1601,7 +1517,6 @@ html.modern-budget #bankImportPreviewModal #bankImportPreviewConfirmButton {
   }
 }
 
-
 /* v341 - Koyu modda taksit ve borç/alacak ödeme seçeneklerini diğer seçim kutularıyla aynı palete getir. */
 html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .transaction-installment-toggle,
 html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-debt-payment-toggle {
@@ -1615,18 +1530,10 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
   color: var(--muted) !important;
 }
 
-
 /* v343 - Masaüstünde gerçek açılır/daralır yan menü; içerik genişliği korunur. */
 @media (min-width: 981px) {
   html.modern-budget body #appShell.app-shell > #sidebar.sidebar {
-    width: 66px !important;
-    max-width: 66px !important;
     transition: width 220ms ease, max-width 220ms ease !important;
-  }
-
-  html.modern-budget body #appShell.app-shell.sidebar-expanded > #sidebar.sidebar {
-    width: 230px !important;
-    max-width: 230px !important;
   }
 
   html.modern-budget body #appShell.app-shell:not([hidden]) > .workspace {
@@ -1637,17 +1544,10 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
   }
 
   html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace {
-    margin-left: 230px !important;
     width: calc(100% - 230px) !important;
   }
 
   /* Önceki 1180px merkezleme içeriği gereksiz yere küçültüyordu. */
-  html.modern-budget .workspace > * {
-    width: 100% !important;
-    max-width: none !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
 
   /* Masaüstü menü aç/kapat düğmesi. */
   html.modern-budget #mobileMenuButton.sidebar-toggle {
@@ -1734,15 +1634,12 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
   }
 }
 
-
 /* v344 - Genis masaustu menude ana icerigin gereksiz yere merkezde daralmasini engelle. */
 @media (min-width: 981px) {
   html.modern-budget body #appShell.app-shell.sidebar-expanded:not([hidden]) > .workspace {
     margin-left: 230px !important;
     width: calc(100vw - 230px) !important;
     max-width: calc(100vw - 230px) !important;
-    padding-left: 32px !important;
-    padding-right: 32px !important;
     box-sizing: border-box !important;
   }
 
@@ -1766,7 +1663,6 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
   }
 }
 
-
 /* v345 - Masaüstünde sidebar ile içerik arasındaki çift yatay kaymayı kaldır. */
 @media (min-width: 981px) {
   html.modern-budget body #appShell.app-shell:not([hidden]) > .workspace,
@@ -1788,39 +1684,25 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
   }
 }
 
-
 /* v346 - Masaüstünde hem dar hem geniş menü görünümünü birlikte düzelt:
    grid yerleşimini geri getir, boşluğu kaldır, dar görünümde içerik taşmasını engelle. */
 @media (min-width: 981px) {
   html.modern-budget #appShell.app-shell:not([hidden]) {
     display: grid !important;
-    grid-template-columns: 66px minmax(0, 1fr) !important;
     align-items: start !important;
     padding: 0 !important;
   }
 
-  html.modern-budget #appShell.app-shell.sidebar-expanded:not([hidden]) {
-    grid-template-columns: 230px minmax(0, 1fr) !important;
-  }
-
   html.modern-budget body #appShell.app-shell > #sidebar.sidebar {
     position: sticky !important;
-    top: 0 !important;
     inset: auto !important;
     width: auto !important;
     max-width: none !important;
-    height: 100dvh !important;
-    transform: none !important;
     z-index: 40 !important;
   }
 
   html.modern-budget body #appShell.app-shell > .workspace,
   html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
-    grid-column: 2 !important;
-    margin-left: 0 !important;
-    width: auto !important;
-    max-width: none !important;
-    min-width: 0 !important;
     padding: 28px 32px !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
@@ -1834,7 +1716,6 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
   }
 }
 
-
 /* v347 - Kullanıcı işlemleri Ayarlar ekranına taşındı. */
 #settingsView > .user-actions-panel {
   margin-top: 18px !important;
@@ -1844,7 +1725,6 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
   width: 100%;
 }
 
-
 /* v349 - Masaüstü yan menü sayfa kaydırılsa da ekranda sabit kalır. */
 @media (min-width: 981px) {
   html.modern-budget body #appShell.app-shell > #sidebar.sidebar {
@@ -1853,8 +1733,6 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
     top: 0 !important;
     bottom: 0 !important;
     inset: 0 auto 0 0 !important;
-    width: 66px !important;
-    max-width: 66px !important;
     height: 100dvh !important;
     min-height: 100dvh !important;
     max-height: 100dvh !important;
@@ -1864,27 +1742,10 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
     z-index: 80 !important;
   }
 
-  html.modern-budget body #appShell.app-shell.sidebar-expanded > #sidebar.sidebar {
-    width: 230px !important;
-    max-width: 230px !important;
-  }
-
   html.modern-budget #appShell.app-shell:not([hidden]) {
     grid-template-columns: 66px minmax(0, 1fr) !important;
   }
-
-  html.modern-budget #appShell.app-shell.sidebar-expanded:not([hidden]) {
-    grid-template-columns: 230px minmax(0, 1fr) !important;
-  }
-
-  html.modern-budget body #appShell.app-shell > .workspace,
-  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
-    grid-column: 2 !important;
-    margin-left: 0 !important;
-    min-width: 0 !important;
-  }
 }
-
 
 /* v351 - Üst araç çubuğunda bağlamsal yenile + ekle butonları ve yalnız ana sayfada tarih filtresi. */
 .shell-toolbar-actions {
@@ -1918,7 +1779,6 @@ html.modern-budget[data-theme="dark"] #entryModal .entry-option-toggles .entry-d
     justify-self: auto;
   }
 }
-
 
 /* v353 - Birikim ekleme penceresini gelir/gider ekleme modalinin ust buton yapisina benzet. */
 #assetEditModal .asset-entry-modal-card {
@@ -2032,7 +1892,6 @@ html.modern-budget #assetEditModal .entry-modal-save:active {
     min-width: 74px !important;
     min-height: 44px !important;
     padding: 9px 14px !important;
-    font-size: 14px !important;
   }
 }
 
@@ -2058,7 +1917,6 @@ html.modern-budget #assetEditModal .entry-modal-save:active {
     font-size: 17px !important;
   }
 }
-
 
 /* v354 - Birikim modal basligini ortala, butonlari kenarlara yasla ve alanlari tek sutunda diz. */
 #assetEditModal .asset-entry-form {
@@ -2115,7 +1973,6 @@ html.modern-budget #assetEditModal .entry-modal-save:active {
   }
 }
 
-
 /* v355 - Telefon gorunumunde Birikim ekle modalindeki yatay kayma ve tasma sorunlarini duzelt. */
 @media (max-width: 768px) {
   #assetEditModal .modal-card {
@@ -2168,7 +2025,6 @@ html.modern-budget #assetEditModal .entry-modal-save:active {
     font-size: 16px !important;
   }
 }
-
 
 /* v356 - Tum standart acilir pencerelerde Iptal solda, baslik ortada, ana aksiyon sagda. */
 .unified-modal-nav {
@@ -2301,7 +2157,6 @@ html.modern-budget .unified-modal-danger {
   .unified-modal-title { font-size: 15px !important; }
 }
 
-
 /* v357 - Telefonda Birikimlerim ve Kartlar/Hesaplar özet kartlarını üç satır halinde göster. */
 @media (max-width: 768px) {
   html.modern-budget #assetsView .stats-grid,
@@ -2317,7 +2172,6 @@ html.modern-budget .unified-modal-danger {
     grid-column: 1 / -1 !important;
   }
 }
-
 
 /* v359 - Borç/alacak düzenleme modalında Tahsil Et / Ödeme Yap, Güncelle'nin yanında görünür. */
 .unified-modal-nav-actions {
@@ -2399,12 +2253,10 @@ html.modern-budget .unified-modal-secondary-action:focus-visible {
   }
 }
 
-
 /* v360 - Sayfaların üstündeki ortak başlık/kullanıcı şeridini tamamen kaldır. */
 .removed-page-header-targets {
   display: none !important;
 }
-
 
 /* v366 - Masaüstünde BES özet kartlarını 2x2 düzenle. */
 @media (min-width: 769px) {
@@ -2412,7 +2264,6 @@ html.modern-budget .unified-modal-secondary-action:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
-
 
 /* v367 - Kayitlar ekraninda filtreleri modal icine tasi ve ust cubuga simge butonlari ekle. */
 .shell-history-action {
@@ -2593,7 +2444,6 @@ html.modern-budget #historySearchModal .entry-modal-save:active {
   }
 }
 
-
 /* v377 - Ust sabit cubukta ustteki icerik gozukmesin. */
 html.modern-budget .shell-toolbar {
   position: sticky !important;
@@ -2645,14 +2495,8 @@ html.modern-budget .shell-toolbar::before {
   }
 }
 
-
 /* v378 - Masaustu ust ikon cubugunu da sayfa kaydirilirken sabit tut. */
 @media (min-width: 981px) {
-  html.modern-budget body #appShell.app-shell > .workspace,
-  html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace {
-    overflow-x: clip !important;
-    overflow-y: visible !important;
-  }
 
   html.modern-budget .shell-toolbar {
     position: sticky !important;
@@ -2692,7 +2536,6 @@ html.modern-budget .shell-toolbar::before {
   html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar,
   html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar {
     position: sticky !important;
-    top: 0 !important;
     left: auto !important;
     right: auto !important;
     z-index: 120 !important;
@@ -2756,7 +2599,6 @@ html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .she
 @media (max-width: 980px) {
   html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar,
   html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar {
-    top: 0 !important;
     padding-top: calc(env(safe-area-inset-top) + 8px) !important;
   }
 }
@@ -2818,7 +2660,6 @@ html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .she
   }
 }
 
-
 /* v391 - Çoklu kayıt penceresinde üst buton çubuğu sabit, yalnız içerik kaydırılır. */
 html.modern-budget #bulkEntryModal .bulk-entry-modal {
   display: flex !important;
@@ -2872,55 +2713,19 @@ html.modern-budget #bulkEntryModal .bulk-entry-modal-scroll::-webkit-scrollbar-t
   }
 }
 
-
 /* v392 - Kart hareketi içe aktar üst barını tek satırda hizala: solda İptal, sağda Görsel Yükle / Yapay Zeka ile Ekle / Ekle. */
 #bankImportModal .bank-import-modal-nav {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
   gap: 10px !important;
-  flex-wrap: nowrap !important;
   overflow: visible !important;
 }
 
-#bankImportModal .bank-import-modal-nav > h2#bankImportModalTitle,
-#bankImportModal #bankImportModalTitle {
-  display: none !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  flex: 0 0 0 !important;
-}
-
-#bankImportModal .bank-import-modal-nav .entry-modal-cancel {
-  flex: 0 0 auto !important;
-  margin-right: auto !important;
-}
-
 #bankImportModal .bank-import-modal-nav-actions {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
   gap: 10px !important;
-  min-width: 0 !important;
-  margin-left: auto !important;
   flex: 0 1 auto !important;
 }
 
-html.modern-budget #bankImportModal .bank-import-modal-nav-actions > * {
-  flex: 0 0 auto !important;
-}
-
 html.modern-budget #bankImportModal .bank-upload-nav-trigger {
-  width: auto !important;
   min-width: 0 !important;
-  max-width: none !important;
   padding: 0 14px !important;
   gap: 8px !important;
 }
@@ -2936,10 +2741,7 @@ html.modern-budget #bankImportModal .bank-upload-nav-trigger {
 }
 
 html.modern-budget #bankImportModal #closeBankImportModalButton {
-  width: auto !important;
   min-width: 86px !important;
-  max-width: none !important;
-  padding: 0 16px !important;
 }
 
 html.modern-budget #bankImportModal #bankImportAddButton {
@@ -3024,7 +2826,6 @@ html.modern-budget #bankImportModal #bankImportLocalButton:active {
   }
 }
 
-
 /* v393 - Banka hareketi içe aktarma üst bar düzeltmesi */
 #bankImportModal .bank-import-modal-nav {
   display: flex !important;
@@ -3035,8 +2836,7 @@ html.modern-budget #bankImportModal #bankImportLocalButton:active {
   overflow: hidden !important;
 }
 
-#bankImportModal .bank-import-modal-nav h2,
-#bankImportModal #bankImportModalTitle {
+#bankImportModal .bank-import-modal-nav h2 {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
@@ -3078,8 +2878,6 @@ html.modern-budget #bankImportModal .bank-upload-nav-trigger {
 }
 
 html.modern-budget #bankImportModal #closeBankImportModalButton {
-  width: auto !important;
-  min-width: 82px !important;
   padding: 0 14px !important;
 }
 
@@ -3160,7 +2958,6 @@ html.modern-budget #bankImportModal #bankImportLocalButton {
   }
 }
 
-
 /* v395 - Kart hareketleri içe aktarma: solda İptal, sağda üç nokta menüsü. */
 #bankImportModal .bank-import-menu-nav {
   display:flex !important;
@@ -3192,13 +2989,9 @@ html.modern-budget #bankImportModal .bank-import-menu-button {
   width:48px !important;
   min-width:48px !important;
   max-width:48px !important;
-  height:42px !important;
-  min-height:42px !important;
-  max-height:42px !important;
   padding:0 !important;
   font-size:20px !important;
   letter-spacing:2px !important;
-  line-height:1 !important;
 }
 
 #bankImportModal .bank-import-menu-button > span {
@@ -3307,9 +3100,6 @@ html.modern-budget #bankImportModal .bank-import-menu-button {
     width:44px !important;
     min-width:44px !important;
     max-width:44px !important;
-    height:40px !important;
-    min-height:40px !important;
-    max-height:40px !important;
   }
 
   #bankImportModal .bank-import-menu {
@@ -3324,17 +3114,13 @@ html.modern-budget #bankImportModal .bank-import-menu-button {
   }
 }
 
-
-
 /* v397 - Banka içe aktarma menüsündeki tüm seçenekler ikonlu ve tamamen sade görünümde. */
 #bankImportModal .bank-import-menu-item,
 #bankImportModal .bank-import-menu-item.bank-import-menu-ai,
 #bankImportModal #bankImportLocalButton,
 #bankImportModal #bankImportAddButton {
   background: transparent !important;
-  color: var(--text) !important;
   border-color: transparent !important;
-  box-shadow: none !important;
 }
 
 #bankImportModal .bank-import-menu-item:hover,
@@ -3346,9 +3132,6 @@ html.modern-budget #bankImportModal .bank-import-menu-button {
 #bankImportModal #bankImportAddButton:hover,
 #bankImportModal #bankImportAddButton:focus-visible {
   background: var(--accent-soft) !important;
-  color: var(--accent) !important;
-  border-color: color-mix(in srgb, var(--accent) 14%, transparent) !important;
-  box-shadow: none !important;
 }
 
 #bankImportModal .bank-import-menu-item svg {
@@ -3357,7 +3140,6 @@ html.modern-budget #bankImportModal .bank-import-menu-button {
   flex:0 0 20px !important;
   color:var(--accent) !important;
 }
-
 
 /* v397 - Banka içe aktarma açılır menüsündeki seçenekler her zaman sade, ikonlu ve tek tip görünür. */
 #bankImportModal .bank-import-menu-item,
@@ -3394,7 +3176,6 @@ html.modern-budget #bankImportModal .bank-import-menu-button {
   box-shadow: none !important;
 }
 
-
 /* v397.1 - Önceki dolu buton stillerini ez ve tüm seçenekleri ikonlu sade menü öğesine çevir. */
 html.modern-budget #bankImportModal #bankImportLocalButton,
 html.modern-budget #bankImportModal #bankImportAddButton,
@@ -3428,7 +3209,6 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton:focu
   box-shadow: none !important;
 }
 
-
 /* v398 - Banka içe aktarma üç nokta menüsündeki seçenekleri şablon içinde ortala. */
 #bankImportModal .bank-import-menu-item {
   justify-content: center !important;
@@ -3444,7 +3224,6 @@ html.modern-budget[data-theme="dark"] #bankImportModal #bankImportAddButton:focu
   justify-content: center !important;
   text-align: center !important;
 }
-
 
 /* v399 - Kart hareketleri açılır menüsü daraltıldı; sağ/sol boşluklar azaltıldı ve üç nokta butonu İptal ile aynı kapsül stile getirildi. */
 html.modern-budget #bankImportModal .bank-import-menu-button {
@@ -3515,7 +3294,6 @@ html.modern-budget #bankImportModal .bank-import-menu-button {
     padding:0 16px !important;
   }
 }
-
 
 /* v403 - Tarih filtresinde Temizle butonu İptal'in yanında üst çubukta. */
 html.modern-budget .shell-summary-filter.is-active {
@@ -3663,15 +3441,9 @@ html.modern-budget #summaryDateFilterModal .entry-modal-save:disabled {
 }
 
 @media (max-width: 640px) {
-  #summaryDateFilterModal .summary-date-filter-modal-card {
-    width: calc(100% - 18px) !important;
-    padding: 0 12px 16px !important;
-  }
 
   #summaryDateFilterModal .summary-date-filter-modal-nav {
     margin: -12px -12px 16px !important;
-    padding: 12px !important;
-    grid-template-columns: minmax(0, 1fr) 86px !important;
     gap: 8px !important;
   }
 
@@ -3681,7 +3453,6 @@ html.modern-budget #summaryDateFilterModal .entry-modal-save:disabled {
 
   #summaryDateFilterModal .summary-date-filter-modal-nav h2 {
     max-width: 100px !important;
-    font-size: 16px !important;
   }
 
   html.modern-budget #summaryDateFilterModal .entry-modal-nav-button {
@@ -3697,15 +3468,10 @@ html.modern-budget #summaryDateFilterModal .entry-modal-save:disabled {
     width: 86px !important;
     min-width: 86px !important;
   }
-
-  #summaryDateFilterModal .summary-date-filter-grid {
-    grid-template-columns: 1fr !important;
-  }
 }
 
 @media (max-width: 420px) {
   #summaryDateFilterModal .summary-date-filter-modal-nav {
-    grid-template-columns: minmax(0, 1fr) 72px !important;
     padding-left: 8px !important;
     padding-right: 8px !important;
     gap: 6px !important;
@@ -3756,7 +3522,6 @@ html.modern-budget #summaryDateFilterModal .entry-modal-save:disabled {
   }
 }
 
-
 /* v404 - Tarih filtresi penceresine biraz daha ferah üst/alt boşluk ve boyut. */
 #summaryDateFilterModal .summary-date-filter-modal-card {
   width: min(720px, calc(100% - 28px)) !important;
@@ -3792,7 +3557,6 @@ html.modern-budget #summaryDateFilterModal .entry-modal-save:disabled {
   }
 }
 
-
 /* v405 - Mobil tarih filtresinde Kaydet butonunu pencerenin en sağına sabitle. */
 @media (max-width: 640px) {
   #summaryDateFilterModal .summary-date-filter-modal-nav {
@@ -3822,7 +3586,6 @@ html.modern-budget #summaryDateFilterModal .entry-modal-save:disabled {
     grid-template-columns: minmax(0, 1fr) 72px !important;
   }
 }
-
 
 /* v406 - Mobil Özet kartlarını tek sütunda Tasarruf > Toplam Gelir > Toplam Gider sırasına getir. */
 @media (max-width: 980px) {

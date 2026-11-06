@@ -1,13 +1,9 @@
-// ACIKLAMA: Ozet kategori dagilimi, kayit gecmisi, filtreler, kategori yonetimi, ekran gecisi ve yan menu.
-// ACIKLAMA: Bu dosya ayrilan JS yapisinin bir parcasidir; index.html icindeki yukleme sirasi onemlidir.
-
 function getSummaryCategoryTypeFilterValue() {
-  // ACIKLAMA: value degiskeninin Turkce karsiligi "deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const value = summaryCategoryTypeFilter?.value || "expense";
   return ["income", "expense", "transfer", "all"].includes(value) ? value : "expense";
 }
 
-// ACIKLAMA: getSummaryCategoryTypeLabel fonksiyonunun Turkce karsiligi "al ozet kategori tur etiket"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getSummaryCategoryTypeLabel(type) {
   if (type === "income") {
     return "gelir";
@@ -24,7 +20,6 @@ function getSummaryCategoryTypeLabel(type) {
   return "gider";
 }
 
-// ACIKLAMA: getSummaryCategoryEmptyMessage fonksiyonunun Turkce karsiligi "al ozet kategori empty mesaj"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getSummaryCategoryEmptyMessage(type) {
   if (type === "income") {
     return "Gelir ekledikçe kategori dağılımı burada görünecek.";
@@ -41,9 +36,8 @@ function getSummaryCategoryEmptyMessage(type) {
   return "Gider ekledikçe kategori dağılımı burada görünecek.";
 }
 
-// ACIKLAMA: getSummaryCategoryAmount fonksiyonunun Turkce karsiligi "al ozet kategori tutar"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getSummaryCategoryAmount(item) {
-  // ACIKLAMA: amount degiskeninin Turkce karsiligi "tutar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const amount = Number(item.amount || 0);
   if (item.type === "transfer") {
     return amount + Math.max(0, Number(item.transferFee || 0));
@@ -52,27 +46,25 @@ function getSummaryCategoryAmount(item) {
   return amount;
 }
 
-// ACIKLAMA: renderCategoryBreakdown fonksiyonunun Turkce karsiligi "ekrana bas kategori breakdown"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderCategoryBreakdown() {
   if (!categoryBreakdown) {
     return;
   }
 
-  // ACIKLAMA: selectedType degiskeninin Turkce karsiligi "selected tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const selectedType = getSummaryCategoryTypeFilterValue();
-  // ACIKLAMA: typeLabel degiskeninin Turkce karsiligi "tur etiket"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const typeLabel = getSummaryCategoryTypeLabel(selectedType);
-  // ACIKLAMA: scopedTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   const scopedTransactions = getSummaryScopedTransactions();
-  // ACIKLAMA: filteredTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   const filteredTransactions = scopedTransactions.filter((item) =>
     selectedType === "all" ? ["income", "expense", "transfer"].includes(item.type) : item.type === selectedType
   );
-  // ACIKLAMA: totalAmount degiskeninin Turkce karsiligi "toplam tutar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const totalAmount = filteredTransactions.reduce((sum, item) => sum + getSummaryCategoryAmount(item), 0);
-  // ACIKLAMA: grouped degiskeninin Turkce karsiligi "grouped"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const grouped = filteredTransactions.reduce((acc, item) => {
-    // ACIKLAMA: category degiskeninin Turkce karsiligi "kategori"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const category = item.category || (item.type === "transfer" ? "Transfer" : "Diğer");
     acc[category] = (acc[category] || 0) + getSummaryCategoryAmount(item);
     return acc;
@@ -80,7 +72,6 @@ function renderCategoryBreakdown() {
 
   categoryBreakdown.innerHTML = "";
 
-  // ACIKLAMA: scopeLabel degiskeninin Turkce karsiligi "scope etiket"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const scopeLabel = isHomeSummaryFilterActive()
     ? `${getHomeSummaryFilterLabel()} arası`
     : "Tüm dönem";
@@ -98,9 +89,9 @@ function renderCategoryBreakdown() {
   Object.entries(grouped)
     .sort(([, a], [, b]) => b - a)
     .forEach(([category, amount]) => {
-      // ACIKLAMA: ratio degiskeninin Turkce karsiligi "ratio"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const ratio = totalAmount ? (amount / totalAmount) * 100 : 0;
-      // ACIKLAMA: row degiskeninin Turkce karsiligi "satir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const row = document.createElement("div");
       row.className = `category-row category-row-${selectedType}`;
       const summaryRow = document.createElement("div");
@@ -227,7 +218,6 @@ function closeSummaryCategoryDetailModal() {
   summaryCategoryDetailTrigger = null;
 }
 
-// ACIKLAMA: applyHistorySearch fonksiyonunun Turkce karsiligi "uygula gecmis arama"; ilgili uygulama islemini calistirir.
 function applyHistorySearch() {
   currentHistorySearch = searchInput ? searchInput.value : "";
   currentHistoryPage = 1;
@@ -250,7 +240,6 @@ function closeHistorySearchModal() {
   }
 }
 
-// ACIKLAMA: resetHistoryFilters fonksiyonunun Turkce karsiligi "sifirla gecmis filtreler"; ilgili uygulama islemini calistirir.
 function resetHistoryFilters() {
   currentHistorySearch = "";
   currentHistoryPage = 1;
@@ -265,12 +254,10 @@ function resetHistoryFilters() {
   [filterType, filterCategory, filterPaymentMethod, filterPaymentAccount].filter(Boolean).forEach(syncHistoryCustomFilterSelect);
 }
 
-// ACIKLAMA: renderTransactions fonksiyonunun Turkce karsiligi "islemleri ekrana bas"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderTransactions() {
   transactionList.innerHTML = "";
   paginationControls.innerHTML = "";
 
-  // ACIKLAMA: filtered degiskeninin Turkce karsiligi "filtrelenmis"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const filtered = getVisibleFilteredTransactions();
 
   if (!filtered.length) {
@@ -279,12 +266,11 @@ function renderTransactions() {
     return;
   }
 
-  // ACIKLAMA: totalPages degiskeninin Turkce karsiligi "toplam pages"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const totalPages = Math.max(1, Math.ceil(filtered.length / TRANSACTIONS_PER_PAGE));
   currentHistoryPage = Math.min(currentHistoryPage, totalPages);
-  // ACIKLAMA: pageStart degiskeninin Turkce karsiligi "sayfa baslangic"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const pageStart = (currentHistoryPage - 1) * TRANSACTIONS_PER_PAGE;
-  // ACIKLAMA: pagedTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
+
   const pagedTransactions = filtered.slice(pageStart, pageStart + TRANSACTIONS_PER_PAGE);
 
   pagedTransactions.forEach((item) => {
@@ -294,19 +280,18 @@ function renderTransactions() {
   renderPagination(filtered.length, totalPages);
 }
 
-// ACIKLAMA: createTransactionListItem fonksiyonunun Turkce karsiligi "olustur islem liste oge"; kullanilacak veri yapisini veya HTML elemanini olusturur.
 function createTransactionListItem(item, options = {}) {
-  // ACIKLAMA: fragment degiskeninin Turkce karsiligi "fragment"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const fragment = transactionTemplate.content.cloneNode(true);
-  // ACIKLAMA: row degiskeninin Turkce karsiligi "satir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const row = fragment.querySelector(".transaction-item");
-  // ACIKLAMA: title degiskeninin Turkce karsiligi "baslik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const title = fragment.querySelector(".transaction-title");
-  // ACIKLAMA: meta degiskeninin Turkce karsiligi "meta"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const meta = fragment.querySelector(".transaction-meta");
-  // ACIKLAMA: amount degiskeninin Turkce karsiligi "tutar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const amount = fragment.querySelector(".transaction-amount");
-  // ACIKLAMA: addedAt degiskeninin Turkce karsiligi "eklenen at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const addedAt = getTransactionAddedTimestamp(item);
 
   if (row && options.className) {
@@ -331,7 +316,7 @@ function createTransactionListItem(item, options = {}) {
   amount.classList.add(item.type);
 
   if (options.showAddedAt && meta) {
-    // ACIKLAMA: addedText degiskeninin Turkce karsiligi "eklenen metin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const addedText = addedAt ? formatAddedDateTime(addedAt) : "Eklenme saati bilinmiyor";
     meta.textContent = `${meta.textContent} · Eklenme: ${addedText}`;
   }
@@ -373,7 +358,6 @@ function createTransactionListItem(item, options = {}) {
   return fragment;
 }
 
-// ACIKLAMA: getTransactionAddedTimestamp fonksiyonunun Turkce karsiligi "al islem eklenen zaman damgasi"; formdan gelen bilgiyi kaydeder veya yeni kayit ekler.
 function getTransactionAddedTimestamp(item) {
   return Math.max(
     getRecordTimestamp(item?.createdAt),
@@ -382,7 +366,6 @@ function getTransactionAddedTimestamp(item) {
   );
 }
 
-// ACIKLAMA: formatAddedDateTime fonksiyonunun Turkce karsiligi "bicimlendir eklenen tarih saat"; formdan gelen bilgiyi kaydeder veya yeni kayit ekler.
 function formatAddedDateTime(timestamp) {
   return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
@@ -393,11 +376,10 @@ function formatAddedDateTime(timestamp) {
   }).format(new Date(timestamp));
 }
 
-// ACIKLAMA: getRecentAddedTransactions fonksiyonunun Turkce karsiligi "al son eklenen islemler"; formdan gelen bilgiyi kaydeder veya yeni kayit ekler.
 function getRecentAddedTransactions(days = RECENT_ADDED_TRANSACTION_DAYS) {
-  // ACIKLAMA: now degiskeninin Turkce karsiligi "su anki"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const now = Date.now();
-  // ACIKLAMA: cutoff degiskeninin Turkce karsiligi "cutoff"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const cutoff = now - Math.max(1, Number(days) || RECENT_ADDED_TRANSACTION_DAYS) * 24 * 60 * 60 * 1000;
 
   return [...transactions]
@@ -405,7 +387,7 @@ function getRecentAddedTransactions(days = RECENT_ADDED_TRANSACTION_DAYS) {
     .map((item) => ({ item, addedAt: getTransactionAddedTimestamp(item) }))
     .filter(({ addedAt }) => addedAt && addedAt >= cutoff && addedAt <= now + 5 * 60 * 1000)
     .sort((first, second) => {
-      // ACIKLAMA: addedDiff degiskeninin Turkce karsiligi "eklenen diff"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const addedDiff = second.addedAt - first.addedAt;
       if (addedDiff) {
         return addedDiff;
@@ -415,7 +397,6 @@ function getRecentAddedTransactions(days = RECENT_ADDED_TRANSACTION_DAYS) {
     .map(({ item }) => item);
 }
 
-// ACIKLAMA: openRecentTransactionsModal fonksiyonunun Turkce karsiligi "ac son islemler pencere"; ilgili pencereyi veya ekrani acar.
 function openRecentTransactionsModal() {
   if (!recentTransactionsModal) return;
   renderRecentTransactionsModal();
@@ -423,7 +404,6 @@ function openRecentTransactionsModal() {
   setTimeout(() => closeRecentTransactionsButton?.focus(), 0);
 }
 
-// ACIKLAMA: closeRecentTransactionsModal fonksiyonunun Turkce karsiligi "kapat son islemler pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeRecentTransactionsModal() {
   closePaymentAccountOverflowMenu();
   if (recentTransactionsModal) {
@@ -433,13 +413,11 @@ function closeRecentTransactionsModal() {
 
 let recentTransactionsModalRenderKey = null;
 
-// ACIKLAMA: renderRecentTransactionsModal fonksiyonunun Turkce karsiligi "ekrana bas son islemler pencere"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderRecentTransactionsModal() {
   if (!recentTransactionsList) {
     return;
   }
 
-  // ACIKLAMA: latestTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
   const latestTransactions = getRecentAddedTransactions(RECENT_ADDED_TRANSACTION_DAYS);
   const renderKey = JSON.stringify(latestTransactions.map((item) => [
     item.id, item.createdAt, item.updatedAt, item.title, item.amount, item.type,
@@ -466,16 +444,15 @@ function renderRecentTransactionsModal() {
   });
 }
 
-// ACIKLAMA: getVisibleFilteredTransactions fonksiyonunun Turkce karsiligi "al gorunur filtrelenmis islemler"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getVisibleFilteredTransactions() {
-  // ACIKLAMA: query degiskeninin Turkce karsiligi "query"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const query = currentHistorySearch.trim().toLocaleLowerCase("tr-TR");
-  // ACIKLAMA: selectedType degiskeninin Turkce karsiligi "selected tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const selectedType = filterType.value;
   const selectedCategory = filterCategory?.value || "all";
-  // ACIKLAMA: selectedPaymentMethod degiskeninin Turkce karsiligi "selected odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const selectedPaymentMethod = filterPaymentMethod?.value || "all";
-  // ACIKLAMA: selectedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+
   const selectedPaymentAccount = filterPaymentAccount?.value || "all";
   const hasDateRange = hasHistoryDateRange();
   // Kayıtlar en yeniden eskiye sıralı tutulur; filtreleme sıralamayı korur.
@@ -505,15 +482,13 @@ function getVisibleFilteredTransactions() {
   });
 }
 
-// ACIKLAMA: renderPaymentAccountFilterOptions fonksiyonunun Turkce karsiligi "ekrana bas odeme hesap filtre options"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderPaymentAccountFilterOptions() {
   if (!filterPaymentAccount) {
     return;
   }
 
-  // ACIKLAMA: currentValue degiskeninin Turkce karsiligi "mevcut deger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const currentValue = filterPaymentAccount.value || "all";
-  // ACIKLAMA: options degiskeninin Turkce karsiligi "options"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const options = [
     { value: "all", label: "Tüm Kart/Hesaplar" },
     { value: "none", label: "Nakit / Hesap Yok" },
@@ -525,7 +500,7 @@ function renderPaymentAccountFilterOptions() {
 
   filterPaymentAccount.innerHTML = "";
   options.forEach((item) => {
-    // ACIKLAMA: option degiskeninin Turkce karsiligi "option"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const option = document.createElement("option");
     option.value = item.value;
     option.textContent = item.label;
@@ -559,9 +534,6 @@ function renderHistoryCategoryFilterOptions() {
   syncHistoryCustomFilterSelect(filterCategory);
 }
 
-
-
-// ACIKLAMA: initHistoryCustomFilterSelects fonksiyonunun Turkce karsiligi "baslat gecmis custom filtre selects"; ilgili uygulama islemini calistirir.
 function initHistoryCustomFilterSelects() {
   renderHistoryCategoryFilterOptions();
   [filterType, filterCategory, filterPaymentMethod, filterPaymentAccount].filter(Boolean).forEach((select) => {
@@ -576,7 +548,7 @@ function initHistoryCustomFilterSelects() {
 
   if (!document.body.dataset.historyCustomFiltersReady) {
     document.addEventListener("click", (event) => {
-      // ACIKLAMA: openDropdowns degiskeninin Turkce karsiligi "ac dropdowns"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const openDropdowns = document.querySelectorAll(".custom-filter-select.is-open");
       openDropdowns.forEach((dropdown) => {
         if (!dropdown.contains(event.target)) {
@@ -597,7 +569,6 @@ function initHistoryCustomFilterSelects() {
   }
 }
 
-// ACIKLAMA: buildHistoryCustomFilterSelect fonksiyonunun Turkce karsiligi "olustur gecmis custom filtre secim alani"; kullanilacak veri yapisini veya HTML elemanini olusturur.
 function buildHistoryCustomFilterSelect(select) {
   if (!select || select.dataset.customFilterBuilt === "1") {
     return;
@@ -605,30 +576,26 @@ function buildHistoryCustomFilterSelect(select) {
 
   select.classList.add("native-filter-source");
 
-  // ACIKLAMA: wrapper degiskeninin Turkce karsiligi "wrapper"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const wrapper = document.createElement("div");
   wrapper.className = "custom-filter-select";
   wrapper.dataset.for = select.id || "";
 
-  // ACIKLAMA: trigger degiskeninin Turkce karsiligi "trigger"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const trigger = document.createElement("button");
   trigger.type = "button";
   trigger.className = "custom-filter-trigger";
   trigger.setAttribute("aria-haspopup", "listbox");
   trigger.setAttribute("aria-expanded", "false");
 
-  // ACIKLAMA: label degiskeninin Turkce karsiligi "etiket"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const label = document.createElement("span");
   label.className = "custom-filter-trigger-label";
   trigger.append(label);
 
-  // ACIKLAMA: panel degiskeninin Turkce karsiligi "panel"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const panel = document.createElement("div");
   panel.className = "custom-filter-menu";
   panel.setAttribute("role", "listbox");
 
   trigger.addEventListener("click", () => {
-    // ACIKLAMA: isOpen degiskeninin Turkce karsiligi "mi ac"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const isOpen = wrapper.classList.contains("is-open");
     document.querySelectorAll(".custom-filter-select.is-open").forEach((dropdown) => {
       if (dropdown !== wrapper) {
@@ -645,23 +612,20 @@ function buildHistoryCustomFilterSelect(select) {
   select.dataset.customFilterBuilt = "1";
 }
 
-// ACIKLAMA: syncHistoryCustomFilterSelect fonksiyonunun Turkce karsiligi "esitle gecmis custom filtre secim alani"; bulut ve yerel veri esitleme akisini yonetir.
 function syncHistoryCustomFilterSelect(select) {
   if (!select) {
     return;
   }
 
-  // ACIKLAMA: wrapper degiskeninin Turkce karsiligi "wrapper"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const wrapper = select.parentElement?.querySelector(`.custom-filter-select[data-for="${select.id}"]`) || select.nextElementSibling;
   if (!wrapper || !wrapper.classList?.contains("custom-filter-select")) {
     return;
   }
 
-  // ACIKLAMA: triggerLabel degiskeninin Turkce karsiligi "trigger etiket"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const triggerLabel = wrapper.querySelector(".custom-filter-trigger-label");
-  // ACIKLAMA: menu degiskeninin Turkce karsiligi "menu"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const menu = wrapper.querySelector(".custom-filter-menu");
-  // ACIKLAMA: selectedOption degiskeninin Turkce karsiligi "selected option"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const selectedOption = select.options[select.selectedIndex] || select.options[0];
 
   if (triggerLabel) {
@@ -675,7 +639,7 @@ function syncHistoryCustomFilterSelect(select) {
   menu.innerHTML = "";
 
   Array.from(select.options).forEach((option) => {
-    // ACIKLAMA: item degiskeninin Turkce karsiligi "oge"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const item = document.createElement("button");
     item.type = "button";
     item.className = "custom-filter-option";
@@ -704,31 +668,27 @@ function syncHistoryCustomFilterSelect(select) {
   });
 }
 
-// ACIKLAMA: hasHistoryDateRange fonksiyonunun Turkce karsiligi "var mi gecmis tarih range"; ilgili uygulama islemini calistirir.
 function hasHistoryDateRange() {
   return Boolean(historyStartDate.value || historyEndDate.value);
 }
 
-// ACIKLAMA: isInHistoryDateRange fonksiyonunun Turkce karsiligi "mi in gecmis tarih range"; ilgili uygulama islemini calistirir.
 function isInHistoryDateRange(item) {
-  // ACIKLAMA: startDate degiskeninin Turkce karsiligi "baslangic tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const startDate = historyStartDate.value;
-  // ACIKLAMA: endDate degiskeninin Turkce karsiligi "bitis tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const endDate = historyEndDate.value;
 
   if (!startDate && !endDate) {
     return true;
   }
 
-  // ACIKLAMA: from degiskeninin Turkce karsiligi "kaynakli"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const from = startDate && endDate && startDate > endDate ? endDate : startDate;
-  // ACIKLAMA: to degiskeninin Turkce karsiligi "ile"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const to = startDate && endDate && startDate > endDate ? startDate : endDate;
 
   return (!from || item.date >= from) && (!to || item.date <= to);
 }
 
-// ACIKLAMA: formatDate fonksiyonunun Turkce karsiligi "bicimlendir tarih"; degeri ekranda okunur bicime cevirir.
 function formatDate(dateString) {
   return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
@@ -737,15 +697,13 @@ function formatDate(dateString) {
   }).format(new Date(dateString));
 }
 
-// ACIKLAMA: formatTransactionDateTime fonksiyonunun Turkce karsiligi "bicimlendir islem tarih saat"; degeri ekranda okunur bicime cevirir.
 function formatTransactionDateTime(item) {
-  // ACIKLAMA: time degiskeninin Turkce karsiligi "saat"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const time = getTransactionTime(item);
 
   return time ? `${formatDate(item.date)} ${time.slice(0, 5)}` : formatDate(item.date);
 }
 
-// ACIKLAMA: compareTransactionsNewestFirst fonksiyonunun Turkce karsiligi "karsilastir islemler en yeni ilk"; ilgili uygulama islemini calistirir.
 function compareTransactionsNewestFirst(a, b) {
   return (
     getTransactionSortTimestamp(b) - getTransactionSortTimestamp(a) ||
@@ -754,23 +712,20 @@ function compareTransactionsNewestFirst(a, b) {
   );
 }
 
-// ACIKLAMA: getTransactionSortTimestamp fonksiyonunun Turkce karsiligi "al islem sirala zaman damgasi"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getTransactionSortTimestamp(item) {
-  // ACIKLAMA: transactionAt degiskeninin Turkce karsiligi "islem at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const transactionAt = getRecordTimestamp(item.transactionAt);
 
   if (transactionAt) {
     return transactionAt;
   }
 
-  // ACIKLAMA: time degiskeninin Turkce karsiligi "saat"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const time = getTransactionTime(item) || "00:00:00";
   return getRecordTimestamp(buildTransactionDateTime(item.date, time));
 }
 
-// ACIKLAMA: getTransactionTime fonksiyonunun Turkce karsiligi "al islem saat"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getTransactionTime(item) {
-  // ACIKLAMA: fromTransactionAt degiskeninin Turkce karsiligi "kaynakli islem at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const fromTransactionAt = getTimePart(item.transactionAt);
 
   if (fromTransactionAt) {
@@ -780,7 +735,6 @@ function getTransactionTime(item) {
   return extractTimePart(`${item.title || ""} ${item.note || ""}`);
 }
 
-// ACIKLAMA: getRecordTimestamp fonksiyonunun Turkce karsiligi "al kayit zaman damgasi"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getRecordTimestamp(value) {
   if (!value) {
     return 0;
@@ -795,7 +749,7 @@ function getRecordTimestamp(value) {
   }
 
   if (typeof value.toDate === "function") {
-    // ACIKLAMA: date degiskeninin Turkce karsiligi "tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const date = value.toDate();
     return date instanceof Date && !Number.isNaN(date.getTime()) ? date.getTime() : 0;
   }
@@ -804,28 +758,24 @@ function getRecordTimestamp(value) {
     return Number(value.seconds) * 1000;
   }
 
-  // ACIKLAMA: timestamp degiskeninin Turkce karsiligi "zaman damgasi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const timestamp = Date.parse(String(value || ""));
   return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
-// ACIKLAMA: buildTransactionDateTime fonksiyonunun Turkce karsiligi "olustur islem tarih saat"; kullanilacak veri yapisini veya HTML elemanini olusturur.
 function buildTransactionDateTime(date, time = "") {
-  // ACIKLAMA: datePart degiskeninin Turkce karsiligi "tarih part"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const datePart = String(date || "").slice(0, 10);
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
     return "";
   }
 
-  // ACIKLAMA: timePart degiskeninin Turkce karsiligi "saat part"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const timePart = extractTimePart(time) || "00:00:00";
   return `${datePart}T${timePart}+03:00`;
 }
 
-// ACIKLAMA: getTimePart fonksiyonunun Turkce karsiligi "al saat part"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getTimePart(value) {
-  // ACIKLAMA: isoMatch degiskeninin Turkce karsiligi "iso eslesme"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const isoMatch = String(value || "").match(/T(\d{2}:\d{2}(?::\d{2})?)/);
 
   if (isoMatch) {
@@ -835,9 +785,8 @@ function getTimePart(value) {
   return extractTimePart(value);
 }
 
-// ACIKLAMA: extractTimePart fonksiyonunun Turkce karsiligi "ayikla saat part"; metin, dosya veya API cevabindan gerekli bilgileri ayiklar.
 function extractTimePart(value) {
-  // ACIKLAMA: match degiskeninin Turkce karsiligi "eslesme"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const match = String(value || "").match(/\b([01]?\d|2[0-3])[:.][0-5]\d(?::[0-5]\d)?\b/);
 
   if (!match) {
@@ -848,65 +797,27 @@ function extractTimePart(value) {
   return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}:${second.padStart(2, "0")}`;
 }
 
-// ACIKLAMA: getDateFilteredTransactions fonksiyonunun Turkce karsiligi "al tarih filtrelenmis islemler"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getDateFilteredTransactions() {
   return transactions.filter((item) => {
     const [year, month, day] = item.date.split("-");
-    // ACIKLAMA: matchesYear degiskeninin Turkce karsiligi "eslesmeler yil"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const matchesYear = selectedYear === "all" || year === selectedYear;
-    // ACIKLAMA: matchesMonth degiskeninin Turkce karsiligi "eslesmeler ay"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const matchesMonth = selectedMonth === "all" || month === selectedMonth;
-    // ACIKLAMA: matchesDay degiskeninin Turkce karsiligi "eslesmeler gun"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const matchesDay = selectedDay === "all" || day === selectedDay;
     return matchesYear && matchesMonth && matchesDay;
   });
 }
 
-// ACIKLAMA: updateDateFilterOptions fonksiyonunun Turkce karsiligi "guncelle tarih filtre options"; mevcut ekran durumunu veya hesaplanan degerleri gunceller.
-function updateDateFilterOptions() {
-  return;
-}
-
-// ACIKLAMA: updateDayOptions fonksiyonunun Turkce karsiligi "guncelle gun options"; mevcut ekran durumunu veya hesaplanan degerleri gunceller.
-function updateDayOptions() {
-  return;
-}
-
-// ACIKLAMA: createFilterOption fonksiyonunun Turkce karsiligi "olustur filtre option"; kullanilacak veri yapisini veya HTML elemanini olusturur.
-function createFilterOption(value, label) {
-  // ACIKLAMA: option degiskeninin Turkce karsiligi "option"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const option = document.createElement("option");
-  option.value = value;
-  option.textContent = label;
-  return option;
-}
-
-// ACIKLAMA: getMonthNumbers fonksiyonunun Turkce karsiligi "al ay numbers"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
-function getMonthNumbers() {
-  return Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0"));
-}
-
-// ACIKLAMA: getMonthName fonksiyonunun Turkce karsiligi "al ay adi"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getMonthName(month) {
   return new Intl.DateTimeFormat("tr-TR", {
     month: "long",
   }).format(new Date(2026, Number(month) - 1, 1));
 }
 
-// ACIKLAMA: getDayNumbersForSelection fonksiyonunun Turkce karsiligi "al gun numbers icin secim"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
-function getDayNumbersForSelection() {
-  if (selectedYear !== "all" && selectedMonth !== "all") {
-    // ACIKLAMA: lastDay degiskeninin Turkce karsiligi "son gun"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-    const lastDay = new Date(Number(selectedYear), Number(selectedMonth), 0).getDate();
-    return Array.from({ length: lastDay }, (_, index) => String(index + 1).padStart(2, "0"));
-  }
-
-  return Array.from({ length: 31 }, (_, index) => String(index + 1).padStart(2, "0"));
-}
-
-// ACIKLAMA: getDateFilterLabel fonksiyonunun Turkce karsiligi "al tarih filtre etiket"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getDateFilterLabel() {
-  // ACIKLAMA: parts degiskeninin Turkce karsiligi "parcalar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const parts = [];
 
   if (selectedDay !== "all") {
@@ -924,23 +835,22 @@ function getDateFilterLabel() {
   return parts.length ? parts.join(" ") : "Tüm dönem";
 }
 
-// ACIKLAMA: getHistoryFilterLabel fonksiyonunun Turkce karsiligi "al gecmis filtre etiket"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
 function getHistoryFilterLabel() {
-  // ACIKLAMA: parts degiskeninin Turkce karsiligi "parcalar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const parts = [];
 
   if (!hasHistoryDateRange()) {
     parts.push(getDateFilterLabel());
   } else {
-    // ACIKLAMA: startDate degiskeninin Turkce karsiligi "baslangic tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const startDate = historyStartDate.value;
-    // ACIKLAMA: endDate degiskeninin Turkce karsiligi "bitis tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const endDate = historyEndDate.value;
 
     if (startDate && endDate) {
-      // ACIKLAMA: from degiskeninin Turkce karsiligi "kaynakli"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const from = startDate > endDate ? endDate : startDate;
-      // ACIKLAMA: to degiskeninin Turkce karsiligi "ile"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const to = startDate > endDate ? startDate : endDate;
       parts.push(`${formatDate(from)} - ${formatDate(to)}`);
     } else if (startDate) {
@@ -950,10 +860,9 @@ function getHistoryFilterLabel() {
     }
   }
 
-  // ACIKLAMA: selectedPaymentMethod degiskeninin Turkce karsiligi "selected odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const selectedPaymentMethod = filterPaymentMethod?.value || "all";
   const selectedCategory = filterCategory?.value || "all";
-  // ACIKLAMA: selectedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+
   const selectedPaymentAccount = filterPaymentAccount?.value || "all";
 
   if (selectedCategory !== "all") {
@@ -968,7 +877,7 @@ function getHistoryFilterLabel() {
     if (selectedPaymentAccount === "none") {
       parts.push("Nakit / hesap yok");
     } else {
-      // ACIKLAMA: account degiskeninin Turkce karsiligi "hesap"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
       const account = paymentAccounts.find((item) => item.id === selectedPaymentAccount);
       if (account) {
         parts.push(formatPaymentAccountName(account));
@@ -979,7 +888,6 @@ function getHistoryFilterLabel() {
   return parts.join(" · ");
 }
 
-// ACIKLAMA: Islem duzenleme penceresindeki takip kutusu, tur ve taksit alanlarini birlikte yonetir.
 function syncTransactionTrackingFields() {
   const secili = Boolean(transactionTrackCheckbox?.checked);
   const listeTuru = ["debt", "installment", "receivable"].includes(transactionTrackTypeInput?.value)
@@ -1001,7 +909,6 @@ function syncTransactionTrackingFields() {
   }
 }
 
-// ACIKLAMA: editTransaction fonksiyonunun Turkce karsiligi "duzenle islem"; ilgili uygulama islemini calistirir.
 function editTransaction(item) {
   editingTransactionId = item.id;
   transactionTypeInput.value = item.type === "transfer" ? "transfer" : item.type;
@@ -1051,7 +958,6 @@ function editTransaction(item) {
   }, 0);
 }
 
-// ACIKLAMA: closeTransactionEditModal fonksiyonunun Turkce karsiligi "kapat islem duzenle pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeTransactionEditModal() {
   editingTransactionId = "";
   transactionEditStatus.textContent = "";
@@ -1073,7 +979,6 @@ function closeTransactionEditModal() {
   transactionEditModal.hidden = true;
 }
 
-// ACIKLAMA: saveTransactionEdit fonksiyonunun Turkce karsiligi "kaydet islem duzenle"; formdan gelen bilgiyi kaydeder veya yeni kayit ekler.
 function saveTransactionEdit(event) {
   event.preventDefault();
 
@@ -1081,31 +986,30 @@ function saveTransactionEdit(event) {
     return;
   }
 
-  // ACIKLAMA: type degiskeninin Turkce karsiligi "tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const type = transactionTypeInput.value === "transfer" ? "transfer" : transactionTypeInput.value;
-  // ACIKLAMA: title degiskeninin Turkce karsiligi "baslik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const title = transactionTitleInput.value.trim().slice(0, 40);
-  // ACIKLAMA: amount degiskeninin Turkce karsiligi "tutar"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const amount = Number(transactionAmountInput.value);
-  // ACIKLAMA: category degiskeninin Turkce karsiligi "kategori"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const category = type === "transfer" ? (transactionCategoryInput.value || "Transfer") : transactionCategoryInput.value;
-  // ACIKLAMA: paymentMethod degiskeninin Turkce karsiligi "odeme yontem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const paymentMethod = type === "transfer" ? "transfer" : normalizePaymentMethod(transactionPaymentMethodInput.value);
-  // ACIKLAMA: paymentAccountId kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+
   const paymentAccountId = String(transactionPaymentAccountInput.value || "");
-  // ACIKLAMA: transferAccountId degiskeninin Turkce karsiligi "aktarim hesap kimlik"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const transferAccountId = type === "transfer" ? String(transactionTransferAccountInput?.value || "") : "";
-  // ACIKLAMA: transferFee degiskeninin Turkce karsiligi "aktarim ucret"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const transferFee =
     type === "transfer" ? Math.max(0, roundMoney(readSignedNumber(transactionTransferFeeInput?.value, 0))) : 0;
-  // ACIKLAMA: date degiskeninin Turkce karsiligi "tarih"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const date = transactionDateInput.value;
-  // ACIKLAMA: note degiskeninin Turkce karsiligi "note"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const note = transactionNoteInput.value.trim().slice(0, 100);
   const isInstallment = Boolean(transactionInstallmentCheckbox?.checked);
-  // ACIKLAMA: time degiskeninin Turkce karsiligi "saat"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const time = transactionTimeInput.value ? `${transactionTimeInput.value}:00` : "";
-  // ACIKLAMA: transactionAt degiskeninin Turkce karsiligi "islem at"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const transactionAt = buildTransactionDateTime(date, time || "00:00:00");
   const takipSecili = Boolean(transactionTrackCheckbox?.checked);
   const takipListeTuru = ["debt", "installment", "receivable"].includes(transactionTrackTypeInput?.value)
@@ -1147,9 +1051,8 @@ function saveTransactionEdit(event) {
     return;
   }
 
-  // ACIKLAMA: previousTransaction degiskeninin Turkce karsiligi "previous islem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const previousTransaction = transactions.find((transaction) => transaction.id === editingTransactionId);
-  // ACIKLAMA: nextTransaction degiskeninin Turkce karsiligi "sonraki islem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const nextTransaction = {
     ...(previousTransaction || {}),
     id: editingTransactionId,
@@ -1203,18 +1106,17 @@ function saveTransactionEdit(event) {
     }
   }
 
-  // ACIKLAMA: revertedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
   const revertedPaymentAccount = previousTransaction ? applyTransactionPaymentEffect(previousTransaction, -1) : false;
-  // ACIKLAMA: appliedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+
   const appliedPaymentAccount = applyTransactionPaymentEffect(nextTransaction, 1);
-  // ACIKLAMA: cleanupIds degiskeninin Turkce karsiligi "cleanup kimlikler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const cleanupIds = getLegacyTransferCounterpartIds(nextTransaction, previousTransaction);
-  // ACIKLAMA: cleanedPaymentAccount kart, banka hesabi veya odeme hesabi bilgileri icin kullanilir.
+
   let cleanedPaymentAccount = false;
 
   cleanupIds.delete(editingTransactionId);
   cleanupIds.forEach((transactionId) => {
-    // ACIKLAMA: cleanupTransaction degiskeninin Turkce karsiligi "cleanup islem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const cleanupTransaction = transactions.find((transaction) => transaction.id === transactionId);
     if (cleanupTransaction) {
       cleanedPaymentAccount = applyTransactionPaymentEffect(cleanupTransaction, -1) || cleanedPaymentAccount;
@@ -1252,14 +1154,6 @@ function saveTransactionEdit(event) {
   render();
 }
 
-// ACIKLAMA: getCategoryTypeLabel fonksiyonunun Turkce karsiligi "al kategori tur etiket"; gerekli veriyi okur, hesaplar veya uzak kaynaktan getirir.
-function getCategoryTypeLabel(type) {
-  if (type === "income") return "Gelir";
-  if (type === "transfer") return "Transfer";
-  return "Gider";
-}
-
-// ACIKLAMA: syncCategorySelects fonksiyonunun Turkce karsiligi "esitle kategori selects"; bulut ve yerel veri esitleme akisini yonetir.
 function syncCategorySelects() {
   updateCategoryOptions(typeInput.value);
   if (transactionTypeInput) {
@@ -1267,7 +1161,6 @@ function syncCategorySelects() {
   }
 }
 
-// ACIKLAMA: openCategoryAddModal fonksiyonunun Turkce karsiligi "ac kategori add pencere"; ilgili pencereyi veya ekrani acar.
 function openCategoryAddModal() {
   if (!categoryAddModal) {
     return;
@@ -1284,7 +1177,6 @@ function openCategoryAddModal() {
   setTimeout(() => categoryAddName?.focus(), 0);
 }
 
-// ACIKLAMA: closeCategoryAddModal fonksiyonunun Turkce karsiligi "kapat kategori add pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeCategoryAddModal() {
   if (categoryAddModal) {
     categoryAddModal.hidden = true;
@@ -1295,12 +1187,11 @@ function closeCategoryAddModal() {
   }
 }
 
-// ACIKLAMA: handleCategoryAdd fonksiyonunun Turkce karsiligi "handle kategori add"; formdan gelen bilgiyi kaydeder veya yeni kayit ekler.
 function handleCategoryAdd(event) {
   event.preventDefault();
-  // ACIKLAMA: type degiskeninin Turkce karsiligi "tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const type = String(categoryAddType?.value || "expense");
-  // ACIKLAMA: name degiskeninin Turkce karsiligi "adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const name = String(categoryAddName?.value || "").trim();
 
   if (!name) {
@@ -1310,7 +1201,6 @@ function handleCategoryAdd(event) {
     return;
   }
 
-  // ACIKLAMA: exists degiskeninin Turkce karsiligi "exists"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const exists = (transactionCategories[type] || []).some(
     (item) => item.toLocaleLowerCase("tr-TR") === name.toLocaleLowerCase("tr-TR")
   );
@@ -1330,7 +1220,6 @@ function handleCategoryAdd(event) {
   closeCategoryAddModal();
 }
 
-// ACIKLAMA: openCategoryManageModal fonksiyonunun Turkce karsiligi "ac kategori manage pencere"; ilgili pencereyi veya ekrani acar.
 function openCategoryManageModal() {
   if (!categoryManageModal) {
     return;
@@ -1347,7 +1236,6 @@ function openCategoryManageModal() {
   setTimeout(() => categoryManageList?.querySelector("input")?.focus(), 0);
 }
 
-// ACIKLAMA: closeCategoryManageModal fonksiyonunun Turkce karsiligi "kapat kategori manage pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeCategoryManageModal() {
   if (categoryManageModal) {
     categoryManageModal.hidden = true;
@@ -1360,15 +1248,13 @@ function closeCategoryManageModal() {
   }
 }
 
-// ACIKLAMA: renderCategoryManageList fonksiyonunun Turkce karsiligi "ekrana bas kategori manage liste"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderCategoryManageList() {
   if (!categoryManageList) {
     return;
   }
 
-  // ACIKLAMA: type degiskeninin Turkce karsiligi "tur"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const type = String(categoryManageType?.value || "expense");
-  // ACIKLAMA: items degiskeninin Turkce karsiligi "ogeler"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const items = transactionCategories[type] || [];
   categoryManageList.innerHTML = "";
 
@@ -1378,7 +1264,7 @@ function renderCategoryManageList() {
   }
 
   items.forEach((name, index) => {
-    // ACIKLAMA: row degiskeninin Turkce karsiligi "satir"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
     const row = document.createElement("div");
     row.className = "category-manage-row";
     row.dataset.originalName = name;
@@ -1391,14 +1277,12 @@ function renderCategoryManageList() {
     dragHandle.setAttribute("aria-label", `${name} kategorisini sürükleyerek sırala`);
     bindCategoryDragHandle(dragHandle, row);
 
-    // ACIKLAMA: input kullanicidan veri alan input elemaninin DOM referansidir.
     const input = document.createElement("input");
     input.type = "text";
     input.value = name;
     input.maxLength = 32;
     input.autocomplete = "off";
 
-    // ACIKLAMA: deleteButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "category-remove-button";
@@ -1420,7 +1304,6 @@ function renderCategoryManageList() {
   window.lucide?.createIcons();
 }
 
-// ACIKLAMA: Fare, dokunma ve klavye ile kategori satirlarinin sirasi degistirilir.
 function bindCategoryDragHandle(handle, row) {
   let pointerId = null;
   const moveDrag = (event) => {
@@ -1468,7 +1351,6 @@ function bindCategoryDragHandle(handle, row) {
   });
 }
 
-// ACIKLAMA: Duzenlenen adlari, silinen satirlari ve suruklenen sirayi tek seferde kaydeder.
 function saveManagedCategories() {
   const type = String(categoryManageType?.value || "expense");
   const rows = Array.from(categoryManageList?.querySelectorAll(".category-manage-row") || []);
@@ -1502,108 +1384,6 @@ function saveManagedCategories() {
   categoryManageStatus.textContent = "Kategori adları ve sırası kaydedildi.";
 }
 
-// ACIKLAMA: Kategoriyi secilen yonde bir sira tasir ve yeni sirayi yerel/bulut profile kaydeder.
-function moveManagedCategory(type, name, direction) {
-  const categoryList = [...(transactionCategories[type] || [])];
-  const currentIndex = categoryList.findIndex((item) => item === name);
-  const nextIndex = currentIndex + (direction < 0 ? -1 : 1);
-  if (currentIndex < 0 || nextIndex < 0 || nextIndex >= categoryList.length) {
-    return;
-  }
-
-  [categoryList[currentIndex], categoryList[nextIndex]] = [categoryList[nextIndex], categoryList[currentIndex]];
-  transactionCategories[type] = categoryList;
-  transactionCategories = normalizeCategoryState(transactionCategories);
-  persistTransactionCategories();
-  syncCategorySelects();
-  renderCategoryManageList();
-  render();
-  if (categoryManageStatus) {
-    categoryManageStatus.textContent = `${name} kategorisinin sırası güncellendi.`;
-  }
-}
-
-// ACIKLAMA: renameManagedCategory fonksiyonunun Turkce karsiligi "rename managed kategori"; ilgili uygulama islemini calistirir.
-function renameManagedCategory(type, previousName, nextName) {
-  // ACIKLAMA: newName degiskeninin Turkce karsiligi "new adi"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const newName = String(nextName || "").trim();
-  if (!newName) {
-    if (categoryManageStatus) {
-      categoryManageStatus.textContent = "Kategori adı boş olamaz.";
-    }
-    return;
-  }
-
-  // ACIKLAMA: categoryList ekrana basilan liste/kart satirlarinin yerlesecegi DOM alanidir.
-  const categoryList = [...(transactionCategories[type] || [])];
-  // ACIKLAMA: duplicate degiskeninin Turkce karsiligi "duplicate"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const duplicate = categoryList.some(
-    (item) => item !== previousName && item.toLocaleLowerCase("tr-TR") === newName.toLocaleLowerCase("tr-TR")
-  );
-  if (duplicate) {
-    if (categoryManageStatus) {
-      categoryManageStatus.textContent = "Bu isimde başka bir kategori zaten var.";
-    }
-    return;
-  }
-
-  // ACIKLAMA: index degiskeninin Turkce karsiligi "dizin"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const index = categoryList.findIndex((item) => item === previousName);
-  if (index === -1) {
-    return;
-  }
-
-  categoryList[index] = newName;
-  transactionCategories[type] = categoryList;
-  transactionCategories = normalizeCategoryState(transactionCategories);
-
-  // ACIKLAMA: changedTransactions gelir/gider kayitlariyla ilgili veriyi veya durumu tutar.
-  const changedTransactions = [];
-  transactions = transactions.map((item) => {
-    if (item.type === type && item.category === previousName) {
-      // ACIKLAMA: updatedTransaction degiskeninin Turkce karsiligi "updated islem"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-      const updatedTransaction = { ...item, category: newName, updatedAt: getTurkeyNowDateTime() };
-      changedTransactions.push(updatedTransaction);
-      return updatedTransaction;
-    }
-    return item;
-  });
-
-  persistTransactionCategories();
-  if (changedTransactions.length) {
-    persistTransactions({ cloudUpserts: changedTransactions });
-  }
-  syncCategorySelects();
-  renderCategoryManageList();
-  render();
-  if (categoryManageStatus) {
-    categoryManageStatus.textContent = `${getCategoryTypeLabel(type)} kategorisi güncellendi.`;
-  }
-}
-
-// ACIKLAMA: deleteManagedCategory fonksiyonunun Turkce karsiligi "sil managed kategori"; secilen kaydi siler veya listeden kaldirir.
-function deleteManagedCategory(type, name) {
-  // ACIKLAMA: categoryList ekrana basilan liste/kart satirlarinin yerlesecegi DOM alanidir.
-  const categoryList = [...(transactionCategories[type] || [])];
-  if (categoryList.length <= 1) {
-    if (categoryManageStatus) {
-      categoryManageStatus.textContent = "Son kategori silinemez.";
-    }
-    return;
-  }
-
-  transactionCategories[type] = categoryList.filter((item) => item !== name);
-  transactionCategories = normalizeCategoryState(transactionCategories);
-  persistTransactionCategories();
-  syncCategorySelects();
-  renderCategoryManageList();
-  render();
-  if (categoryManageStatus) {
-    categoryManageStatus.textContent = `${name} kategorisi kaldırıldı.`;
-  }
-}
-
-// ACIKLAMA: openEntryModal fonksiyonunun Turkce karsiligi "ac entry pencere"; ilgili pencereyi veya ekrani acar.
 function openEntryModal() {
   resetEntryForm();
 
@@ -1611,7 +1391,6 @@ function openEntryModal() {
   setTimeout(() => form.querySelector("input, select, textarea")?.focus(), 0);
 }
 
-// ACIKLAMA: closeEntryModal fonksiyonunun Turkce karsiligi "kapat entry pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeEntryModal() {
   if (entryModal) {
     entryModal.hidden = true;
@@ -1620,7 +1399,6 @@ function closeEntryModal() {
   resetEntryForm();
 }
 
-// ACIKLAMA: Tekli gelir/gider formunu her acilis ve kapanista varsayilan bos durumuna getirir.
 function resetEntryForm() {
   if (!form) {
     return;
@@ -1659,7 +1437,6 @@ function resetEntryForm() {
   }
 }
 
-// ACIKLAMA: openBesModal fonksiyonunun Turkce karsiligi "ac BES pencere"; ilgili pencereyi veya ekrani acar.
 function openBesModal(item = null) {
   editingBesId = item?.id || "";
   besForm.reset();
@@ -1680,7 +1457,6 @@ function openBesModal(item = null) {
   setTimeout(() => besForm.elements.besProvider?.focus(), 0);
 }
 
-// ACIKLAMA: closeBesModal fonksiyonunun Turkce karsiligi "kapat BES pencere"; ilgili pencereyi veya ekrani kapatir.
 function closeBesModal() {
   editingBesId = "";
 
@@ -1701,7 +1477,6 @@ function closeBesModal() {
   }
 }
 
-// ACIKLAMA: renderPagination fonksiyonunun Turkce karsiligi "ekrana bas sayfalama"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderPagination(totalCount, totalPages) {
   if (totalPages <= 1) {
     paginationControls.innerHTML = "";
@@ -1710,14 +1485,12 @@ function renderPagination(totalCount, totalPages) {
 
   paginationControls.innerHTML = "";
 
-  // ACIKLAMA: goToHistoryPage fonksiyonunun Turkce karsiligi "gecmis sayfasina git"; kayit listesini istenen sayfaya tasir.
   const goToHistoryPage = (page) => {
     currentHistorySearch = searchInput ? searchInput.value : currentHistorySearch;
     currentHistoryPage = Math.min(totalPages, Math.max(1, page));
     renderTransactions();
   };
 
-  // ACIKLAMA: firstButton kayit listesini ilk sayfaya goturen butondur.
   const firstButton = document.createElement("button");
   firstButton.type = "button";
   firstButton.className = "ghost-btn pagination-edge-btn";
@@ -1728,7 +1501,6 @@ function renderPagination(totalCount, totalPages) {
     goToHistoryPage(1);
   });
 
-  // ACIKLAMA: previousButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
   const previousButton = document.createElement("button");
   previousButton.type = "button";
   previousButton.className = "ghost-btn pagination-step-btn";
@@ -1738,7 +1510,6 @@ function renderPagination(totalCount, totalPages) {
     goToHistoryPage(currentHistoryPage - 1);
   });
 
-  // ACIKLAMA: nextButton ilgili butonun DOM referansidir; tiklama olaylari bu elemanla baglanir.
   const nextButton = document.createElement("button");
   nextButton.type = "button";
   nextButton.className = "ghost-btn pagination-step-btn";
@@ -1748,7 +1519,6 @@ function renderPagination(totalCount, totalPages) {
     goToHistoryPage(currentHistoryPage + 1);
   });
 
-  // ACIKLAMA: lastButton kayit listesini son sayfaya goturen butondur.
   const lastButton = document.createElement("button");
   lastButton.type = "button";
   lastButton.className = "ghost-btn pagination-edge-btn";
@@ -1759,27 +1529,17 @@ function renderPagination(totalCount, totalPages) {
     goToHistoryPage(totalPages);
   });
 
-  // ACIKLAMA: label degiskeninin Turkce karsiligi "etiket"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
   const label = document.createElement("span");
   label.className = "pagination-page-label";
-  // ACIKLAMA: firstItem degiskeninin Turkce karsiligi "ilk oge"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const firstItem = (currentHistoryPage - 1) * TRANSACTIONS_PER_PAGE + 1;
-  // ACIKLAMA: lastItem degiskeninin Turkce karsiligi "son oge"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
+
   const lastItem = Math.min(currentHistoryPage * TRANSACTIONS_PER_PAGE, totalCount);
   label.textContent = `${firstItem}-${lastItem} / ${totalCount} · Sayfa ${currentHistoryPage}/${totalPages}`;
 
   paginationControls.append(firstButton, previousButton, label, nextButton, lastButton);
 }
 
-// ACIKLAMA: clearHistorySearch fonksiyonunun Turkce karsiligi "temizle gecmis arama"; ilgili uygulama islemini calistirir.
-function clearHistorySearch() {
-  currentHistorySearch = "";
-  if (searchInput.value) {
-    searchInput.value = "";
-  }
-}
-
-// ACIKLAMA: Bir ekrandan ayrilirken o ekrana ait gecici filtreleri, formlari ve acik pencereleri temizler.
 function resetViewTransientState(viewId) {
   if (viewId === "homeView") {
     closeRecentTransactionsModal();
@@ -1839,9 +1599,8 @@ function resetViewTransientState(viewId) {
   }
 }
 
-// ACIKLAMA: switchView fonksiyonunun Turkce karsiligi "ekran degistir ekran"; ilgili uygulama islemini calistirir.
 function switchView(viewId) {
-  // ACIKLAMA: previousView uygulamadaki ilgili ekran/gorunum alanini temsil eder.
+
   const previousView = activeView;
   activeView = viewMeta[viewId] ? viewId : "homeView";
 
@@ -1866,16 +1625,10 @@ function switchView(viewId) {
   }
 }
 
-// ACIKLAMA: renderView fonksiyonunun Turkce karsiligi "ekrana bas ekran"; ilgili ekran, liste veya kartlari ekrana basar.
 function renderView() {
-  // ACIKLAMA: meta degiskeninin Turkce karsiligi "meta"; bu bilgiyi saklamak veya ilgili islemi desteklemek icin kullanilir.
-  const meta = viewMeta[activeView];
 
   viewSections.forEach((section) => section.classList.toggle("active", section.id === activeView));
   navItems.forEach((item) => item.classList.toggle("active", item.dataset.viewTarget === activeView));
-  pageKicker.textContent = meta.kicker;
-  pageTitle.textContent = meta.title;
-  pageSubtitle.textContent = meta.subtitle;
   renderModernShell();
 
   if (activeView === "settingsView") {
@@ -1887,7 +1640,6 @@ function renderView() {
   updateHistoryResponsiveLayout();
 }
 
-// ACIKLAMA: Masaustu yan menu durumu yerel depolamada saklanir; varsayilan davranis acik menudur.
 const DESKTOP_SIDEBAR_STORAGE_KEY = "akisDesktopSidebarExpanded";
 
 function isDesktopSidebarMode() {
@@ -1945,7 +1697,6 @@ function initSidebarResponsiveState() {
   window.__akisSidebarResponsiveStateBound = true;
 }
 
-// ACIKLAMA: toggleSidebar fonksiyonunun Turkce karsiligi "ac kapat sidebar"; ilgili uygulama islemini calistirir.
 function toggleSidebar() {
   if (isDesktopSidebarMode()) {
     if (sidebar.classList.contains("open") || appShell.classList.contains("menu-open")) {
@@ -1958,7 +1709,6 @@ function toggleSidebar() {
   setMobileSidebarOpen(!sidebar.classList.contains("open"));
 }
 
-// ACIKLAMA: setMobileSidebarOpen fonksiyonunun Turkce karsiligi "ayarla mobil sidebar ac"; ilgili pencereyi veya ekrani acar.
 function setMobileSidebarOpen(open) {
   sidebar.classList.toggle("open", open);
   appShell.classList.toggle("menu-open", open);

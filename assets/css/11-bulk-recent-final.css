@@ -1,47 +1,31 @@
-/* ACIKLAMA: Coklu gelir/gider modali, son kayitlar penceresi ve son katman mobil duzeltmeleri.
-   ACIKLAMA: CSS dosyalari numara sirasiyla yuklenir; sirayi degistirmek cascade/override sonucunu degistirebilir. */
-
-/* ACIKLAMA: .bulk-entry-panel coklu gelir/gider ekleme panelinin ana bosluk ve tasma kurallarini tanimlar. */
 .bulk-entry-panel {
   margin-top: 18px;
   overflow: hidden;
 }
-
-/* ACIKLAMA: #bulkEntryModal coklu gelir/gider penceresinin masaustu ve mobilde tasmasiz kalmasini saglar. */
 #bulkEntryModal .bulk-entry-modal {
   width: min(1180px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
 }
-
-/* ACIKLAMA: #bulkEntryModal .modal-body-scroll coklu kayit satirlarini pencere icinde kaydirilabilir tutar. */
 #bulkEntryModal .modal-body-scroll {
   min-width: 0;
   overflow-x: hidden;
 }
-
-/* ACIKLAMA: #bulkEntryModal .bulk-entry-form modal icindeki coklu kayit formunu govde genisligine oturtur. */
 #bulkEntryModal .bulk-entry-form {
   width: 100%;
   min-width: 0;
 }
-
-/* ACIKLAMA: .bulk-entry-form coklu gelir/gider satirlarini ve aksiyonlarini dikey duzende tutar. */
 .bulk-entry-form {
   display: grid;
   gap: 14px;
   width: 100%;
   min-width: 0;
 }
-
-/* ACIKLAMA: .bulk-entry-rows JS ile eklenen coklu kayit satirlarini aralikli liste olarak gosterir. */
 .bulk-entry-rows {
   display: grid;
   gap: 12px;
   width: 100%;
   min-width: 0;
 }
-
-/* ACIKLAMA: .bulk-entry-row tek bir coklu gelir/gider satirinin responsive grid yerlesimini ayarlar. */
 .bulk-entry-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -54,8 +38,6 @@
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
 }
-
-/* ACIKLAMA: Masaustunde her coklu kaydi istenen bes yatay satira ayiran ana gruplar. */
 .bulk-entry-main-row,
 .bulk-entry-account-row,
 .bulk-entry-choice-row {
@@ -80,8 +62,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
 }
-
-/* ACIKLAMA: Secilen taksit veya borc yarisi kendi icinde iki esit alana bolunur. */
 .bulk-entry-choice-group {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -108,8 +88,6 @@
 .bulk-entry-choice-group > .bulk-entry-debt-payment-options {
   grid-column: 2;
 }
-
-/* ACIKLAMA: .bulk-entry-row-number coklu kayit satir numarasini sabit boyutta gosterir. */
 .bulk-entry-row-number {
   display: inline-grid;
   place-items: center;
@@ -122,8 +100,6 @@
   color: var(--text);
   font-weight: 800;
 }
-
-/* ACIKLAMA: .bulk-entry-row label satir icindeki etiket ve form alanlarini dikey hizalar. */
 .bulk-entry-row label {
   display: flex;
   min-width: 0;
@@ -174,8 +150,6 @@
   gap: 6px;
   min-width: 0;
 }
-
-/* ACIKLAMA: Not alani dorduncu satirin tamamini kaplar. */
 .bulk-entry-note-field {
   grid-column: 1 / -1;
   align-self: start;
@@ -192,8 +166,6 @@
   font-size: 0.78rem;
   line-height: 1.4;
 }
-
-/* ACIKLAMA: .bulk-entry-form input ve select alanlari coklu kayit panelinde tasma yapmadan tam genislik kullanir. */
 .bulk-entry-form input,
 .bulk-entry-form select {
   width: 100%;
@@ -205,15 +177,11 @@
   color: var(--text);
   font: inherit;
 }
-
-/* ACIKLAMA: .bulk-entry-form input:focus ve select:focus klavye ile secilen alani belirginlestirir. */
 .bulk-entry-form input:focus,
 .bulk-entry-form select:focus {
   outline: 2px solid rgba(9, 166, 129, 0.24);
   border-color: rgba(9, 166, 129, 0.55);
 }
-
-/* ACIKLAMA: .bulk-entry-remove besinci satirin tamamini kaplar ve metni ortalar. */
 .bulk-entry-remove {
   display: inline-flex;
   grid-column: 1 / -1;
@@ -225,8 +193,6 @@
   padding-inline: 10px;
   text-align: center;
 }
-
-/* ACIKLAMA: .bulk-entry-row-error satira ait hata mesajini tum satir genisliginde gosterir. */
 .bulk-entry-row-error {
   grid-column: 1 / -1;
   min-height: 18px;
@@ -235,8 +201,6 @@
   font-size: 0.82rem;
   font-weight: 700;
 }
-
-/* ACIKLAMA: .bulk-entry-actions coklu kayit butonlarini satir sararak tasmasiz tutar. */
 .bulk-entry-actions {
   display: flex;
   flex-wrap: wrap;
@@ -244,28 +208,20 @@
   width: 100%;
   min-width: 0;
 }
-
-/* ACIKLAMA: .bulk-entry-actions > button butonlarin dar ekranlarda esit ve kirilmayan genislik almasini saglar. */
 .bulk-entry-actions > button {
   flex: 1 1 160px;
   min-width: 0;
 }
-
-/* ACIKLAMA: #bulkEntryModal .bulk-entry-actions modal altindaki coklu kayit butonlarini dengeli grid olarak dizer. */
 #bulkEntryModal .bulk-entry-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   align-items: stretch;
   width: 100%;
 }
-
-/* ACIKLAMA: #bulkEntryModal .bulk-entry-actions > button modal alt butonlarinin tam hucre genisligi kullanmasini saglar. */
 #bulkEntryModal .bulk-entry-actions > button {
   width: 100%;
   min-width: 0;
 }
-
-/* ACIKLAMA: Koyu temada coklu kayit panelinin satir ve form alanlarini okunur tutar. */
 html[data-theme="dark"] .bulk-entry-row {
   border-color: rgba(148, 163, 184, 0.2);
   background: rgba(15, 23, 42, 0.68);
@@ -281,23 +237,17 @@ html[data-theme="dark"] .bulk-entry-row .bulk-entry-debt-payment-toggle {
   border-color: rgba(148, 163, 184, 0.24);
   background: rgba(15, 23, 42, 0.58);
 }
-
-/* ACIKLAMA: Koyu temada coklu kayit input ve select alanlarinin kontrastini korur. */
 html[data-theme="dark"] .bulk-entry-form input,
 html[data-theme="dark"] .bulk-entry-form select {
   background: rgba(15, 23, 42, 0.88);
   border-color: rgba(148, 163, 184, 0.24);
   color: var(--text);
 }
-
-/* ACIKLAMA: Masaustunde bagli kayit aciklamasi ucuncu satirin yuksekligini degistirmez. */
 @media (min-width: 721px) {
   .bulk-entry-debt-payment-options p {
     display: none;
   }
 }
-
-/* ACIKLAMA: Bu medya sorgusu tablet ve telefonlarda coklu kayit satirlarini tek sutuna indirir. */
 @media (max-width: 768px) {
   .bulk-entry-panel {
     margin-top: 14px;
@@ -351,8 +301,6 @@ html[data-theme="dark"] .bulk-entry-form select {
   #bulkEntryModal .bulk-entry-actions {
     grid-template-columns: 1fr;
   }
-
-  /* ACIKLAMA: Telefonda gelir/gider ana islem dugmelerini kompakt ve standart iki sutunlu kutulara donusturur. */
   #entryView .entry-primary-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
@@ -368,13 +316,9 @@ html[data-theme="dark"] .bulk-entry-form select {
     line-height: 1.15 !important;
   }
 }
-
-/* ACIKLAMA: Acilir pencereleri mobil menu ve sabit yan menu katmanlarinin ustunde tutar. */
 .modal-backdrop {
   z-index: 20000 !important;
 }
-
-/* ACIKLAMA: Mobil/PWA kart sablonlarini masaustu kart oranina yaklastirir ve basik gorunumu engeller. */
 @media (max-width: 768px) {
   #cardsView .payment-account-list,
   .payment-account-list {
@@ -657,8 +601,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     justify-content: center !important;
   }
 }
-
-/* ACIKLAMA: Cok dar Android/iPhone ekranlarinda kart oranini korurken metinleri tasirmadan kucultur. */
 @media (max-width: 360px) {
   #cardsView .payment-card,
   #cardsView .payment-card.bank_account,
@@ -703,8 +645,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     font-size: 0.60rem !important;
   }
 }
-
-/* ACIKLAMA: Masaustunde menu genisleyip daralirken kayit listesinin gecici beyaz boslukla yeniden boyanmasini engeller. */
 @media (min-width: 981px) {
   #appShell.app-shell:not([hidden]),
   .app-shell:not([hidden]) {
@@ -759,8 +699,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     visibility: visible !important;
   }
 }
-
-/* ACIKLAMA: Kredi karti sablonlarinda sagdaki buton kolonunu kartin dikey merkezine hizalar. */
 @media (max-width: 768px) {
   #cardsView .payment-card.credit_card .payment-card-actions,
   #cardsView .payment-card.credit_card .auth-actions.payment-card-actions,
@@ -775,8 +713,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     align-content: center !important;
   }
 }
-
-/* ACIKLAMA: Cok dar ekranlarda merkezli buton kolonunun sag boslugunu korur. */
 @media (max-width: 360px) {
   #cardsView .payment-card.credit_card .payment-card-actions,
   .payment-card.credit_card .payment-card-actions {
@@ -786,8 +722,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     transform: translateY(-50%) !important;
   }
 }
-
-/* ACIKLAMA: Son kayitlar penceresinde kapat butonunu genis ve ortali tutar. */
 #recentTransactionsModal .modal-actions {
   display: flex !important;
   justify-content: center !important;
@@ -795,8 +729,6 @@ html[data-theme="dark"] .bulk-entry-form select {
   width: 100% !important;
   padding-top: 12px !important;
 }
-
-/* ACIKLAMA: Son kayitlar penceresindeki tek kapatma butonunun saga dogru uzamasini ve ortalanmasini saglar. */
 #recentTransactionsModal #closeRecentTransactionsButton {
   flex: 0 1 min(100%, 520px) !important;
   width: min(100%, 520px) !important;
@@ -807,8 +739,6 @@ html[data-theme="dark"] .bulk-entry-form select {
   text-align: center !important;
   white-space: nowrap !important;
 }
-
-/* ACIKLAMA: Son kayitlar listesindeki metin ve islem butonlarini iki kolonlu duzgun satir duzeninde hizalar. */
 #recentTransactionsList .transaction-item,
 .recent-transactions-modal #recentTransactionsList .transaction-item {
   display: grid !important;
@@ -818,18 +748,13 @@ html[data-theme="dark"] .bulk-entry-form select {
   width: 100% !important;
   min-width: 0 !important;
 }
-
-/* ACIKLAMA: Son kayit satirinda uzun aciklamalarin butonlari sikistirmadan kirilmasina izin verir. */
 #recentTransactionsList .transaction-item > div:first-child {
   min-width: 0 !important;
   max-width: 100% !important;
 }
-
-/* ACIKLAMA: Son kayitlar penceresinde tutar, duzenle ve sil butonlarini ayni yatay cizgide tutar. */
 #recentTransactionsList .transaction-side,
 .recent-transactions-modal #recentTransactionsList .transaction-side {
   display: grid !important;
-  grid-template-columns: max-content 92px 58px !important;
   align-items: center !important;
   justify-content: end !important;
   justify-items: stretch !important;
@@ -839,16 +764,12 @@ html[data-theme="dark"] .bulk-entry-form select {
   min-width: max-content !important;
   max-width: none !important;
 }
-
-/* ACIKLAMA: Son kayitlar penceresindeki tutarin butonlardan once sagda sabit okunmasini saglar. */
 #recentTransactionsList .transaction-side .transaction-amount {
   min-width: 104px !important;
   margin-right: 0 !important;
   text-align: right !important;
   white-space: nowrap !important;
 }
-
-/* ACIKLAMA: Son kayitlar penceresindeki Duzenle ve Sil butonlarinin yazilarini yatay, tek satir ve esit hizada tutar. */
 #recentTransactionsList .transaction-side .edit-transaction-btn,
 #recentTransactionsList .transaction-side .delete-transaction-btn,
 .recent-transactions-modal #recentTransactionsList .transaction-side button {
@@ -870,18 +791,12 @@ html[data-theme="dark"] .bulk-entry-form select {
   writing-mode: horizontal-tb !important;
   text-orientation: mixed !important;
 }
-
-/* ACIKLAMA: Son kayitlar penceresinde Duzenle butonuna ikinci gorseldeki gibi daha genis yer ayirir. */
 #recentTransactionsList .transaction-side .edit-transaction-btn {
   min-width: 92px !important;
 }
-
-/* ACIKLAMA: Son kayitlar penceresinde Sil butonunu kisa ama okunakli pill boyutunda tutar. */
 #recentTransactionsList .transaction-side .delete-transaction-btn {
   min-width: 58px !important;
 }
-
-/* ACIKLAMA: Dar ekranlarda son kayitlar satirlarini tasirmadan alta akan duzene cevirir. */
 @media (max-width: 700px) {
   #recentTransactionsList .transaction-item,
   .recent-transactions-modal #recentTransactionsList .transaction-item {
@@ -904,8 +819,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     text-align: left !important;
   }
 }
-
-/* ACIKLAMA: Cok dar telefonlarda son kayitlar islem butonlarini iki sutunlu, rahat dokunulan yapida gosterir. */
 @media (max-width: 430px) {
   #recentTransactionsList .transaction-side,
   .recent-transactions-modal #recentTransactionsList .transaction-side {
@@ -927,13 +840,9 @@ html[data-theme="dark"] .bulk-entry-form select {
     min-width: 0 !important;
   }
 }
-
-/* ACIKLAMA: Mobil Safari/PWA alt bar ve home indicator alaninda son kart veya butonlarin kesilmemesi icin kontrollu alt tampon tanimlar. */
 :root {
   --mobile-bottom-safe-buffer: max(24px, calc(env(safe-area-inset-bottom) + 14px));
 }
-
-/* ACIKLAMA: Telefon ve tabletlerde sayfanin en altinda son sablonlarin ve butonlarin gorunur kalmasini saglar. */
 @media (max-width: 768px) {
   #appShell.app-shell:not([hidden]) > .workspace,
   .app-shell:not([hidden]) > .workspace,
@@ -954,8 +863,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     flex: 0 0 auto;
   }
 }
-
-/* ACIKLAMA: iOS Safari ve PWA uygulamasinda alt tarayici cubugu/home indicator icin daha genis kaydirma boslugu birakir. */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 768px) {
     :root {
@@ -979,8 +886,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     }
   }
 }
-
-/* ACIKLAMA: Mobil PWA'da sayfa en uste veya en alta gelince arka planin lastik gibi acilmasini engeller ve kaydirma cubugunu gizler. */
 @media (max-width: 768px) {
   html.akis-pwa-standalone,
   html.akis-pwa-standalone body,
@@ -1012,8 +917,6 @@ html[data-theme="dark"] .bulk-entry-form select {
     -ms-overflow-style: none !important;
   }
 }
-
-/* ACIKLAMA: iOS PWA'da hizli kaydirma esnemesini azaltmak icin ana kaydirma alanini kontrollu moda alir. */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 768px) {
     html.akis-pwa-standalone #appShell.app-shell:not([hidden]) > .workspace,
@@ -1030,8 +933,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     }
   }
 }
-
-/* ACIKLAMA: Mobil kart/hesap kayitlari penceresinde kayit kartlarinin birbirine yapismadan okunmasini saglar. */
 #paymentAccountRecordsModal .account-records-list,
 #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-body-scroll > .profile-form > .account-records-list {
   display: grid !important;
@@ -1039,13 +940,9 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
   row-gap: 18px !important;
   padding-bottom: 18px !important;
 }
-
-/* ACIKLAMA: Kart/hesap kayitlari listesindeki her kayit sablonunun kendi satirinda temiz boslukla durmasini saglar. */
 #paymentAccountRecordsModal .account-records-list .account-record-item {
   margin: 0 !important;
 }
-
-/* ACIKLAMA: iPhone ve dar mobil PWA ekranlarinda kart kayitlari arasindaki dikey boslugu biraz daha artirir. */
 @media (max-width: 520px) {
   #paymentAccountRecordsModal .account-records-list,
   #paymentAccountRecordsModal .modal-card.modal-layout-standard > .modal-body-scroll > .profile-form > .account-records-list {
@@ -1054,8 +951,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     padding-bottom: 22px !important;
   }
 }
-
-/* ACIKLAMA: Mobil menu acikken ustteki kopya hamburger ikonunu gizler; sadece menu icindeki kapatma/acma ikonu gorunur. */
 @media (max-width: 980px) {
   #appShell.app-shell.menu-open > #topbarMenuButton.topbar-menu,
   .app-shell.menu-open > #topbarMenuButton.topbar-menu {
@@ -1075,8 +970,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     z-index: 2 !important;
   }
 }
-
-/* ACIKLAMA: Tum cihazlarda menu basligi ve alt eylemleri sabit tutar; yalnizca sekme listesi kayar. */
 #appShell.app-shell:not([hidden]) > .sidebar,
 .app-shell:not([hidden]) > .sidebar {
   display: flex !important;
@@ -1104,8 +997,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
 }
-
-/* ACIKLAMA: Telefon ve tabletlerde paneli ekrana sabitler, arka sayfa yerine menu sekmelerini kaydirir. */
 @media (max-width: 980px) {
   html.mobile-menu-open,
   body.mobile-menu-open {
@@ -1143,8 +1034,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     z-index: 2 !important;
   }
 }
-
-/* ACIKLAMA: Kayitlar panelindeki tekrar eden ic baslik kaldirildigi icin filtre ve butonlari panelin ust satirina dengeli yerlestirir. */
 @media (min-width: 981px) {
   #historyView .history-heading,
   #historyView .panel-heading.history-heading {
@@ -1239,8 +1128,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     text-align: center !important;
   }
 }
-
-/* ACIKLAMA: Mobilde ic baslik kaldirildiginde filtrelerin panel basinda tam genislikte ve alt alta akmasini korur. */
 @media (max-width: 980px) {
   #historyView .history-heading,
   #historyView .panel-heading.history-heading {
@@ -1257,8 +1144,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     margin: 0 !important;
   }
 }
-
-/* ACIKLAMA: Kayitlar ekraninda daha eski ve daha ozgul masaustu kurallari tek satirli filtre duzenini bozmasin diye son karar katmanidir. */
 @media (min-width: 981px) {
   html:not(.history-compact-layout) body #appShell #historyView .history-heading,
   html.history-compact-layout body #appShell #historyView .history-heading,
@@ -1419,8 +1304,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     text-align: center !important;
   }
 }
-
-/* ACIKLAMA: Mobil Varliklarim listesindeki Duzenle ve Sil butonlarini kart genisligine gore daha okunakli iki sutun haline getirir. */
 @media (max-width: 640px) {
   #assetsView #assetList .transaction-item {
     grid-template-columns: minmax(0, 1fr) !important;
@@ -1440,7 +1323,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
   }
 
   #assetsView #assetList .transaction-side .transaction-amount {
-    grid-column: 1 / -1 !important;
     width: 100% !important;
     min-width: 0 !important;
     margin: 0 !important;
@@ -1459,8 +1341,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     text-align: center !important;
   }
 }
-
-/* ACIKLAMA: Ana kayitlar listesindeki uzun aciklamalar, Duzenle ve Sil butonlarini 100% tarayici olceginde sikistiramaz. */
 #transactionList .transaction-item {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto !important;
@@ -1565,8 +1445,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     min-width: 0 !important;
   }
 }
-
-/* ACIKLAMA: Son kayitlar penceresinde tutar, Duzenle ve Sil komutlarini ayni hizada tutar. */
 #recentTransactionsList .transaction-side,
 .recent-transactions-modal #recentTransactionsList .transaction-side {
   grid-template-columns: max-content 92px 58px !important;
@@ -1589,8 +1467,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     min-width: 0 !important;
   }
 }
-
-/* ACIKLAMA: Mobil ve dar tablet Varliklarim ekraninda tutar, Duzenle ve Sil alanlarini dengeli satira yerlestirir. */
 @media (max-width: 768px) {
   #assetsView #assetList .transaction-item {
     grid-template-columns: minmax(0, 1fr) !important;
@@ -1638,8 +1514,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     word-break: normal !important;
   }
 }
-
-/* ACIKLAMA: Telefonlarda ana uygulama acikken kaydirma sorumlulugunu workspace alanina verir; body kilitliyken sayfa kaydirilmez kalmasin. */
 @media (max-width: 980px) {
   #appShell.app-shell:not([hidden]),
   .app-shell:not([hidden]) {
@@ -1679,8 +1553,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     overscroll-behavior-y: auto !important;
   }
 }
-
-/* ACIKLAMA: Giris islemleri tek yerde; kategori ve tarih tercihleri Ayarlar ekranindadir. */
 #entryView .entry-primary-actions {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -1717,8 +1589,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     grid-template-columns: minmax(0, 1fr) !important;
   }
 }
-
-/* ACIKLAMA: Daha dar telefonlarda varlik butonlari alt satirda kalir; Duzenle butonu Sil butonundan biraz daha genis tutulur. */
 @media (max-width: 640px) {
   #assetsView #assetList .transaction-side {
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr) !important;
@@ -1732,7 +1602,6 @@ html.akis-pwa-standalone .app-shell:not([hidden]) > .workspace,
     min-width: 0 !important;
   }
 }
-
 
 /* v323 - Coklu kayit satirlarini tek sablonla baslat; sil butonunu satir sag ustundeki eksi simgesine donustur. */
 .bulk-entry-row-topbar {
@@ -1788,7 +1657,6 @@ html[data-theme="dark"] .bulk-entry-remove-icon {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-
 /* v324 - Eksi butonunu ustteki arti butonuyla ayni olcege yaklastir. */
 @media (max-width: 640px) {
   .bulk-entry-remove-icon {
@@ -1800,26 +1668,11 @@ html[data-theme="dark"] .bulk-entry-remove-icon {
   }
 }
 
-
 /* v325 - Kayıt numarası rozetini eksi butonuyla aynı boyuta getir. */
 .bulk-entry-row-number {
-  width: 44px !important;
-  height: 44px !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
   margin-top: 0 !important;
   border-radius: 999px !important;
 }
-
-@media (max-width: 640px) {
-  .bulk-entry-row-number {
-    width: 40px !important;
-    height: 40px !important;
-    min-width: 40px !important;
-    min-height: 40px !important;
-  }
-}
-
 
 /* v326 - Telefon boyutunda da rozet ve eksi butonunu ayni formda koru. */
 .bulk-entry-row-topbar {
@@ -1876,7 +1729,6 @@ html[data-theme="dark"] .bulk-entry-remove-icon {
     font-size: 22px !important;
   }
 }
-
 
 /* v327 - Mobilde kayit numarasini sola, eksi butonunu saga sabitle; ortadaki genis alana tasmasini engelle. */
 .bulk-entry-row-number {

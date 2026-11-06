@@ -1,4 +1,3 @@
-// ACIKLAMA: Gorunum katmani; mali kayitlari degistirmeden aylik ozet ve mobil gezinme sunar.
 let shellMonth = "";
 let shellAmountsHidden = false;
 

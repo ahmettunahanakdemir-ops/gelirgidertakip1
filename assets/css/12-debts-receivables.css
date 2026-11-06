@@ -1,5 +1,3 @@
-/* ACIKLAMA: Borc ve alacak takip ekraninin ozet, filtre, liste, modal ve mobil duzenleri. */
-
 .debt-view-stack {
   gap: 18px;
 }
@@ -346,8 +344,6 @@
 .entry-debt-payment-options .panel-note {
   margin: 0;
 }
-
-/* ACIKLAMA: Tekli gelir/gider formunu masaustunde istenen bes satirli duzene ayirir. */
 #entryModal .entry-form {
   grid-template-columns: minmax(0, 1fr) !important;
   gap: 12px !important;
@@ -374,8 +370,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
 }
-
-/* ACIKLAMA: Secilen taksit veya borc/alacak yarisi kendi icinde iki esit alana bolunur. */
 #entryModal .entry-choice-group {
   display: grid;
   grid-column: auto;
@@ -992,7 +986,6 @@ html[data-theme="dark"] .debt-installment-filter-field select {
   }
 }
 
-
 /* v358 - Borç/alacak kartlarında Düzenle + yeşil ödeme/tahsil + Sil düzeni. */
 .debt-record-actions {
   grid-template-columns: repeat(3, minmax(96px, 1fr));
@@ -1025,7 +1018,6 @@ html[data-theme="dark"] .debt-installment-filter-field select {
 @media (max-width: 720px) {
   .debt-record-actions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    min-width: 0;
     width: 100%;
   }
 
@@ -1034,7 +1026,6 @@ html[data-theme="dark"] .debt-installment-filter-field select {
     font-size: 0.88rem;
   }
 }
-
 
 /* v359 - Liste kartlarında ödeme/tahsil butonu kaldırıldı; düzenleme/silme sade kaldı. */
 .debt-record-actions {
@@ -1077,7 +1068,6 @@ html[data-theme="dark"] .debt-installment-filter-field select {
   transform: translateY(0);
   box-shadow: none !important;
 }
-
 
 /* v365 - Borçlarım / Alacaklarım Sil butonu, Kayıtlar bölümündeki Sil butonuyla aynı yapıda. */
 .debt-record-actions .debt-record-delete-btn {
@@ -1130,7 +1120,6 @@ html[data-theme="dark"] .debt-installment-filter-field select {
     min-width: 0 !important;
   }
 }
-
 
 /* v366 - Borçlarım özet kartlarını masaüstünde 2x2 düzenle; boş durum metinlerini ve not satırını sadeleştir. */
 @media (min-width: 769px) {
