@@ -401,6 +401,7 @@ async function previewBankImportWithAi() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + await currentUser.getIdToken(),
       },
       body: JSON.stringify(payload),
     });
@@ -2714,6 +2715,10 @@ function inferBankTemplateTransactionType(title, amountDetails, block) {
     return "income";
   }
 
+  if (/faiz tahakkuku|kay\s*kul\s*dest|bank\s*sig\s*mua\s*verg/.test(text)) {
+    return "expense";
+  }
+
   if (hasBankIncomeContext(text) && !hasBankExpenseContext(text)) {
     return "income";
   }
@@ -3682,6 +3687,10 @@ function findBankMovementAmount(block) {
   block.forEach((line, lineIndex) => {
 
     const normalized = normalizeBankText(line);
+
+    // The purchase principal in an installment note is not this month's charge.
+    const nearby = normalizeBankText(block.slice(lineIndex, lineIndex + 3).join(" "));
+    if (/\bislemin\b/.test(normalized) && /\btaksi[td]/.test(nearby)) return;
 
     const moneyMatches = findMoneyMatchesInLine(line);
 

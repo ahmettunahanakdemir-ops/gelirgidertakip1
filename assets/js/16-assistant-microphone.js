@@ -14,12 +14,15 @@ function paint(mode) {
   );
   button.setAttribute(
     "aria-label",
-    mode === "listening" ? "Kaydı bitir ve yazıya çevir" : "Ses kaydı başlat",
+    mode === "listening" ? "Kaydı bitir ve yazıya çevir"
+      : mode === "starting" ? "Mikrofon izni bekleniyor; iptal et"
+      : mode === "processing" ? "Ses kaydı yazıya çevriliyor" : "Ses kaydı başlat",
   );
 }
 function release(s) {
   clearInterval(s.timer);
   clearTimeout(s.limit);
+  clearTimeout(s.permissionTimer);
   s.stream?.getTracks().forEach((t) => t.stop());
   s.stream = null;
   s.source?.disconnect();
@@ -95,6 +98,29 @@ function stop(s) {
   if (s.recorder?.state === "recording") s.recorder.stop();
   else cancel();
 }
+function startMeter(s) {
+  if (active !== s || s.cancelled || s.stopping || s.timer ||
+      !s.stream || s.context?.state !== "running") return;
+  try {
+    s.source = s.context.createMediaStreamSource(s.stream);
+    s.analyser = s.context.createAnalyser();
+    s.analyser.fftSize = 2048;
+    if (typeof s.analyser.getFloatTimeDomainData !== "function") return;
+    s.source.connect(s.analyser);
+    const samples = new Float32Array(2048);
+    s.timer = setInterval(() => {
+      if (active !== s || s.stopping || s.context?.state !== "running") return;
+      s.analyser.getFloatTimeDomainData(samples);
+      const rms = Math.sqrt(samples.reduce((sum, v) => sum + v * v, 0) / samples.length);
+      if (rms > 0.015) { s.lastSound = Date.now(); s.heardSound = true; }
+      if (s.heardSound && Date.now() - s.lastSound >= 5000) stop(s);
+    }, 100);
+  } catch {
+    // The optional level meter must never stop MediaRecorder capture.
+    clearInterval(s.timer);
+    s.timer = null;
+  }
+}
 async function start() {
   if (active) return;
   stopPlayback?.();
@@ -116,14 +142,25 @@ async function start() {
   };
   active = s;
   paint("starting");
-  status.textContent = "";
+  status.textContent = "Mikrofon izni bekleniyor…";
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (AC) {
-      s.context = new AC();
-      await s.context.resume();
+      try {
+        s.context = new AC();
+        // Safari may leave this promise pending; capture must not wait for it.
+        void s.context.resume().then(() => startMeter(s)).catch(() => {});
+      } catch {
+        if (s.context) void s.context.close().catch(() => {});
+        s.context = null;
+      }
     }
     if (active !== s) return;
+    s.permissionTimer = setTimeout(() => {
+      if (active !== s || s.stream) return;
+      cancel();
+      status.textContent = "Mikrofon izni yanıtlanmadı. Safari site ayarlarını kontrol edip yeniden deneyin.";
+    }, 30000);
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         echoCancellation: true,
@@ -132,16 +169,17 @@ async function start() {
       },
       video: false,
     });
+    clearTimeout(s.permissionTimer);
     if (active !== s || s.cancelled) {
       stream.getTracks().forEach((t) => t.stop());
       return;
     }
     s.stream = stream;
     const mime = [
-      "audio/webm;codecs=opus",
       "audio/mp4",
+      "audio/webm;codecs=opus",
       "audio/ogg;codecs=opus",
-    ].find((t) => MediaRecorder.isTypeSupported(t));
+    ].find((t) => typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(t));
     s.recorder = new MediaRecorder(
       stream,
       mime ? { mimeType: mime } : undefined,
@@ -159,26 +197,9 @@ async function start() {
     };
     s.recorder.start(250);
     paint("listening");
-    status.textContent = "";
+    status.textContent = "Kayıt açık. Bitirmek için mikrofon düğmesine tekrar dokunun.";
     s.lastSound = Date.now();
-    if (s.context) {
-      s.source = s.context.createMediaStreamSource(stream);
-      s.analyser = s.context.createAnalyser();
-      s.analyser.fftSize = 2048;
-      s.source.connect(s.analyser);
-      const samples = new Float32Array(2048);
-      s.timer = setInterval(() => {
-        if (active !== s || s.stopping) return;
-        s.analyser.getFloatTimeDomainData(samples);
-        const rms = Math.sqrt(
-          samples.reduce((sum, v) => sum + v * v, 0) / samples.length,
-        );
-        if (rms > 0.015) s.lastSound = Date.now();
-        if (Date.now() - s.lastSound >= 5000) stop(s);
-      }, 100);
-    } else
-      status.textContent =
-        "Kayıt açık. Bitirmek için mikrofon düğmesine tekrar dokunun.";
+    startMeter(s);
     s.limit = setTimeout(() => stop(s), 90000);
   } catch (error) {
     if (active === s) {
@@ -210,4 +231,37 @@ input.closest("form")?.addEventListener("submit", cancel);
 paint("idle");
 
 return {cancel};
+}
+
+function createBudgetAssistantSpeaker({ onState, onError, synthesis = window.speechSynthesis, Utterance = window.SpeechSynthesisUtterance }) {
+  let token = 0, activeUtterance = null, queue = [];
+  const cancel = () => { token++; queue = []; activeUtterance = null; synthesis?.cancel(); onState(false); };
+  function read(text) {
+    cancel();
+    if (!synthesis || !Utterance || !String(text).trim()) return;
+    const session = token;
+    for (const segment of String(text).match(/[^.!?\n]+[.!?]?/g) || []) {
+      let chunk = "";
+      for (const word of segment.trim().split(/\s+/)) {
+        if (chunk && chunk.length + word.length > 220) { queue.push(chunk); chunk = ""; }
+        chunk = chunk ? `${chunk} ${word}` : word;
+      }
+      if (chunk) queue.push(chunk);
+    }
+    const next = () => {
+      if (session !== token) return;
+      if (!queue.length) { activeUtterance = null; onState(false); return; }
+      const utterance = new Utterance(queue.shift()); activeUtterance = utterance;
+      utterance.lang = "tr-TR"; utterance.rate = 1;
+      const voices = synthesis.getVoices?.() || [];
+      const turkish = voices.find(voice => /^tr(?:-|_)/i.test(voice.lang) && voice.localService) || voices.find(voice => /^tr(?:-|_|$)/i.test(voice.lang));
+      if (turkish) utterance.voice = turkish;
+      utterance.onend = next;
+      utterance.onerror = event => { if (session !== token) return; cancel(); if (!/^(canceled|interrupted)$/.test(event.error || "")) onError(); };
+      onState(true);
+      try { synthesis.speak(utterance); } catch { cancel(); onError(); }
+    };
+    next();
+  }
+  return { cancel, read };
 }

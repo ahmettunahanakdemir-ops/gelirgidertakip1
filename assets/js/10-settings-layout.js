@@ -207,6 +207,7 @@ function setupSettingsLayout() {
   disclosure(group("Yedekleme ve Veri"),"Yedekleme işlemleri","database-backup",backups,"backup");
   disclosure(group("Daha Fazla"),"Kategoriler","layout-grid",categories,"categories");
   if (window.AkisAssistantLogs) disclosure(group("Asistan"),"Asistan soru kayıtları","list-filter",window.AkisAssistantLogs.createPanel(),"assistant-logs");
+  if (window.AkisAssistantKnowledge) disclosure(group("Öğrenme"),"Asistan bilgi havuzu","book-open-check",window.AkisAssistantKnowledge.createPanel(),"assistant-knowledge");
   disclosure(group("Yardım"),"Kullanım rehberi ve ipuçları","circle-help",createBudgetHelpContent(),"help");
   // Eski kapsayicilar kaldirilir; iclerindeki canli kontroller yukarida tasinmistir.
   view.replaceChildren(layout);
