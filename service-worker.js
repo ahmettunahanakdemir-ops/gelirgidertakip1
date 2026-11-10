@@ -1,4 +1,4 @@
-const CACHE_NAME = "akis-butce-v463";
+const CACHE_NAME = "akis-butce-v466";
 const APP_ASSETS = [
   "./assets/css/27-mobile-detail-fixes.css?v=463",
   "./assets/js/20-assistant-images.js?v=461",
@@ -51,7 +51,7 @@ const APP_ASSETS = [
   "./assets/js/06-summary-history-categories-navigation.js?v=448",
   "./assets/js/14-transaction-details.js?v=448",
   "./assets/js/07-backup-export-import-sync.js?v=448",
-  "./assets/js/08-auth-firebase-cloud.js?v=448",
+  "./assets/js/08-auth-firebase-cloud.js?v=466",
   "./assets/js/09-bank-import-ocr-parsers.js?v=456",
   "./assets/js/10-debts-receivables.js?v=448",
   "./assets/js/10-startup-pwa.js?v=448",

@@ -3,6 +3,62 @@ let usernameLoginAliases = null;
 let authStateChangeSequence = 0;
 let userProfileCloudSyncTimer = null;
 let authProfileHydrationPending = false;
+const AUTH_SESSION_LIMIT_MS = 15 * 60 * 1000;
+let authSessionDeadline = 0;
+let authSessionUserId = "";
+let authSessionTimer = null;
+let authSessionExpiryInFlight = false;
+let authSessionExpired = false;
+
+function clearAuthSessionTimer() {
+  if (authSessionTimer !== null) window.clearTimeout(authSessionTimer);
+  authSessionTimer = null;
+  authSessionDeadline = 0;
+  authSessionUserId = "";
+}
+
+async function enforceAuthSessionDeadline() {
+  if (!authSessionDeadline || !authSessionUserId || authSessionExpiryInFlight) return;
+  if (currentUser?.uid !== authSessionUserId) return;
+  if (firebaseAuth?.currentUser && firebaseAuth.currentUser.uid !== authSessionUserId) return;
+  const remaining = authSessionDeadline - Date.now();
+  if (remaining > 0) {
+    if (authSessionTimer !== null) window.clearTimeout(authSessionTimer);
+    authSessionTimer = window.setTimeout(() => { void enforceAuthSessionDeadline(); }, remaining);
+    return;
+  }
+  authSessionExpiryInFlight = true;
+  authSessionExpired = true;
+  try {
+    await signOutUser();
+    cloudStatus.textContent = "Oturum süren doldu. Devam etmek için yeniden giriş yap.";
+  } catch {
+    currentUser = null;
+    renderAuthState();
+    cloudStatus.textContent = "Oturum süren doldu. Yeniden giriş yapmadan önce bağlantını kontrol et.";
+  } finally {
+    authSessionExpiryInFlight = false;
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) void enforceAuthSessionDeadline();
+});
+window.addEventListener("pageshow", () => { void enforceAuthSessionDeadline(); });
+window.addEventListener("focus", () => { void enforceAuthSessionDeadline(); });
+
+function guardExpiredSessionInteraction(event) {
+  const expired = Boolean(authSessionDeadline && authSessionUserId &&
+    currentUser?.uid === authSessionUserId && Date.now() >= authSessionDeadline);
+  if (!expired && !authSessionExpired) return;
+  if (!expired && loginScreen?.contains(event.target)) return;
+  if (event.cancelable) event.preventDefault();
+  event.stopImmediatePropagation();
+  if (expired) void enforceAuthSessionDeadline();
+}
+["pointerdown", "touchstart", "click", "keydown", "submit"].forEach(type => {
+  document.addEventListener(type, guardExpiredSessionInteraction, { capture: true, passive: false });
+});
 
 function initCloud() {
   renderAuthState();
@@ -220,6 +276,7 @@ async function signOutUser() {
   }
 
   closeProfileModal();
+  clearAuthSessionTimer();
   currentUser = null;
   renderAuthState();
   await firebaseAuth.signOut();
@@ -859,6 +916,7 @@ async function handleAuthStateChanged(user) {
   const stateChangeSequence = ++authStateChangeSequence;
   const isCurrentStateChange = () => stateChangeSequence === authStateChangeSequence;
   authProfileHydrationPending = false;
+  clearAuthSessionTimer();
 
   if (userProfileCloudSyncTimer) {
     window.clearTimeout(userProfileCloudSyncTimer);
@@ -899,6 +957,28 @@ async function handleAuthStateChanged(user) {
     return;
   }
 
+  // auth_time is the original sign-in time; token refresh must not renew this limit.
+  try {
+    const tokenResult = await user.getIdTokenResult();
+    if (!isCurrentStateChange()) return;
+    const signedInAt = Number(tokenResult.claims?.auth_time) * 1000;
+    if (!Number.isFinite(signedInAt) || signedInAt <= 0 || signedInAt > Date.now() + 60000 || Date.now() - signedInAt >= AUTH_SESSION_LIMIT_MS) {
+      await firebaseAuth.signOut();
+      cloudStatus.textContent = "Oturum süren doldu. Devam etmek için yeniden giriş yap.";
+      return;
+    }
+    authSessionDeadline = signedInAt + AUTH_SESSION_LIMIT_MS;
+    authSessionUserId = user.uid;
+    authSessionExpired = false;
+  } catch {
+    if (!isCurrentStateChange()) return;
+    currentUser = null;
+    renderAuthState();
+    cloudStatus.textContent = "Oturum süresi doğrulanamadı. Bağlantını kontrol edip yeniden giriş yap.";
+    try { await firebaseAuth.signOut(); } catch { /* Remain on the login screen. */ }
+    return;
+  }
+
   const anonymousLocalTransactions = getCloudReadyTransactions(transactions);
 
   const anonymousLocalAssets = getCloudReadyAssets(assets);
@@ -916,6 +996,7 @@ async function handleAuthStateChanged(user) {
 
   const anonymousLocalTransactionsUpdatedAt = loadTransactionsStateUpdatedAt();
   currentUser = user;
+  void enforceAuthSessionDeadline();
   authProfileHydrationPending = true;
   setBudgetValuesStatus("loading");
   rememberUsernameLogin(user);
