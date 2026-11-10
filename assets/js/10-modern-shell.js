@@ -213,6 +213,15 @@ function setupModernShell() {
       <button type="button" id="openRecentTransactionsButton" class="shell-icon-button shell-history-action" title="Son kayıtlar" aria-label="Son kayıtlar" hidden>${shellIcon("history")}</button>
       <button type="button" id="exportExcelButton" class="shell-icon-button shell-history-action" title="Excel olarak al" aria-label="Excel olarak al" hidden>${shellIcon("sheet")}</button>
       <button type="button" id="exportPdfButton" class="shell-icon-button shell-history-action" title="PDF olarak al" aria-label="PDF olarak al" hidden>${shellIcon("file-text")}</button>
+      <div class="shell-history-more" data-history-more hidden>
+        <button type="button" class="shell-icon-button" data-history-more-toggle aria-label="Diğer kayıt işlemleri" title="Diğer kayıt işlemleri" aria-haspopup="menu" aria-expanded="false">${shellIcon("more-horizontal")}</button>
+        <div class="shell-history-more-menu" role="menu" hidden>
+          <button type="button" role="menuitem" data-history-proxy="openRecentTransactionsButton">${shellIcon("history")}<span>Son kayıtlar</span></button>
+          <button type="button" role="menuitem" data-history-proxy="exportExcelButton">${shellIcon("sheet")}<span>Excel olarak al</span></button>
+          <button type="button" role="menuitem" data-history-proxy="exportPdfButton">${shellIcon("file-text")}<span>PDF olarak al</span></button>
+          <button type="button" role="menuitem" data-history-proxy="add">${shellIcon("plus")}<span>Yeni işlem</span></button>
+        </div>
+      </div>
       <button type="button" id="summaryDateFilterActionButton" class="shell-icon-button shell-summary-filter" title="Tarih filtresi" aria-label="Tarih filtresi" hidden>${shellIcon("calendar-range")}</button>
       <button type="button" class="shell-icon-button shell-refresh" data-shell-refresh title="Fiyatları yenile" aria-label="Fiyatları yenile" hidden>${shellIcon("refresh-cw")}</button>
       <button type="button" class="shell-icon-button shell-add" data-shell-add title="Yeni işlem" aria-label="Yeni işlem" aria-haspopup="menu" aria-expanded="false">${shellIcon("plus")}</button>
@@ -237,6 +246,22 @@ function setupModernShell() {
   const historyPdfActionButton = toolbar.querySelector("#exportPdfButton");
   const summaryDateFilterActionButton = toolbar.querySelector("#summaryDateFilterActionButton");
   const shellQuickActions = toolbar.querySelector("[data-shell-quick-actions]");
+  const more = toolbar.querySelector("[data-history-more]");
+  const moreToggle = toolbar.querySelector("[data-history-more-toggle]");
+  const moreMenu = more.querySelector('[role="menu"]');
+  const closeMore = () => { moreMenu.hidden = true; moreToggle.setAttribute("aria-expanded", "false"); };
+  moreToggle.addEventListener("click", () => {
+    const opening = moreMenu.hidden; moreMenu.hidden = !opening;
+    moreToggle.setAttribute("aria-expanded", String(opening));
+  });
+  moreMenu.addEventListener("click", event => {
+    const button = event.target.closest("[data-history-proxy]");
+    if (!button) return;
+    closeMore();
+    (button.dataset.historyProxy === "add" ? shellAddButton : toolbar.querySelector("#" + button.dataset.historyProxy))?.click();
+  });
+  document.addEventListener("click", event => { if (!more.contains(event.target)) closeMore(); });
+  document.addEventListener("keydown", event => { if (event.key === "Escape" && !moreMenu.hidden) { closeMore(); moreToggle.focus(); } });
 
   shellRefreshButton?.addEventListener("click", async () => {
     if (activeView !== "assetsView") return;
@@ -371,6 +396,11 @@ function renderModernShell() {
   document.querySelectorAll(".shell-history-action").forEach((button) => {
     button.hidden = activeView !== "historyView";
   });
+  const more = document.querySelector("[data-history-more]");
+  if (more) {
+    more.hidden = activeView !== "historyView";
+    if (more.hidden) { more.querySelector('[role="menu"]').hidden = true; more.querySelector("button").setAttribute("aria-expanded", "false"); }
+  }
 
   const summaryFilterButton = document.getElementById("summaryDateFilterActionButton");
   if (summaryFilterButton) {

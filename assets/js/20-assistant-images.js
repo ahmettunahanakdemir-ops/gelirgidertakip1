@@ -1,3 +1,14 @@
+function classifyAssistantImageCommand(value) {
+  const text = String(value || '').toLocaleLowerCase('tr-TR').normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (/\b(iptal etme|vazgecme|ekleme|kaydetme|aktarma|okuma|gonderme|sadece bak)\b/.test(text)) return 'clarify';
+  if (/^(?:lutfen )?(?:iptal|iptal et|vazgec|fotograflari kaldir|resimleri kaldir)$/.test(text)) return 'cancel';
+  if (/^(yerel|yerel okuma|yazilimsal|yazilimsal okuma)$/.test(text)) return 'local';
+  if (/^(yapay zeka|yapay zeka ile okuma|yapay zekayla|ai)$/.test(text)) return 'ai';
+  if (!/\b(ekle|ekleyelim|ekler misin|aktar|aktaralim|oku|okur musun|kayitlara al)\b/.test(text)) return 'clarify';
+  return /\b(yapay zeka|yapay zekayla|ai)\b/.test(text) ? 'ai' : 'local';
+}
+
 (() => {
   const panel = document.querySelector('.budget-assistant-panel');
   const form = panel?.querySelector('[data-assistant-form]');
@@ -14,6 +25,7 @@
   attach.title = 'Fotoğraf ekle'; attach.setAttribute('aria-label', attach.title);
   attach.innerHTML = '<i data-lucide="image-plus" aria-hidden="true"></i>';
   attach.addEventListener('click', () => picker.click());
+  panel.addEventListener('assistant-request-image', () => picker.click());
   form.before(attach, picker);
   const status = panel.querySelector('[data-assistant-status]');
   function clear() {
@@ -21,6 +33,9 @@
     tray.replaceChildren(); tray.hidden = true; picker.value = '';
   }
   function select(incoming) {
+    const uid = currentUser?.uid || '';
+    if (uid !== owner) { clear(); owner = uid; }
+    if (!uid) { status.textContent = 'Fotoğraf eklemek için oturum açmalısın.'; return; }
     const images = Array.from(incoming).filter(file => /^image\//.test(file.type));
     if (!images.length) return;
     if (files.length + images.length > 12 || images.some(file => file.size > 10 * 1024 * 1024)) {
@@ -48,21 +63,26 @@
     const text = event.clipboardData.getData('text/plain');
     if (text) { input.value += text; input.dispatchEvent(new Event('input', { bubbles:true })); }
   });
-  function handle(event) {
+  async function handle(event) {
     if (!files.length) return;
     event.preventDefault(); event.stopImmediatePropagation();
-    const command = input.value.toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i');
-    if (/iptal|vazgec/.test(command)) { clear(); input.value = ''; status.textContent = 'Fotoğraf işlemi iptal edildi.'; return; }
-    if (!/ekle|aktar|oku/.test(command)) { status.textContent = 'Kayıtlara ekle veya yapay zekâ ile kayıtlara ekle.'; return; }
+    if (!currentUser?.uid || currentUser.uid !== owner) { clear(); status.textContent = 'Oturum değişti. Fotoğrafı yeniden seç.'; return; }
+    const command = classifyAssistantImageCommand(input.value);
+    if (command === 'cancel') { clear(); input.value = ''; status.textContent = 'Fotoğraf işlemi iptal edildi.'; return; }
+    if (command === 'clarify') { status.textContent = 'Fotoğraflar bekliyor; hiçbir kayıt eklenmedi. Yerel okuma mı, yapay zekâ ile okuma mı istiyorsun?'; return; }
     if (pendingBankFiles.length || pendingBankImports.length) { status.textContent = 'Önce açık içe aktarma işlemini tamamla veya iptal et.'; return; }
     const selected = files.slice();
-    const ai = /yapay|zeka|\bai\b/.test(command);
+    const ai = command === 'ai';
     panel.querySelector('[data-assistant-close]').click();
     openBankImportModal();
     handleBankImportFile({ target: { files:selected } });
     clear(); input.value = '';
     // Only preview readers are called; confirmBankImport is never invoked here.
-    void (ai ? previewBankImportWithAi() : previewBankImportWithAccurateLocalOcr());
+    try {
+      await (ai ? previewBankImportWithAi() : previewBankImportWithAccurateLocalOcr());
+    } catch {
+      bankImportStatus.textContent = 'Fotoğraf okunamadı. Dosyalar içe aktarma penceresinde; yeniden deneyebilirsin.';
+    }
   }
   form.addEventListener('submit', handle, true);
   input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) handle(event); }, true);

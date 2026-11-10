@@ -1299,7 +1299,13 @@ function renderPaymentAccountRecordsModalContent(account, options = {}) {
 
         const meta = document.createElement("p");
         meta.className = "transaction-meta";
-        meta.textContent = `${formatTransactionDateTime(transaction)} · ${transaction.category} · ${getTransactionPaymentInfo(transaction)}${transaction.note ? ` · ${transaction.note}` : ""}`;
+        const count = Math.max(0, Math.trunc(Number(transaction.installmentCount || 0)));
+        const number = Math.max(0, Math.trunc(Number(transaction.installmentNumber || 0)));
+        const installment = transaction.isInstallment
+          ? count > 1 && number > 0 ? ` · Taksit ${number}/${count}` : " · Taksit"
+          : "";
+        const completed = transaction.isInstallment && transaction.installmentCompleted ? " · Tamamlandı" : "";
+        meta.textContent = `${formatTransactionDateTime(transaction)} · ${transaction.category} · ${getTransactionPaymentInfo(transaction)}${installment}${completed}${transaction.note ? ` · ${transaction.note}` : ""}`;
         info.append(title, meta);
 
         const side = document.createElement("div");
