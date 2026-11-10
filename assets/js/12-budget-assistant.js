@@ -49,7 +49,7 @@
       <button type="button" class="budget-assistant-icon-button budget-assistant-mic" data-assistant-mic aria-label="Mikrofonu aç" aria-pressed="false" title="Mikrofonu aç"><i data-lucide="mic" aria-hidden="true"></i></button>
       <button type="submit" class="budget-assistant-send" aria-label="Mesajı gönder" title="Gönder"><i data-lucide="send" aria-hidden="true"></i></button>
     </form>
-    <p class="budget-assistant-privacy">Ses kayıtları ve yapay zekâ soruları çözümleme için OpenAI’a iletilir. Mali kayıtlar yalnızca onayınızla eklenir.</p>`;
+    <p class="budget-assistant-privacy">Sesli giriş tarayıcı desteği ve mikrofon iznine bağlıdır. Kayıtlar, onayınızla uygulamanın mevcut kayıt akışına eklenir.</p>`;
 
   document.body.append(launcher, panel);
 
@@ -58,15 +58,6 @@
   const status = panel.querySelector("[data-assistant-status]");
   const micButton = panel.querySelector("[data-assistant-mic]");
   const speakButton = panel.querySelector("[data-assistant-speak]");
-  const remote = createBudgetAssistantRemote({
-    getUser: () => currentUser,
-    onStatus: setStatus,
-    onReply: (answer, question) => {
-      appendMessage(answer);
-      void window.AkisAssistantKnowledge?.propose(question, answer);
-    },
-    onError: () => appendMessage("Yapay zekâya şu an ulaşılamıyor. Yerel raporlar ve kayıt ekleme çalışmaya devam ediyor. Sorunu dönem, kategori veya hesap adıyla yeniden sorabilirsin."),
-  });
   const normalize = (value) => String(value || "")
     .toLocaleLowerCase("tr-TR")
     .normalize("NFD")
@@ -1652,16 +1643,14 @@
     if (respondWithInsights(text)) return;
     if (beginEntryConversation(text)) { lastReportQuestion = ""; insights.reset(); return; }
     if (respondToFinanceQuestion(text)) return;
+    appendMessage("Bu isteği güvenilir bir raporla eşleştiremedim. Dönemle birlikte gelir/gider, kategori, işyeri veya hesap adını belirtebilirsin. Kayıtlarında olmayan bir tutarı tahmin etmem. “Ne sorabilirim?” ile tüm konuları görebilirsin.");
     lastReportQuestion = ""; awaitingReportContinue = false; insights.reset();
-    const learned = window.AkisAssistantKnowledge?.lookup(text);
-    if (learned) appendMessage(learned);
-    else void remote.request(text);
+    addPromptButtons(["Ne sorabilirim?", "Bu ayın özeti", "Bugünkü giderlerim neler?", "Gider ekle"]);
   }
 
   function sendAssistantInput(value = input.value, { focus = true, source = "typed" } = {}) {
     const message = String(value || "").trim();
     if (!message) return;
-    remote.cancel();
     if (assistantCloseTimer !== null) {
       window.clearTimeout(assistantCloseTimer);
       assistantCloseTimer = null;
@@ -1762,7 +1751,6 @@
           addPromptButtons(["Daha detaylı", "Peki geçen ay?", "Başka konu"]);
         }
       } else if (/^(yeni konu|baska konu|konuyu degistir)$/.test(normalized)) {
-        remote.reset();
         lastReportQuestion = ""; awaitingReportContinue = false; pendingFinanceQuestion = null; insights.reset();
         appendMessage("Tamam, yeni konuya geçelim. Ne hakkında yardımcı olayım?"); addPromptButtons(assistantQuickPrompts);
       } else respondToCommand(resolveReportFollowup(message));
@@ -1782,7 +1770,6 @@
   }
 
   function closeAssistant({ restoreFocus = true } = {}) {
-    remote.cancel();
     if (assistantCloseTimer !== null) window.clearTimeout(assistantCloseTimer);
     assistantCloseTimer = null;
     microphone.cancel();
@@ -1834,7 +1821,6 @@
   }
 
   function endAssistantConversation() {
-    remote.reset();
     pendingEntry = null;
     pendingEntryStep = "";
     pendingFinanceQuestion = null;
@@ -1990,10 +1976,8 @@
 
   let assistantOwner = currentUser?.uid || "";
   const updateVisibility = () => {
-    window.AkisAssistantKnowledge?.sync();
     const owner = currentUser?.uid || "";
     if (owner !== assistantOwner) {
-      remote.reset();
       assistantOwner = owner;
       pendingEntry = null; pendingEntryStep = ""; pendingTopicChange = null; pendingFinanceQuestion = null;
       lastReportQuestion = ""; lastCategoryReport = null; awaitingReportContinue = false; awaitingNextEntry = false; insights.reset();

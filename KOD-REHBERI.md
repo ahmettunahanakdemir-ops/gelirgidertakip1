@@ -1,6 +1,6 @@
 # Kod Rehberi - Varlik Butce Takip
 
-Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli olan kucuk ve anlasilir dosyalara ayrildi. Eski tek dosyalar `legacy/` klasorunde yedek olarak durur; uygulama artik `index.html` icindeki `assets/css` ve `assets/js` dosyalarini kullanir.
+Uygulama `index.html` icindeki yukleme sirasina gore `assets/css` ve `assets/js` dosyalarini kullanir. Yuklenmeyen eski `app.js`, `style.css` ve `legacy/` kopyalari aktif kaynaktan kaldirildi; tarihsel surum arsivleri ayri proje klasorlerinde korunur.
 
 ## HTML
 
@@ -24,6 +24,8 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 - `assets/css/12-debts-receivables.css`: Borc/alacak ozetleri, filtreler, kayit satirlari, modal ve mobil yerlesim.
 - `assets/css/16-budget-assistant.css`: Akış Bütçe Asistanı sohbet paneli, sürüklenebilir robot düğmesi, marka renkleri, koyu tema ve mobil güvenli alan.
 - `assets/css/23-compact-navigation.css`: iPhone icin tek sefer uygulanan guvenli alan ve azaltılmış ust/alt bosluklar; ayarlarin sabit baslikli gecis duzeni.
+- `assets/css/24-navigation-assistant-stability.css`: Sabit yan menu genislikleri, tablet guvenli alanlari ve sikismayan islem dugmeleri.
+- `assets/css/25-assistant-logs.css`: Hesap kapsamli soru gunlugu tablosu, filtreler ve sayfalama.
 - `assets/images/budget-assistant-mascot.png`: Asistan başlığı, mesaj avatarları ve açma düğmesindeki özgün Akış Bütçe robotu.
 
 ## JS Dosyalari
@@ -42,8 +44,9 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 - `assets/js/10-startup-pwa.js`: Acilis ekrani ve service worker kaydi yardimcilari.
 - `assets/js/11-state-startup.js`: Uygulama durum degiskenlerini yukler ve tum dosyalar hazir olduktan sonra uygulamayi baslatir. En son yuklenmelidir.
 - `assets/js/12-budget-assistant.js`: Serbest doğal dilde gelir/gider/transfer kaydı, eksik alanlar için adım adım soru, dönem/kategori/işyeri/hesap filtreli hareket arama, borç/taksit/varlık/BES/kart yanıtları ve Türkçe sayı okuyan durdurulabilir sesli yanıt.
-- `assets/js/16-assistant-microphone.js`: Mikrofon durumlari, canli metin, iptal ve gec gelen olay korumasi; Turkce ses secimi ve parcali yanit okuma.
+- `assets/js/16-assistant-microphone.js`: MediaRecorder ile ses kaydi, MP4/webm bicim secimi, iptal ve gec gelen olay korumasi; Turkce ses secimi ve parcali yanit okuma.
 - `assets/js/17-assistant-insights.js`: Adet/tarih cozumleme, kategori ve donem analizleri, borc/hesap/BES ayrimi, kayit kontrolu ve konuya uygun kullanim yanitlari.
+- `assets/js/18-assistant-logs.js`: IndexedDB soru kuyrugu, hesap kapsamli bulut gunlugu, arama ve JSON/CSV disari aktarma. Canli Firebase kurulumu proje kokundeki `ASISTAN-LOG-KURULUMU.md` dosyasinda aciklanir.
 - `ASISTAN-SORU-REHBERI.md`: Asistanin destekledigi soru ornekleri, devam/onay akislari ve veri/ses destegi sinirlari.
 
 ## Diger JS Dosyalari
@@ -52,6 +55,9 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 - `netlify/functions/bank-ai-import.js`: Banka hareketlerini AI ile okumak icin Netlify backend fonksiyonu.
 
 ## Calisma Notlari
+
+- 2026-11-02 kaynak temizligi: 23 cagrilmayan fonksiyon, kullanilmayan degiskenler, gorunmez eski sayfa basliklari ve bunlarin DOM/CSS baglantilari kaldirildi. 1.050 birebir tekrar eden CSS tanimi ve 209 bos kalan kural temizlendi. Dinamik siniflar, tarayici yedekleri, Netlify endpointleri ve lisans dosyalari korundu.
+- Yuklenmeyen eski tek dosya kopyalari aktif kaynak ve `Canli-Surum` icinde bulunmaz. Eski surum arsivleri ve mali veri yedekleri degistirilmedi. Web onbellegi v448'dir; kod rehberi disinda test/analiz dosyalari yayin klasorune eklenmedi.
 
 - CSS ve JS dosya adlarindaki numaralar yukleme sirasini gosterir. Bu sira korunmalidir.
 - `assets/js/11-state-startup.js` uygulama durumunu yükleyip `init()` çağrısını yapar; `12-budget-assistant.js` bu başlangıçtan sonra çalışarak asistanı oturum açılmış uygulamaya bağlar.
@@ -78,8 +84,9 @@ Bu proje tek buyuk `app.js` ve `style.css` dosyasindan, yukleme sirasi belli ola
 - v430: Kullanici istegiyle v429 ortak gorunum kurallari mobile sinirlandi. Masaustunde mevcut metinli kart aksiyonlari ve canli sitedeki duzenleme penceresinin alt Kaydet duzeni korunur. Mobilde eski aksiyon dugmeleri yuksek oncelikli gorunum kurallariyla gizlenir; ekran genisleyince geri gelir.
 - Ay secicisi arac cubugunun ortasinda, ayarlar ve diger ikonlar 44x44 boyutundadir. Tasarruf yuzdesi tek satirda tutulur ve metin uzunluguna gore yazisi sigdirilir. Kart menusu basligin sag ustunde seffaf cercevelidir.
 - Mobil islem duzenlemede Iptal/baslik/Kaydet ayni ust satirdadir. Form disina tasinan Kaydet butonunun form baglantisi korunur. Salt-okunur detaylar eski unified header kurallarindan bagimsiz, kendi sabit baslik ve kaydirilabilir govdesini kullanir.
-- `16-assistant-microphone.js`: 350 ms ve uzeri basili tutmada birakinca gonderir; kisa dokunma dinlemeyi baslatir, ikinci dokunma bitirip gonderir. Son ses/metin etkinliginden 5 saniye sonra otomatik gonderir; basili tutulurken zamanlayici gondermez. Ara sonuclar tek metinde guncellenir; mobil motorun erken biten bolumleri birlestirilir. Kapatma/iptal sonuc gondermez, gec gelen olaylar mukerrer mesaja neden olmaz. Gercek cihaz/API destegi ve mikrofon izni gereklidir.
-- `legacy/app.original.js` ve `legacy/style.original.css` eski tek dosya halleridir; uygulama tarafindan yuklenmez.
+- Guncel ses sistemi: Dokunmayla MediaRecorder kaydi baslar; ikinci dokunma kaydi bitirir. Desteklenen ses olcumu varsa konusma algilandiktan sonraki 5 saniyelik sessizlikte, aksi halde en gec 90 saniyede kayit biter. Kayit `/.netlify/functions/transcribe` servisine gonderilir, sonuc mesaj kutusuna eklenir; kullanici Gonder'e basmadan asistana mesaj veya mali kayit eklenmez. Ham ses uygulamada kalici saklanmaz.
+- v455: Eksik `createBudgetAssistantSpeaker` geri eklendi. Safari'de ses baglaminin `resume()` sozunu beklemek mikrofon iznini engellemez; ses olcumu kayittan bagimsiz ve istege baglidir. Izin beklemesi 30 saniyede sonlandirilir; iptalden sonra gec gelen akisin mikrofon izleri kapatilir.
+- Canli ses cozumu icin Netlify `SPEECH_ENDPOINT` HTTPS hizmetine, gerekiyorsa `SPEECH_SERVICE_TOKEN` gizli ortam degiskenine ihtiyac vardir. Hizmet ham ses POST istegine `{text}` JSON yaniti vermelidir. Firebase kimligi kontrol edilir. 2026-11-06 canli kontrolunde transcribe uc noktasi HTTP 503 ile hizmetin yapilandirilmadigini bildirdi; bu istemci duzeltmesi uzak hizmeti veya yayin ayarlarini otomatik kurmaz.
 - v431: Yardim rehberi her ekranda ikonlu, acilir konu satirlarini kullanir. Mobil ayarlarda ust arac cubugu gizlenir; Kapat ve ortalanmis Ayarlar ayni ust satirdadir. Ayarlar satirlari 52px, arac ve kart menu ikonlari 44px standart olcudededir.
 - Mobil islem/BES/taksit basliklari menu alanini ayirir; aciklamalar bu satirin altinda tam genisligi kullanir. Banka kartlarindaki eski sag aksiyon boslugu kaldirildi; bilgiler yayildi, menu kartin sag ustune sabitlendi. Masaustunde otomatik taksit aksiyonlari esnek genislikte, tasmasiz kalir; diger masaustu duzenleri korunur.
 - v435: Asistan sorgulari en yüksek/en düşük tutarlı işlemleri bu ay, tek gün, tarih aralığı veya tüm zamanlar kapsamıyla listeler; açıkça birden fazla tür istenirse gelir, gider ve transferleri ayrı alt toplamlarla gösterir. Genel tür adları kategori filtresi sayılmaz; gün/tarih bağlaçları arama sözcüğü olarak eşleşmeyi daraltmaz.

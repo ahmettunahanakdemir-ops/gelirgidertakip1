@@ -1,4 +1,3 @@
-const { authenticate, reply } = require("../lib/ai-auth");
 const AI_PROVIDER = String(process.env.AI_PROVIDER || "").trim().toLowerCase();
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
@@ -53,8 +52,6 @@ exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return jsonResponse(405, { error: "Sadece POST istegi desteklenir." });
   }
-
-  if (!await authenticate(event)) return reply(401, { error: "Yeniden oturum aciniz." });
 
   let payload;
 
@@ -167,7 +164,6 @@ async function runOpenAi(files, payload) {
 
   const requestBody = {
     model: OPENAI_MODEL,
-    store: false,
     temperature: 0.05,
     input: [
       {
@@ -188,7 +184,6 @@ async function runOpenAi(files, payload) {
   try {
 
     const response = await fetch(OPENAI_ENDPOINT, {
-      signal: AbortSignal.timeout(45000),
       method: "POST",
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,

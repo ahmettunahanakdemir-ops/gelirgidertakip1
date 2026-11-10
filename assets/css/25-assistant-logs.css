@@ -1,10 +1,4 @@
 .assistant-log-panel { min-width: 0; color: var(--text); }
-.assistant-knowledge-panel { min-width:0; color:var(--text); }
-.assistant-knowledge-row { display:grid; gap:10px; padding:18px 0; border-bottom:1px solid var(--stroke); min-width:0; }
-.assistant-knowledge-row textarea { display:block; width:100%; min-width:0; max-width:100%; margin:0; resize:vertical; white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; line-height:1.5; }
-.assistant-knowledge-actions { display:flex; justify-content:flex-end; gap:8px; }
-.assistant-knowledge-actions button { display:inline-flex; align-items:center; justify-content:center; flex:0 0 44px; width:44px; height:44px; padding:10px; }
-.assistant-knowledge-actions svg { width:20px; height:20px; }
 .assistant-log-summary { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:16px; font-size:14px; }
 .assistant-log-summary [role="status"] { color:var(--muted); }
 .assistant-log-tools { display:grid; grid-template-columns:minmax(180px,1fr) 160px 150px 44px 90px 44px; align-items:center; gap:8px; margin-bottom:16px; }
