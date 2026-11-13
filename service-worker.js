@@ -1,6 +1,6 @@
-const CACHE_NAME = "akis-butce-v480";
+const CACHE_NAME = "akis-butce-v482";
 const APP_ASSETS = [
-  "./assets/css/28-color-palettes.css?v=480",
+  "./assets/css/28-color-palettes.css?v=482",
   "./assets/css/27-mobile-detail-fixes.css?v=472",
   "./assets/js/20-assistant-images.js?v=469",
   "./assets/css/26-assistant-images.css?v=469",
