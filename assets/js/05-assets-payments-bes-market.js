@@ -2709,8 +2709,25 @@ function addBesAccount(event) {
   render();
 }
 
+async function shareMarketSnapshot(userId, prices) {
+  const ref = firebaseDb.collection("users").doc(userId);
+  return firebaseDb.runTransaction(async transaction => {
+    const doc = await transaction.get(ref);
+    const previous = doc.data()?.marketSnapshot;
+    const now = Date.now();
+    const age = now - Date.parse(previous?.updatedAt);
+    if (previous?.prices && age >= 0 && age < 60000) return previous;
+    const merged = { ...previous?.prices, ...prices, TRY: 1 };
+    const snapshot = { prices: { ...merged, ...getDerivedAssetPrices(merged) }, updatedAt: new Date(now).toISOString() };
+    transaction.set(ref, { marketSnapshot: snapshot }, { merge: true });
+    return snapshot;
+  });
+}
+
 async function refreshMarketPrices(options = {}) {
   const { silent = false } = options;
+  const userId = currentUser?.uid;
+  const fetchedPrices = {};
 
   if (!silent) {
     marketStatus.textContent = "Canlı fiyatlar yükleniyor...";
@@ -2728,6 +2745,7 @@ async function refreshMarketPrices(options = {}) {
 
   const currencyResult = await getCurrencyPrices();
   if (currencyResult) {
+    Object.assign(fetchedPrices, currencyResult.prices);
     Object.assign(nextPrices, currencyResult.prices);
     status.updated.push(currencyResult.source);
     status.timestamp = currencyResult.timestamp || status.timestamp;
@@ -2741,6 +2759,7 @@ async function refreshMarketPrices(options = {}) {
     const [metalsResult, cryptoResult] = await Promise.all([getMetalPrices(usdToTry), getCryptoPrices(usdToTry)]);
 
     if (metalsResult) {
+      Object.assign(fetchedPrices, metalsResult.prices);
       Object.assign(nextPrices, metalsResult.prices);
       status.updated.push(metalsResult.source);
       status.timestamp = metalsResult.timestamp || status.timestamp;
@@ -2749,6 +2768,7 @@ async function refreshMarketPrices(options = {}) {
     }
 
     if (cryptoResult) {
+      Object.assign(fetchedPrices, cryptoResult.prices);
       Object.assign(nextPrices, cryptoResult.prices);
       status.updated.push(cryptoResult.source);
       status.timestamp = cryptoResult.timestamp || status.timestamp;
@@ -2763,22 +2783,33 @@ async function refreshMarketPrices(options = {}) {
 
   const hasAnyPrice = Object.entries(nextPrices).some(([key, value]) => key !== "TRY" && readMarketNumber(value) > 0);
 
-  if (hasAnyPrice) {
-    marketData = {
+  if (hasAnyPrice && status.updated.length) {
+    if (userId !== currentUser?.uid) return;
+    let snapshot = {
       prices: nextPrices,
       updatedAt: status.timestamp || new Date().toISOString(),
     };
+    if (userId && firebaseDb) {
+      try {
+        const quotes = Object.fromEntries(Object.entries(fetchedPrices).filter(([, value]) => Number.isFinite(value) && value > 0));
+        snapshot = await shareMarketSnapshot(userId, quotes);
+      } catch {
+        if (userId === currentUser?.uid) marketStatus.textContent = "Ortak fiyatlar eşitlenemedi. Son kayıtlı fiyatlar kullanılıyor.";
+        return;
+      }
+    }
+    if (userId !== currentUser?.uid) return;
+    marketData = snapshot;
     persistMarketData();
     marketStatus.textContent = status.failed.length
       ? `Fiyatlar kısmen güncellendi. Alınamayan: ${status.failed.join(", ")}.`
       : "Canlı fiyatlar güncellendi.";
     renderAssets();
+    renderHome();
     return;
   }
 
-  if (!silent || !marketData.updatedAt) {
-    marketStatus.textContent = "Canlı fiyatlar alınamadı. İnternet bağlantısını kontrol edip yukarıdaki yenile simgesine bas.";
-  }
+  marketStatus.textContent = "Canlı fiyatlar alınamadı; son kaydedilen fiyatlar kullanılıyor. İnternet bağlantısını kontrol edip yeniden dene.";
 }
 
 async function getCurrencyPrices() {

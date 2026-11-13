@@ -787,7 +787,7 @@ function persistAssets(options = {}) {
   localStorage.setItem(getStorageKey(ASSETS_STORAGE_KEY), JSON.stringify(assets));
 
   if (syncCloud) {
-    scheduleUserProfileCloudSync();
+    scheduleUserProfileCloudSync(0);
   }
 }
 
@@ -799,7 +799,7 @@ function persistBesAccounts(options = {}) {
   localStorage.setItem(getStorageKey(BES_STORAGE_KEY), JSON.stringify(besAccounts));
 
   if (syncCloud) {
-    scheduleUserProfileCloudSync();
+    scheduleUserProfileCloudSync(0);
   }
 }
 
@@ -1056,8 +1056,6 @@ function renderHome() {
 
   updateHomeSummaryFilterStatus(totals, homeTransactions.length);
   renderHomeWealthChart({
-    cashBalance: Math.max(totals.balance, 0),
-    assetTotal,
     besTotalValue,
   });
 }
@@ -1088,7 +1086,7 @@ function fitHomeWealthTotalText() {
   }
 }
 
-function getHomeWealthSegments({ cashBalance, besTotalValue }) {
+function getHomeWealthSegments({ besTotalValue }) {
 
   const groupedAssetSegments = Object.values(
     assets.reduce((acc, item) => {
@@ -1119,7 +1117,6 @@ function getHomeWealthSegments({ cashBalance, besTotalValue }) {
     }));
 
   const segments = [
-    { label: "Güncel bakiye", value: Math.max(cashBalance, 0), color: "#14b8a6" },
     ...groupedAssetSegments,
     { label: "BES", value: Math.max(besTotalValue, 0), color: "#173f5f" },
   ].filter((segment) => segment.value > 0);

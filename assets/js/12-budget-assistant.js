@@ -95,13 +95,15 @@
   }
 
   function isAssistantReportIntent(text) {
+    if (/^(?:sence |peki )?ne yapabilirim(?: simdi)?$/.test(normalize(text))) return false;
     return /\b(ozet\w*|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ne kadar|ne|hangi|nerede|neyi|neye|neler|kategori\w*|analiz|karsilastir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*)\b/.test(normalize(text));
   }
 
   function isIndependentReportQuestion(text) {
     const normalized = normalize(text);
-    const asksQuestion = /[?？]/.test(String(text || "")) || /\b(ne|neler|hangi|ne kadar|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ozet|var mi|detay|goster|listele|kontrol et|incele|hesapla|toplam\w*)\b/.test(normalized);
-    const namesFinancialArea = /\b(birikim\w*|kategori\w*|harcama\w*|gider\w*|gelir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*|islem\w*|kayit\w*|mukerrer\w*|tasarruf\w*|ortalama\w*)\b/.test(normalized);
+    const asksQuestion = /[?？]/.test(String(text || "")) || /\b(ne|neler|hangi|ne kadar|en cok|en az|en yuksek|en dusuk|en buyuk|en kucuk|ozet\w*|var mi|detay|goster|listele|kontrol et|incele|hesapla|toplam\w*)\b/.test(normalized);
+    const namesFinancialArea = /\b(birikim\w*|kategori\w*|harcama\w*|gider\w*|gelir\w*|borc\w*|alacak\w*|taksit\w*|varlik\w*|portfoy|bes|emeklilik|kart\w*|hesap\w*|bakiye\w*|yatirim\w*|islem\w*|kayit\w*|mukerrer\w*|tasarruf\w*|ortalama\w*)\b/.test(normalized)
+      || /\b(?:ay(?:in|lik)|hafta(?:nin|lik)|yil(?:in|lik))\s+ozet\w*\b/.test(normalized);
     return asksQuestion && namesFinancialArea;
   }
 
@@ -780,7 +782,7 @@
       lines.push(`${ranking ? `${index + 1}.` : "•"} ${formatDate(item.date)} · ${item.title || item.category || "Başlıksız"} · ${item.category || entryTypeLabel(item.type)} · ${formatMoney(item.amount)}${accounts}${createdLabel}`);
     });
     if (records.length > displayLimit) lines.push(`İlk ${displayLimit} kayıt gösteriliyor; toplam ${records.length} kayıt var.`);
-    if (recordLimit && matchingCount < recordLimit) lines.push(`İstediğin ${recordLimit} kayıt yerine eşleşen ${matchingCount} kayıt gösterildi.`);
+    if ((ranking ? ranking.requestedLimit : recordLimit) > matchingCount) lines.push(`İstediğin ${recordLimit} kayıt yerine eşleşen ${matchingCount} kayıt gösterildi.`);
     return lines.join("\n");
   }
 
@@ -792,8 +794,8 @@
     const recordWords = /\b(islem\w*|kayit\w*|kayd\w*|hareket\w*|gider\w*|gelir\w*|transfer\w*|harcama\w*|harcad\w*)\b/;
     if (!recordWords.test(normalized)) return null;
     if (/\b(kategori\w*|kalem\w*|baslik\w*|konu\w*)\b/.test(normalized) && !/\b(islem\w*|kayit\w*|kayd\w*|hareket\w*)\b/.test(normalized)) return null;
-    const limit = getBudgetAssistantCount(text, normalize, 10);
-    return { order: ascending ? "amountAsc" : "amountDesc", limit };
+    const requestedLimit = getBudgetAssistantCount(text, normalize, 0);
+    return { order: ascending ? "amountAsc" : "amountDesc", limit: requestedLimit || 3, requestedLimit };
   }
 
   function getAssistantRecordLimit(text) {
@@ -900,15 +902,12 @@
   }
 
   function getAssistantWealthReport() {
-    const totals = getTransactionTotals(getHomeSummaryTransactions());
-    const segments = getHomeWealthSegments({ cashBalance: totals.balance, besTotalValue: getBesTotal() });
+    const segments = getHomeWealthSegments({ besTotalValue: getBesTotal() });
     const total = segments.reduce((sum, segment) => sum + segment.value, 0);
     const lines = [`Toplam birikimin: ${formatMoney(total)}.`, "Birikim dağılımı:"];
     segments.forEach((segment) => lines.push(`• ${segment.label}: ${formatMoney(segment.value)}`));
-    if (!segments.length) lines.push("Pozitif bakiye, varlık veya BES birikimi bulunmuyor.");
-    lines.push(isHomeSummaryFilterActive()
-      ? `Grafikle aynı hesap: güncel bakiye ${getHomeSummaryFilterLabel()} filtresine göre; varlıklar ve BES güncel değerleriyle dahil.`
-      : "Grafikle aynı hesap: tüm zamanların pozitif net bakiyesi, güncel varlık değerleri ve BES toplamı.");
+    if (!segments.length) lines.push("Varlık veya BES birikimi bulunmuyor.");
+    lines.push("Grafikle aynı hesap: güncel varlık değerleri ve BES toplamı.");
     return lines.join("\n");
   }
 
@@ -973,7 +972,7 @@
     const accountRecordQuestion = /\b(harc\w*|gider\w*|gelir\w*|transfer\w*|hareket\w*|islem\w*|kayit\w*|kart odeme\w*)\b/.test(normalized)
       && !/\b(borc\w*|limit\w*|bakiye\w*)\b/.test(normalized);
     if (isCardQuestion(text) && !accountSpendingReport && !accountRecordQuestion) return "card";
-    if (/\b(bes|bireysel emeklilik|emeklilik birikim)\b/.test(normalized)) return "bes";
+    if (/\b(bes(?:lerim|lerimi|lerimin|lerimde|lerimden|ler|im|imin|imi|imde)?|bireysel emeklilik|emeklilik birikim)\b/.test(normalized)) return "bes";
     if (/\b(birikim\w*|toplam servet\w*)\b/.test(normalized)) return "wealth";
     if (/\b(varlik\w*|portfoy|altinlarim|gumuslerim|dolarim|eurom)\b/.test(normalized)) return "assets";
     if (/\b(taksit\w*|taksid\w*|yaklasan odeme|vade\w*)\b/.test(normalized)) return "installments";
@@ -1846,6 +1845,7 @@
   }
 
   function endAssistantConversation() {
+    const hadDraft = Boolean(pendingEntry);
     remote.reset();
     pendingEntry = null;
     pendingEntryStep = "";
@@ -1859,7 +1859,7 @@
     microphone.cancel();
     micButton.classList.remove("is-listening");
     stopAssistantSpeech();
-    const farewell = "Görüşmek üzere. Onaylanmamış işlem kaydedilmedi.";
+    const farewell = hadDraft ? "Görüşmek üzere. Onaylanmamış işlem kaydedilmedi." : "Rica ederim, görüşmek üzere!";
     appendMessage(farewell);
     latestSpokenReply = farewell;
     if (window.speechSynthesis) speakButton.click();
@@ -2014,7 +2014,7 @@
       appendMessage("Merhaba! Bu oturumdaki kayıtların hakkında sorabilir veya yeni işlem ekleyebilirsin.");
       addPromptButtons(assistantQuickPrompts);
     }
-    const modalOpen = [...document.querySelectorAll(".modal-backdrop")].some((modal) => !modal.hidden);
+    const modalOpen = [...document.querySelectorAll(".modal-backdrop")].some((modal) => !modal.hidden && !panel.contains(modal));
     const settingsOpen = document.documentElement.dataset.activeView === "settingsView";
     const visible = Boolean(appShell && !appShell.hidden && !document.documentElement.classList.contains("auth-logged-out") && !modalOpen && !settingsOpen);
     launcher.hidden = !visible;

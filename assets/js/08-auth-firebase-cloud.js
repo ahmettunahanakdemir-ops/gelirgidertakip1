@@ -1162,6 +1162,7 @@ async function handleAuthStateChanged(user) {
 
     const failedSync = syncResults.find((result) => result.status === "rejected");
     subscribeCloudProfile(user.uid);
+    void refreshMarketPrices({ silent: true });
     retryPendingTransactionsCloudSync();
     if (failedSync) {
       cloudStatus.textContent = `Bulut eşitleme tamamlanamadı: ${failedSync.reason?.message || "Bilinmeyen hata"}`;
@@ -1272,6 +1273,10 @@ function fetchCloudProfile(userId, options = {}) {
 
 function applyCloudAssetAndBesProfile(data = {}, options = {}) {
   const { renderAfterApply = true } = options;
+  if (data.marketSnapshot?.prices && Number.isFinite(Date.parse(data.marketSnapshot.updatedAt))) {
+    marketData = data.marketSnapshot;
+    persistMarketData();
+  }
   applyDeletedProfileRecordState(readCloudDeletedProfileRecordState(data));
 
   applyCloudProfileContactInfo(data);

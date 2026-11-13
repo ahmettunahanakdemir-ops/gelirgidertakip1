@@ -8,7 +8,10 @@
   .shell-history-more-menu svg { width:20px; height:20px; flex:0 0 20px; color:var(--accent); }
   html.modern-budget #appShell .shell-toolbar .shell-period { display:flex; flex:1 1 auto; justify-content:center; min-width:0; gap:2px; }
   html.modern-budget #appShell .shell-toolbar .shell-period[hidden] { display:none; }
-  html.modern-budget #appShell .shell-toolbar #shellMonthLabel { white-space:nowrap; font-size:14px; min-width:0; text-align:center; }
+  html.modern-budget[data-active-view="homeView"] #appShell .shell-toolbar { grid-template-columns:max-content minmax(0,1fr) max-content!important; column-gap:4px!important; }
+  html.modern-budget #appShell .shell-toolbar .shell-period { width:100%; }
+  html.modern-budget #appShell .shell-toolbar #shellMonthLabel { white-space:nowrap; font-size:14px; min-width:0; flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+  html.modern-budget #appShell .shell-toolbar .shell-period [data-month-step] { padding:0!important; }
   html.modern-budget #appShell .shell-toolbar .shell-period [data-month-step] { flex:0 0 28px; width:28px!important; min-width:28px!important; }
   html.modern-budget #appShell .shell-toolbar .shell-toolbar-actions > .shell-icon-button,
   html.modern-budget #appShell .shell-toolbar .shell-account-actions .shell-icon-button,

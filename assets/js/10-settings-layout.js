@@ -199,6 +199,13 @@ function setupSettingsLayout() {
   appearance.append(themeRow);
   themeRow.querySelector("select").value = uiSettings.theme;
   themeRow.querySelector("select").addEventListener("change", event => applyTheme(event.target.value));
+  const paletteRow = document.createElement("label");
+  paletteRow.className = "preferences-value-row";
+  paletteRow.innerHTML = '<span>Renk paleti</span><select aria-label="Renk paleti"><option value="mint">Mint</option><option value="ocean">Okyanus</option><option value="lavender">Lavanta</option><option value="sunset">Gün Batımı</option></select>';
+  const paletteSelect = paletteRow.querySelector("select");
+  paletteSelect.value = document.documentElement.dataset.palette || "mint";
+  paletteSelect.addEventListener("change", event => applyBudgetPalette(event.target.value));
+  appearance.append(paletteRow);
   disclosure(appearance,"Yazı ve boyut","type",fonts,"typography");
   disclosure(group("Profil"),"Hesap bilgileri","user",profile,"profile");
   const general = group("Genel");

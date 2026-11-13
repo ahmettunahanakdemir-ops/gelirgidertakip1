@@ -1555,6 +1555,7 @@ function confirmBankImport(options = {}) {
       ? `${selectedTransactions.length} banka hareketi kayıtlara eklendi. Seçilen hesap, karşı hesap, dosya/görsel ve önizleme alanı temizlendi.`
       : null
   );
+  bankImportModal?.dispatchEvent(new CustomEvent("bank-import-completed", { detail: selectedTransactions.length }));
 }
 
 function clearBankImport() {

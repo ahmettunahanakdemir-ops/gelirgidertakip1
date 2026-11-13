@@ -28,6 +28,36 @@ function classifyAssistantImageCommand(value) {
   panel.addEventListener('assistant-request-image', () => picker.click());
   form.before(attach, picker);
   const status = panel.querySelector('[data-assistant-status]');
+  function mountImportInPanel() {
+    const dialogs = [bankImportModal, bankImportPreviewModal].filter(Boolean);
+    const homes = dialogs.map(dialog => {
+      const marker = document.createComment('bank import position');
+      dialog.before(marker);
+      dialog.classList.add('assistant-inline-import');
+      return marker;
+    });
+    const content = [...panel.children].filter(element => !element.inert);
+    content.forEach(element => { element.inert = true; });
+    panel.append(...dialogs);
+    const completed = event => {
+      closeBankImportModal();
+      status.textContent = `${event.detail} hareket kayıtlara eklendi.`;
+    };
+    bankImportModal.addEventListener('bank-import-completed', completed);
+    const observer = new MutationObserver(() => {
+      if (!panel.hidden && dialogs.some(dialog => !dialog.hidden)) return;
+      observer.disconnect();
+      bankImportModal.removeEventListener('bank-import-completed', completed);
+      dialogs.forEach((dialog, index) => {
+        dialog.classList.remove('assistant-inline-import');
+        homes[index].replaceWith(dialog);
+      });
+      content.forEach(element => { element.inert = false; });
+      if (!panel.hidden) input.focus({ preventScroll: true });
+    });
+    dialogs.forEach(dialog => observer.observe(dialog, { attributes: true, attributeFilter: ['hidden'] }));
+    observer.observe(panel, { attributes: true, attributeFilter: ['hidden'] });
+  }
   function clear() {
     urls.forEach(url => URL.revokeObjectURL(url)); urls = []; files = [];
     tray.replaceChildren(); tray.hidden = true; picker.value = '';
@@ -73,7 +103,7 @@ function classifyAssistantImageCommand(value) {
     if (pendingBankFiles.length || pendingBankImports.length) { status.textContent = 'Önce açık içe aktarma işlemini tamamla veya iptal et.'; return; }
     const selected = files.slice();
     const ai = command === 'ai';
-    panel.querySelector('[data-assistant-close]').click();
+    mountImportInPanel();
     openBankImportModal();
     handleBankImportFile({ target: { files:selected } });
     clear(); input.value = '';

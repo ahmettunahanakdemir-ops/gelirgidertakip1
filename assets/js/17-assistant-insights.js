@@ -235,7 +235,8 @@ function createBudgetAssistantInsights(api) {
     if (api.hasPeriod(text)) return result("Geçmiş tarihli BES anlık görüntüsü yok; sözleşmedeki güncel değerlerden geçmiş ayın bakiyesini çıkaramam. “BES toplamım ne?” diye güncel kayıtlı değerini sorabilirsin.");
     const named = all.filter(row => n(row.provider).length > 2 && normalized.includes(n(row.provider)));
     const generic = new Set("bes bireysel emeklilik benim ne kadar kac toplam toplamim toplami birikim birikimim kendi katki katkim katkisi devlet fon getirisi getirilerim getirileri getiriler getirimi getiri getirisim gain ana para anapara neydi var mi sozlesmelerim sozlesme hesaplarim hesaplar tutar tutari".split(" "));
-    const providerTokens = normalized.split(" ").filter(token => token.length > 2 && !generic.has(token) && !/^\d+$/.test(token));
+    const providerTokens = normalized.split(" ").filter(token => token.length > 2 && !generic.has(token) && !/^\d+$/.test(token)
+      && !/^(?:bes(?:ler|im|i)|durum|kayit|sozlesme|listele|goster|getir|bakabilir|incele|nelerdir|neler)/.test(token));
     if (!named.length && providerTokens.length) return result("Bu şirket adıyla eşleşen BES sözleşmesi bulamadım. Şirket adını kayıtlı olduğu gibi yazabilir veya “BES toplamım ne?” diye tüm sözleşmeleri sorabilirsin.");
     const rows = named.length ? named : all;
     if (!rows.length) return result("Kayıtlı BES sözleşmen bulunmuyor.");
@@ -303,8 +304,10 @@ function createBudgetAssistantInsights(api) {
     if (/\b(mukerrer\w*|cift kayit|ayni kayit|tekrar ekle\w*|eksik bilgi\w*|eksik alan\w*|kategorisiz|basliksiz|harcamasiz|harcama yapmad\w*|gider yapmad\w*|hic harcama|odeme yontem\w*|odeme sekl\w*|nasil odemis\w*|gelecek tarihli|ileri tarihli|gelecege)\b/.test(normalized)
       || /\bkac\s+(?:adet |tane )?(?:kayit\w*|islem\w*|hareket\w*|gider\w*|gelir\w*|transfer\w*)\b/.test(normalized)) { context = null; return recordChecks(text, forced); }
     if (/\b(yatirim\w*|altin\w*|dolar\w*|portfoy)\b/.test(normalized) && /\b(kar\w*|zarar\w*|kazanc\w*|getiri\w*)\b/.test(normalized) && !/\bbes\b/.test(normalized)) return result("Varlıkların güncel değerini hesaplayabilirim; alış maliyeti ve işlem bazlı maliyet geçmişi olmadan yatırım kârını/zararını kesin hesaplayamam. Tahmini kârı gerçek veri gibi sunmayacağım.", ["Varlık portföyüm ne kadar?"]);
-    if (/\b(bes|bireysel emeklilik|fon getir\w*|devlet katki\w*)\b/.test(normalized)
-      && !/\bbes\s+(?:adet |tane )?(?:kategori|islem|kayit|kayd|hareket|harcama|gider|gelir|transfer|gun)\w*\b/.test(normalized)) { context = null; return bes(text); }
+    if (/\b(bes(?:lerim|lerimi|lerimin|lerimde|lerimden|ler|im|imin|imi|imde)?|bireysel emeklilik|fon getir\w*|devlet katki\w*)\b/.test(normalized)
+      && (!/\bbes\s+(?:adet |tane )?(?:kategori|islem|kayit|kayd|hareket|harcama|gider|gelir|transfer|gun)\w*\b/.test(normalized)
+        || (/\bBES\b/.test(String(text)) && !/\bbes\s+(?:adet|tane)\b/.test(normalized))
+        || /\bbes\s+kayitlarim\w*\b/.test(normalized))) { context = null; return bes(text); }
     const comparison = /\b(karsilastir\w*|kiyas\w*|artti|azaldi|degisim\w*|fark\w*)\b/.test(normalized) || /\bgore\b/.test(normalized) && /\b(gecen|onceki|ay)\b/.test(normalized);
     if (comparison || /\b(tasarruf\w*|biriktir\w*|ortalama\w*|gunluk|islem basi|elde kalan|cebe kalan)\b/.test(normalized)
       || /\b(en cok|en az|en yuksek|en dusuk)\b/.test(normalized) && /\b(gun|gunde|gunler|gunleri)\b/.test(normalized) && !/\bson \d+ gun\b/.test(normalized)) { context = null; return analytics(text, forced); }
