@@ -172,7 +172,9 @@
     input.style.height = `${Math.min(112, Math.max(44, input.scrollHeight))}px`;
   }
 
+  let assistantReportCapture = null;
   function appendMessage(text, role = "assistant") {
+    if (role === "assistant" && assistantReportCapture) assistantReportCapture.push(String(text));
     if (role === "assistant" && assistantSpeaking) stopAssistantSpeech();
     const bubble = document.createElement("article");
     bubble.className = `budget-assistant-message is-${role}`;
@@ -1655,17 +1657,28 @@
       return;
     }
     if (/\b(merhaba|selam|gunaydin|iyi aksamlar)\b/.test(normalized)) {
-      appendMessage("Merhaba! Bu cihazdaki gelir ve gider kayıtlarını inceleyebilir, yeni kayıt için de sana yardımcı olabilirim.");
-      addPromptButtons(assistantQuickPrompts);
+      void remote.request(text);
       return;
     }
-    if (respondWithInsights(text)) return;
+    assistantReportCapture = [];
+    const answeredByInsights = respondWithInsights(text);
+    const insightsReport = assistantReportCapture.join("\n");
+    assistantReportCapture = null;
+    if (answeredByInsights) {
+      if (insightsReport) void remote.request(text, insightsReport);
+      return;
+    }
     if (beginEntryConversation(text)) { lastReportQuestion = ""; insights.reset(); return; }
-    if (respondToFinanceQuestion(text)) return;
+    assistantReportCapture = [];
+    const answeredByFinance = respondToFinanceQuestion(text);
+    const financeReport = assistantReportCapture.join("\n");
+    assistantReportCapture = null;
+    if (answeredByFinance) {
+      if (financeReport && !pendingFinanceQuestion) void remote.request(text, financeReport);
+      return;
+    }
     lastReportQuestion = ""; awaitingReportContinue = false; insights.reset();
-    const learned = window.AkisAssistantKnowledge?.lookup(text);
-    if (learned) appendMessage(learned);
-    else void remote.request(text);
+    void remote.request(text);
   }
 
   function sendAssistantInput(value = input.value, { focus = true, source = "typed" } = {}) {

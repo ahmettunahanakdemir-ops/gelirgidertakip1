@@ -1,4 +1,4 @@
-const CACHE_NAME = "akis-butce-v482";
+const CACHE_NAME = "akis-butce-v483";
 const APP_ASSETS = [
   "./assets/css/28-color-palettes.css?v=482",
   "./assets/css/27-mobile-detail-fixes.css?v=472",
@@ -6,8 +6,8 @@ const APP_ASSETS = [
   "./assets/css/26-assistant-images.css?v=469",
   "./assets/css/16-budget-assistant.css?v=452",
   "./assets/js/17-assistant-insights.js?v=468",
-  "./assets/js/12-budget-assistant.js?v=473",
-  "./assets/js/19-assistant-ai.js?v=462",
+  "./assets/js/12-budget-assistant.js?v=483",
+  "./assets/js/19-assistant-ai.js?v=483",
   "./assets/js/18-assistant-logs.js?v=448",
   "./assets/css/25-assistant-logs.css?v=456",
   "./assets/js/16-assistant-microphone.js?v=455",

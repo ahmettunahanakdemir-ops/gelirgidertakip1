@@ -7,7 +7,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_K
 
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-6-luna";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 
@@ -168,7 +168,6 @@ async function runOpenAi(files, payload) {
   const requestBody = {
     model: OPENAI_MODEL,
     store: false,
-    temperature: 0.05,
     input: [
       {
         role: "user",
