@@ -909,7 +909,10 @@ function syncTransactionTrackingFields() {
   }
 }
 
-function editTransaction(item) {
+let transactionEditGuard = null;
+
+function editTransaction(item, guard = null) {
+  transactionEditGuard = guard;
   editingTransactionId = item.id;
   transactionTypeInput.value = item.type === "transfer" ? "transfer" : item.type;
   updateCategorySelect(transactionCategoryInput, transactionTypeInput.value, item.category);
@@ -959,6 +962,7 @@ function editTransaction(item) {
 }
 
 function closeTransactionEditModal() {
+  transactionEditGuard = null;
   editingTransactionId = "";
   transactionEditStatus.textContent = "";
   transactionEditForm.reset();
@@ -981,6 +985,11 @@ function closeTransactionEditModal() {
 
 function saveTransactionEdit(event) {
   event.preventDefault();
+
+  if (transactionEditGuard && !transactionEditGuard()) {
+    transactionEditStatus.textContent = "Kayıt değişmiş veya oturum kapanmış. Düzenlemeyi baştan aç.";
+    return;
+  }
 
   if (!editingTransactionId) {
     return;

@@ -7,7 +7,7 @@ function createBudgetAssistantRemote({ getUser, onReply, onStatus, onError }) {
     active = null;
     onStatus("");
   }
-  async function request(message, report = "") {
+  async function request(message, report = "", onPlan = null) {
     cancel();
     const user = getUser();
     if (!user) return onError();
@@ -20,9 +20,14 @@ function createBudgetAssistantRemote({ getUser, onReply, onStatus, onError }) {
       if (active !== controller || getUser()?.uid !== user.uid) return;
       const response = await fetch("/.netlify/functions/assistant-chat", {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ message, history, report }), signal: controller.signal,
+        body: JSON.stringify(onPlan ? { message, mode: "record_plan" } : { message, history, report }), signal: controller.signal,
       });
       const result = await response.json();
+      if (onPlan) {
+        if (!response.ok || !result.plan) throw new Error("AI plan unavailable");
+        if (active === controller && getUser()?.uid === user.uid) onPlan(result.plan);
+        return;
+      }
       if (!response.ok || typeof result.text !== "string" || !result.text.trim()) throw new Error("AI unavailable");
       if (active !== controller || getUser()?.uid !== user.uid) return;
       history = [...history, { role: "user", content: message }, { role: "assistant", content: result.text }].slice(-6);

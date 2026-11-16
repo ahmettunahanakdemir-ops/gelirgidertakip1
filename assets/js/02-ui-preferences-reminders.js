@@ -631,12 +631,17 @@ function getTransactionDeletionCascadeIds(item) {
   return ids;
 }
 
-function requestTransactionDelete(item) {
+function requestTransactionDelete(item, guard = null) {
+  if (guard && (!genericConfirmModal || !genericConfirmButton)) return;
   openGenericConfirmModal(
-    `${item.title} silinsin mi?`,
+    guard ? `${item.title} · ${formatTransactionDateTime(item)} · ${currency.format(item.amount)} silinsin mi?` : `${item.title} silinsin mi?`,
     "Bu kayıt silinecek. Bağlı kart/hesap bakiyesi de buna göre güncellenecek ve yenilemede geri gelmeyecek.",
     () => {
 
+      if (guard && !guard()) {
+        openGenericConfirmModal("Kayıt silinmedi", "Kayıt veya bağlı hareketler değişmiş olabilir. Silme isteğini yeniden başlat.");
+        return;
+      }
       const idsToDelete = getTransactionDeletionCascadeIds(item);
 
       let changedPaymentAccount = false;

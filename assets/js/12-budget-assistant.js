@@ -193,6 +193,11 @@
     return bubble;
   }
 
+  function explainFinanceReport(question, report) {
+    appendMessage(report);
+    if (report) void remote.request(question, report);
+  }
+
   function addPromptButtons(prompts) {
     const group = document.createElement("div");
     group.className = "budget-assistant-prompts";
@@ -1442,7 +1447,7 @@
   }
 
   function isAssistantSaveConfirmation(text) {
-    return /^(?:evet|tamam|onayliyorum|onayla|kaydet|ekle)(?: (?:bu|kaydi|islemi|kaydet|ekle|onayla|lutfen))*$/.test(normalize(text));
+    return /^(?:evet (?:kaydet|ekle)|onayliyorum|onayla|kaydet)(?: (?:bu|kaydi|islemi|kaydet|ekle|onayla|lutfen))*$/.test(normalize(text));
   }
 
   function advanceEntryConversation() {
@@ -1644,6 +1649,63 @@
     return true;
   }
 
+  function applyLunaRecordPlan(plan, requestedAction) {
+    if (plan.action === "clarify") {
+      appendMessage(typeof plan.question === "string" && plan.question.trim() ? plan.question.slice(0, 500) : "Hangi kayıt için ne yapmak istediğini biraz daha açık yazar mısın?");
+      return;
+    }
+    if (plan.action !== requestedAction) {
+      appendMessage("İşlem türünü doğrulayamadım. Ekleme, düzenleme veya silme isteğini yeniden yaz.");
+      return;
+    }
+    if (requestedAction === "add") {
+      if (typeof plan.entry === "string" && plan.entry && beginEntryConversation(plan.entry.slice(0, 500))) return;
+      appendMessage("Taslak oluşturamadım. İşlem türünü ve bildiğin ayrıntıları yeniden yaz.");
+      return;
+    }
+    const isoDate = value => {
+      if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const parsed = new Date(value + "T00:00:00Z");
+      return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+    };
+    const target = typeof plan.target === "string" ? normalize(plan.target) : "";
+    const matches = target && (!plan.targetDate || isoDate(plan.targetDate))
+      ? transactions.filter(item => normalize(item.title) === target && (!plan.targetDate || String(item.date).slice(0, 10) === plan.targetDate))
+      : [];
+    if (matches.length !== 1) {
+      appendMessage(matches.length ? "Bu başlıkla birden fazla kayıt var. İşlemin tam başlığını ve tarihini yaz; yine birden fazla kayıt varsa Kayıtlar ekranından seç."
+        : "Bu bilgilerle kayıt bulamadım. Kayıtlar ekranındaki tam başlığı ve işlem tarihini yazar mısın?");
+      return;
+    }
+    const record = matches[0];
+    const snapshot = JSON.stringify(record);
+    const owner = currentUser?.uid;
+    const stillCurrent = () => !!owner && currentUser?.uid === owner
+      && JSON.stringify(transactions.find(item => item.id === record.id)) === snapshot;
+    if (requestedAction === "delete") {
+      if (getTransactionDeletionCascadeIds(record).size !== 1) {
+        appendMessage("Bu kaydın bağlı hareketleri var. Silmeden önce Kayıtlar ekranında kontrol et.");
+        return;
+      }
+      closeAssistant({ restoreFocus: false });
+      requestTransactionDelete(record, () => stillCurrent() && getTransactionDeletionCascadeIds(record).size === 1);
+      return;
+    }
+    const title = typeof plan.title === "string" ? plan.title.trim() : "";
+    if (title.length > 40 || (plan.date && !isoDate(plan.date))
+      || (plan.amount != null && (typeof plan.amount !== "number" || !Number.isFinite(plan.amount) || plan.amount <= 0))
+      || (!title && !plan.date && plan.amount == null)) {
+      appendMessage("Geçerli bir yeni başlık, tarih veya tutar belirt. Hiçbir değişiklik yapılmadı.");
+      return;
+    }
+    closeAssistant({ restoreFocus: false });
+    editTransaction(record, stillCurrent);
+    if (title) transactionTitleInput.value = title;
+    if (plan.date) transactionDateInput.value = plan.date;
+    if (plan.amount != null) transactionAmountInput.value = String(plan.amount);
+    transactionEditStatus.textContent = "Luna taslağını kontrol et. Kaydet düğmesine basana kadar kayıt değişmez.";
+  }
+
   function respondToCommand(text) {
     const normalized = normalize(text);
     if (/^(?:fotografla|gorselle|resimle|fotograftan|gorselden|resimden) (?:ekleme yapmak istiyorum|kayit ekle|ekle|islem ekle)$/.test(normalized)) {
@@ -1655,6 +1717,15 @@
       closeAssistant({ restoreFocus: false });
       borcAlacakPenceresiniAc("", normalized.startsWith("alacak") ? "receivable" : "debt");
       return;
+    }
+    if (!/\b(nasil|nereden|neden|ne demek)\b/.test(normalized)) {
+      const action = /\b(sil|silmek|siler misin|silmeni|kaldir)\b/.test(normalized) ? "delete"
+        : /\b(duzenle|duzenlemek|duzenler misin|degistir|degistirmek|duzelt|guncelle)\b/.test(normalized) || /\btutar\w*\b.*\byap\b/.test(normalized) ? "edit"
+        : hasExplicitEntryAction(text) ? "add" : "";
+      if (action) {
+        void remote.request(text, "", plan => applyLunaRecordPlan(plan, action));
+        return;
+      }
     }
     if (/\b(merhaba|selam|gunaydin|iyi aksamlar)\b/.test(normalized)) {
       void remote.request(text);
@@ -1747,7 +1818,7 @@
       if (order) {
         const question = pendingFinanceQuestion.text;
         pendingFinanceQuestion = null;
-        appendMessage(getAssistantRecordsReport(question, { order }));
+        explainFinanceReport(question, getAssistantRecordsReport(question, { order }));
       } else if (!respondToFinanceQuestion(message)) {
         appendMessage("Eklenme zamanını mı, kayıtta seçilen işlem tarihini mi kullanayım?");
         addPromptButtons(["Eklenme zamanına göre", "Kayıtta seçilen tarihe göre"]);
@@ -1757,7 +1828,7 @@
         || paymentAccounts.find((item) => normalize(item.name) === normalize(message) || normalize(formatPaymentAccountName(item)) === normalize(message));
       if (account) {
         pendingFinanceQuestion = null;
-        appendMessage(getAssistantCardReport(account));
+        explainFinanceReport(message, getAssistantCardReport(account));
       } else if (!respondToFinanceQuestion(message)) {
         appendMessage("Bu adla eşleşen kartı veya hesabı bulamadım. Listeden seçebilir ya da kayıtlı tam adını yazabilirsin.");
         addPromptButtons(paymentAccounts.map(formatPaymentAccountName));
@@ -1771,7 +1842,7 @@
       } else if (isAssistantSaveConfirmation(message)) {
         savePendingEntry();
       } else {
-        appendMessage("Bu bilgileri kaydedeyim mi? Kaydetmek için “Evet”, değiştirmek için “Düzenle” diyebilirsin.");
+        appendMessage("Bu bilgileri kaydedeyim mi? Kaydetmek için “Evet, kaydet”, değiştirmek için “Düzenle” diyebilirsin.");
         addPromptButtons(["Evet, kaydet", "Düzenle", "Vazgeç"]);
       }
     } else if (pendingEntry) {
