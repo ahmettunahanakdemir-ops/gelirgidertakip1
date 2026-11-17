@@ -132,9 +132,9 @@ html.modern-budget #settingsView .preferences-header {
 }
 
 @media (max-width: 768px) {
-  html.modern-budget[data-theme="dark"]:not([data-active-view="settingsView"]) body #appShell.app-shell:not([hidden]) {
+  html.modern-budget:not([data-active-view="settingsView"]) #appShell {
     background:
-      linear-gradient(color-mix(in srgb, var(--bg) 94%, transparent), color-mix(in srgb, var(--bg) 94%, transparent)),
+      linear-gradient(150deg, color-mix(in srgb, var(--palette-wash) 96%, transparent), color-mix(in srgb, var(--bg) 96%, transparent) 52%),
       url("../../login-pattern.svg") center top / min(680px, 92vw) auto repeat,
       var(--bg) !important;
   }

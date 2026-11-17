@@ -1,5 +1,5 @@
 // API replies are text only. Approved knowledge never becomes executable code.
-function createBudgetAssistantRemote({ getUser, onReply, onStatus, onError }) {
+function createBudgetAssistantRemote({ getUser, getReport, onReply, onStatus, onError }) {
   let active = null;
   let history = [];
   function cancel() {
@@ -7,31 +7,44 @@ function createBudgetAssistantRemote({ getUser, onReply, onStatus, onError }) {
     active = null;
     onStatus("");
   }
-  async function request(message, report = "", onPlan = null) {
+  async function request(message, report = null, onPlan = null) {
     cancel();
     const user = getUser();
     if (!user) return onError();
     const controller = new AbortController();
     active = controller;
-    const timer = setTimeout(() => controller.abort(), 50000);
+    const timer = setTimeout(() => controller.abort(), 90000);
     onStatus("Yapay zekâ yanıtlıyor…");
     try {
       const token = await user.getIdToken();
       if (active !== controller || getUser()?.uid !== user.uid) return;
-      const response = await fetch("/.netlify/functions/assistant-chat", {
-        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(onPlan ? { message, mode: "record_plan" } : { message, history, report }), signal: controller.signal,
-      });
-      const result = await response.json();
+      const send = async payload => {
+        const response = await fetch("/.netlify/functions/assistant-chat", {
+          method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload), signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("AI unavailable");
+        return response.json();
+      };
+      if (!onPlan && report === null && getReport) {
+        const { reads } = await send({ message, history, mode: "read_plan" });
+        if (active !== controller || getUser()?.uid !== user.uid) return;
+        if (!Array.isArray(reads)) throw new Error("AI read plan unavailable");
+        report = reads.slice(0, 3).filter(item => item && typeof item.scope === "string").map(({ scope, query }) =>
+          getReport(scope, typeof query === "string" && query.trim() ? query.slice(0, 240) : message).slice(0, 3900)
+        ).filter(Boolean).join("\n\n");
+      }
+      const result = await send(onPlan ? { message, mode: "record_plan" } : { message, history, report });
       if (onPlan) {
-        if (!response.ok || !result.plan) throw new Error("AI plan unavailable");
+        if (!result.plan) throw new Error("AI plan unavailable");
         if (active === controller && getUser()?.uid === user.uid) onPlan(result.plan);
         return;
       }
-      if (!response.ok || typeof result.text !== "string" || !result.text.trim()) throw new Error("AI unavailable");
+      if (typeof result.text !== "string" || !result.text.trim()) throw new Error("AI unavailable");
       if (active !== controller || getUser()?.uid !== user.uid) return;
-      history = [...history, { role: "user", content: message }, { role: "assistant", content: result.text }].slice(-6);
-      onReply(result.text, message);
+      history = [...history, { role: "user", content: message },
+        ...(report ? [] : [{ role: "assistant", content: result.text }])].slice(-6);
+      onReply(result.text, message, Boolean(report));
     } catch {
       if (active === controller && getUser()?.uid === user.uid) onError();
     } finally {

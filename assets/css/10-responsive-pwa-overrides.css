@@ -4049,10 +4049,6 @@ body:has(#appShell:not([hidden])) {
       max-height: 100svh !important;
       overflow: hidden !important;
       position: relative !important;
-      background:
-        linear-gradient(rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.80)),
-        url("../../login-pattern.svg") center top / min(680px, 92vw) auto repeat,
-        var(--bg) !important;
     }
     @supports (height: 100dvh) {
       #appShell.app-shell:not([hidden]),

@@ -191,13 +191,13 @@ function createBudgetAssistantInsights(api) {
     const ranked = [...byDay].sort((a, b) => (a[1] - b[1]) * (asc ? 1 : -1) || a[0].localeCompare(b[0]));
     return result([`${label} · ${asc ? "En az" : "En çok"} ${typeName(type)} olan günler:`, ...ranked.slice(0, getBudgetAssistantCount(text, n, 3)).map(([day, total], index) => `${index + 1}. ${formatDate(day)}: ${money(total)}`), "Yalnızca bu türde kaydı olan günler sıralandı."].join("\n"));
   }
-  function debtReport(text) {
-    const normalized = n(text), kind = /\balacak\w*\b/.test(normalized) ? "receivable" : "debt";
+  function debtReport(text, kind = /\balac(?:ak|ag)\w*\b/.test(n(text)) ? "receivable" : "debt") {
+    const normalized = n(text);
     const paidQuestion = /\b(odenen|odedim|tahsil ettim|tahsil edilen|kapanan|kapali|tamamlanan)\b/.test(normalized);
     let rows = getState().debts.filter(row => row.kind === kind);
     const named = rows.filter(row => n(row.person).length > 1 && new RegExp(`\\b${n(row.person)}(?:a|e|ya|ye|dan|den|nin|in|un)?\\b`).test(normalized));
     const generic = new Set("ben benim ne kadar kac var mi kime kimden kimlere kimlerin icin ve ile e a ya ye kalan kalanlar toplam tum butun genel acik kapali kapanan tamamlanan henuz mevcut daha en cok az yuksek buyuk dusuk kucuk vadesi gecen gecmis gelen dolan yakin gelecek onumuzdeki onceki bu ay ayki ayin gun bugun dun yil seneki yilinda neler nelerdir hangi hangileri listele goster getir kontrol et takibi takip ozet borcluyum odenen odedigim odedim odeme yaptim yaptigim ettim edilen tahsil ettigim alacaklarim borclarim ocak subat mart nisan mayis haziran temmuz agustos eylul ekim kasim aralik".split(" "));
-    const personTokens = normalized.split(" ").filter(token => token.length > 2 && !/^\d+$/.test(token) && !generic.has(token) && !/^(borc|alacak|odeme|tahsil|kapat|gecik|tutar|vade|islem|kayit|kalan|kac|ode)/.test(token));
+    const personTokens = normalized.split(" ").filter(token => token.length > 2 && !/^\d+$/.test(token) && !generic.has(token) && !/^(borc|alac(?:ak|ag)|odeme|tahsil|kapat|gecik|tutar|vade|islem|kayit|kalan|kac|ode)/.test(token));
     if (!named.length && personTokens.length) return result("Bu kişi veya kurum adıyla eşleşen takip kaydı bulamadım. Kayıtlı adını tam yazar mısın? Toplam borcunu bu kişiye aitmiş gibi göstermeyeceğim.");
     if (named.length) rows = named;
     rows = rows.filter(row => paidQuestion ? true : value(row.amount) > 0);
@@ -315,12 +315,12 @@ function createBudgetAssistantInsights(api) {
       && (!queryInfo(text).explicitCategory || ["transfer", "gelir", "gider"].includes(n(queryInfo(text).explicitCategory))) && !/\b(nasil|ekle|duzenle|sil)\b/.test(normalized);
     if (categoryRanking) return categories(text, forced);
     if (context?.kind === "categories" && /^(?:peki |ya |bir de )?(?:gecen ay|bu ay|bugun|dun|ilk \w+(?: \w+)?|en az olanlar|en cok olanlar|hepsini)(?: icin| da| de| goster)?$/.test(normalized)) return categories(text, forced, context);
-    if (/\b(borc\w*|alacak\w*|kime borcluyum|kimden alacagim)\b/.test(normalized) && !/\b(kart\w*|kredi|taksit\w*)\b/.test(normalized)) { context = null; return debtReport(text); }
+    if (/\b(borc\w*|alac(?:ak|ag)\w*|kime borcluyum|kimden alacagim)\b/.test(normalized) && !/\b(kart\w*|kredi|taksit\w*)\b/.test(normalized)) { context = null; return debtReport(text); }
     const asksAccounts = /\b(hesaplar\w*|kartlar\w*|bakiyeler\w*|banka bakiy\w*|nakit bakiye\w*|toplam kredi kart\w*|toplam kart borc\w*)\b/.test(normalized)
       || /\b(hangi hesap|hangi banka|nerede param|nerede para|ne kadar nakit)\b/.test(normalized);
     if (asksAccounts && !/\b(harc\w*|islem\w*|kayit\w*|hareket\w*|transfer\w*|ekle)\b/.test(normalized)) { context = null; return accounts(text); }
     if (/\b(varlik\w*|portfoy|altin\w*|gumus\w*|dolar\w*|euro\w*|sterlin\w*|bitcoin\w*|ethereum\w*|platin\w*)\b/.test(normalized)) { context = null; return result(`${api.assetsReport(text)}\nUygulamadaki son kayıtlı fiyatlar kullanıldı; fiyat yenilemesi başarısızsa güncel piyasa değeri olmayabilir.`); }
     return null;
   }
-  return { respond, reset() { context = null; pendingScope = null; } };
+  return { respond, debtReport, accounts, bes, reset() { context = null; pendingScope = null; } };
 }
