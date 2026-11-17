@@ -61,6 +61,7 @@
   const remote = createBudgetAssistantRemote({
     getUser: () => currentUser,
     getReport: getLunaReadReport,
+    getContext: getLunaFullContext,
     onStatus: setStatus,
     onReply: (answer, question, hasReport) => {
       appendMessage(answer);
@@ -1582,6 +1583,59 @@
     if (plan.amount != null) transactionAmountInput.value = String(plan.amount);
     transactionEditStatus.textContent = "Luna taslağını kontrol et. Kaydet düğmesine basana kadar kayıt değişmez.";
   }
+
+  // Uygulamadaki tüm verilerin güncel özeti: Luna her soruda buna hâkim olur.
+  // Rakamlar uygulamanın kendi rapor fonksiyonlarından gelir; ekranda görünenlerle aynıdır.
+  function getLunaMonthlyOverview() {
+    const list = Array.isArray(transactions) ? transactions : [];
+    const months = new Map();
+    for (const item of list) {
+      const key = String(item?.date || "").slice(0, 7);
+      if (!/^\d{4}-\d{2}$/.test(key) || (item.type !== "income" && item.type !== "expense")) continue;
+      const amount = Number(item.amount) || 0;
+      const row = months.get(key) || { income: 0, expense: 0, count: 0, categories: new Map() };
+      row.count += 1;
+      if (item.type === "income") row.income += amount;
+      else {
+        row.expense += amount;
+        const category = String(item.category || "Diğer").trim() || "Diğer";
+        row.categories.set(category, (row.categories.get(category) || 0) + amount);
+      }
+      months.set(key, row);
+    }
+    const money = value => `₺${value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return [...months.entries()].sort((a, b) => b[0].localeCompare(a[0])).slice(0, 12).map(([key, row]) => {
+      const top = [...row.categories.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
+        .map(([name, value]) => `${name} ${money(value)}`).join(", ");
+      return `${key}: gelir ${money(row.income)}, gider ${money(row.expense)}, net ${money(row.income - row.expense)}, ${row.count} kayıt${top ? `; en çok gider: ${top}` : ""}`;
+    }).join("\n") || "Henüz gelir/gider kaydı yok.";
+  }
+
+  function getLunaFullContext() {
+    const today = typeof getTurkeyTodayISO === "function" ? getTurkeyTodayISO() : new Date().toISOString().slice(0, 10);
+    const safe = (label, build, limit = 3500) => {
+      try {
+        const text = String(build() || "").trim();
+        return text ? `## ${label}\n${text.slice(0, limit)}` : "";
+      } catch { return ""; }
+    };
+    const total = Array.isArray(transactions) ? transactions.length : 0;
+    return [
+      `Bugün: ${today}. Toplam kayıt: ${total}. Hesap/kart: ${Array.isArray(paymentAccounts) ? paymentAccounts.length : 0}, birikim: ${Array.isArray(assets) ? assets.length : 0}, BES: ${Array.isArray(besAccounts) ? besAccounts.length : 0}, borç/alacak: ${Array.isArray(borcAlacakKayitlari) ? borcAlacakKayitlari.length : 0}.`,
+      safe("Bu ayın özeti", () => getAssistantReport("Bu ayın özeti")),
+      safe("Geçen ayın özeti", () => getAssistantReport("Geçen ayın özeti")),
+      safe("Son 12 ay (aylık gelir/gider/net ve en çok gider kategorileri)", getLunaMonthlyOverview, 5000),
+      safe("Hesaplar ve kartlar", () => getLunaReadReport("accounts", "Tüm hesaplarım ve kartlarım")),
+      safe("Borçlarım", () => getLunaReadReport("debts", "Borçlarım")),
+      safe("Alacaklarım", () => getLunaReadReport("receivables", "Alacaklarım")),
+      safe("Taksitler", () => getLunaReadReport("installments", "Taksitlerim")),
+      safe("Birikimler", () => getLunaReadReport("assets", "Birikimlerim")),
+      safe("BES", () => getLunaReadReport("bes", "BES durumum")),
+      safe("Toplam varlık", () => getLunaReadReport("wealth", "Varlıklarım")),
+      safe("Eklenme zamanına göre son 40 kayıt", () => getAssistantRecordsReport("Eklenme zamanına göre son 40 kayıt", { order: "created" }), 6000),
+    ].filter(Boolean).join("\n\n").slice(0, 30000);
+  }
+  window.getLunaFullContext = getLunaFullContext;
 
   function getLunaReadReport(scope, query) {
     switch (scope) {

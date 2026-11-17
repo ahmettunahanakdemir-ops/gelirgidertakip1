@@ -117,10 +117,7 @@ function applyTheme(theme, options = {}) {
   document.documentElement.setAttribute("data-theme", normalizedTheme);
   document.body?.setAttribute("data-theme", normalizedTheme);
 
-  const metaTheme = document.querySelector('meta[name="theme-color"]');
-  if (metaTheme) {
-    metaTheme.setAttribute("content", normalizedTheme === "dark" ? "#0f1720" : "#dff2ec");
-  }
+  window.syncBudgetStatusBarColor?.({ fromUser: persist });
   if (syncControls) {
     syncAppearanceControls();
   } else {

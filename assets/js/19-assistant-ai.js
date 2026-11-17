@@ -1,5 +1,5 @@
 // API replies are text only. Approved knowledge never becomes executable code.
-function createBudgetAssistantRemote({ getUser, getReport, onReply, onStatus, onError }) {
+function createBudgetAssistantRemote({ getUser, getReport, getContext, onReply, onStatus, onError }) {
   let active = null;
   let history = [];
   function cancel() {
@@ -26,6 +26,9 @@ function createBudgetAssistantRemote({ getUser, getReport, onReply, onStatus, on
         if (!response.ok) throw new Error("AI unavailable");
         return response.json();
       };
+      // Luna her soruda uygulamadaki tüm verilerin güncel özetini görür (tarif uygulamasındaki gibi).
+      let context = "";
+      try { context = typeof getContext === "function" ? String(getContext() || "").slice(0, 30000) : ""; } catch { context = ""; }
       if (!onPlan && report === null && getReport) {
         const { reads } = await send({ message, history, mode: "read_plan" });
         if (active !== controller || getUser()?.uid !== user.uid) return;
@@ -34,7 +37,7 @@ function createBudgetAssistantRemote({ getUser, getReport, onReply, onStatus, on
           getReport(scope, typeof query === "string" && query.trim() ? query.slice(0, 240) : message).slice(0, 3900)
         ).filter(Boolean).join("\n\n");
       }
-      const result = await send(onPlan ? { message, mode: "record_plan" } : { message, history, report });
+      const result = await send(onPlan ? { message, mode: "record_plan", context } : { message, history, report, context });
       if (onPlan) {
         if (!result.plan) throw new Error("AI plan unavailable");
         if (active === controller && getUser()?.uid === user.uid) onPlan(result.plan);
@@ -42,8 +45,7 @@ function createBudgetAssistantRemote({ getUser, getReport, onReply, onStatus, on
       }
       if (typeof result.text !== "string" || !result.text.trim()) throw new Error("AI unavailable");
       if (active !== controller || getUser()?.uid !== user.uid) return;
-      history = [...history, { role: "user", content: message },
-        ...(report ? [] : [{ role: "assistant", content: result.text }])].slice(-6);
+      history = [...history, { role: "user", content: message }, { role: "assistant", content: result.text }].slice(-8);
       onReply(result.text, message, Boolean(report));
     } catch {
       if (active === controller && getUser()?.uid === user.uid) onError();

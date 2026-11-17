@@ -1,3 +1,12 @@
+## v491 — Üst bölüm (saat/şarj) uyumu ve tam veriye hâkim Luna (2026-11-17)
+- Saat/şarj alanı: theme-color her palet (mint, ocean, lavender, sunset) ve modda o paletin --bg rengi; iOS 26 Safari için html/body düz zemin rengi; durum çubuğu stili 'default' (iOS 26.1'de black-translucent artık şeffaf değil).
+- Üst bant düz --bg: giriş, açılış ve uygulama kabuğundaki palet yıkaması üst bandın altından başlar; sabit üst araç çubuğu ve telefonda giriş kartı bulanıklıksız.
+- Ana ekran iPhone uygulamasında tema/palet değişince kısa yenileme ve Ayarlar'a dönüş (21-status-bar-settings.js).
+- Yeni dosyalar: assets/css/29-status-bar-top.css, assets/js/21-status-bar-settings.js.
+- Luna (asistan): her soruda uygulamadaki tüm verilerin güncel özeti yapay zekâya gider (bu/geçen ay, son 12 ay aylık gelir-gider-net ve kategoriler, hesaplar/kartlar, borçlar, alacaklar, taksitler, birikimler, BES, toplam varlık, son 40 kayıt). Özel sorularda seçilen ayrıntılı raporlar bunun üstüne eklenir. Sohbet geçmişi rapor içeren cevaplarda da korunur (son 8 mesaj). Kayıt düzenleme/silme taslaklarında son kayıtlar hedefi bulmak için gönderilir.
+- netlify/functions/assistant-chat.js: 'context' alanı (en fazla 30.000 karakter) ve 90.000 karakterlik istek sınırı. Yayın sonrası Netlify'da OPENAI_API_KEY tanımlı olmalı (değişmedi).
+- Önbellek akis-butce-v491.
+
 # Kod Rehberi - Varlik Butce Takip
 
 Uygulama `index.html` icindeki yukleme sirasina gore `assets/css` ve `assets/js` dosyalarini kullanir. Yuklenmeyen eski `app.js`, `style.css` ve `legacy/` kopyalari aktif kaynaktan kaldirildi; tarihsel surum arsivleri ayri proje klasorlerinde korunur.

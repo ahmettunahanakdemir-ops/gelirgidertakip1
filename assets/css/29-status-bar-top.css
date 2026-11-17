@@ -1,0 +1,64 @@
+/* Akış Bütçe — Üst bölüm (saat/şarj alanı) uyumu
+   - iOS 26 Safari üst çubuğu html/body düz arka plan renginden alır: her palet + modda --bg.
+   - Üst bant düz --bg: renk geçişi ve buğu üst bandın altından başlar.
+   - Sabit üst araç çubuğu bulanıklıksız, düz --bg zeminli. */
+html,
+html body,
+html.modern-budget body {
+  background-color: var(--bg) !important;
+}
+
+/* Giriş, açılış ve uygulama kabuğu: palet yıkaması üst bandın altından başlar */
+html:root #loginScreen,
+html:root #appSplashScreen,
+html:root.modern-budget #appShell {
+  background:
+    linear-gradient(180deg, var(--bg) 0, var(--bg) 150px, transparent 330px),
+    linear-gradient(150deg, var(--palette-wash), var(--bg) 52%) !important;
+  background-color: var(--bg) !important;
+}
+
+/* Sabit üst çubuk: düz zemin, bulanıklık yok (kayan içerik üstte buğu bırakmaz) */
+html.modern-budget .shell-toolbar::before,
+html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar::before,
+html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar::before {
+  background: var(--bg) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Ayarlar başlığı da aynı düz zeminle üst bantla birleşik */
+html.modern-budget #settingsView .preferences-header {
+  background: var(--bg) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Üstteki yuvarlak düğmeler tek ölçü */
+@media (max-width: 980px) {
+  html.modern-budget #appShell .shell-toolbar .shell-icon-button {
+    width: 44px !important; min-width: 44px !important; max-width: 44px !important;
+    height: 44px !important; min-height: 44px !important; max-height: 44px !important;
+    flex: 0 0 44px !important;
+  }
+}
+
+html.modern-budget body #appShell .shell-toolbar,
+html.modern-budget body .shell-toolbar {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html.modern-budget body #appShell.app-shell > .workspace > .shell-toolbar,
+html.modern-budget body #appShell.app-shell.sidebar-expanded > .workspace > .shell-toolbar,
+html.modern-budget body #appShell.app-shell:not([hidden]) > .workspace > .shell-toolbar.is-desktop-fixed {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+@media (max-width: 980px) {
+  html body #loginScreen .login-card {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: color-mix(in srgb, var(--surface) 94%, transparent) !important;
+  }
+}
