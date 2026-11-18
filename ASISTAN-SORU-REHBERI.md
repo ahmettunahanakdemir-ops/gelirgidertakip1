@@ -1,6 +1,6 @@
 # Akış Bütçe Asistanı - Soru Ve Konuşma Rehberi
 
-Sürüm 6 / v442. Sorular uygulamanın bu cihazda yüklü kayıtları üzerinden yanıtlanır. Genel bir internet sohbeti veya yatırım danışmanı değildir. Tutarlar, tarihler ve kişi/hesap adları kayıtlarınla eşleşmelidir. Örneklerdeki özel adları kendi kayıtlarınla değiştir.
+v492 güncellemesi: Aşağıdaki sorular artık sabit komut kalıpları değildir; Luna serbest Türkçe soruları ve genel sohbeti yorumlar. Kişisel finans sorularında oturumdaki verileri güvenli sorgularla okur. Kayıt, hesap, varlık, BES ve borç/alacak işlemleri panelde ayrıca Kaydet/Sil onayı gerektirir. Gerçek banka işlemi veya yatırım danışmanlığı yapmaz. Ayrıntılar: [Luna v492](LUNA-v492.md). Aşağıdaki eski örnekleri doğal dille değiştirebilirsin; her örnek için hatasız model yanıtı garantisi verilmez.
 
 ## 1. Özet, Net Ve Tasarruf
 

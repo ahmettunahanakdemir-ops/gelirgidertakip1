@@ -18,6 +18,8 @@ function syncBudgetStatusBarColor(options = {}) {
   const palette = budgetPalettes.includes(root.dataset.palette) ? root.dataset.palette : "mint";
   const mode = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
   const color = budgetPageColors[palette][mode];
+  root.style.setProperty('--budget-status-color', color);
+  root.style.setProperty('background-color', color, 'important');
   const metas = [...document.querySelectorAll('meta[name="theme-color"]')];
   if (metas.length === 1 && metas[0].getAttribute("content") === color) return false;
   metas.forEach(meta => meta.remove());
@@ -46,8 +48,11 @@ document.documentElement.dataset.mobilePlatform = /iPhone|iPad|iPod/.test(naviga
   || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ? "ios" : "other";
 if (navigator.standalone === true) document.documentElement.classList.add("ios-standalone");
 try {
-  applyBudgetPalette(localStorage.getItem(budgetPaletteKey), false);
-  const savedTheme = localStorage.getItem("akis-budget-theme");
+  const palette = localStorage.getItem(budgetPaletteKey);
+  document.documentElement.dataset.palette = budgetPalettes.includes(palette) ? palette : 'mint';
+  let settings = {};
+  try { settings = JSON.parse(localStorage.getItem('akis-budget-ui-settings') || '{}'); } catch {}
+  const savedTheme = settings?.theme || localStorage.getItem("akis-budget-theme");
   if (savedTheme === "system") {
     document.documentElement.setAttribute("data-theme", matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   }

@@ -5,12 +5,13 @@
 html.modern-budget .budget-assistant-panel > .modal-backdrop.assistant-inline-import {
   position:absolute!important; inset:0!important; width:100%!important; height:100%!important;
   max-width:none!important; max-height:none!important; padding:0!important; margin:0!important;
-  transform:none!important; overflow:hidden!important; background:var(--surface)!important; z-index:2!important;
+  transform:none!important; overflow:hidden!important; background:var(--surface)!important; z-index:2!important; display:block!important;
 }
 html.modern-budget .budget-assistant-panel > #bankImportPreviewModal.assistant-inline-import { z-index:3!important; }
-.budget-assistant-panel > .assistant-inline-import[hidden] { display:none!important; }
+html.modern-budget .budget-assistant-panel > .modal-backdrop.assistant-inline-import[hidden] { display:none!important; }
 html.modern-budget .budget-assistant-panel > .assistant-inline-import > .modal-card {
   position:relative!important; inset:auto!important; transform:none!important;
   width:100%!important; max-width:none!important; height:100%!important; max-height:100%!important;
   min-width:0!important; margin:0!important; border-radius:0!important; overflow:auto!important;
 }
+.assistant-inline-import [data-luna-status] { margin:12px; padding:12px; color:var(--text); background:var(--surface); border:1px solid var(--stroke); border-radius:6px; white-space:normal; }

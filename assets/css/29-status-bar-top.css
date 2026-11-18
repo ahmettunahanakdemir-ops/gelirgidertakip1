@@ -7,6 +7,10 @@ html body,
 html.modern-budget body {
   background-color: var(--bg) !important;
 }
+html.startup-splash-active,
+html.startup-splash-active body {
+  background-color: var(--budget-status-color, var(--bg)) !important;
+}
 
 /* Giriş, açılış ve uygulama kabuğu: palet yıkaması üst bandın altından başlar */
 html:root #loginScreen,

@@ -1,60 +1,53 @@
-// API replies are text only. Approved knowledge never becomes executable code.
-function createBudgetAssistantRemote({ getUser, getReport, getContext, onReply, onStatus, onError }) {
-  let active = null;
-  let history = [];
-  function cancel() {
-    active?.abort();
-    active = null;
-    onStatus("");
-  }
-  async function request(message, report = null, onPlan = null) {
+// Luna decides every conversational turn. Tools never execute arbitrary model code.
+function createBudgetAssistantRemote({ getUser, tools, onReply, onStatus, onError, onImage }) {
+  let active=null, history=[], owner="";
+  function cancel() { active?.abort(); active=null; onStatus(""); }
+  async function request(message, { images=[] } = {}) {
     cancel();
-    const user = getUser();
+    const user=getUser();
     if (!user) return onError();
-    const controller = new AbortController();
-    active = controller;
-    const timer = setTimeout(() => controller.abort(), 90000);
-    onStatus("Yapay zekâ yanıtlıyor…");
+    if (owner!==user.uid) { history=[]; tools.reset(); owner=user.uid; }
+    const controller=new AbortController(); active=controller;
+    const timer=setTimeout(()=>controller.abort(),180000);
+    const valid=()=>active===controller && getUser()?.uid===user.uid;
+    onStatus("Luna inceliyor…");
     try {
-      const token = await user.getIdToken();
-      if (active !== controller || getUser()?.uid !== user.uid) return;
-      const send = async payload => {
-        const response = await fetch("/.netlify/functions/assistant-chat", {
-          method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(payload), signal: controller.signal,
+      const token=await user.getIdToken();
+      const results=[];
+      for (let round=0;round<9;round++) {
+        if (!valid()) return;
+        const response=await fetch("/.netlify/functions/assistant-chat",{
+          method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},
+          body:JSON.stringify({mode:"agent",message,history,catalog:tools.catalog(),results,images}),signal:controller.signal,
         });
         if (!response.ok) throw new Error("AI unavailable");
-        return response.json();
-      };
-      // Luna her soruda uygulamadaki tüm verilerin güncel özetini görür (tarif uygulamasındaki gibi).
-      let context = "";
-      try { context = typeof getContext === "function" ? String(getContext() || "").slice(0, 30000) : ""; } catch { context = ""; }
-      if (!onPlan && report === null && getReport) {
-        const { reads } = await send({ message, history, mode: "read_plan" });
-        if (active !== controller || getUser()?.uid !== user.uid) return;
-        if (!Array.isArray(reads)) throw new Error("AI read plan unavailable");
-        report = reads.slice(0, 3).filter(item => item && typeof item.scope === "string").map(({ scope, query }) =>
-          getReport(scope, typeof query === "string" && query.trim() ? query.slice(0, 240) : message).slice(0, 3900)
-        ).filter(Boolean).join("\n\n");
-      }
-      const result = await send(onPlan ? { message, mode: "record_plan", context } : { message, history, report, context });
-      if (onPlan) {
-        if (!result.plan) throw new Error("AI plan unavailable");
-        if (active === controller && getUser()?.uid === user.uid) onPlan(result.plan);
+        const {turn}=await response.json();
+        if (!valid()) return;
+        if (!turn || typeof turn.text!=="string") throw new Error("Invalid turn");
+        if (turn.kind==="read") {
+          if (round===8 || !Array.isArray(turn.reads) || !turn.reads.length || turn.reads.length>4) throw new Error("Read limit");
+          for (const query of turn.reads) {
+            try { results.push({query,result:tools.read(query)}); }
+            catch(error) { results.push({query,error:error.message}); }
+          }
+          onStatus("Luna hesap verilerini inceliyor…");
+          continue;
+        }
+        let answer=turn.text.trim(), draftContext='';
+        if (turn.kind==="stage") {
+          try { answer=tools.stage(turn.operation); draftContext='\nOnay bekleyen taslak (kaydedildigi henuz dogrulanmadi): '+JSON.stringify(turn.operation); }
+          catch(error) { answer=`Taslak acilamadi: ${error.message} Hicbir kayit degismedi.`; }
+        } else if (turn.kind==="pick_image") onImage?.();
+        else if (turn.kind!=="reply") throw new Error("Invalid action");
+        if (!answer) throw new Error("Empty reply");
+        history=[...history,{role:"user",content:message+(images.length?" [Fotograf eklendi]":"")},{role:"assistant",content:answer+draftContext}].slice(-10);
+        onReply(answer,message,true);
         return;
       }
-      if (typeof result.text !== "string" || !result.text.trim()) throw new Error("AI unavailable");
-      if (active !== controller || getUser()?.uid !== user.uid) return;
-      history = [...history, { role: "user", content: message }, { role: "assistant", content: result.text }].slice(-8);
-      onReply(result.text, message, Boolean(report));
-    } catch {
-      if (active === controller && getUser()?.uid === user.uid) onError();
-    } finally {
-      clearTimeout(timer);
-      if (active === controller) { active = null; onStatus(""); }
-    }
+    } catch { if (valid()) onError(); }
+    finally { clearTimeout(timer); if (active===controller) {active=null;onStatus("");} }
   }
-  return { request, cancel, reset() { cancel(); history = []; } };
+  return {request,cancel,reset(){cancel();history=[];owner="";tools.reset();}};
 }
 
 (() => {

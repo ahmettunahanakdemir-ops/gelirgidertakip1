@@ -1,0 +1,61 @@
+/* Menus keep stable rows and their own touch/wheel scroll. */
+html.modern-budget body #historySearchModal .custom-filter-select { display: block !important; min-width: 0; }
+html.modern-budget body #historySearchModal select.native-filter-source { display: none !important; }
+html.modern-budget .custom-filter-menu[popover] { margin: 0 !important; }
+html.modern-budget .custom-filter-select.is-open .custom-filter-menu {
+  grid-auto-rows: max-content; align-content: start; gap: 4px;
+  box-sizing: border-box; overscroll-behavior: contain; touch-action: pan-y;
+  -webkit-overflow-scrolling: touch; scrollbar-width: thin; z-index: 10020 !important;
+  background: var(--surface-soft); color: var(--text); border-color: var(--stroke);
+}
+html.modern-budget .custom-filter-menu .custom-filter-option {
+  flex-shrink: 0; min-height: 44px; text-align: center; white-space: normal;
+  overflow-wrap: anywhere; color: var(--text); border-radius: 8px;
+}
+html.modern-budget .custom-filter-option:is(:hover,:focus-visible,.is-active) { background: var(--accent-soft); color: var(--accent); }
+@supports (appearance: base-select) and selector(::picker(select)) {
+  html.modern-budget :is(#appShell,#settingsView,.modal-backdrop) select::picker(select) {
+    max-block-size: min(20rem, calc(var(--mobile-visual-height, 100dvh) - 80px));
+    overscroll-behavior: contain; touch-action: pan-y;
+  }
+}
+@media (max-width: 980px) {
+  html.modern-budget body .modal-backdrop:not([hidden]):not(.assistant-inline-import) {
+    position: fixed !important; inset: auto 0 auto 0 !important;
+    top: var(--mobile-visual-top, 0px) !important;
+    height: var(--mobile-visual-height, 100dvh) !important;
+    max-height: var(--mobile-visual-height, 100dvh) !important;
+    padding: 8px max(8px,env(safe-area-inset-right)) 8px max(8px,env(safe-area-inset-left)) !important;
+    box-sizing: border-box; overflow: hidden !important; align-items: center !important;
+  }
+  html:root.modern-budget body :is(#entryModal,#bankImportPreviewModal,.modal-backdrop)[id]:not([hidden]) > .modal-card {
+    max-height: calc(var(--mobile-visual-height, 100dvh) - 16px) !important; min-height: 0 !important; box-sizing: border-box;
+    overflow-y: auto !important; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    scroll-padding-block: 76px 24px;
+  }
+  html:root.modern-budget body :is(#entryModal,#bankImportPreviewModal,.modal-backdrop)[id] > .modal-card > :is([id$="FormMount"],.modal-body-scroll) {
+    min-height: 0 !important; height: auto !important; flex: 1 1 auto !important; overflow-y: auto !important;
+  }
+  html.modern-budget .modal-card .modal-body-scroll { min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain; scroll-padding-block: 16px 32px; }
+  html.modern-budget .modal-backdrop :is(input,textarea,select) { font-size: max(16px,1rem); scroll-margin-block: 16px; }
+  html.modern-budget body #bankImportPreviewModal:not([hidden]) { padding: 0 !important; }
+  html.modern-budget body #bankImportPreviewModal > .modal-card {
+    position: relative !important; inset: auto !important; transform: none !important;
+    width: 100% !important; max-width: none !important; height: 100% !important;
+    display: flex !important; flex-direction: column !important; padding: 0 !important;
+    border-radius: 0 !important; overflow: hidden !important;
+  }
+  html.modern-budget #bankImportPreviewModal .bank-import-preview-modal-nav {
+    position: relative !important; inset: auto !important; transform: none !important;
+    width: 100% !important; flex: 0 0 auto; margin: 0 !important; min-height: 64px;
+    padding: 10px 12px !important; box-sizing: border-box;
+    display: grid !important; grid-template-columns: 72px minmax(0,1fr) 72px; gap: 8px;
+    background: var(--surface); z-index: 2;
+  }
+  html.modern-budget #bankImportPreviewModal .bank-import-preview-modal-nav h2 { position: static !important; transform: none !important; white-space: normal !important; font-size: 15px; text-align: center; margin: 0; }
+  html.modern-budget #bankImportPreviewModal .bank-import-modal-tools { flex: 0 0 auto; margin: 8px 12px !important; padding: 8px !important; }
+  html.modern-budget #bankImportPreviewModal .bank-import-preview-modal-note { margin: 8px 12px !important; flex: 0 0 auto; }
+  html.modern-budget #bankImportPreviewModal #bankImportPreviewList { flex: 1 1 0 !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; padding: 12px !important; margin: 0 !important; scroll-padding-block: 12px 32px; }
+  html.modern-budget.mobile-keyboard-open #bankImportPreviewModal.is-editing-bank-row :is(.bank-import-modal-tools,.bank-import-preview-modal-note) { display: none !important; }
+  html.modern-budget #bankImportPreviewModal #bankImportPreviewStatus { flex: 0 0 auto; margin: 4px 12px !important; }
+}
