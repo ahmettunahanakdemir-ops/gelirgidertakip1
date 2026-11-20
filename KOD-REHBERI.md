@@ -1,3 +1,17 @@
+## v495 — Bütçe AI: ses, fotoğraf, kayıt taslakları; alacakta fazla tahsilat (2026-11-20)
+- Rapor AI → **Bütçe AI**. `16-assistant-microphone.js` ve `22-luna-tools.js` yeniden yükleniyor; `transcribe.js` yeniden pakette.
+- `report-chat.js`: kind read | report | stage | pick_image, `operation` alanı, `images` (en çok 4 data URL). `22-luna-tools.js` mount(): eski panel yoksa form sayfada açılır, koruma devam eder; `hasOpenDraft()` eklendi.
+- `24-report-center.js`: kamera/mikrofon düğmeleri, görsel tepsisi, taslak kartı; odakta kayma düzeltildi (yalnız gerçek klavyede `html.rc-keyboard`).
+- `10-debts-receivables.js`: alacakta kalan tutardan fazla tahsilat (overpaidAmount), kaydet düğmesi "Kaydet".
+- Ayrıntı: `BUTCE-AI-v495.md`. Önbellek akis-butce-v495.
+
+## v494 — Rapor AI ve çoklu cihaz düzeltmeleri (2026-11-19)
+- Luna sohbet asistanı (maskot balonu, panel, mikrofon, fotoğraf, soru kayıtları, bilgi havuzu, kayıt taslakları) kaldırıldı. Yerine `reportsView` sayfası: **Rapor AI** (alt menünün ortası / sol menü).
+- Yeni dosyalar: `assets/js/24-report-center.js` (arayüz, salt-okunur veri sorguları, kesin özet, SVG grafikler, CSV/PDF/kopyala/paylaş/kaydet), `assets/css/31-report-center.css`, `assets/css/32-device-polish.css`, `netlify/functions/report-chat.js` (OpenAI Responses, strict JSON şema: read | report).
+- `10-settings-layout.js`: asistan bölümleri çıkarıldı. `15-help-loading.js`: yardım metni Rapor AI.
+- Artık yüklenmeyen dosyalar: 12/16/17/18/19/20/22 asistan JS, 16/25/26 asistan CSS, maskot PNG, `assistant-chat.js`, `transcribe.js`, `tests/luna-*.test.cjs`. Ayrıntı: `RAPOR-AI-v494.md`.
+- Önbellek akis-butce-v494. Netlify Functions ile tam paket yeniden yayınlanmalı.
+
 ## v491 — Üst bölüm (saat/şarj) uyumu ve tam veriye hâkim Luna (2026-11-17)
 - Saat/şarj alanı: theme-color her palet (mint, ocean, lavender, sunset) ve modda o paletin --bg rengi; iOS 26 Safari için html/body düz zemin rengi; durum çubuğu stili 'default' (iOS 26.1'de black-translucent artık şeffaf değil).
 - Üst bant düz --bg: giriş, açılış ve uygulama kabuğundaki palet yıkaması üst bandın altından başlar; sabit üst araç çubuğu ve telefonda giriş kartı bulanıklıksız.

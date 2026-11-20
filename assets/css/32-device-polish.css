@@ -1,0 +1,74 @@
+/* v494 — Device polish found by the multi-device layout audit
+   (iPhone SE/15, Android 360/412, iPad portrait/landscape, laptop, desktop). */
+
+/* 1. iOS zooms the page when a focused field is under 16px. Keep form fields at
+      16px on touch devices (iPhone, iPad, Android tablets) so focus never zooms. */
+@media (pointer: coarse) {
+  html.modern-budget body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
+/* 2. Record, savings and BES cards: the "…" button sits in the top-right corner,
+      so long titles must wrap before it instead of running underneath. */
+html.modern-budget .transaction-item:has(> .transaction-overflow-button) > [role="button"] .transaction-title,
+html.modern-budget .transaction-item:has(> .transaction-overflow-button) > .transaction-content .transaction-title {
+  padding-right: 50px;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 981px) {
+  html.modern-budget .transaction-item:has(> .transaction-overflow-button) > [role="button"] .transaction-title,
+  html.modern-budget .transaction-item:has(> .transaction-overflow-button) > .transaction-content .transaction-title { padding-right: 0; }
+}
+
+/* 3. Card/account tiles: long names and types were cut at the descenders.
+      Show up to two full lines, then an ellipsis. */
+html.modern-budget .payment-card-details strong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.25 !important;
+  height: auto !important;
+  max-height: none !important;
+  padding-bottom: 1px;
+  overflow-wrap: anywhere;
+}
+html.modern-budget .payment-card-details > div { height: auto !important; overflow: visible !important; }
+
+/* 4. Settings: row labels left-aligned next to their icon on every screen size,
+      clearer spacing above group titles, centred readable column on wide screens. */
+html.modern-budget #settingsView .preferences-link {
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+html.modern-budget #settingsView .preferences-link > span:not(:last-child),
+html.modern-budget #settingsView .preferences-link > span:only-of-type {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left !important;
+}
+@media (min-width: 981px) {
+  html.modern-budget #settingsView.view-section.active {
+    max-width: 760px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100%;
+  }
+}
+
+/* 5. Touch targets on tablets: compact debt header link must stay tappable. */
+@media (pointer: coarse) {
+  html.modern-budget .debt-record-topline :is(button, [role="button"]) { min-height: 36px; }
+}
+
+html.modern-budget #settingsView .preferences-section + .preferences-section { margin-top: 14px !important; }
+html.modern-budget #settingsView .preferences-section > h3 { margin-bottom: 8px !important; padding-left: 4px; }
+
+/* 6. Rapor AI dock orb must stay visible even when the dock hides inactive labels. */
+html.modern-budget .mobile-dock .rc-dock-ai .rc-dock-orb { display: grid !important; }
+
+/* 7. v495: receivable collected with more money than owed. */
+html.modern-budget .debt-record-finance .debt-overpaid strong { color: #11865f; }
+html.modern-budget[data-theme="dark"] .debt-record-finance .debt-overpaid strong { color: #5fd6a4; }

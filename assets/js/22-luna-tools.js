@@ -88,6 +88,23 @@ function createLunaTools({ getUser, getState, document: doc = document }) {
   function mount(modal, valid) {
     release?.();
     const panel = doc.querySelector('.budget-assistant-panel');
+    if (!panel) {
+      // Rapor AI (v495): the app's own form opens normally on top of the page; the
+      // guard still refuses to save if data or the signed-in user changed meanwhile.
+      const guard = event => {
+        if (valid()) return;
+        event.preventDefault(); event.stopImmediatePropagation();
+        let notice = modal.querySelector('[data-luna-status]');
+        if (!notice) { notice = doc.createElement('p'); notice.dataset.lunaStatus = ''; notice.setAttribute('role','alert'); (modal.querySelector('.modal-card') || modal).append(notice); }
+        notice.textContent = 'Veriler veya oturum degisti. Kaydetmedim; taslagi yeniden iste.';
+      };
+      const guardClick = event => { if (event.target.closest('#genericConfirmButton, #confirmDeletePaymentAccountButton')) guard(event); };
+      modal.addEventListener('submit', guard, true); modal.addEventListener('click', guardClick, true);
+      const observer = new MutationObserver(() => { if (modal.hidden) release?.(); });
+      observer.observe(modal,{attributes:true,attributeFilter:['hidden']});
+      release = () => { observer.disconnect(); modal.removeEventListener('submit',guard,true); modal.removeEventListener('click',guardClick,true); modal.querySelector('[data-luna-status]')?.remove(); release = null; };
+      return;
+    }
     const marker = doc.createComment('luna form home'); modal.before(marker);
     const content = [...panel.children]; content.forEach(el => { el.inert = true; });
     modal.classList.add('assistant-inline-import'); panel.append(modal);
@@ -161,7 +178,7 @@ function createLunaTools({ getUser, getState, document: doc = document }) {
     mount(modal,valid);
     return 'Taslak panelde acildi. Henuz kaydedilmedi. Alanlari kontrol edip Kaydet/Sil ile onayla veya Kapat ile vazgec.';
   }
-  return { catalog, read, stage, reset() { seen.clear(); release?.(); } };
+  return { catalog, read, stage, hasOpenDraft: () => !!release, reset() { seen.clear(); release?.(); } };
 }
 
 function createBudgetLunaTools() {

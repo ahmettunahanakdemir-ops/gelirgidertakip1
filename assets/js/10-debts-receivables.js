@@ -268,6 +268,8 @@ function borcAlacakKaydiniNormalizeEt(item) {
     openingTransactionId: String(item.openingTransactionId || ""),
     note: String(item.note || "").trim(),
     status: durum,
+    // v495: an "alacak" may be collected with more money than was owed.
+    overpaidAmount: tur === "receivable" ? Math.max(0, roundMoney(odemeToplami - anaTutar)) : 0,
     manualClosed: elleKapatildi,
     closedAt: durum === "closed" ? String(item.closedAt || "") : "",
     createdAt: String(item.createdAt || ""),
@@ -881,7 +883,7 @@ function borcAlacakGelirGiderOdemesiniDogrula(islem, kayitId, options = {}) {
   const azamiTutar = Math.max(0, roundMoney(
     Number(kayit.amount || 0) + Number(oncekiOdeme?.amount || 0) - ayrilanTutar
   ));
-  if (!tutar || tutar > azamiTutar) {
+  if (!tutar || (tutar > azamiTutar && kayit.kind !== "receivable")) {
     return `Bu kayıttan en fazla ${currency.format(azamiTutar)} düşebilirsin.`;
   }
   const hesap = paymentAccounts.find((item) => item.id === String(islem?.paymentAccountId || ""));
@@ -1029,7 +1031,9 @@ function borcAlacakOdemePenceresiniAc(kayitId, taksitId = "") {
       : kayit.kind === "receivable" ? "Tahsilat ekle" : "Borç ödemesi ekle";
   }
   if (borcOdemeKaydetButtonu) {
-    borcOdemeKaydetButtonu.textContent = kayit.kind === "receivable" ? "Tahsilatı Kaydet" : "Ödemeyi Kaydet";
+    // Short visible label: the long one was cut off in the phone header bar.
+    borcOdemeKaydetButtonu.textContent = "Kaydet";
+    borcOdemeKaydetButtonu.setAttribute("aria-label", kayit.kind === "receivable" ? "Tahsilatı kaydet" : "Ödemeyi kaydet");
   }
   if (borcOdemeFormDurumu) borcOdemeFormDurumu.textContent = "";
   borcAlacakOdemeKaydiSeciminiGuncelle();
@@ -1094,8 +1098,15 @@ function borcAlacakOdemeIcinAzamiTutar() {
 function borcAlacakOdemeTutarSiniriniGuncelle() {
   if (!borcOdemeTutariAlani) return;
   const azami = borcAlacakOdemeIcinAzamiTutar();
-  borcOdemeTutariAlani.max = String(azami || "");
-  if (Number(borcOdemeTutariAlani.value || 0) > azami) borcOdemeTutariAlani.value = String(azami || "");
+  const kayit = borcAlacakKayitlari.find((item) => item.id === aktifBorcAlacakOdemeKayitId);
+  if (kayit?.kind === "receivable") {
+    // Alacak: the person may send more than owed; the extra is kept as "fazla tahsilat".
+    borcOdemeTutariAlani.removeAttribute("max");
+    if (borcOdemeFormDurumu) borcOdemeFormDurumu.textContent = `Kalan alacak ${currency.format(azami)}. Fazlası tahsil edildiyse tutarın tamamını yazabilirsin.`;
+  } else {
+    borcOdemeTutariAlani.max = String(azami || "");
+    if (Number(borcOdemeTutariAlani.value || 0) > azami) borcOdemeTutariAlani.value = String(azami || "");
+  }
   if (aktifBorcAlacakOdemeTaksitId) {
     borcOdemeTutariAlani.value = String(azami || "");
   }
@@ -1122,10 +1133,11 @@ function borcAlacakOdemesiniKaydet(event) {
     borcOdemeHesabiAlani?.focus();
     return;
   }
-  if (tutar > azamiTutar) {
+  if (tutar > azamiTutar && kayit.kind !== "receivable") {
     if (borcOdemeFormDurumu) borcOdemeFormDurumu.textContent = `En fazla ${currency.format(azamiTutar)} düşebilirsin.`;
     return;
   }
+  const fazlaTutar = kayit.kind === "receivable" ? Math.max(0, roundMoney(tutar - azamiTutar)) : 0;
 
   const simdi = getTurkeyNowDateTime();
   const odemeId = crypto.randomUUID();
@@ -1143,7 +1155,7 @@ function borcAlacakOdemesiniKaydet(event) {
     transferAccountId: "",
     transferFee: 0,
     date: tarih,
-    note: String(borcOdemeNotuAlani?.value || "").trim().slice(0, 100),
+    note: [String(borcOdemeNotuAlani?.value || "").trim(), fazlaTutar ? `Fazla tahsilat ${currency.format(fazlaTutar)}` : ""].filter(Boolean).join(" · ").slice(0, 100),
     isInstallment: false,
     transactionAt: buildTransactionDateTime(tarih, getTurkeyNowTime()),
     debtReceivableId: kayit.id,
@@ -1165,7 +1177,7 @@ function borcAlacakOdemesiniKaydet(event) {
     date: tarih,
     note: borcOdemeNotuAlani?.value || "",
     transactionId: hesapHareketi.id,
-    allocations: taksitId ? [{ installmentId: taksitId, amount: tutar }] : [],
+    allocations: taksitId ? [{ installmentId: taksitId, amount: Math.min(tutar, azamiTutar) }] : [],
     createdAt: simdi,
   });
   transactions = [hesapHareketi, ...transactions].sort(compareTransactionsNewestFirst);
@@ -1478,6 +1490,7 @@ function borcAlacaklariEkranaBas() {
             <span>Toplam <strong>${escapeHtml(currency.format(kayit.originalAmount))}</strong></span>
             <span>Ödenen / tahsil edilen <strong>${escapeHtml(currency.format(odenen))}</strong></span>
             <span>Kalan <strong>${escapeHtml(currency.format(kayit.amount))}</strong></span>
+            ${kayit.overpaidAmount > 0 ? `<span class="debt-overpaid">Fazla tahsilat <strong>${escapeHtml(currency.format(kayit.overpaidAmount))}</strong></span>` : ""}
           </div>
           <div class="debt-progress-track" aria-label="Tamamlanma oranı yüzde ${Math.round(ilerleme)}">
             <div class="debt-progress-value" style="width:${ilerleme.toFixed(2)}%"></div>
@@ -1494,7 +1507,9 @@ function borcAlacaklariEkranaBas() {
       standardizeDataCard(satir, kayit.person, [
         ["Tür", kayit.kind === "receivable" ? "Alacak" : "Borç"], ["Liste", borcAlacakListeTuruEtiketi(kayit.listType)],
         ["Toplam", currency.format(kayit.originalAmount)], ["Ödenen / tahsil edilen", currency.format(odenen)],
-        ["Kalan", currency.format(kayit.amount)], ["Başlangıç", borcAlacakTarihiniYaz(kayit.startDate)],
+        ["Kalan", currency.format(kayit.amount)],
+        ...(kayit.overpaidAmount > 0 ? [["Fazla tahsilat", currency.format(kayit.overpaidAmount)]] : []),
+        ["Başlangıç", borcAlacakTarihiniYaz(kayit.startDate)],
         ["Vade", borcAlacakTarihiniYaz(kayit.dueDate)], ["Durum", durum.text], ["Not", kayit.note || "Not eklenmemiş"],
       ], ".debt-record-actions button");
       hedefListe.append(satir);
