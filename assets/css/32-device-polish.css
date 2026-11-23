@@ -72,3 +72,43 @@ html.modern-budget .mobile-dock .rc-dock-ai .rc-dock-orb { display: grid !import
 /* 7. v495: receivable collected with more money than owed. */
 html.modern-budget .debt-record-finance .debt-overpaid strong { color: #11865f; }
 html.modern-budget[data-theme="dark"] .debt-record-finance .debt-overpaid strong { color: #5fd6a4; }
+
+/* v500: Kart/hesap kayıtları penceresinde üst özet satırı başlık çubuğunun altında kalmasın. */
+html #paymentAccountRecordsModal .modal-body-scroll > .profile-form > .panel-heading {
+  margin: 0 !important;
+  padding: 14px 0 0 !important;
+}
+html #paymentAccountRecordsModal #paymentAccountRecordsSummary {
+  margin: 0 !important;
+  padding: 10px 14px !important;
+  border-radius: 14px;
+  background: var(--surface-soft, rgba(0, 0, 0, .03));
+  border: 1px solid var(--stroke, rgba(0, 0, 0, .08));
+  color: var(--muted);
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+html #paymentAccountRecordsModal #paymentAccountRecordsSummary:empty { display: none; }
+html #paymentAccountRecordsModal .modal-body-scroll > .profile-form > .panel-heading > div { width: 100%; min-width: 0; }
+/* Başlık çubuğunun hemen altındaki sabit bilgi satırı (tüm pencereler) çubuğun altında kalmasın. */
+html.modern-budget body .modal-backdrop .modal-card.modal-layout-standard > .unified-modal-nav + .panel-heading.modal-fixed-heading { margin-top: 0 !important; padding-top: 14px !important; }
+html .modal-card.modal-layout-standard > .unified-modal-nav + .panel-heading.modal-fixed-heading .panel-note { margin: 0 !important; }
+html.modern-budget body :is(#recentTransactionsModal, #paymentAccountRecordsModal) .modal-card > .unified-modal-nav + .modal-fixed-heading { padding-top: 12px !important; }
+
+/* v501: Mobilde "Gösterilecek dönem" filtresi ayrı bir kutu gibi değil, pencerenin kendi zemininde dursun. */
+@media (max-width: 980px) {
+  html.modern-budget body #paymentAccountRecordsModal .account-records-filter,
+  html.modern-budget body #paymentAccountRecordsModal .account-records-filter label {
+    background: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  html.modern-budget body #paymentAccountRecordsModal .account-records-filter { min-height: 0 !important; }
+  html.modern-budget body #paymentAccountRecordsModal .account-records-filter label { padding: 2px 0 4px !important; }
+}

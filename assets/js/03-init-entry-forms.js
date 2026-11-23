@@ -123,12 +123,16 @@ function init() {
   paymentAccountTypeFilter?.addEventListener("change", () => {
     renderPaymentAccounts();
   });
-  searchInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      applyHistorySearch();
-    }
-  });
+  // v498: klavyedeki Ara/Enter aramayı uygular ve arama penceresini kapatır; sonuçlar görünür.
+  document.getElementById("historySearchForm")?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
+    if (!(event.target instanceof HTMLInputElement)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    applyHistorySearch();
+    try { event.target.blur(); } catch { }
+    closeHistorySearchModal();
+  }, true);
   historySearchButton?.addEventListener("click", () => {
     applyHistorySearch();
   });

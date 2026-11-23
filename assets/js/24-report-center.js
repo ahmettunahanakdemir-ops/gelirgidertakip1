@@ -176,15 +176,40 @@
   }
 
   // ---------- AI client ----------
-  let history = [], owner = "", active = null;
-  function compactForHistory(report) {
-    return JSON.stringify({ title: report.title, period: report.period, summary: report.summary, kpis: (report.kpis || []).map(k => `${k.label}: ${k.value}`) }).slice(0, 3500);
+  // v496: the model sees the full previous answers (lists, tables, drafts), not only
+  // the summary, and the last photos are re-sent for a few turns so "hepsini",
+  // "ikincisini" etc. can be resolved against the same screenshot.
+  const HISTORY_TURNS = 14, HISTORY_CHARS = 6000, IMAGE_MEMORY_TURNS = 3;
+  let history = [], owner = "", active = null, recentImages = null;
+  function historyText(report, extra = "") {
+    const lines = [report.title, report.period, report.summary];
+    (report.kpis || []).forEach(k => lines.push(`${k.label}: ${k.value}`));
+    (report.sections || []).forEach(sec => {
+      if (sec.heading) lines.push(`# ${sec.heading}`);
+      if (sec.text) lines.push(sec.text);
+      (sec.bullets || []).forEach(b => lines.push(`- ${b}`));
+      if (sec.table?.columns?.length) { lines.push(sec.table.columns.join(" | ")); (sec.table.rows || []).slice(0, 60).forEach(r => lines.push(r.join(" | "))); }
+    });
+    if (extra) lines.push(extra);
+    return lines.filter(Boolean).join("\n").slice(0, HISTORY_CHARS);
+  }
+  function remember(userNote, assistantText) {
+    history = [...history, { role: "user", content: String(userNote).slice(0, 2000) }, { role: "assistant", content: assistantText }].slice(-HISTORY_TURNS);
+  }
+  function noteDraftOutcome(text) {
+    // Saving/deleting drafts happens outside the model; tell it on the next turn.
+    if (!history.length) return;
+    const last = history[history.length - 1];
+    if (last.role === "assistant") last.content = (last.content + "\n" + text).slice(0, HISTORY_CHARS + 600);
   }
   async function ask(message, { onStatus, images = [] }) {
     active?.abort();
     const u = user();
     if (!u) throw new Error("Bütçe AI için giriş yapmalısın.");
-    if (owner !== u.uid) { history = []; owner = u.uid; try { getTools()?.reset(); } catch { } }
+    if (owner !== u.uid) { history = []; recentImages = null; owner = u.uid; try { getTools()?.reset(); } catch { } }
+    let sendImages = images, previousImages = false;
+    if (images.length) recentImages = { images: images.slice(), left: IMAGE_MEMORY_TURNS };
+    else if (recentImages && recentImages.left > 0) { sendImages = recentImages.images; previousImages = true; recentImages.left -= 1; }
     const controller = new AbortController(); active = controller;
     const timer = setTimeout(() => controller.abort(), 180000);
     try {
@@ -194,7 +219,7 @@
         const response = await fetch("/.netlify/functions/report-chat", {
           method: "POST", signal: controller.signal,
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ mode: "report", message, history, overview: ov, catalog: cat, results, images, openDraft: !!getTools()?.hasOpenDraft?.(), forceReport: round === MAX_ROUNDS - 1 }),
+          body: JSON.stringify({ mode: "report", message, history, overview: ov, catalog: cat, results, images: sendImages, previousImages, openDraft: !!getTools()?.hasOpenDraft?.(), forceReport: round === MAX_ROUNDS - 1 }),
         });
         let body = null; try { body = await response.json(); } catch { }
         if (!response.ok) throw new Error(body?.error || "Bütçe AI şu anda yanıt veremedi.");
@@ -207,21 +232,218 @@
           onStatus?.(round < 2 ? "Kayıtların inceleniyor…" : "Ayrıntılar hesaplanıyor…");
           continue;
         }
-        const report = turn.report;
-        if (!report || (!report.summary && !report.title)) throw new Error("Bütçe AI boş yanıt verdi.");
-        const userNote = message + (images.length ? ` [${images.length} fotoğraf eklendi]` : "");
+        const report = turn.report || {};
+        const userNote = message + (images.length ? ` [${images.length} fotoğraf eklendi]` : previousImages ? " [önceki fotoğraf yeniden gönderildi]" : "");
+        if (turn.kind === "drafts" && Array.isArray(turn.drafts) && turn.drafts.length) {
+          const drafts = turn.drafts.slice(0, 40);
+          remember(userNote, historyText(report, `Sohbette ${drafts.length} kayıt taslağı gösterildi (henüz kaydedilmedi):\n` + drafts.map((d, i) => `${i + 1}. ${d.date} ${d.type} ${d.title} ${d.amount} TL ${d.category}${d.paymentAccountId ? " hesap:" + d.paymentAccountId : ""}`).join("\n")));
+          return { report: { ...report, title: report.title || "Kayıt taslakları" }, drafts };
+        }
+        if (!report.summary && !report.title) throw new Error("Bütçe AI boş yanıt verdi.");
         if (turn.kind === "stage") {
           let draft = { ok: true, text: "" };
           try { draft.text = stageDraft(turn.operation); }
           catch (error) { draft = { ok: false, text: error.message || "Taslak açılamadı." }; }
-          history = [...history, { role: "user", content: userNote }, { role: "assistant", content: compactForHistory(report) + (draft.ok ? `\nAçılan taslak (onay bekliyor, kaydedildiği doğrulanmadı): ${JSON.stringify(turn.operation)}` : `\nTaslak açılamadı: ${draft.text}`) }].slice(-8);
+          remember(userNote, historyText(report, draft.ok ? `Açılan taslak (onay bekliyor, kaydedildiği doğrulanmadı): ${JSON.stringify(turn.operation)}` : `Taslak açılamadı: ${draft.text}`));
           return { report, draft, operation: turn.operation };
         }
-        history = [...history, { role: "user", content: userNote }, { role: "assistant", content: compactForHistory(report) }].slice(-8);
+        remember(userNote, historyText(report));
         return { report, pickImage: turn.kind === "pick_image" };
       }
       throw new Error("Rapor tamamlanamadı; soruyu daraltıp yeniden dene.");
     } finally { clearTimeout(timer); if (active === controller) active = null; }
+  }
+
+  // ---------- v496: record drafts shown as editable forms inside the chat ----------
+  const TYPE_LABELS = { expense: "Gider", income: "Gelir", transfer: "Transfer" };
+  const methodForAccount = id => {
+    const acc = (() => { try { return paymentAccounts.find(a => a.id === id); } catch { return null; } })();
+    if (!acc) return "";
+    return acc.type === "credit_card" ? "credit_card" : acc.type === "cash" ? "cash" : "bank_account";
+  };
+  const accountName = id => { try { const a = paymentAccounts.find(x => x.id === id); return a ? a.name : ""; } catch { return ""; } };
+  const categoriesFor = type => { try { return (transactionCategories?.[type] || []).slice(); } catch { return []; } };
+  const isoDate = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || "")) ? String(v) : today();
+  function normalizeDraft(d) {
+    const type = ["income", "expense", "transfer"].includes(d.type) ? d.type : "expense";
+    let method = type === "transfer" ? "transfer" : (typeof normalizePaymentMethod === "function" ? normalizePaymentMethod(d.paymentMethod) : (d.paymentMethod || "cash"));
+    const accountId = String(d.paymentAccountId || "");
+    if (accountId && type !== "transfer") {
+      const fit = methodForAccount(accountId);
+      let allowed = [];
+      try { allowed = paymentMethodAccountTypes[method] || []; } catch { }
+      const acc = (() => { try { return paymentAccounts.find(a => a.id === accountId); } catch { return null; } })();
+      if (fit && acc && !allowed.includes(acc.type)) method = fit;
+    }
+    const cats = categoriesFor(type);
+    return {
+      type, title: String(d.title || "").trim().slice(0, 120),
+      amount: Math.abs(Number(String(d.amount).replace(",", ".")) || 0),
+      date: isoDate(d.date),
+      category: type === "transfer" ? "Transfer" : (String(d.category || "") || cats[0] || "Diğer"),
+      paymentMethod: method,
+      paymentAccountId: accountId,
+      transferAccountId: type === "transfer" ? String(d.transferAccountId || "") : "",
+      note: String(d.note || "").trim().slice(0, 300),
+    };
+  }
+  function isDuplicate(d) {
+    try {
+      return (transactions || []).some(t => t.type === d.type && t.date === d.date && Math.abs(Number(t.amount) - d.amount) < 0.005 &&
+        (!d.paymentAccountId || !t.paymentAccountId || t.paymentAccountId === d.paymentAccountId));
+    } catch { return false; }
+  }
+  function draftProblem(d) {
+    if (!d.title) return "Açıklama boş.";
+    if (!(d.amount > 0)) return "Tutar 0'dan büyük olmalı.";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d.date)) return "Tarih geçersiz.";
+    if (d.type === "transfer" && (!d.paymentAccountId || !d.transferAccountId || d.paymentAccountId === d.transferAccountId)) return "Transfer için kaynak ve farklı bir karşı hesap seç.";
+    if (d.type !== "transfer" && d.paymentMethod === "credit_card" && !d.paymentAccountId) return "Kredi kartı için kart seç.";
+    return "";
+  }
+  function renderDrafts(rawDrafts) {
+    const items = rawDrafts.map(d => ({ data: normalizeDraft(d), removed: false, editing: false }));
+    const box = el("div", "rc-drafts");
+    const head = el("div", "rc-drafts-head");
+    const count = el("strong", "");
+    head.append(count, el("span", "", "Kontrol et; gerekirse düzenle ya da sil. Hepsi en alttaki Kaydet ile birlikte kaydedilir."));
+    const list = el("div", "rc-draft-list");
+    const foot = el("div", "rc-drafts-foot");
+    const status = el("p", "rc-drafts-status"); status.setAttribute("role", "status");
+    const saveBtn = el("button", "rc-drafts-save"); saveBtn.type = "button";
+    foot.append(status, saveBtn);
+    box.append(head, list, foot);
+    let saved = false;
+
+    const refreshCount = () => {
+      const live = items.filter(i => !i.removed);
+      const inc = live.filter(i => i.data.type === "income").reduce((a, i) => a + i.data.amount, 0);
+      const exp = live.filter(i => i.data.type === "expense").reduce((a, i) => a + i.data.amount, 0);
+      count.textContent = saved ? `${live.length} kayıt kaydedildi` : `${live.length} kayıt taslağı` + (live.length ? ` · Gelir ${money(inc)} · Gider ${money(exp)}` : "");
+      saveBtn.innerHTML = `${icon(saved ? "check" : "save")}<span>${saved ? "Kaydedildi" : `Kaydet (${live.length})`}</span>`;
+      saveBtn.disabled = saved || !live.length;
+      window.lucide?.createIcons();
+    };
+    const field = (label, control, cls = "") => { const l = el("label", `rc-df ${cls}`); l.append(el("span", "", label), control); return l; };
+    const select = (options, value) => { const s = el("select"); options.forEach(([v, t]) => { const o = el("option", "", t); o.value = v; s.append(o); }); s.value = value; return s; };
+
+    function accountSelect(d, which) {
+      const s = el("select");
+      try {
+        if (which === "transfer") updateAnyPaymentAccountSelect(s, d.transferAccountId, { excludeId: d.paymentAccountId, placeholder: "Karşı hesap seç" });
+        else if (d.type === "transfer") updateAnyPaymentAccountSelect(s, d.paymentAccountId, { excludeId: d.transferAccountId, placeholder: "Kaynak hesap seç" });
+        else updatePaymentAccountSelect(s, d.paymentMethod, d.paymentAccountId);
+      } catch {
+        s.append(el("option", "", "Hesap yok")); s.firstChild.value = "";
+        (paymentAccounts || []).forEach(a => { const o = el("option", "", a.name); o.value = a.id; s.append(o); });
+      }
+      const want = which === "transfer" ? d.transferAccountId : d.paymentAccountId;
+      if (want && !Array.from(s.options).some(o => o.value === want)) { const o = el("option", "", accountName(want) || "Seçili hesap"); o.value = want; s.append(o); }
+      s.value = want || "";
+      return s;
+    }
+
+    function renderItem(item, index) {
+      const d = item.data;
+      const row = el("article", `rc-draft-item type-${d.type}`);
+      if (item.removed) return null;
+      const problem = draftProblem(d);
+      const sumRow = el("div", "rc-draft-summary");
+      const badge = el("span", `rc-draft-type t-${d.type}`, TYPE_LABELS[d.type]);
+      const info = el("div", "rc-draft-info");
+      info.append(el("strong", "", d.title || "(açıklama yok)"));
+      const meta = [new Date(d.date + "T12:00:00").toLocaleDateString("tr-TR"), d.type === "transfer" ? "" : d.category,
+        d.type === "transfer" ? `${accountName(d.paymentAccountId) || "?"} → ${accountName(d.transferAccountId) || "?"}` : (accountName(d.paymentAccountId) || (paymentMethodLabels?.[d.paymentMethod] ?? ""))].filter(Boolean).join(" · ");
+      info.append(el("span", "", meta));
+      const amount = el("span", `rc-draft-amount t-${d.type}`, `${d.type === "expense" ? "−" : d.type === "income" ? "+" : ""}${money(d.amount)}`);
+      const tools = el("div", "rc-draft-tools");
+      const mk = (ic, label, fn, cls = "") => { const b = el("button", `rc-draft-btn ${cls}`); b.type = "button"; b.title = label; b.setAttribute("aria-label", label); b.innerHTML = `${icon(ic)}<span>${label}</span>`; b.addEventListener("click", fn); b.disabled = saved; tools.append(b); return b; };
+      mk(item.editing ? "check" : "pencil", item.editing ? "Tamam" : "Düzenle", () => { item.editing = !item.editing; redraw(); });
+      mk("trash-2", "Sil", () => { item.removed = true; redraw(); }, "is-danger");
+      sumRow.append(badge, info, amount);
+      if (!saved) sumRow.append(tools); else sumRow.append(el("span", "rc-draft-done", "✓"));
+      row.append(sumRow);
+      const warns = [];
+      if (saved) return row;
+      if (problem) warns.push(["triangle-alert", problem, "is-error"]);
+      if (!problem && isDuplicate(d)) warns.push(["copy", "Aynı tarih ve tutarda bir kayıt zaten var; tekrar eklemek istemiyorsan sil.", "is-warn"]);
+      warns.forEach(([ic, t, c]) => { const w = el("p", `rc-draft-warn ${c}`); w.innerHTML = icon(ic); w.append(el("span", "", t)); row.append(w); });
+      if (item.editing && !saved) {
+        const form = el("div", "rc-draft-form");
+        const typeSel = select([["expense", "Gider"], ["income", "Gelir"], ["transfer", "Transfer"]], d.type);
+        typeSel.addEventListener("change", () => { item.data = normalizeDraft({ ...d, type: typeSel.value, category: "" }); redraw(true); });
+        const title = el("input"); title.type = "text"; title.maxLength = 120; title.value = d.title;
+        title.addEventListener("input", () => { d.title = title.value.trim(); });
+        const amt = el("input"); amt.type = "number"; amt.min = "0"; amt.step = "0.01"; amt.inputMode = "decimal"; amt.value = d.amount || "";
+        amt.addEventListener("input", () => { d.amount = Math.abs(Number(amt.value) || 0); });
+        const date = el("input"); date.type = "date"; date.value = d.date;
+        date.addEventListener("change", () => { d.date = date.value; });
+        form.append(field("Tür", typeSel), field("Açıklama", title, "wide"), field("Tutar (₺)", amt), field("Tarih", date));
+        if (d.type !== "transfer") {
+          const cats = categoriesFor(d.type); if (d.category && !cats.includes(d.category)) cats.unshift(d.category);
+          const catSel = select(cats.map(c => [c, c]), d.category);
+          catSel.addEventListener("change", () => { d.category = catSel.value; });
+          const methods = Object.entries((() => { try { return paymentMethodLabels; } catch { return { cash: "Nakit" }; } })()).filter(([k]) => k !== "transfer" || d.type !== "transfer");
+          const methodSel = select(methods, d.paymentMethod);
+          methodSel.addEventListener("change", () => { d.paymentMethod = methodSel.value; d.paymentAccountId = ""; redraw(true); });
+          const accSel = accountSelect(d, "source");
+          accSel.addEventListener("change", () => { d.paymentAccountId = accSel.value; });
+          form.append(field("Kategori", catSel), field("Ödeme yöntemi", methodSel, "wide-m"), field("Kart / hesap", accSel, "wide-m"));
+        } else {
+          const src = accountSelect(d, "source"); const dst = accountSelect(d, "transfer");
+          src.addEventListener("change", () => { d.paymentAccountId = src.value; redraw(true); });
+          dst.addEventListener("change", () => { d.transferAccountId = dst.value; redraw(true); });
+          form.append(field("Kaynak hesap", src, "wide-m"), field("Karşı hesap", dst, "wide-m"));
+        }
+        const note = el("input"); note.type = "text"; note.maxLength = 300; note.value = d.note; note.placeholder = "İsteğe bağlı";
+        note.addEventListener("input", () => { d.note = note.value; });
+        form.append(field("Not", note, "wide"));
+        // Live-update the summary line while typing, without rebuilding the form.
+        form.addEventListener("input", () => { info.firstChild.textContent = d.title || "(açıklama yok)"; amount.textContent = `${d.type === "expense" ? "−" : d.type === "income" ? "+" : ""}${money(d.amount)}`; refreshCount(); });
+        row.append(form);
+      }
+      return row;
+    }
+    function redraw(keepFocus) {
+      list.replaceChildren();
+      items.forEach((item, i) => { const r = renderItem(item, i); if (r) list.append(r); });
+      if (!items.some(i => !i.removed)) list.append(el("p", "rc-empty", "Tüm taslaklar silindi."));
+      refreshCount();
+    }
+    saveBtn.addEventListener("click", () => {
+      if (saved) return;
+      const live = items.filter(i => !i.removed);
+      const bad = live.find(i => draftProblem(i.data));
+      if (bad) { bad.editing = true; redraw(); status.textContent = `Kaydetmeden önce düzelt: ${bad.data.title || "kayıt"} — ${draftProblem(bad.data)}`; status.className = "rc-drafts-status is-error"; return; }
+      try {
+        const now = getTurkeyNowDateTime(), time = getTurkeyNowTime();
+        const entries = live.map(i => createEntryTransaction({ ...i.data }, now, time));
+        const sink = el("p");
+        for (const entry of entries) {
+          if (!validateTransactionPayment(entry, sink)) { status.textContent = `${entry.title}: ${sink.textContent || "Ödeme bilgisi geçersiz."}`; status.className = "rc-drafts-status is-error"; return; }
+        }
+        let changed = false;
+        entries.forEach(e => { changed = applyTransactionPaymentEffect(e, 1) || changed; });
+        transactions = [...entries, ...transactions].sort(compareTransactionsNewestFirst);
+        if (changed) {
+          try { refreshAllPaymentAccountsFromRecords({ silent: true, syncCloud: false }); } catch { }
+          persistPaymentAccounts();
+        }
+        Promise.resolve(persistTransactions({ cloudUpserts: entries })).catch(error => { status.textContent = `Buluta kaydedilemedi: ${error?.message || "bağlantı hatası"}. Kayıtlar bu cihazda duruyor.`; status.className = "rc-drafts-status is-error"; });
+        try { render(); } catch { }
+        saved = true; items.forEach(i => { i.editing = false; });
+        redraw();
+        status.textContent = `${entries.length} kayıt eklendi.`; status.className = "rc-drafts-status is-ok";
+        box.classList.add("is-saved");
+        noteDraftOutcome(`Kullanıcı ${entries.length} taslağı kaydetti: ` + entries.map(e => `${e.date} ${e.title} ${e.amount} TL`).join("; "));
+      } catch (error) {
+        status.textContent = `Kaydedilemedi: ${error?.message || "beklenmeyen hata"}`; status.className = "rc-drafts-status is-error";
+      }
+    });
+    // Open invalid ones for editing right away.
+    items.forEach(i => { if (draftProblem(i.data)) i.editing = true; });
+    redraw();
+    return box;
   }
 
   // ---------- charts (SVG, theme aware) ----------
@@ -435,7 +657,7 @@
           <button type="submit" class="rc-send" aria-label="Gönder" title="Gönder">${icon("arrow-up")}</button>
         </div>
       </form>
-      <p class="rc-privacy">Sorular, sesli mesajlar, fotoğraflar ve ilgili hesap verilerin yanıt üretmek için OpenAI'a iletilir. Bütçe AI kayıtları kendisi kaydetmez; açtığı taslağı sen kontrol edip onaylarsın.</p>`;
+      <p class="rc-privacy">Sorular, sesli mesajlar, fotoğraflar ve ilgili hesap verilerin yanıt üretmek için OpenAI'a iletilir. Bütçe AI kayıtları kendisi kaydetmez; hazırladığı taslakları sen kontrol edip Kaydet ile onaylarsın.</p>`;
     host.append(section);
     thread = section.querySelector("[data-rc-thread]");
     input = section.querySelector("[data-rc-input]");
@@ -496,7 +718,7 @@
   function welcome() {
     thread.replaceChildren();
     const w = el("article", "rc-msg rc-ai rc-welcome");
-    w.append(el("p", "", "Merhaba! Ben Bütçe AI. İstediğin raporu yaz ya da mikrofonla söyle — örneğin “Son 3 ayda kredi kartıyla yaptığım harcamaları kategoriye göre göster”. Kayıt da açabilirim: “Bugün markete 450 TL nakit ödedim” de ya da fişin fotoğrafını ekle; taslağı açarım, sen kontrol edip kaydedersin."));
+    w.append(el("p", "", "Merhaba! Ben Bütçe AI. İstediğin raporu yaz ya da mikrofonla söyle — örneğin “Son 3 ayda kredi kartıyla yaptığım harcamaları kategoriye göre göster”. Kayıt da ekleyebilirim: “Bugün markete 450 TL nakit ödedim” de ya da fiş/ekstre fotoğrafı ekle; hareketleri burada form olarak gösteririm, düzenler ya da silersin, sonra Kaydet ile hepsini birlikte eklersin."));
     thread.append(w);
   }
   function addUser(text, images = []) {
@@ -516,9 +738,9 @@
     if (retry) { const b = el("button", "rc-retry", "Yeniden dene"); b.type = "button"; b.addEventListener("click", () => { m.remove(); submit(retry); }); m.append(b); }
     thread.append(m); scrollEnd();
   }
-  function renderReport(r, { saved = false, draft = null } = {}) {
+  function renderReport(r, { saved = false, draft = null, drafts = null } = {}) {
     const card = el("article", "rc-msg rc-ai rc-report");
-    if (draft) card.classList.add("rc-has-draft");
+    if (draft || drafts) card.classList.add("rc-has-draft");
     const head = el("header", "rc-report-head");
     const titles = el("div", "rc-titles");
     titles.append(el("h3", "rc-title", r.title || (draft ? "Kayıt taslağı" : "Bütçe AI")));
@@ -544,6 +766,7 @@
       box.append(el("span", "", draft.ok ? "Taslak uygulamanın formunda açıldı. Henüz kaydedilmedi — alanları kontrol edip Kaydet/Sil ile onayla ya da Kapat ile vazgeç." : `Taslak açılamadı: ${draft.text}`));
       card.append(box);
     }
+    if (drafts?.length && !saved) card.append(renderDrafts(drafts));
     if (r.kpis?.length) {
       const grid = el("div", "rc-kpis");
       r.kpis.forEach(k => { const c = el("div", `rc-kpi tone-${k.tone || "neutral"}`); c.append(el("span", "rc-kpi-label", k.label), el("strong", "rc-kpi-value", k.value)); if (k.note) c.append(el("small", "rc-kpi-note", k.note)); grid.append(c); });
@@ -616,7 +839,7 @@
     try {
       const result = await ask(message, { onStatus: setStatus, images });
       loading.remove();
-      const card = renderReport(result.report, { draft: result.draft }); thread.append(card); window.lucide?.createIcons(); scrollEnd(card);
+      const card = renderReport(result.report, { draft: result.draft, drafts: result.drafts }); thread.append(card); window.lucide?.createIcons(); scrollEnd(card);
       if (result.pickImage) setTimeout(() => filePicker.click(), 50);
     } catch (error) {
       loading.remove();
@@ -638,7 +861,10 @@
       const b = el("button", "rc-dock-ai"); b.type = "button"; b.dataset.shellView = VIEW; b.title = "Bütçe AI"; b.setAttribute("aria-label", "Bütçe AI");
       b.innerHTML = `<span class="rc-dock-orb">${icon("sparkles")}</span><span>Bütçe AI</span>`;
       b.addEventListener("click", () => { try { setMobileSidebarOpen(false); } catch { } switchView(VIEW); window.scrollTo({ top: 0, behavior: "instant" }); });
-      const anchor = dock.querySelector('[data-shell-view="assetsView"]');
+      // v499: toplam düğme sayısı tekse tam ortaya, çiftse (tam orta yoksa) en sağa.
+      const others = Array.from(dock.querySelectorAll("[data-shell-view]"));
+      const total = others.length + 1;
+      const anchor = total % 2 === 1 ? others[Math.floor(others.length / 2)] : null;
       dock.insertBefore(b, anchor || null);
     }
     window.lucide?.createIcons();
@@ -662,7 +888,7 @@
     }
     // Account switch: clear the conversation so no report leaks across users.
     let lastUid = user()?.uid || "";
-    setInterval(() => { const uid = user()?.uid || ""; if (uid !== lastUid) { lastUid = uid; history = []; active?.abort(); mic?.cancel?.(); clearPhotos(); try { getTools()?.reset(); } catch { } welcome(); if (!savedPanel.hidden) renderSaved(); } }, 1500);
+    setInterval(() => { const uid = user()?.uid || ""; if (uid !== lastUid) { lastUid = uid; history = []; recentImages = null; active?.abort(); mic?.cancel?.(); clearPhotos(); try { getTools()?.reset(); } catch { } welcome(); if (!savedPanel.hidden) renderSaved(); } }, 1500);
     window.lucide?.createIcons();
     syncActive();
     try { renderModernShell(); } catch { }

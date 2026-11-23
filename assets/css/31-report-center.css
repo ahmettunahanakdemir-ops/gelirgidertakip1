@@ -312,3 +312,84 @@ html.modern-budget .mobile-dock { grid-template-columns: repeat(var(--dock-count
   .report-center .rc-composer-row { gap: 4px; }
   .report-center .rc-tool { width: 36px; height: 36px; }
 }
+
+/* ---------- v496: masaüstünde tam sayfa ---------- */
+@media (min-width: 981px) {
+  #reportsView.report-center { max-width: none !important; width: 100%; margin: 0; }
+  .report-center .rc-user { max-width: min(70%, 760px); }
+}
+
+/* ---------- v496: sohbet içi kayıt taslakları (form) ---------- */
+.report-center .rc-drafts {
+  display: grid; gap: 10px; margin-top: 4px; padding: 12px;
+  border-radius: 18px; border: 1px solid var(--stroke);
+  background: var(--surface-soft);
+}
+.report-center .rc-drafts-head { display: grid; gap: 2px; padding: 2px 4px; }
+.report-center .rc-drafts-head strong { font-size: 15px; }
+.report-center .rc-drafts-head span { font-size: 13px; color: var(--muted); }
+.report-center .rc-draft-list { display: grid; gap: 8px; }
+.report-center .rc-draft-item {
+  display: grid; gap: 8px; padding: 10px 12px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--stroke);
+  border-left: 4px solid var(--rc-neg, #d9534f);
+}
+.report-center .rc-draft-item.type-income { border-left-color: var(--rc-pos, #1f9d6b); }
+.report-center .rc-draft-item.type-transfer { border-left-color: var(--accent, #0f7c8a); }
+.report-center .rc-draft-summary { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+.report-center .rc-draft-type { font-size: 11.5px; font-weight: 700; padding: 4px 8px; border-radius: 999px; background: rgba(217, 83, 79, .12); color: var(--rc-neg, #c0392b); white-space: nowrap; }
+.report-center .rc-draft-type.t-income { background: rgba(31, 157, 107, .12); color: var(--rc-pos, #1f8a5e); }
+.report-center .rc-draft-type.t-transfer { background: rgba(15, 124, 138, .12); color: var(--accent, #0f7c8a); }
+.report-center .rc-draft-info { display: grid; gap: 2px; min-width: 0; }
+.report-center .rc-draft-info strong { font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-center .rc-draft-info span { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-center .rc-draft-amount { font-weight: 800; font-size: 15px; white-space: nowrap; color: var(--rc-neg, #c0392b); }
+.report-center .rc-draft-amount.t-income { color: var(--rc-pos, #1f8a5e); }
+.report-center .rc-draft-amount.t-transfer { color: var(--text); }
+.report-center .rc-draft-tools { display: flex; gap: 6px; }
+.report-center .rc-draft-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px;
+  border-radius: 10px; border: 1px solid var(--stroke); background: var(--surface-soft);
+  color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.report-center .rc-draft-btn svg { width: 16px; height: 16px; }
+.report-center .rc-draft-btn.is-danger { color: var(--rc-neg, #c0392b); }
+.report-center .rc-draft-btn:disabled { opacity: .45; cursor: default; }
+.report-center .rc-draft-warn { margin: 0; display: flex; gap: 6px; align-items: flex-start; font-size: 12.5px; line-height: 1.35; }
+.report-center .rc-draft-warn svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; }
+.report-center .rc-draft-warn.is-error { color: var(--rc-neg, #c0392b); }
+.report-center .rc-draft-warn.is-warn { color: #9a6b00; }
+.report-center .rc-draft-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 10px; padding-top: 8px; border-top: 1px dashed var(--stroke); }
+.report-center .rc-df { display: grid; gap: 4px; min-width: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.report-center .rc-df.wide { grid-column: span 2; }
+#reportsView .rc-df :is(input, select) {
+  width: 100%; min-width: 0; height: 40px !important; min-height: 40px !important; padding: 0 10px !important;
+  border-radius: 10px !important; border: 1px solid var(--stroke) !important; background-color: var(--surface) !important;
+  color: var(--text) !important; font: inherit; font-size: 14px !important; font-weight: 500; box-shadow: none !important;
+}
+.report-center .rc-drafts-foot { display: flex; gap: 12px; align-items: center; justify-content: flex-end; flex-wrap: wrap; padding-top: 4px; }
+.report-center .rc-drafts-status { margin: 0; flex: 1 1 220px; font-size: 13px; color: var(--muted); }
+.report-center .rc-drafts-status.is-error { color: var(--rc-neg, #c0392b); }
+.report-center .rc-drafts-status.is-ok { color: var(--rc-pos, #1f8a5e); font-weight: 600; }
+.report-center .rc-drafts-save {
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px;
+  border: 0; border-radius: 14px; color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+  background: linear-gradient(140deg, var(--palette-highlight, #008064), var(--palette-primary, #00785c));
+}
+.report-center .rc-drafts-save svg { width: 18px; height: 18px; }
+.report-center .rc-drafts-save:disabled { opacity: .6; cursor: default; }
+.report-center .rc-drafts.is-saved .rc-draft-item { opacity: .8; }
+@media (max-width: 980px) {
+  .report-center .rc-drafts { padding: 10px; }
+  .report-center .rc-draft-summary { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .report-center .rc-draft-tools { grid-column: 1 / -1; justify-content: flex-end; }
+  .report-center .rc-draft-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .report-center .rc-df.wide-m { grid-column: 1 / -1; }
+  .report-center .rc-drafts-save { width: 100%; justify-content: center; }
+}
+@media (max-width: 380px) {
+  .report-center .rc-draft-btn span { display: none; }
+}
+#reportsView .rc-draft-btn { height: 34px !important; min-height: 34px !important; padding: 0 10px !important; border-radius: 10px !important; width: auto !important; box-shadow: none !important; }
+#reportsView .rc-df input[type="date"] { text-align: left !important; }
+.report-center .rc-draft-done { color: var(--rc-pos, #1f8a5e); font-weight: 800; font-size: 16px; }
