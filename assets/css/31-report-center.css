@@ -393,3 +393,22 @@ html.modern-budget .mobile-dock { grid-template-columns: repeat(var(--dock-count
 #reportsView .rc-draft-btn { height: 34px !important; min-height: 34px !important; padding: 0 10px !important; border-radius: 10px !important; width: auto !important; box-shadow: none !important; }
 #reportsView .rc-df input[type="date"] { text-align: left !important; }
 .report-center .rc-draft-done { color: var(--rc-pos, #1f8a5e); font-weight: 800; font-size: 16px; }
+
+/* ---------- v502: yazı kutusunda kaydırma çubuğu yok; sohbet metni kutunun altından görünmez ---------- */
+#reportsView .rc-composer textarea {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+#reportsView .rc-composer textarea::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+/* Kutunun altındaki boşluk (telefonda alt menüye kadar) sayfa zemini ile kapatılır; kayan sohbet metni burada görünmez. */
+#reportsView.report-center.active::after {
+  content: "";
+  position: fixed;
+  z-index: 39;
+  left: calc(var(--rc-left, 0px) - 14px);
+  width: calc(var(--rc-width, 100%) + 28px);
+  bottom: 0;
+  height: calc(var(--rc-bottom, 16px) + var(--rc-composer-h, 62px) / 2);
+  background: var(--bg, #e4f6f1);
+  pointer-events: none;
+}

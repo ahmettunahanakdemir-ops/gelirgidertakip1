@@ -1,8 +1,8 @@
-const CACHE_NAME = "akis-butce-v501";
+const CACHE_NAME = "akis-butce-v502";
 const APP_ASSETS = [
-  "./assets/css/31-report-center.css?v=497",
+  "./assets/css/31-report-center.css?v=502",
   "./assets/css/32-device-polish.css?v=501",
-  "./assets/js/24-report-center.js?v=499",
+  "./assets/js/24-report-center.js?v=502",
   "./assets/js/25-search-enter-close.js?v=496",
   "./assets/js/16-assistant-microphone.js?v=495",
   "./assets/js/22-luna-tools.js?v=495",

@@ -710,6 +710,7 @@
     // Reserve room so the last message and the privacy note never sit under the composer/dock.
     const composer = section.querySelector(".rc-composer");
     if (composer) section.style.setProperty("padding-bottom", `${Math.round(composer.offsetHeight + space + 16)}px`, "important");
+    if (composer) section.style.setProperty("--rc-composer-h", `${Math.round(composer.offsetHeight)}px`);
     const rect = section.getBoundingClientRect();
     if (rect.width) { section.style.setProperty("--rc-left", `${Math.round(rect.left)}px`); section.style.setProperty("--rc-width", `${Math.round(rect.width)}px`); }
   }
